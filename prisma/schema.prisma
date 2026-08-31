@@ -1,0 +1,1332 @@
+// Shop — commerce data model.
+// Learn more: https://pris.ly/d/prisma-schema
+//
+// MULTI-TENANCY
+// -------------
+// One database holds every merchant's store. Almost every model therefore
+// carries a `shopId`, and no query may read one without filtering on it —
+// lib/data/shop.ts returns a Prisma client that applies the filter and stamps
+// it on writes, and scripts/check-scoped-queries.ts fails the build if a call
+// site slips past it.
+//
+// Rule of thumb when adding a model: if two merchants could each have their
+// own, it needs a shopId and a relation to Shop with onDelete: Cascade.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// What a shop is doing right now.
+//
+// A state machine rather than a set of booleans, because the states are
+// mutually exclusive and the transitions matter: a shop that is PAST_DUE is not
+// simply "paused", and re-activating it is a different action from unpausing.
+// Billing is not built yet, but PAST_DUE and SUSPENDED exist now so that adding
+// it later is not another migration over every row.
+/// What kind of business a shop is.
+///
+/// Asked once during onboarding and changeable afterwards. It filters the theme
+/// picker and decides the vocabulary the admin uses — products, posts or dishes
+/// — so it is a setting rather than a fork: nothing about a shop is migrated
+/// when it changes.
+enum BusinessType {
+  ECOMMERCE
+  BLOG
+  RESTAURANT
+}
+
+/// Whether a post is written or out in the world.
+enum ArticleStatus {
+  DRAFT
+  PUBLISHED
+}
+
+/// What a dish is suitable for. Flags on a product rather than a table: nobody
+/// queries "all vegan things across all shops", they filter one menu by one.
+enum Dietary {
+  VEGETARIAN
+  VEGAN
+  GLUTEN_FREE
+  DAIRY_FREE
+  NUT_FREE
+  HALAL
+  SPICY
+}
+
+enum ShopStatus {
+  /// Free trial. Fully functional; no payment method yet.
+  TRIAL
+  /// Paying, or on a plan that needs no payment. The normal state.
+  ACTIVE
+  /// The merchant closed their own doors. Storefront shows a notice; the admin
+  /// still works, so they can reopen.
+  PAUSED
+  /// Payment failed. Still serving, inside a grace period.
+  PAST_DUE
+  /// We turned it off — abuse, or grace period expired. Storefront is dark.
+  SUSPENDED
+  /// The merchant left. Data is kept for a retention window, then deleted.
+  CLOSED
+}
+
+// What a person may do inside one shop.
+//
+// Deliberately per-membership rather than per-user: the same person can own one
+// shop and be a stock clerk at another, and a role that meant something
+// globally would make that impossible to express.
+// What a one-time link is for.
+//
+// Separate purposes on one table rather than two tables, because the rules are
+// identical — hashed at rest, single use, expiring — and only the landing page
+// differs. Using one for the other is prevented by checking the purpose on
+// redemption, not by hoping.
+enum TokenPurpose {
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
+}
+
+/// How far along a merchant's own domain is.
+///
+/// Deliberately a straight line rather than a set of flags. A domain is exactly
+/// one of these at a time and the merchant is shown the same words, so "where
+/// has this got to?" has one answer instead of four booleans to reconcile.
+enum DomainStatus {
+  /// Added, but nothing has been checked yet. The merchant is looking at the
+  /// records they need to create at their registrar.
+  PENDING
+  /// The DNS records are right. The certificate is still being issued, which
+  /// is nothing for the merchant to do but wait.
+  VERIFIED
+  /// Serving. Certificate issued and traffic is routing to us.
+  ACTIVE
+  /// We looked, repeatedly, and the records were absent or pointed elsewhere.
+  FAILED
+}
+
+enum MemberRole {
+  /// Billing, ownership transfer, deleting the shop. Exactly one per shop.
+  OWNER
+  /// Everything except billing and ownership.
+  ADMIN
+  /// Day-to-day: products, orders, enquiries. Not settings or staff.
+  STAFF
+  /// Read-only. For accountants and agencies.
+  VIEWER
+}
+
+/// What a discount takes off.
+///
+/// FREE_SHIPPING is its own type rather than a 100% discount on the shipping
+/// line, because the shipping fee is calculated after the discount and a
+/// percentage would have to be applied to a number that does not exist yet.
+enum DiscountType {
+  /// `value` is a percentage, 1–100, off the subtotal.
+  PERCENTAGE
+  /// `value` is an amount in PKR off the subtotal.
+  FIXED_AMOUNT
+  /// Shipping is waived. `value` is ignored.
+  FREE_SHIPPING
+}
+
+enum PaymentMethod {
+  COD
+  BANK_TRANSFER
+  JAZZCASH
+  EASYPAISA
+}
+
+enum PaymentStatus {
+  PENDING
+  AWAITING_VERIFICATION
+  CONFIRMED
+  FAILED
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PACKED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum MenuLocation {
+  HEADER
+  FOOTER
+}
+
+enum ProductStatus {
+  DRAFT
+  PUBLISHED
+}
+
+// How a product is sold. This is the single switch that decides whether a
+// product can be added to a cart at all, so it is deliberately an enum rather
+// than a set of booleans that could contradict each other.
+//
+//   NORMAL — a price, variants, add to cart. The ordinary case.
+//   BULK   — sold by arrangement. No cart: the buyer sends an enquiry, because
+//            the price depends on quantity and is agreed, not published.
+//   CUSTOM — made to order against measurements. Priced per commission, so it
+//            is also enquiry-only.
+enum ProductKind {
+  NORMAL
+  BULK
+  CUSTOM
+}
+
+// What a BULK product shows where a price would go.
+//
+//   HIDDEN — "Price on request". For a seller who negotiates every deal.
+//   RANGE  — "from X to Y". Sets expectations without committing.
+//   TIERED — a table of quantity breaks, each with its own unit price. The most
+//            informative, and the one that answers the buyer's real question:
+//            what does it cost at the quantity I want?
+enum BulkPricing {
+  HIDDEN
+  RANGE
+  TIERED
+}
+
+enum EnquiryStatus {
+  NEW
+  IN_PROGRESS
+  QUOTED
+  WON
+  LOST
+}
+
+enum SectionType {
+  HERO_SLIDESHOW
+  BANNER
+  CATEGORY_GRID
+  FEATURED_PRODUCTS
+  TEXT_BLOCK
+  IMAGE_TEXT
+  STORY
+  FAQ_LIST
+  /// Blog. Latest posts, newest first.
+  ARTICLE_LIST
+  /// Restaurant. Products grouped by category and priced, with no buy button —
+  /// a menu to read, not a grid to shop.
+  MENU_LIST
+  /// Restaurant. When the shop is open.
+  OPENING_HOURS
+  /// Restaurant. Where the shop is.
+  LOCATION_INFO
+}
+
+// A store. The tenant root: almost everything else in this file belongs to one.
+model Shop {
+  id        String     @id @default(cuid())
+  name      String
+  /// The address every shop gets for free: <subdomain>.shop.synoradigitals.com. Unique
+  /// platform-wide, which is the one thing that genuinely must be.
+  subdomain String     @unique
+  status    ShopStatus @default(TRIAL)
+
+  /// When the merchant finished, or skipped, the welcome flow. Null means they
+  /// have not seen it. A timestamp rather than a boolean because "when did this
+  /// shop start" is a question worth being able to answer later.
+  onboardedAt DateTime?
+
+  /// What the merchant said they run. Defaulted rather than nullable so every
+  /// read is a value — a shop that skipped onboarding is an online store, which
+  /// is what every shop on the platform was before the question existed.
+  businessType BusinessType @default(ECOMMERCE)
+
+  /// Set when the merchant pauses the shop, so "how long has this been down"
+  /// is answerable without an audit-log scan.
+  pausedAt DateTime?
+  /// Set when CLOSED. Data is retained until the window expires.
+  closedAt DateTime?
+
+  members           Membership[]
+  staffInvites      StaffInvite[]
+  domains           Domain[]
+  discounts         Discount[]
+  redemptions       DiscountRedemption[]
+  customers         Customer[]
+  categories        Category[]
+  products          Product[]
+  variants          ProductVariant[]
+  orders            Order[]
+  orderItems        OrderItem[]
+  addresses         Address[]
+  enquiries         Enquiry[]
+  pages             Page[]
+  sections          Section[]
+  menuItems         MenuItem[]
+  menus             Menu[]
+  articles          Article[]
+  openingHours      OpeningHours[]
+  locations         Location[]
+  regions           Region[]
+  metafields        Metafield[]
+  siteTexts         SiteText[]
+  settings          StoreSettings[]
+  themes            ThemeSettings[]
+  fonts             FontAsset[]
+  stickyButtons     StickyButton[]
+  redirects         Redirect[]
+  pushSubscriptions PushSubscription[]
+  auditLogs         AuditLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+}
+
+// A person who signs in to Shop: a merchant or their staff.
+//
+// NOT a shopper. Email is unique platform-wide because this is one human's
+// single identity across every shop they touch. Shoppers are Customer rows,
+// which are per-shop — see that model for why the two cannot be one table.
+model User {
+  id                 String              @id @default(cuid())
+  name               String
+  email              String              @unique
+  passwordHash       String
+  phone              String?
+  /// Null until the address is confirmed. A store cannot go live before this:
+  /// an unverified address is an unusable one, and password resets and order
+  /// alerts would both vanish into it.
+  emailVerifiedAt    DateTime?
+  /// Sessions issued before this moment are refused. Changing a password or
+  /// signing out everywhere moves it forward, which is what makes those
+  /// actions mean anything against a token someone else already holds.
+  sessionsValidFrom  DateTime            @default(now())
+  memberships        Membership[]
+  verificationTokens VerificationToken[]
+  sentInvites        StaffInvite[]
+  pushSubscriptions  PushSubscription[]
+  adminOtps          AdminOtp[]
+  auditLogs          AuditLog[]
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+}
+
+// Which shops a user can act in, and as what.
+// A one-time link sent by email: verify this address, or reset this password.
+//
+// Only the SHA-256 of the token is stored. The plaintext exists in exactly one
+// place — the email — so a database dump cannot be turned into account
+// takeovers, which is what makes password reset such a common way in.
+model VerificationToken {
+  id         String       @id @default(cuid())
+  tokenHash  String       @unique
+  purpose    TokenPurpose
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  /// Snapshotted, so a token issued for one address cannot verify another if
+  /// the user changes their email mid-flight.
+  email      String
+  expiresAt  DateTime
+  /// Single use. Set the moment it is redeemed, before anything else happens.
+  consumedAt DateTime?
+  createdAt  DateTime     @default(now())
+
+  @@index([userId, purpose])
+  @@index([expiresAt])
+}
+
+// An invitation to join a shop's staff.
+//
+// Not a Membership with acceptedAt null: you invite an *address*, and the
+// person behind it may have no account yet. A Membership needs a user; this
+// does not, and becomes one when accepted.
+/// A hostname that serves a shop.
+///
+/// Every shop has one of these for its free `<subdomain>.shop.synoradigitals.com` address
+/// and may add its own. Keeping both in one table means host resolution has a
+/// single path rather than "look here, and if that fails look there", and the
+/// primary-domain rule below applies to the free address too.
+///
+/// `hostname` is unique platform-wide and not per shop, which is the point: two
+/// merchants cannot both claim `shop.example.com`, and the first to *verify* it
+/// keeps it. Verification is what settles the dispute, not who typed it first —
+/// see lib/domains.ts.
+model Domain {
+  id       String       @id @default(cuid())
+  shop     Shop         @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId   String
+  /// Lowercase, no port, no trailing dot, no scheme. Normalised on the way in.
+  hostname String       @unique
+  status   DomainStatus @default(PENDING)
+
+  /// The free platform address. Cannot be removed or edited, and is what a
+  /// merchant falls back to if their own domain breaks.
+  isPlatform Boolean @default(false)
+  /// The canonical address. Every other domain for this shop redirects to it,
+  /// so a store is never indexed twice under two names.
+  isPrimary  Boolean @default(false)
+
+  /// Proves the person adding the domain controls it, via a TXT record. Random
+  /// per domain, so knowing one tells you nothing about another.
+  verificationToken String
+  /// When DNS last looked correct. Cleared if it stops being correct.
+  verifiedAt        DateTime?
+  /// When it last served real traffic — certificate issued and routing live.
+  activatedAt       DateTime?
+  /// Why the last check failed, in the words the merchant is shown.
+  lastError         String?
+  /// When we last looked, so a merchant can be told how fresh the answer is
+  /// and so the checker can avoid hammering a registrar.
+  lastCheckedAt     DateTime?
+  /// How many times in a row the check has failed. Used to back off, and to
+  /// stop checking a domain somebody added by mistake and abandoned.
+  failedChecks      Int       @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([shopId])
+  @@index([status])
+}
+
+/// A code a customer types at checkout to pay less.
+///
+/// Codes are per shop and compared case-insensitively — a customer typing
+/// "save10" must match a merchant who created "SAVE10", so the code is stored
+/// uppercase and uppercased again on lookup.
+model Discount {
+  id     String       @id @default(cuid())
+  shop   Shop         @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId String
+  code   String
+  type   DiscountType
+  /// Percentage (1–100) or PKR amount, depending on `type`. Unused for
+  /// FREE_SHIPPING.
+  value  Int          @default(0)
+
+  /// Smallest subtotal the order must reach to qualify, in PKR.
+  minSubtotal      Int?
+  /// Total redemptions allowed across every customer. Null means unlimited.
+  usageLimit       Int?
+  /// Redemptions allowed per customer. Null means unlimited.
+  perCustomerLimit Int?
+  /// Kept alongside the redemption rows so the limit can be enforced with one
+  /// conditional update rather than a count under a lock.
+  usageCount       Int  @default(0)
+
+  startsAt DateTime?
+  endsAt   DateTime?
+  isActive Boolean   @default(true)
+
+  redemptions DiscountRedemption[]
+  orders      Order[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([shopId, code])
+  @@index([shopId])
+}
+
+/// One use of a discount, by one order.
+///
+/// Separate from the counter on Discount because "how many times has *this
+/// customer* used it" cannot be answered by a counter, and because a merchant
+/// asking where the money went needs the orders, not a number.
+model DiscountRedemption {
+  id         String   @id @default(cuid())
+  shop       Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId     String
+  discount   Discount @relation(fields: [discountId], references: [id], onDelete: Cascade)
+  discountId String
+  /// The order that used it. Unique: an order carries at most one discount.
+  orderId    String   @unique
+  customerId String?
+  /// What it actually took off, in PKR. Stored because the discount's rules
+  /// can change afterwards and the order must still add up.
+  amount     Int
+  createdAt  DateTime @default(now())
+
+  @@index([shopId])
+  @@index([discountId])
+  @@index([customerId])
+}
+
+model StaffInvite {
+  id          String     @id @default(cuid())
+  shop        Shop       @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId      String
+  email       String
+  role        MemberRole @default(STAFF)
+  tokenHash   String     @unique
+  /// For the audit trail, and for "invited by" in the staff list.
+  invitedBy   User?      @relation(fields: [invitedById], references: [id], onDelete: SetNull)
+  invitedById String?
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  revokedAt   DateTime?
+  createdAt   DateTime   @default(now())
+
+  /// One outstanding invite per address per shop — re-inviting replaces it
+  /// rather than leaving two live links to the same seat.
+  @@unique([shopId, email])
+  @@index([shopId])
+}
+
+// Counters for anything that must not be attempted without limit.
+//
+// A table rather than Redis, because this has to work on day one with the
+// database that already exists, and at the traffic of a platform with tens of
+// shops the difference is not measurable. lib/rate-limit.ts is the only thing
+// that touches it, so swapping the store later is a one-file change.
+model RateLimit {
+  /// Scopes the counter: "login:ip:1.2.3.4", "enquiry:shop_abc:5.6.7.8".
+  key          String    @id
+  count        Int       @default(0)
+  /// A row past its window is treated as absent.
+  windowEnd    DateTime
+  /// Set once a limit trips and a cool-off is being served.
+  blockedUntil DateTime?
+
+  @@index([windowEnd])
+}
+
+model Membership {
+  id     String     @id @default(cuid())
+  user   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  shop   Shop       @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId String
+  role   MemberRole @default(STAFF)
+
+  /// Set once the invite is accepted. Null means invited but not yet joined —
+  /// which is not the same as having no access, and the difference is visible
+  /// in the staff list rather than inferred.
+  acceptedAt DateTime?
+  invitedAt  DateTime  @default(now())
+
+  @@unique([userId, shopId])
+  @@index([shopId, role])
+}
+
+// A shopper at one shop.
+//
+// Separate from User, and unique per shop rather than globally, because the
+// same person shopping at two different stores is two unrelated relationships:
+// different addresses, different order history, and no reason for one merchant
+// to learn that their customer also shops elsewhere. A single global user table
+// cannot express that without leaking it.
+model Customer {
+  id           String    @id @default(cuid())
+  shop         Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId       String
+  email        String
+  name         String
+  phone        String?
+  passwordHash String?
+  addresses    Address[]
+  orders       Order[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@unique([shopId, email])
+  @@index([shopId])
+}
+
+// Who did what. Written for every meaningful change, from the first one.
+//
+// Retrofitting this is impossible — the history you wanted is exactly the part
+// you did not record — so it exists before the features that will use it.
+model AuditLog {
+  id         String  @id @default(cuid())
+  shop       Shop    @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId     String
+  /// Null for actions taken by the system rather than a person.
+  user       User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId     String?
+  /// Kept even if the user is deleted, so the trail stays readable.
+  actorEmail String?
+
+  /// "product.delete", "shop.pause", "staff.invite".
+  action   String
+  /// What it happened to: "Product", "Order".
+  entity   String?
+  entityId String?
+  /// Enough detail to answer "what changed", without storing the whole row.
+  detail   Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([shopId, createdAt])
+  @@index([shopId, entity, entityId])
+}
+
+// One row per issued admin login code. Never reused across requests — a fresh
+// row is created each time a code is sent, and old unconsumed rows are left to
+// expire naturally. That's harmless: authorize() only trusts the most recent
+// unconsumed, unexpired row, and the attempt cap is enforced per row.
+model AdminOtp {
+  id         String    @id @default(cuid())
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  codeHash   String
+  expiresAt  DateTime
+  attempts   Int       @default(0)
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model Address {
+  id         String   @id @default(cuid())
+  shop       Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId     String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customerId String
+  label      String   @default("Home")
+  line1      String
+  line2      String?
+  city       String
+  province   String
+  postalCode String?
+  phone      String
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@index([customerId])
+  @@index([shopId])
+}
+
+model Category {
+  id             String    @id @default(cuid())
+  shop           Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId         String
+  name           String
+  slug           String
+  image          String?
+  /// Shown at the top of the collection page, above the grid. Optional —
+  /// a collection with nothing worth saying should say nothing.
+  description    String?
+  /// Overrides the <title> and meta description for this collection. Falling
+  /// back to the name is right far more often than not, so these stay empty
+  /// until someone has a reason to differ.
+  seoTitle       String?
+  seoDescription String?
+  products       Product[]
+  // The auto-created collection page (see Page's comment). Cascades on
+  // category delete.
+  pages          Page[]
+
+  @@unique([shopId, slug])
+  @@index([shopId])
+}
+
+model Product {
+  id          String           @id @default(cuid())
+  shop        Shop             @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId      String
+  title       String
+  slug        String
+  description String
+  details     String? // fabric, care instructions, etc. (markdown/plain text)
+  images      String[]
+  basePrice   Int // stored in PKR, integer (no paisa)
+  salePrice   Int?
+  costPrice   Int              @default(0) // what you pay per unit, PKR — admin/profit-calc only, never sent to the storefront
+  // Many-to-many — a product can sit in several categories at once (e.g. a discounted Lawn
+  // piece is both "Lawn" and "Sale"). "Sale" membership is kept in sync with salePrice
+  // automatically by saveProduct() rather than left to the admin to remember — see actions.ts.
+  categories  Category[]
+  variants    ProductVariant[]
+  isFeatured  Boolean          @default(false)
+  isActive    Boolean          @default(true)
+  status      ProductStatus    @default(PUBLISHED) // DRAFT = half-configured/unpublished, hidden from storefront regardless of isActive
+
+  // --- How this product is sold -------------------------------------------
+  // NORMAL products use basePrice/salePrice/variants above and nothing below.
+  kind             ProductKind @default(NORMAL)
+  /// Dietary flags, for a shop serving food. Empty for everything else, so this
+  /// costs a non-food shop nothing.
+  dietary          Dietary[]   @default([])
+  /// BULK only: how the price is presented. See the BulkPricing enum.
+  bulkPricing      BulkPricing @default(HIDDEN)
+  /// BULK only: smallest order the seller will take, in units.
+  minOrderQuantity Int?
+  /// BULK + RANGE: the advertised span, in PKR per unit.
+  bulkPriceMin     Int?
+  bulkPriceMax     Int?
+  /// BULK + TIERED: quantity breaks, as [{ minQty, unitPrice }] ordered by
+  /// minQty. Stored as JSON rather than a table because tiers are only ever
+  /// read as a whole, alongside their product, and never queried across it.
+  bulkTiers        Json?
+  /// CUSTOM only: the measurements or choices a buyer must supply, as
+  /// [{ id, label, help, required, kind }]. Same reasoning as bulkTiers.
+  customFields     Json?
+  /// BULK/CUSTOM: where the enquiry button sends the buyer. Empty means the
+  /// built-in enquiry form. Any other value is validated as a safe URL before
+  /// it is stored and again before it is rendered.
+  enquiryUrl       String?
+  enquiries        Enquiry[]
+  deletedAt        DateTime? // set when moved to the admin Bin (soft delete) — hidden everywhere until restored or permanently deleted
+  orderItems       OrderItem[]
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  @@unique([shopId, slug])
+  @@index([shopId])
+}
+
+model ProductVariant {
+  id            String      @id @default(cuid())
+  shop          Shop        @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId        String
+  product       Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId     String
+  size          String
+  color         String
+  colorHex      String?
+  sku           String
+  stock         Int         @default(0)
+  priceOverride Int?
+  orderItems    OrderItem[]
+
+  @@unique([shopId, sku])
+  @@unique([productId, size, color])
+  @@index([productId])
+  @@index([shopId])
+}
+
+model Order {
+  id                  String        @id // short 5-char id, assigned in app code — see lib/order-id.ts
+  shop                Shop          @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId              String
+  customer            Customer?     @relation(fields: [customerId], references: [id])
+  customerId          String?
+  customerName        String
+  customerEmail       String
+  customerPhone       String
+  shippingLine1       String
+  shippingLine2       String?
+  shippingCity        String
+  shippingProvince    String
+  shippingPostalCode  String?
+  items               OrderItem[]
+  subtotal            Int
+  shippingFee         Int
+  total               Int
+  paymentMethod       PaymentMethod
+  discount            Discount?     @relation(fields: [discountId], references: [id], onDelete: SetNull)
+  discountId          String?
+  /// Copied at checkout so the order still shows what was used even if the
+  /// discount is later renamed or deleted.
+  discountCode        String?
+  discountAmount      Int           @default(0)
+  paymentStatus       PaymentStatus @default(PENDING)
+  orderStatus         OrderStatus   @default(PENDING)
+  transactionProofUrl String?
+  notes               String?
+  deletedAt           DateTime? // set when moved to the admin Bin (soft delete) — excluded from every revenue/profit aggregate until restored
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  @@index([customerId])
+  @@index([shopId, createdAt])
+  @@index([shopId, orderStatus])
+}
+
+model OrderItem {
+  id        String          @id @default(cuid())
+  shop      Shop            @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId    String
+  order     Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId   String
+  // Optional + SetNull so a Product/ProductVariant can be permanently deleted (from the Bin)
+  // even if it has order history — the snapshot fields below already fully describe the line
+  // item independent of the product/variant still existing.
+  product   Product?        @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productId String?
+  variant   ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  variantId String?
+  title     String // snapshot of product title at time of order
+  size      String
+  color     String
+  price     Int
+  costPrice Int             @default(0) // snapshot of product cost at time of order — profit calc stays accurate if cost changes later
+  quantity  Int
+
+  @@index([orderId])
+  @@index([shopId])
+}
+
+// A browser's Web Push subscription, registered from the admin panel so the
+// owner gets an instant notification (no app store publishing required) when
+// a new order comes in. One admin can have several (phone + laptop, etc).
+model PushSubscription {
+  id        String   @id @default(cuid())
+  shop      Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  // Stays globally unique: the endpoint is minted by the browser's push
+  // service and is already unique across the internet, so scoping it per shop
+  // would let one device register twice for the same notifications.
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([shopId])
+}
+
+// One row per shop, holding store-wide configuration editable from the admin
+// panel. A shop that has never opened Settings has no row at all and falls back
+// to the defaults in lib/data/settings.ts.
+model StoreSettings {
+  id                      String  @id @default(cuid())
+  shop                    Shop    @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId                  String
+  /// Which menu fills each slot. Null falls back to the shop's first menu, so a
+  /// store is never left with no navigation because an assignment was cleared.
+  headerMenuId            String?
+  footerMenuId            String?
+  whatsappNumber          String  @default("923218408190")
+  contactEmail            String? // shown on the Contact page
+  bankAccountDetails      String? // shown at checkout for Bank Transfer
+  jazzcashAccountDetails  String?
+  easypaisaAccountDetails String?
+  shippingFee             Int     @default(250)
+  freeShippingThreshold   Int?
+
+  // --- Global Edits ---------------------------------------------------
+  // Site-wide behavior toggles/values read live everywhere they apply —
+  // including by products/pages created after the edit was made. Off/empty
+  // always means "the site's original, unmodified behavior" — see
+  // lib/global-edits.ts for the shared defaults and pure helpers.
+  showInventoryCount   Boolean @default(true)
+  lowStockThreshold    Int     @default(5)
+  lowStockBadgeText    String  @default("Only {n} left!")
+  outOfStockDisplay    String  @default("SOLD_OUT") // "HIDE" | "SOLD_OUT" | "NORMAL"
+  newArrivalBadge      Boolean @default(true)
+  newArrivalWindowDays Int     @default(14)
+  newArrivalBadgeText  String  @default("New")
+  saleBadge            Boolean @default(true)
+  defaultShopSort      String  @default("newest") // "newest" | "price-asc" | "price-desc" | "featured"
+  shopGridColumns      Int     @default(4) // 3 | 4 | 5
+  accentColor          String  @default("#4c100f")
+  headingStyle         String  @default("normal") // "normal" | "uppercase" | "titlecase"
+  footerCopyrightText  String  @default("© {year} Your Store. All rights reserved.")
+  announcementText     String  @default("")
+  announcementBgColor  String  @default("#4c100f")
+  whatsappOrderButton  Boolean @default(true)
+  maintenanceMode      Boolean @default(false)
+
+  // --- Store defaults -----------------------------------------------------
+  // The facts about the business that everything else is expressed in: what
+  // it's called, what it charges in, where it trades from, and what "now"
+  // means when an order is stamped. Kept together because they are what a
+  // merchant sets once, on day one, and then rarely thinks about again.
+  storeName     String  @default("Your Store")
+  currency      String  @default("PKR")
+  countryCode   String  @default("PK")
+  /// "METRIC" or "IMPERIAL" — drives which weight and length units are offered.
+  unitSystem    String  @default("METRIC")
+  weightUnit    String  @default("kg")
+  /// IANA zone. Orders and analytics are recorded against this, so changing it
+  /// changes which day a sale belongs to.
+  timeZone      String  @default("Asia/Karachi")
+  shopFilterBar Boolean @default(true)
+
+  @@unique([shopId])
+}
+
+// A URL that should send visitors somewhere else instead of 404ing.
+//
+// Deliberately NOT per-environment: a redirect is about the shape of the site's
+// URLs, which both environments share, and a link someone bookmarked or a
+// search engine indexed doesn't care which copy of the store it lands on.
+//
+// Created automatically when a page's slug changes, and by hand for links that
+// went dead some other way (a collection deleted long ago, a URL printed on
+// packaging). Checked by the dynamic routes just before they would 404.
+model Redirect {
+  id     String @id @default(cuid())
+  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId String
+
+  fromPath  String // "/collections/sale" — always starts with /
+  toPath    String // "/shop" or a full https:// address
+  isActive  Boolean  @default(true)
+  hits      Int      @default(0) // how often it has actually saved someone
+  note      String   @default("") // why it exists, for whoever reads this later
+  createdAt DateTime @default(now())
+
+  @@unique([shopId, fromPath])
+  @@index([isActive])
+}
+
+// An admin-uploaded font file, stored in Blob storage.
+//
+// The *file* is an asset; which font the store actually uses is a theme token
+// ("custom:<id>" in ThemeSettings.tokens), so a font can be uploaded once and
+// then applied to headings, body text, both or neither.
+//
+// Only genuine font files land here — see validateFontFile() in
+// lib/font-validation.ts for the magic-byte check that gates the upload.
+model FontAsset {
+  id     String @id @default(cuid())
+  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId String
+
+  name      String // admin-facing label, defaults to the filename
+  url       String // Blob storage URL
+  format    String // "woff2" | "woff" | "ttf" | "otf" — drives the @font-face format()
+  sizeBytes Int
+  createdAt DateTime @default(now())
+
+  // Malware-scan audit trail (see lib/virus-scan.ts). Recorded rather than
+  // merely acted on, so it stays visible later which files were actually
+  // checked and which predate — or were uploaded without — a configured
+  // scanner. "unscanned" is an honest state, not a failure.
+  scanStatus   String   @default("unscanned") // "clean" | "unscanned"
+  scanProvider String   @default("none")
+  scanDetail   String   @default("")
+  sha256       String   @default("")
+  scannedAt    DateTime @default(now())
+
+  @@index([shopId])
+}
+
+// A floating contact button (WhatsApp, Instagram, a chat link, …).
+//
+// `scope` decides which pages it appears on; see stickyButtonMatchesPath() in
+// lib/sticky-buttons.ts.
+model StickyButton {
+  id        String  @id @default(cuid())
+  shop      Shop    @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId    String
+  kind      String // "WHATSAPP" | "INSTAGRAM" | "MESSENGER" | "EMAIL" | "PHONE" | "LINK"
+  label     String // accessible label / tooltip
+  value     String // phone number, handle, email or URL depending on `kind`
+  message   String  @default("") // prefilled text where the channel supports it
+  scope     String  @default("ALL") // "HOME" | "SHOPPING" | "ALL"
+  iconKind  String  @default("BUILTIN") // "BUILTIN" | "UPLOAD"
+  iconValue String  @default("") // builtin icon key, or the uploaded icon's URL
+  color     String  @default("#25D366")
+  order     Int     @default(0)
+  isVisible Boolean @default(true)
+
+  @@index([shopId])
+}
+
+// Per-environment design tokens for the visual customizer — colors,
+// typography, corner radius, button style, spacing, container width.
+//
+// Stored as a single JSON blob rather than a column per token on purpose:
+// the token set is expected to grow as the customizer does, and adding a
+// token shouldn't need a migration. lib/theme-tokens.ts owns the shape, the
+// defaults, and the narrowing — same "defaults + merge" pattern as
+// lib/global-edits.ts and lib/site-text.ts, so a missing or partial row is
+// never a broken storefront.
+model ThemeSettings {
+  id        String   @id @default(cuid())
+  shop      Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId    String
+  /// Which of the platform's themes this storefront uses. A string rather than
+  /// an enum because themes ship and retire far more often than a migration is
+  /// worth, and lib/themes/registry.ts falls back on an unknown key rather than
+  /// letting a retired theme take a storefront offline.
+  themeKey  String   @default("aurora")
+  tokens    Json
+  updatedAt DateTime @updatedAt
+
+  /// One row per business type, not per shop. A merchant who switches to a blog
+  /// and back finds their store's theme and colours exactly as they left them.
+  businessType BusinessType @default(ECOMMERCE)
+
+  @@unique([shopId, businessType])
+}
+
+// Admin-editable UI copy (button labels, headings, microcopy). Every key
+// also has a hardcoded fallback in lib/site-text.ts, so a missing row here
+// is never a broken page — see that file for the merge logic.
+model SiteText {
+  shop      Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId    String
+  key       String
+  value     String
+  group     String // admin-UI grouping, e.g. "Homepage", "Product", "Cart & Checkout"
+  updatedAt DateTime @updatedAt
+
+  @@id([shopId, key])
+  @@index([shopId])
+}
+
+// A storefront page (the homepage plus any admin-created custom pages),
+// built from an ordered list of Sections — the admin-panel "Shopify-style"
+// content control layer. slug "home" is reserved for the homepage.
+//
+// Also doubles as the single directory of "things the header/footer menu
+// can point at" (see MenuItem below) — every navigable destination on the
+// site is a Page row, even ones that aren't Section-rendered:
+//   - category   set  -> auto-created 1:1 with a Category (see
+//                        app/admin/categories/actions.ts), lives at
+//                        /collections/<category.slug>. `title` is never
+//                        read for these — the category's own `name` is the
+//                        live source of truth (see lib/data/menus.ts).
+//   - routePath  set  -> a fixed utility route with its own hardcoded JSX
+//                        (Shop/Cart/Contact/Track Order) — this row exists
+//                        purely so the menu picker has something to select;
+//                        it renders nothing itself and has no Sections.
+//   - neither set     -> a normal Section-rendered page: Home/About/FAQ
+//                        (isSystem, dedicated route files) or a custom page
+//                        (rendered at /p/<slug>).
+// Deleting a Category cascades to delete its Page here, which in turn
+// cascades to delete any MenuItem pointing at it — a stale nav link can't
+// outlive the collection it pointed to.
+model Page {
+  id             String     @id @default(cuid())
+  shop           Shop       @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId         String
+  slug           String
+  title          String
+  isSystem       Boolean    @default(false) // true for Home/About/FAQ — slug locked, can't delete
+  isPublished    Boolean    @default(true)
+  seoTitle       String?
+  seoDescription String?
+  sections       Section[]
+  category       Category?  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId     String?
+  routePath      String? // e.g. "/shop", "/cart" — see comment above
+  menuItems      MenuItem[]
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  // One "home" page per shop, and one collection page per category.
+  /// Which kind of business this page belongs to. A shop that switches type
+  /// gets that type's pages; switching back brings the originals back untouched.
+  businessType BusinessType @default(ECOMMERCE)
+
+  @@unique([shopId, businessType, slug])
+  @@unique([shopId, categoryId])
+  @@index([shopId])
+}
+
+// One content block on a Page. `data` shape depends on `type` — validated
+// in the admin server action, not the DB (see lib/data/pages.ts).
+model Section {
+  id        String      @id @default(cuid())
+  shop      Shop        @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId    String
+  page      Page        @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  pageId    String
+  type      SectionType
+  order     Int
+  isVisible Boolean     @default(true)
+  data      Json
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([pageId])
+  @@index([shopId])
+}
+
+/// One file from a theme.
+///
+/// Text is kept inline: it is what the renderer reads on every request and what
+/// the code editor writes, and a round trip to object storage for each of two
+/// hundred snippets would dominate both. Binary assets — images, fonts — go to
+/// blob storage and keep only their URL here, because nothing ever reads their
+/// bytes on the server.
+/// A custom field on something, in Shopify's shape.
+///
+/// Themes reach these as `product.metafields.<namespace>.<key>`, and they are
+/// how a theme carries anything the base product model has no column for — a
+/// care label, a size chart, a badge. Without them a theme that uses one does
+/// not fail; it renders the page with that piece silently missing, which is
+/// the worst of both outcomes.
+///
+/// Owner is a type and an id rather than a relation per model, because the set
+/// of things that can carry one grows and a nullable foreign key per owner
+/// would mean a migration each time. The trade is that the database cannot
+/// enforce the reference, so lib/data/metafields.ts is the only writer and it
+/// checks the owner exists first.
+model Metafield {
+  id     String @id @default(cuid())
+  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId String
+
+  /// "product" | "collection" | "page" | "shop"
+  ownerType String
+  /// The owning row's id, or "" for shop-level fields, which have no row.
+  ///
+  /// Empty string rather than null, and that is deliberate. Under SQL's default
+  /// rule two nulls are never equal, so a nullable column inside the unique key
+  /// below would let the same shop-level field be written twice — the one case
+  /// the constraint exists to prevent. Postgres can be told otherwise with
+  /// NULLS NOT DISTINCT, but Prisma does not generate that, so the schema and
+  /// the database would disagree about an index. "" collides with "" and needs
+  /// neither exception.
+  ownerId   String  @default("")
+
+  /// Shopify splits the name in two so an app's fields cannot collide with a
+  /// merchant's. "custom" is the namespace a merchant's own fields live in.
+  namespace String
+  key       String
+
+  /// One of Shopify's metafield types — see lib/metafields.ts for the set we
+  /// accept. Stored rather than inferred: "1" is a number to a human and a
+  /// string to a theme, and only the declared type settles it.
+  type  String
+  /// Always text. Numbers and booleans are cast on the way out, so one column
+  /// serves every type and no migration is needed to add another.
+  value String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// One value per field per owner. Saving the same field twice is an edit.
+  @@unique([shopId, ownerType, ownerId, namespace, key])
+  @@index([shopId, ownerType, ownerId])
+}
+
+/// A slice of the world a storefront can look different for.
+///
+/// Which region a visitor gets is decided from the country the edge resolves
+/// from their connection — see lib/region.ts, which is deliberate about why it
+/// reads that header and not the forwarded one.
+///
+/// Every override is nullable and null means "inherit the shop's setting", so a
+/// region only has to say what differs. A region is presentation only: it must
+/// never reach pricing, tax, stock or authentication, and check-regions.ts
+/// fails the build if it starts to.
+model Region {
+  id     String @id @default(cuid())
+  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId String
+
+  /// What the merchant calls it, e.g. "Gulf".
+  name String
+  /// Stable identifier, also what ?__region= accepts.
+  handle String
+
+  /// ISO 3166-1 alpha-2 codes this region covers.
+  countries String[]
+  /// Used when the visitor's country matches no region.
+  isDefault Boolean @default(false)
+  /// Lets a region be built before it goes live.
+  isActive Boolean @default(true)
+
+  // --- what differs here. Null inherits. ---
+  headerMenuId        String?
+  footerMenuId        String?
+  announcementText    String?
+  announcementBgColor String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([shopId, handle])
+  @@index([shopId])
+}
+
+/// A named set of links the merchant builds once and points at wherever it is
+/// wanted. There used to be exactly two, fixed by MenuItem.location — a header
+/// one and a footer one — so the same links could not be reused in both places
+/// and no third menu could exist at all.
+///
+/// Which menu appears where is a *slot* assignment held on StoreSettings, not a
+/// property of the menu, so the same menu can fill both slots and swapping them
+/// moves no links.
+model Menu {
+  id     String @id @default(cuid())
+  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId String
+
+  /// What the merchant calls it, e.g. "Main menu".
+  name String
+  /// Stable identifier, so renaming a menu never breaks an assignment.
+  handle String
+
+  items     MenuItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  /// Navigation belongs to a kind of business. A restaurant switching back to
+  /// a shop finds the shop's own menus intact, and neither inherits the other's
+  /// links to things it does not have.
+  businessType BusinessType @default(ECOMMERCE)
+
+  @@unique([shopId, businessType, handle])
+  @@index([shopId])
+}
+
+model MenuItem {
+  id     String @id @default(cuid())
+  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId String
+
+  menu   Menu   @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  menuId String
+
+  /// Superseded by `menu`. Kept until the data has been observed migrated, so
+  /// a rollback still has somewhere to read from; nothing reads it now.
+  location   MenuLocation?
+  groupLabel String?
+  label      String
+  href       String
+  page       Page?        @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  pageId     String?
+  order      Int
+  isVisible  Boolean      @default(true)
+
+  /// Self-relation for dropdowns. Deliberately only two levels deep: a third
+  /// tier is unusable on touch and hides the very items it was added to
+  /// surface, so nesting a child under a child is refused in the editor rather
+  /// than merely discouraged.
+  parent   MenuItem?  @relation("MenuItemChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  parentId String?
+  children MenuItem[] @relation("MenuItemChildren")
+
+  @@index([shopId, menuId])
+  @@index([pageId])
+  @@index([parentId])
+
+  /// The kind of business this item's menu belongs to.
+  ///
+  /// Duplicated from the parent menu rather than joined for it: the tenant
+  /// client filters by columns on the row it is querying, and a link that
+  /// escapes that filter is a restaurant's header pointing at a clothing
+  /// collection, which is exactly what this partition exists to stop.
+  businessType BusinessType @default(ECOMMERCE)
+
+}
+
+// A buyer asking about a BULK or CUSTOM product.
+//
+// Kept separate from Order on purpose: an enquiry has no payment, no shipping
+// and no line items, and treating it as a half-filled order would mean every
+// revenue query had to remember to exclude it. The two only meet if an enquiry
+// is won and someone raises a real order from it.
+model Enquiry {
+  id           String        @id @default(cuid())
+  shop         Shop          @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId       String
+  product      Product?      @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productId    String?
+  /// Snapshot, so the enquiry still reads correctly if the product is renamed
+  /// or deleted — the same reasoning as OrderItem's title snapshot.
+  productTitle String
+  name         String
+  email        String
+  phone        String
+  company      String?
+  quantity     Int?
+  message      String
+  /// CUSTOM products: the buyer's answers, keyed by the field ids in
+  /// Product.customFields.
+  details      Json?
+  status       EnquiryStatus @default(NEW)
+  /// Free-text notes the seller adds while working the enquiry.
+  notes        String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([shopId, status, createdAt])
+  @@index([productId])
+}
+
+/// A blog post.
+///
+/// Not a Page. Pages are a handful of system pages composed of sections; posts
+/// are numerous, ordered by date, and carry an author and an excerpt. Two
+/// hundred posts in the Pages admin would ruin it.
+///
+/// One blog per shop rather than many. Shopify allows several and almost nobody
+/// uses more than one; the cost of that generality is a handle in every route
+/// and a container to manage. Grouping is `tags` instead.
+model Article {
+  id     String @id @default(cuid())
+  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId String
+
+  slug  String
+  title String
+  /// Shown in listings. Falls back to the opening of the body when empty, so a
+  /// merchant who never writes one still gets a readable card.
+  excerpt String?
+  /// Rich text. A post is written, not arranged, so it is one field rather than
+  /// a canvas of sections.
+  body       String
+  coverImage String?
+  /// Free text rather than a relation to User: a shop may credit a guest writer,
+  /// and a staff member leaving must not orphan their posts.
+  authorName String?
+
+  status      ArticleStatus @default(DRAFT)
+  /// Set the first time it is published, and kept afterwards, so re-publishing an
+  /// edited post does not move it to the top of the blog.
+  publishedAt DateTime?
+
+  tags String[] @default([])
+
+  seoTitle       String?
+  seoDescription String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([shopId, slug])
+  @@index([shopId, status, publishedAt])
+}
+
+/// When a shop is open, one row per weekday.
+///
+/// `day` is 0–6 with 0 = Sunday, matching JavaScript's getDay() so no conversion
+/// is needed anywhere it is rendered.
+model OpeningHours {
+  id     String @id @default(cuid())
+  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId String
+
+  day    Int
+  /// "09:00" / "17:30", local to the shop. Stored as text rather than a time:
+  /// these are opening hours on a sign, not instants, and a timezone-aware type
+  /// would invite a conversion that is always wrong somewhere.
+  opensAt  String?
+  closesAt String?
+  /// Closed all day. Distinct from "no hours set", which shows nothing at all.
+  closed Boolean @default(false)
+  /// A second service, for a kitchen that shuts between lunch and dinner.
+  reopensAt  String?
+  reclosesAt String?
+
+  @@unique([shopId, day])
+}
+
+/// Somewhere a shop physically is.
+model Location {
+  id     String @id @default(cuid())
+  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId String
+
+  name    String
+  address String
+  city    String?
+  phone   String?
+  /// A link to whatever map the merchant uses. A link rather than an embed:
+  /// an embedded map is a third-party script on a merchant's own domain.
+  mapUrl  String?
+
+  /// The one shown when a section names no location.
+  isPrimary Boolean @default(false)
+  order     Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([shopId, order])
+}

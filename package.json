@@ -7,26 +7,47 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^7.9.1",
+    "@prisma/client": "^7.9.1",
     "@tailwindcss/postcss": "^4",
+    "@vercel/blob": "^2.7.0",
+    "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
     "lucide-react": "^1.30.0",
     "nanoid": "^6.0.1",
     "next": "16.3.0",
+    "next-auth": "^5.0.0-beta.32",
+    "pg": "^8.22.0",
+    "prisma": "^7.9.1",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "resend": "^6.18.1",
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4",
+    "web-push": "^3.6.7",
     "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20",
+    "@types/pg": "^8.21.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/web-push": "^3.6.4",
+    "dotenv": "^17.4.2",
     "eslint": "^9",
     "eslint-config-next": "16.3.0",
+    "tsx": "^4.23.11",
     "typescript": "^5"
+  },
+  "allowScripts": {
+    "@prisma/engines@7.9.1": true,
+    "esbuild@0.28.1": true,
+    "prisma@7.9.1": true,
+    "unrs-resolver@1.12.2": true
   }
 }
