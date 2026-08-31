@@ -1,0 +1,32 @@
+{
+  "name": "@synora/ui",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Synora Shop Frontend - Multi-tenant Storefront UI, Merchant Admin Dashboard, and Live Theme Customizer",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@tailwindcss/postcss": "^4",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.30.0",
+    "nanoid": "^6.0.1",
+    "next": "16.3.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "tailwind-merge": "^3.6.0",
+    "tailwindcss": "^4",
+    "zustand": "^5.0.14"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.0",
+    "typescript": "^5"
+  }
+}

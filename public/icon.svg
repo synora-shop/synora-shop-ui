@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Shop by Synora Digitals">
+  <title>Shop by Synora Digitals</title>
+  <!--
+    The platform's app icon.
+
+    What was here before was Nautaar's wordmark, left behind from when this
+    repo was a single-tenant store. The platform and every merchant storefront
+    carried one particular shop's branding on the browser tab, so a merchant's
+    own customers saw another merchant's logo.
+
+    Same idea as public/logo.svg: the product's own window, a settings panel
+    beside a live preview. Drawn differently, because that mark is a ring in a
+    single colour, and at tab size its outlined frame and filled panel merge
+    into one blob that reads as a notebook.
+
+    So the window is solid here and the detail is knocked out of it. Three
+    shapes, all high contrast, none thinner than two device pixels at 16px: the
+    field, the divider that makes the left column a panel, and two rows that
+    say the panel has settings in it.
+
+    Petrol (brand-600, the AAA line on white) rather than Synora's indigo. This
+    is a product of that company, not the company; the family resemblance is the
+    tile and the geometry, not a borrowed hue.
+  -->
+  <rect width="64" height="64" rx="14" fill="#2f29c9"/>
+
+  <!-- The window. -->
+  <rect x="13" y="15" width="38" height="34" rx="5" fill="#ffffff"/>
+
+  <!-- The divider: what turns the left edge into a panel rather than a margin. -->
+  <rect x="24" y="15" width="2.6" height="34" fill="#2f29c9"/>
+
+  <!-- Two rows in the preview field. Solid, so they survive at 16px. -->
+  <rect x="31" y="24" width="14" height="3.4" rx="1.7" fill="#2f29c9"/>
+  <rect x="31" y="33" width="9" height="3.4" rx="1.7" fill="#2f29c9"/>
+</svg>

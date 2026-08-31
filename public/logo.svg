@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" role="img" aria-label="bettershp">
+  <title>bettershp</title>
+  <!--
+    The mark is the product's own window, abstracted: a narrow filled column
+    (the settings panel) beside a wider field (the live preview), with the
+    panel's rows suggested inside it. It is the one picture that says what this
+    thing is, and it still reads at 16px.
+
+    Mark only, no lettering. Two reasons: hand-authored letterform paths render
+    as garbage often enough not to risk it, so the wordmark is set in real type
+    by <Wordmark> instead; and this file is the *default* storefront logo, which
+    every merchant replaces with their own — a neutral mark is the honest
+    placeholder there.
+
+    Single-colour by construction, so the re-tinting in components/ui/logo.tsx —
+    a CSS mask, which carries shape but not colour — works on it unchanged.
+  -->
+  <g fill="currentColor">
+    <!-- Window frame, drawn as a ring so the preview field stays transparent. -->
+    <path d="M2 7.5A5.5 5.5 0 0 1 7.5 2h25A5.5 5.5 0 0 1 38 7.5v25a5.5 5.5 0 0 1-5.5 5.5h-25A5.5 5.5 0 0 1 2 32.5zm3.4 0v25c0 1.16.94 2.1 2.1 2.1h25c1.16 0 2.1-.94 2.1-2.1v-25c0-1.16-.94-2.1-2.1-2.1h-25c-1.16 0-2.1.94-2.1 2.1z"/>
+    <!-- Settings panel: the narrow column, filled. -->
+    <path d="M7.5 5.4h6.1v29.2H7.5a2.1 2.1 0 0 1-2.1-2.1v-25c0-1.16.94-2.1 2.1-2.1z"/>
+    <!-- Rows in the panel. The first is emphasised: the setting you're editing. -->
+    <rect x="17.4" y="10.2" width="13.6" height="2.8" rx="1.4"/>
+    <rect x="17.4" y="17" width="9.4" height="2.8" rx="1.4" opacity="0.45"/>
+    <rect x="17.4" y="23.8" width="11.6" height="2.8" rx="1.4" opacity="0.45"/>
+  </g>
+</svg>

@@ -1,0 +1,499 @@
+@import "tailwindcss";
+
+:root {
+  /* Shop — "Signal"
+     ------------------------------------------------------------------
+     Three colours carry the brand, taken from the identity sheet:
+
+       #2F29C9  indigo   the brand. Primary actions, links, the active state.
+       #CCF034  lime     the accent. Highlights and emphasis, on dark only.
+       #ADADFF  haze     the soft tint. Fills, hovers, quiet surfaces.
+
+     Indigo is 9.2:1 on white, so it clears AAA as body text as well as on a
+     button, which is what lets one colour do the work of a link colour and a
+     button colour without a second, weaker variant creeping in.
+
+     Lime is 1.3:1 on white and must never be text on a light surface. It is
+     14.8:1 on the near black below, which is where it belongs: a highlight on
+     a dark panel. scripts/check-brand.ts enforces both.
+
+     Neutrals carry a blue cast rather than being grey, so a white card on the
+     canvas reads as deliberate rather than as an unpainted gap. */
+
+  /* Brand */
+  --color-brand-50: #f1f0ff;
+  --color-brand-100: #dedcff;
+  --color-brand-300: #9a95f7;
+  --color-brand-500: #4b45e0;
+  --color-brand-600: #2f29c9;
+  --color-brand-700: #241fa8;
+  --color-brand-900: #14116b;
+
+  /* Accent. Dark surfaces only. */
+  --color-accent: #ccf034;
+  --color-accent-ink: #0c0c1e;
+  --color-accent-soft: #adadff;
+
+  /* Surfaces */
+  --color-canvas: #f3f3f9;
+  --color-surface: #ffffff;
+  --color-subtle: #ebebf5;
+  --color-border: #dcdcea;
+
+  /* The dark ground, for panels that need to feel like the product's own
+     chrome rather than a document. */
+  --color-night: #0c0c1e;
+  --color-night-soft: #17173a;
+
+  /* Ink */
+  --color-ink: #0c0c1e;
+  --color-ink-soft: #4a4a66;
+  --color-ink-faint: #6e6e8c;
+
+  /* Semantic. Off the brand hue so state never reads as branding. */
+  --color-rose: #c02040;
+  --color-rose-bg: #fdf1f4;
+  --color-amber: #8a5a06;
+  --color-amber-bg: #fdf8ed;
+  --color-green: #0e7a34;
+  --color-green-bg: #eff9f2;
+
+  /* Shape. Generous and consistent: the identity is built on soft rectangles
+     and pills, and a 4px corner anywhere in it reads as a different product. */
+  --radius-sm: 0.625rem;
+  --radius-md: 0.875rem;
+  --radius-lg: 1.25rem;
+  --radius-xl: 1.5rem;
+  --radius-pill: 999px;
+
+  /* Motion.
+     ---------------------------------------------------------------------
+     One easing curve everywhere, and it is the one Apple's interfaces use:
+     leaves quickly, arrives slowly. Mixed curves are why interfaces feel
+     assembled rather than designed, and the difference is legible even to
+     someone who could not name it.
+
+     Durations are short on purpose. Anything above ~200ms on a hover reads as
+     lag rather than as polish. */
+  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.36, 0.64, 1);
+  --t-fast: 120ms;
+  --t-base: 180ms;
+  --t-slow: 280ms;
+
+  /* Elevation, tinted with the ink so a shadow over a cool page is not dirt. */
+  --shadow-sm: 0 1px 2px -1px rgb(12 12 30 / 0.08), 0 1px 3px rgb(12 12 30 / 0.05);
+  --shadow-md: 0 2px 4px -2px rgb(12 12 30 / 0.10), 0 6px 16px -4px rgb(12 12 30 / 0.10);
+  --shadow-lg: 0 10px 30px -8px rgb(12 12 30 / 0.18), 0 3px 8px -3px rgb(12 12 30 / 0.08);
+  --shadow-brand: 0 4px 14px -4px rgb(47 41 201 / 0.40);
+
+  --background: var(--color-canvas);
+  --foreground: var(--color-ink);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-canvas: var(--color-canvas);
+  --color-surface: var(--color-surface);
+  --color-subtle: var(--color-subtle);
+  --color-accent-soft: var(--color-accent-soft);
+  --color-brand-50: var(--color-brand-50);
+  --color-brand-100: var(--color-brand-100);
+  --color-brand-300: var(--color-brand-300);
+  --color-brand-500: var(--color-brand-500);
+  --color-brand-600: var(--color-brand-600);
+  --color-brand-700: var(--color-brand-700);
+  --color-brand-900: var(--color-brand-900);
+  --color-ink: var(--color-ink);
+  --color-ink-soft: var(--color-ink-soft);
+  --color-ink-faint: var(--color-ink-faint);
+  --color-border: var(--color-border);
+  --color-rose: var(--color-rose);
+  --color-rose-bg: var(--color-rose-bg);
+  --color-amber: var(--color-amber);
+  --color-amber-bg: var(--color-amber-bg);
+  --color-green: var(--color-green);
+  --color-green-bg: var(--color-green-bg);
+
+  --color-accent: var(--color-accent);
+  --color-accent-ink: var(--color-accent-ink);
+  --color-night: var(--color-night);
+  --color-night-soft: var(--color-night-soft);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-pill: var(--radius-pill);
+
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-brand: var(--shadow-brand);
+
+  --ease-out: var(--ease-out);
+  --ease-spring: var(--ease-spring);
+
+  --font-sans: var(--font-sans-brand), ui-sans-serif, system-ui, sans-serif;
+  /* "serif" is the heading role, kept under its original name so the theme
+     engine and every existing heading keep working. bettershp's headings are
+     the sans at a heavier weight, not a serif — the name is a role, not a
+     classification. */
+  --font-serif: var(--font-sans-brand), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-mono-brand), ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+html {
+  /* Defensive backstop — a single overflowing child anywhere on the page (an
+     unwrapped row, a too-wide table, etc.) should never be able to make the
+     whole page horizontally scrollable/clipped on mobile. */
+  overflow-x: hidden;
+}
+
+/* Universal tap/click acknowledgment. Every button, link, and custom
+   "button" gets a brief press-down cue even where a component hasn't
+   defined its own hover/active color — this is the safety net underneath
+   the hand-tuned hover:/active: utilities scattered through the app.
+   Tailwind utilities live in a higher cascade layer than @layer base, so a
+   component's own active: color/background still applies on top of this. */
+@layer base {
+  button:not(:disabled),
+  a,
+  [role="button"],
+  input[type="submit"],
+  input[type="button"] {
+    -webkit-tap-highlight-color: transparent;
+    /* Transform and colour on one curve. Two different easings on the same
+       element is what makes a press feel like two things happening rather
+       than one. */
+    transition: transform var(--t-fast) var(--ease-out),
+                background-color var(--t-base) var(--ease-out),
+                border-color var(--t-base) var(--ease-out),
+                color var(--t-base) var(--ease-out),
+                box-shadow var(--t-base) var(--ease-out),
+                opacity var(--t-base) var(--ease-out);
+  }
+  button:not(:disabled):active,
+  a:active,
+  [role="button"]:active,
+  input[type="submit"]:active,
+  input[type="button"]:active {
+    transform: scale(0.96);
+  }
+  /* Full-bleed rows/cards read as "broken" when scaled from center — shrinking
+     independent of their container looks like a glitch rather than a press.
+     Keep the acknowledgment (via their own active: background/color) without
+     the transform on these. */
+  .no-tap-scale:active {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @layer base {
+    button:not(:disabled):active,
+    a:active,
+    [role="button"]:active,
+    input[type="submit"]:active,
+    input[type="button"]:active {
+      transform: none;
+    }
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  overflow-x: hidden;
+}
+
+/* Emphasis underline, used sparingly on marketing headings. */
+.underline-scribble {
+  text-decoration: underline;
+  text-decoration-color: var(--color-brand-300);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 6px;
+}
+
+/* Text links.
+   ---------------------------------------------------------------------------
+   Apple's convention, and it is a good one: a link inside a sentence is the
+   brand colour and carries no underline until you point at it. Colour alone
+   is not an accessible signal, so the underline appears on hover and focus
+   and the colour deepens, which gives the state two cues rather than one.
+
+   Applied through a class rather than to every `a`, because most anchors in
+   this admin are buttons, cards and navigation rows that style themselves. */
+.link {
+  color: var(--color-brand-600);
+  text-decoration: none;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1.5px;
+  border-radius: 3px;
+  transition: color var(--t-base) var(--ease-out);
+}
+.link:hover {
+  color: var(--color-brand-700);
+  text-decoration: underline;
+}
+.link:active {
+  color: var(--color-brand-900);
+}
+
+/* Emphasis on a dark panel, where the accent finally becomes legible. */
+.on-night {
+  background: var(--color-night);
+  color: #ffffff;
+}
+.on-night .accent {
+  color: var(--color-accent);
+}
+
+/* Global Edits: Heading Style (Settings > Global Edits). Scoped to a
+   data-attribute on the storefront wrapper, not the whole document, so the
+   admin panel's own headings stay untouched regardless of what's picked. */
+[data-heading-style="uppercase"] h1,
+[data-heading-style="uppercase"] h2 {
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+[data-heading-style="titlecase"] h1,
+[data-heading-style="titlecase"] h2 {
+  text-transform: capitalize;
+}
+
+/* Shared form control styling (checkout, login/register, admin forms) */
+/* Form controls, globally.
+   ---------------------------------------------------------------------------
+   Browsers give inputs a `normal` line-height that is tighter than the one the
+   page uses, and IBM Plex has deep descenders — so a "g" or a "y" was being
+   clipped at the bottom of every text box in the app. Fixing it per-component
+   would mean finding all of them and remembering it for the next one, so it is
+   set once here, on the elements themselves, where no call site can miss it.
+
+   `field-sizing: content` lets a textarea grow with what is typed in browsers
+   that support it, and is ignored elsewhere. */
+@layer base {
+  input,
+  textarea,
+  select,
+  button {
+    font: inherit;
+    line-height: 1.5;
+    color: inherit;
+  }
+  /* A minimum height rather than a fixed one, so a control can never be shorter
+     than its own text but still grows if the text wraps. */
+  input:not([type="checkbox"]):not([type="radio"]),
+  select {
+    min-height: 2.5rem;
+  }
+  textarea {
+    line-height: 1.6;
+    field-sizing: content;
+    min-height: 4.5rem;
+  }
+  /* Placeholders are guidance, not content — they should read as quieter than
+     a real value without dropping below the contrast floor. */
+  ::placeholder {
+    color: var(--color-ink-faint);
+    opacity: 1;
+  }
+}
+
+@layer components {
+  /* Fluid page gutter.
+     -------------------------------------------------------------------------
+     Was `px-4 lg:px-8`: a single step, at a single width. Between 640px and
+     1024px the gutter was wrong at every size, and above 1024px it never
+     changed again — a 1080px window and a 2560px one both got 2rem.
+
+     The visible symptom is a window that is *resized* rather than reloaded:
+     open Safari's sidebar and the viewport loses ~350px, but the layout keeps
+     the gutter it picked for a full-width window, so the content is squeezed
+     instead of reclaiming the margin. Growing the gutter with the viewport
+     means narrowing the window gives space back smoothly, with no cliff. */
+  .gutter-fluid {
+    padding-inline: clamp(1rem, 0.55rem + 1.9vw, 2.5rem);
+  }
+
+  /* Page titles scale with the window for the same reason the gutter does: a
+     24px heading that is comfortable at 1440px is oversized once a sidebar has
+     taken a third of the screen. */
+  .text-page-title {
+    font-size: clamp(1.35rem, 1.15rem + 0.65vw, 1.75rem);
+    line-height: 1.2;
+  }
+
+  .input {
+    width: 100%;
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--color-ink);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .input:hover:not(:focus):not(:disabled) {
+    border-color: var(--color-brand-300);
+  }
+  .input:focus {
+    outline: none;
+    border-color: var(--color-brand-500);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-brand-500) 22%, transparent);
+  }
+  .input:disabled {
+    background: var(--color-subtle);
+    color: var(--color-ink-soft);
+    cursor: not-allowed;
+  }
+
+  /* One focus treatment for everything keyboard-reachable, so tabbing through a
+     page has a single consistent look instead of whatever each component
+     happened to define. */
+  .focus-ring:focus-visible,
+  a:focus-visible,
+  button:focus-visible,
+  [role="button"]:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--color-brand-500);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+/* Customizer preview: a brief wash over a section that just changed, so the
+   edit is visible even when the section was already on screen. */
+@keyframes shp-flash {
+  0%   { box-shadow: inset 0 0 0 9999px rgba(47, 41, 201, 0.18); }
+  100% { box-shadow: inset 0 0 0 9999px rgba(47, 41, 201, 0); }
+}
+
+/* Refusal.
+   ---------------------------------------------------------------------------
+   Played on the tab you are already on when you try to leave it with unsaved
+   work, and on the save button at the same moment. A dialog asks a question;
+   this answers one you did not need to be asked, by pointing at the thing
+   standing in the way. Small amplitude on purpose: a shake that throws the
+   element around reads as breakage rather than as refusal.
+
+   Cheap to retrigger, because the same rejection twice in a row is a real
+   thing a person does: the class is removed and re-added, which restarts it. */
+@keyframes shp-shake {
+  0%, 100% { transform: translateX(0); }
+  15% { transform: translateX(-5px); }
+  30% { transform: translateX(4px); }
+  45% { transform: translateX(-3px); }
+  60% { transform: translateX(2px); }
+  75% { transform: translateX(-1px); }
+}
+.shake {
+  animation: shp-shake 420ms var(--ease-out);
+}
+
+@keyframes shp-pulse-brand {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(47 41 201 / 0); }
+  35% { box-shadow: 0 0 0 5px rgb(47 41 201 / 0.28); }
+}
+.pulse-brand {
+  animation: shp-pulse-brand 700ms var(--ease-out);
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* The welcome flow                                                           */
+/* -------------------------------------------------------------------------- */
+
+/*
+ * Motion here is doing a job rather than decorating one. A first-run flow is
+ * the only place in the product where a merchant has nothing to do but look,
+ * so the panel arriving, and the lit ground moving behind it, are what make it
+ * feel like something opened rather than a page that simply appeared.
+ *
+ * Everything is slow by web standards on purpose. 700ms reads as considered;
+ * the 150ms an interface usually moves in reads as merely responsive.
+ */
+
+@keyframes shp-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+/* The panel, and each thing inside it one after another. */
+.rise {
+  animation: shp-rise 700ms var(--ease-out) both;
+}
+
+/* Staggered so the eye is led down the panel instead of meeting all of it. */
+.rise-1 { animation-delay: 80ms; }
+.rise-2 { animation-delay: 180ms; }
+.rise-3 { animation-delay: 300ms; }
+.rise-4 { animation-delay: 440ms; }
+
+/*
+ * The lit ground drifts. Very slow and very small: enough that the light is
+ * never quite still, not enough to notice it moving, which is the difference
+ * between alive and distracting.
+ */
+@keyframes shp-drift {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  50%  { transform: translate3d(3%, -4%, 0) scale(1.08); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+
+.drift        { animation: shp-drift 22s ease-in-out infinite; }
+.drift-slow   { animation: shp-drift 30s ease-in-out infinite reverse; }
+.drift-slower { animation: shp-drift 38s ease-in-out infinite; }
+
+/* A choice lifting towards the cursor, so a card feels picked up. */
+.lift {
+  transition:
+    transform 320ms var(--ease-out),
+    background-color 320ms var(--ease-out),
+    border-color 320ms var(--ease-out);
+}
+.lift:hover {
+  transform: translateY(-2px);
+}
+.lift:active {
+  transform: translateY(0);
+  transition-duration: 90ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shake,
+  .pulse-brand,
+  .rise,
+  .drift,
+  .drift-slow,
+  .drift-slower {
+    animation: none;
+  }
+
+  /* Not merely stopped: a panel that animated in from invisible has to end up
+     visible, or reduced motion would hide the whole flow. */
+  .rise {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+
+  .lift {
+    transition: background-color 320ms var(--ease-out), border-color 320ms var(--ease-out);
+  }
+  .lift:hover {
+    transform: none;
+  }
+}
