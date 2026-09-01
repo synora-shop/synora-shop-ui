@@ -108,7 +108,7 @@ export default async function AdminDashboardPage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        title="Dashboard (test deploy 2)"
+        title="Dashboard"
         description="Everything that needs a decision, and how the store is doing."
         actions={
           <>
