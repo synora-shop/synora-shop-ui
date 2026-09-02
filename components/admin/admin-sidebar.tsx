@@ -44,6 +44,7 @@ import {
 } from "lucide-react";
 import { SynoraAppMark } from "@/components/ui/synora-app-mark";
 import { chromeFor } from "@/lib/admin-chrome";
+import { activeHref } from "@/lib/active-nav";
 import { cn } from "@/lib/utils";
 
 /**
@@ -233,12 +234,19 @@ export function AdminSidebar({ businessType = "ECOMMERCE" }: { businessType?: Bu
   // where there is room for words and no rail to speak of.
   const railed = (cls: string) => (collapsed ? cls : "");
 
+  // Worked out once, across every link the sidebar offers, rather than per
+  // link. Only the most specific match counts — see lib/active-nav.ts for why
+  // the obvious rule lit up Home on every page in the panel.
+  const sections = sectionsFor(businessType);
+  const current = activeHref(
+    sections.flatMap((section) => section.items.map((item) => item.href)),
+    pathname
+  );
+
   const navList = (
     <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-2 lg:px-2 xl:px-3">
-      {sectionsFor(businessType).map((section, i) => {
-          const holdsCurrentPage = section.items.some(
-            (it) => pathname === it.href || pathname.startsWith(`${it.href}/`)
-          );
+      {sections.map((section, i) => {
+          const holdsCurrentPage = section.items.some((it) => it.href === current);
           const isOpen = opened.has(section.label) || holdsCurrentPage;
           // A heading, a chevron and a tile wrapped around one link is three
           // rows of furniture for one destination. A group of one is a link:
@@ -247,7 +255,7 @@ export function AdminSidebar({ businessType = "ECOMMERCE" }: { businessType?: Bu
           // on the day it gains a second setting.
           const only = section.items.length === 1 ? section.items[0] : null;
           if (only && section.icon) {
-            const active = pathname === only.href || pathname.startsWith(`${only.href}/`);
+            const active = only.href === current;
             return (
               <Link
                 key={section.label}
@@ -343,7 +351,7 @@ export function AdminSidebar({ businessType = "ECOMMERCE" }: { businessType?: Bu
           >
             {section.items.map((item) => {
               const Icon = item.icon;
-              const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+              const active = item.href === current;
               return (
                 <Link
                   key={item.href}
