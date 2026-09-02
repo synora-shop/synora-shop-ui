@@ -9,7 +9,15 @@
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma generate",
-    "check:csv": "tsx scripts/check-csv-format.ts"
+    "check:csv": "tsx scripts/check-csv-format.ts",
+    "check:loops": "tsx scripts/check-redirects-loop.ts",
+    "check:search": "tsx scripts/check-search.ts",
+    "check:accounts": "tsx scripts/check-accounts.ts",
+    "check:domains": "tsx scripts/check-domains.ts",
+    "check:platform": "tsx scripts/check-platform.ts",
+    "check:discounts": "tsx scripts/check-discounts.ts",
+    "check": "npm run check:csv && npm run check:loops && npm run check:responsive && npm run check:search && npm run check:accounts && npm run check:domains && npm run check:platform && npm run check:discounts",
+    "check:responsive": "tsx scripts/check-responsive.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.9.1",
