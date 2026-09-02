@@ -10,8 +10,11 @@ import {
   Braces,
   ChevronRight,
   Clock,
+  Cog,
   FileText,
+  Files,
   Globe,
+  Home,
   Inbox,
   Languages,
   LayoutDashboard,
@@ -27,11 +30,13 @@ import {
   Power,
   Settings2,
   ShoppingBag,
+  SlidersHorizontal,
   Store,
   Tag,
   Tags,
   Trash2,
   Type,
+  UserCircle,
   UserCog,
   Users,
   X,
@@ -54,7 +59,7 @@ const OPEN_GROUPS_KEY = "synora.admin.nav.open";
 
 const NAV_SECTIONS = [
   {
-    label: "Home",
+    label: "Home", icon: Home,
     items: [{ href: "/admin", label: "Dashboard", icon: LayoutDashboard }],
   },
   {
@@ -62,7 +67,7 @@ const NAV_SECTIONS = [
     // visitor moves around it. The preview and theme picker that belong at the
     // top of this group are not built yet, so for now it is the appearance
     // screens that already work.
-    label: "Your SHOP",
+    label: "Your SHOP", icon: Store,
     items: [
       { href: "/admin/theme", label: "Design", icon: Palette },
       { href: "/admin/fonts", label: "Fonts", icon: Type },
@@ -76,7 +81,7 @@ const NAV_SECTIONS = [
     // nothing so it sees almost none of this. Catalog and Sales used to be two
     // groups; they are one because a merchant filling in a product and a
     // merchant reading an order are doing the same job — running the shop.
-    label: "Catalog & orders",
+    label: "Catalog & orders", icon: ShoppingBag,
     labels: { RESTAURANT: "Menu & orders" },
     items: [
       { href: "/admin/products", label: "Products", icon: Package, hideFor: ["BLOG"], term: "products" },
@@ -89,7 +94,7 @@ const NAV_SECTIONS = [
     ],
   },
   {
-    label: "Pages",
+    label: "Pages", icon: Files,
     items: [
       { href: "/admin/pages", label: "Pages", icon: FileText },
       { href: "/admin/blog", label: "Blog", icon: Newspaper, onlyFor: ["BLOG"] },
@@ -108,16 +113,15 @@ const NAV_SECTIONS = [
     // Preferences of the shop, not of the account. Whether customers can see
     // it, when it opens, where it is, what languages it speaks. Spam
     // protection and the crawler rules belong here too and are not built yet.
-    label: "Preferences",
+    label: "Preferences", icon: SlidersHorizontal,
     items: [
       { href: "/admin/store", label: "Store status", icon: Power },
       { href: "/admin/hours", label: "Opening hours", icon: Clock, onlyFor: ["RESTAURANT"] },
       { href: "/admin/locations", label: "Locations", icon: MapPin, onlyFor: ["RESTAURANT"] },
-      { href: "/admin/regions", label: "Regions", icon: Languages },
     ],
   },
   {
-    label: "Settings",
+    label: "Settings", icon: Cog,
     items: [
       { href: "/admin/settings", label: "Settings", icon: Settings2 },
       { href: "/admin/domains", label: "Domains", icon: Globe },
@@ -126,7 +130,7 @@ const NAV_SECTIONS = [
   {
     // The account, as opposed to the shop above it. One account can hold
     // several shops and the people who work on them.
-    label: "Account",
+    label: "Account", icon: UserCircle,
     items: [
       { href: "/admin/account", label: "Your account", icon: UserCog },
       { href: "/admin/staff", label: "People", icon: Users },
@@ -256,6 +260,14 @@ export function AdminSidebar({ businessType = "ECOMMERCE" }: { businessType?: Bu
               railed("lg:hidden")
             )}
           >
+            {section.icon && (
+              // Parents get a tinted tile, children a bare glyph: same size,
+              // different weight. Enough that the eye reads the hierarchy
+              // without the headings having to carry it on uppercase alone.
+              <span className="mr-1.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-[6px] bg-brand-100 text-brand-700">
+                <section.icon className="h-3 w-3" aria-hidden />
+              </span>
+            )}
             {section.label}
             <ChevronRight
               className={cn("ml-auto h-3 w-3 transition-transform duration-200", isOpen && "rotate-90")}

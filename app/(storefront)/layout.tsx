@@ -6,7 +6,6 @@ import { AccentTheme } from "@/components/storefront/accent-theme";
 import { ThemeStyle } from "@/components/storefront/theme-style";
 import { AnnouncementBar } from "@/components/storefront/announcement-bar";
 import { getStoreSettings } from "@/lib/data/settings";
-import { currentRegion } from "@/lib/data/regions";
 import { getThemeTokens } from "@/lib/data/theme";
 import { getFontAssets } from "@/lib/data/fonts";
 import { getStickyButtons } from "@/lib/data/sticky-buttons";
@@ -89,24 +88,19 @@ export default async function StorefrontLayout({ children }: LayoutProps<"/">) {
   await guardCanonicalHost();
 
 
-  const [settings, menus, siteText, tokens, fonts, stickyButtons, region] = await Promise.all([
+  const [settings, menus, siteText, tokens, fonts, stickyButtons] = await Promise.all([
     getStoreSettings(),
     getMenus(),
     getSiteText(),
     getThemeTokens(),
     getFontAssets(),
     getStickyButtons(),
-    currentRegion(),
   ]);
   const edits = toGlobalEdits(settings);
-
-  // A region overrides only what it actually sets; null inherits. A shop with
-  // no regions resolves to undefined and everything below reads as it always
-  // did, which is what keeps this invisible until a merchant uses it.
-  const headerMenu = menuForSlot(menus, region?.headerMenuId ?? settings.headerMenuId, "header");
-  const footerMenu = menuForSlot(menus, region?.footerMenuId ?? settings.footerMenuId, "footer");
-  const announcementText = region?.announcementText ?? edits.announcementText;
-  const announcementBgColor = region?.announcementBgColor ?? edits.announcementBgColor;
+  const headerMenu = menuForSlot(menus, settings.headerMenuId, "header");
+  const footerMenu = menuForSlot(menus, settings.footerMenuId, "footer");
+  const announcementText = edits.announcementText;
+  const announcementBgColor = edits.announcementBgColor;
 
   return (
     <div data-heading-style={edits.headingStyle} className="contents">

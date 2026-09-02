@@ -16,9 +16,10 @@
     "check:domains": "tsx scripts/check-domains.ts",
     "check:platform": "tsx scripts/check-platform.ts",
     "check:discounts": "tsx scripts/check-discounts.ts",
-    "check": "npm run check:csv && npm run check:actions && npm run check:loops && npm run check:responsive && npm run check:search && npm run check:accounts && npm run check:domains && npm run check:platform && npm run check:discounts",
+    "check": "npm run check:csv && npm run check:actions && npm run check:geo && npm run check:loops && npm run check:responsive && npm run check:search && npm run check:accounts && npm run check:domains && npm run check:platform && npm run check:discounts",
     "check:responsive": "tsx scripts/check-responsive.ts",
-    "check:actions": "tsx scripts/check-server-actions.ts"
+    "check:actions": "tsx scripts/check-server-actions.ts",
+    "check:geo": "tsx scripts/check-geo-block.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.9.1",

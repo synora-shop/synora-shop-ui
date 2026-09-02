@@ -129,8 +129,8 @@ export function StoreDefaultsForm({ initial }: { initial: StoreDefaults }) {
 
           <div>
             <label className={label} htmlFor="country">
-              Region
-              <InfoPopover text="Where your business operates from. Used for shipping defaults and for customers outside any market you've set up." />
+              Country
+              <InfoPopover text="Where your business operates from. Used for shipping defaults and tax." />
             </label>
             <select
               id="country"

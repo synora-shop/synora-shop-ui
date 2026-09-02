@@ -267,7 +267,6 @@ model Shop {
   articles          Article[]
   openingHours      OpeningHours[]
   locations         Location[]
-  regions           Region[]
   metafields        Metafield[]
   siteTexts         SiteText[]
   settings          StoreSettings[]
@@ -860,6 +859,19 @@ model StoreSettings {
   whatsappOrderButton  Boolean @default(true)
   maintenanceMode      Boolean @default(false)
 
+  /// Countries this shop will not serve, as ISO 3166-1 alpha-2 codes.
+  ///
+  /// A visitor whose country is on this list sees the closed-store page rather
+  /// than the shop, the same way maintenance mode works — the merchant's own
+  /// staff still get through, so they can check what a blocked visitor sees.
+  ///
+  /// Country comes from the edge, not from the visitor: Vercel resolves it into
+  /// x-vercel-ip-country before our code runs, so there is nothing to look up
+  /// and nothing to pay for. It is a country-level signal and no more than
+  /// that — a VPN defeats it, which is the honest limit of blocking by address
+  /// and the reason this is worded as hiding rather than as security.
+  blockedCountries String[] @default([])
+
   // --- Store defaults -----------------------------------------------------
   // The facts about the business that everything else is expressed in: what
   // it's called, what it charges in, where it trades from, and what "now"
@@ -1135,40 +1147,6 @@ model Metafield {
 /// from their connection — see lib/region.ts, which is deliberate about why it
 /// reads that header and not the forwarded one.
 ///
-/// Every override is nullable and null means "inherit the shop's setting", so a
-/// region only has to say what differs. A region is presentation only: it must
-/// never reach pricing, tax, stock or authentication, and check-regions.ts
-/// fails the build if it starts to.
-model Region {
-  id     String @id @default(cuid())
-  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  shopId String
-
-  /// What the merchant calls it, e.g. "Gulf".
-  name String
-  /// Stable identifier, also what ?__region= accepts.
-  handle String
-
-  /// ISO 3166-1 alpha-2 codes this region covers.
-  countries String[]
-  /// Used when the visitor's country matches no region.
-  isDefault Boolean @default(false)
-  /// Lets a region be built before it goes live.
-  isActive Boolean @default(true)
-
-  // --- what differs here. Null inherits. ---
-  headerMenuId        String?
-  footerMenuId        String?
-  announcementText    String?
-  announcementBgColor String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([shopId, handle])
-  @@index([shopId])
-}
-
 /// A named set of links the merchant builds once and points at wherever it is
 /// wanted. There used to be exactly two, fixed by MenuItem.location — a header
 /// one and a footer one — so the same links could not be reused in both places

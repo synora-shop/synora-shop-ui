@@ -34,6 +34,8 @@ export type GlobalEdits = {
   announcementBgColor: string;
   whatsappOrderButton: boolean;
   maintenanceMode: boolean;
+  /** ISO 3166-1 alpha-2 codes this shop will not serve. Empty serves everyone. */
+  blockedCountries: string[];
   shopFilterBar: boolean;
 };
 
@@ -58,6 +60,7 @@ export const GLOBAL_EDITS_DEFAULTS: GlobalEdits = {
   announcementBgColor: "#4c100f",
   whatsappOrderButton: true,
   maintenanceMode: false,
+  blockedCountries: [],
   shopFilterBar: true,
 };
 

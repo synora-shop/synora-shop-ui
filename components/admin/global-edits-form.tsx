@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { AlertTriangle } from "lucide-react";
 import { updateGlobalEdits } from "@/app/admin/settings/actions";
 import { SaveButton, type SaveState } from "@/components/ui/save-button";
+import { BlockedCountriesField } from "@/components/admin/blocked-countries-field";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { SHOP_SORT_LABELS, type GlobalEdits } from "@/lib/global-edits";
 
@@ -251,6 +252,13 @@ export function GlobalEditsForm({ settings }: { settings: GlobalEdits }) {
             </p>
           )}
         </div>
+
+        {/* Beside maintenance mode because it is the same kind of decision —
+            who can see the shop — just narrower. */}
+        <BlockedCountriesField
+          value={fields.blockedCountries}
+          onChange={(next) => set("blockedCountries", next)}
+        />
       </Card>
 
       <SaveButton
