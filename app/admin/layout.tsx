@@ -7,6 +7,7 @@ import { RefreshButton } from "@/components/admin/refresh-button";
 import { AdminTheme } from "@/components/admin/admin-theme";
 import { getStoreSettings } from "@/lib/data/settings";
 import { canonicalUrl, currentShop } from "@/lib/data/shop";
+import { registryBusinessType } from "@/lib/themes/business-type";
 
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   // Defense in depth — proxy.ts already gates /admin/*, this re-checks
@@ -42,6 +43,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
           userName={me.email}
           userEmail={me.email}
           storeUrl={await canonicalUrl(me.shop.id)}
+          businessType={registryBusinessType(shop?.businessType)}
           hasOtherStores={(session.user.shops?.length ?? 0) > 1}
         />
         {/* pb-24 leaves room for the sticky save bar, which floats over the

@@ -16,7 +16,21 @@ import { cn } from "@/lib/utils";
  * Keyboard-first: "/" focuses it from anywhere, arrows move, Enter opens,
  * Escape closes. Mouse and touch work the same way.
  */
-export function SettingsSearch({ className }: { className?: string }) {
+export function SettingsSearch({
+  className,
+  onDark = false,
+}: {
+  className?: string;
+  /**
+   * Rendered on the admin's coloured top bar rather than on a white page.
+   *
+   * The field is translucent white over whatever colour the bar is, so one
+   * variant serves all four business types rather than needing a palette of
+   * its own. The dropdown stays light either way: it sits over the page, not
+   * over the bar, and a dark panel there would read as a different product.
+   */
+  onDark?: boolean;
+}) {
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
   const [open, setOpen] = useState(false);
@@ -78,8 +92,15 @@ export function SettingsSearch({ className }: { className?: string }) {
           2.5rem minimum height so descenders are never clipped, and inside a
           padded pill that minimum pushed the control taller than the bar it
           sits in. The input's own height is reset just below. */}
-      <div className="flex h-9 items-center gap-2 rounded-pill border border-border bg-surface px-3.5 shadow-sm transition-all duration-200 ease-out focus-within:border-brand-500 focus-within:shadow-brand hover:border-brand-300">
-        <Search className="h-3.5 w-3.5 flex-shrink-0 text-ink-faint" />
+      <div
+        className={cn(
+          "flex h-9 items-center gap-2 rounded-pill border px-3.5 shadow-sm transition-all duration-200 ease-out",
+          onDark
+            ? "border-white/15 bg-white/10 focus-within:border-white/40 focus-within:bg-white/15 hover:border-white/25"
+            : "border-border bg-surface focus-within:border-brand-500 focus-within:shadow-brand hover:border-brand-300"
+        )}
+      >
+        <Search className={cn("h-3.5 w-3.5 flex-shrink-0", onDark ? "text-white/60" : "text-ink-faint")} />
         <input
           ref={inputRef}
           type="search"
@@ -95,7 +116,7 @@ export function SettingsSearch({ className }: { className?: string }) {
           // Delayed so a click on a result lands before the list unmounts.
           onBlur={() => setTimeout(() => setOpen(false), 150)}
           onKeyDown={onKeyDown}
-          className="h-full min-h-0 min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-ink-faint [&::-webkit-search-cancel-button]:hidden"
+          className={cn("h-full min-h-0 min-w-0 flex-1 bg-transparent text-sm outline-none [&::-webkit-search-cancel-button]:hidden", onDark ? "text-white placeholder:text-white/55" : "placeholder:text-ink-faint")}
         />
         {query ? (
           <button
@@ -105,12 +126,12 @@ export function SettingsSearch({ className }: { className?: string }) {
               inputRef.current?.focus();
             }}
             aria-label="Clear search"
-            className="no-tap-scale flex-shrink-0 rounded-full p-0.5 text-ink-faint transition-colors hover:text-ink"
+            className={cn("no-tap-scale flex-shrink-0 rounded-full p-0.5 transition-colors", onDark ? "text-white/60 hover:text-white" : "text-ink-faint hover:text-ink")}
           >
             <X className="h-3.5 w-3.5" />
           </button>
         ) : (
-          <kbd className="hidden flex-shrink-0 rounded-md border border-border bg-subtle px-1.5 py-0.5 font-mono text-[10px] text-ink-faint sm:block">
+          <kbd className={cn("hidden flex-shrink-0 rounded-md border px-1.5 py-0.5 font-mono text-[10px] sm:block", onDark ? "border-white/20 bg-white/10 text-white/60" : "border-border bg-subtle text-ink-faint")}>
             /
           </kbd>
         )}
