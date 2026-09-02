@@ -60,7 +60,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
       {/* The panel proper, curved away from the bar it sits under. The colour
           shows in the two notches at the top corners, which is the whole of the
           effect: one coloured sheet with the app resting on it. */}
-      <div className="flex min-h-[calc(100vh-3.5rem)] overflow-hidden rounded-t-2xl bg-canvas lg:min-h-[calc(100vh-3.5rem)]">
+      <div className="flex min-h-[calc(100vh-3.5rem)] rounded-t-2xl bg-canvas">
         <AdminSidebar businessType={shop?.businessType ?? "ECOMMERCE"} />
         {/* pb-24 leaves room for the sticky save bar, which floats over the
             bottom of the viewport on every page that can be edited. */}

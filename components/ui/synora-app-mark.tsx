@@ -16,11 +16,19 @@
 export function SynoraAppMark({
   /** The bar's colour, which the badge word is cut out of. */
   color,
+  /**
+   * "onColor" sits on the coloured bar: white word, white badge.
+   * "onLight" sits on a white panel, where that would be invisible: the word
+   * takes the ink colour and the badge fills with the store's own colour.
+   */
+  tone = "onColor",
   className,
 }: {
   color: string;
+  tone?: "onColor" | "onLight";
   className?: string;
 }) {
+  const onLight = tone === "onLight";
   return (
     <span
       className={`inline-flex select-none items-center gap-1.5 ${className ?? ""}`}
@@ -31,14 +39,16 @@ export function SynoraAppMark({
     >
       <span
         aria-hidden
-        className="text-[17px] font-medium lowercase leading-none tracking-[-0.02em] text-white"
+        className={`text-[17px] font-medium lowercase leading-none tracking-[-0.02em] ${
+          onLight ? "text-ink" : "text-white"
+        }`}
       >
         synora
       </span>
       <span
         aria-hidden
-        className="rounded-[7px] bg-white px-1.5 py-[3px] text-[17px] font-medium lowercase leading-none tracking-[-0.02em]"
-        style={{ color }}
+        className="rounded-[7px] px-1.5 py-[3px] text-[17px] font-medium lowercase leading-none tracking-[-0.02em]"
+        style={onLight ? { backgroundColor: color, color: "#fff" } : { backgroundColor: "#fff", color }}
       >
         app
       </span>

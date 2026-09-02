@@ -36,7 +36,8 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { Wordmark } from "@/components/ui/wordmark";
+import { SynoraAppMark } from "@/components/ui/synora-app-mark";
+import { chromeFor } from "@/lib/admin-chrome";
 import { cn } from "@/lib/utils";
 
 /**
@@ -325,30 +326,17 @@ export function AdminSidebar({ businessType = "ECOMMERCE" }: { businessType?: Bu
           // on screen but not wide enough to spend 15rem on it — which is
           // exactly the width a laptop lands at once Safari's sidebar is open.
           // From xl it is the full labelled sidebar.
-          "lg:sticky lg:top-0 lg:h-screen lg:flex-shrink-0 lg:translate-x-0 lg:transition-none",
+          "lg:sticky lg:top-14 lg:h-[calc(100vh-3.5rem)] lg:flex-shrink-0 lg:translate-x-0 lg:rounded-tl-2xl lg:transition-none",
           collapsed ? "lg:w-[4.5rem]" : "lg:w-60",
           open ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        <div
-          className={cn(
-            "hidden pb-3 pt-5 lg:block",
-            collapsed ? "lg:px-0 lg:text-center" : "lg:px-4"
-          )}
-        >
-          <Link href="/admin" className="inline-flex items-center">
-            {/* The lockup sets the product name beside the mark; there is no
-                room for it on a 4.5rem rail, and the mark alone is what the
-                component's markOnly prop is for. */}
-            <Wordmark size="md" markOnly={collapsed} />
-          </Link>
-        </div>
 
         {/* The drawer's own header. It used to be a spacer clearing a second
             fixed bar; that bar is gone, so the drawer names itself instead. */}
         <div className="flex h-14 shrink-0 items-center justify-between border-b border-border px-4 lg:hidden">
           <Link href="/admin" className="flex items-center" onClick={() => setOpen(false)}>
-            <Wordmark size="md" />
+            <SynoraAppMark color={chromeFor(registryBusinessType(businessType)).bar} tone="onLight" />
           </Link>
           <button
             type="button"

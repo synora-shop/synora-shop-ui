@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import { createPortal } from "react-dom";
 import { Check, Info, Loader2, X } from "lucide-react";
 import { switchBusinessType } from "@/app/admin/business-type-actions";
 import { TYPE_GUIDE } from "@/lib/themes/type-guide";
@@ -60,8 +61,15 @@ export function BusinessTypeDialog({
     });
   }
 
-  return (
-    <div className="fixed inset-0 z-[60] flex items-end justify-center p-0 sm:items-center sm:p-4">
+  // Rendered into the body rather than where it is written. Its trigger lives in
+  // the top bar, which sets text-white for the coloured background — inherited
+  // into a white dialog that made every heading invisible. A modal has no
+  // business inheriting from the bar that opened it, and portalling also keeps
+  // it clear of the header's stacking context.
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[60] flex items-end justify-center p-0 text-ink sm:items-center sm:p-4">
       <button
         type="button"
         aria-label="Close"
@@ -155,6 +163,7 @@ export function BusinessTypeDialog({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
