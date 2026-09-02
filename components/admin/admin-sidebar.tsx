@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { readCollapsedPreference, useAdminNav } from "@/lib/admin-nav-store";
@@ -8,22 +8,26 @@ import { registryBusinessType } from "@/lib/themes/business-type";
 import { vocabularyFor } from "@/lib/themes/vocabulary";
 import {
   Braces,
+  ChevronRight,
+  Clock,
   FileText,
   Globe,
   Inbox,
+  Languages,
   LayoutDashboard,
   Link2,
   ListTree,
+  MapPin,
   MessageCircle,
+  Newspaper,
   Package,
+  Palette,
   PanelLeftClose,
   PanelLeftOpen,
-  Palette,
   Power,
   Settings2,
-  Languages,
-  Store,
   ShoppingBag,
+  Store,
   Tag,
   Tags,
   Trash2,
@@ -31,9 +35,6 @@ import {
   UserCog,
   Users,
   X,
-  Newspaper,
-  Clock,
-  MapPin,
 } from "lucide-react";
 import { Wordmark } from "@/components/ui/wordmark";
 import { cn } from "@/lib/utils";
@@ -47,6 +48,9 @@ import { cn } from "@/lib/utils";
  * catalog and orders, because from a merchant's point of view it always was
  * part of the same job.
  */
+/** Where a merchant's opened groups are remembered, per browser. */
+const OPEN_GROUPS_KEY = "synora.admin.nav.open";
+
 const NAV_SECTIONS = [
   {
     label: "Home",
@@ -175,6 +179,34 @@ function sectionsFor(businessType: BusinessType) {
 }
 
 export function AdminSidebar({ businessType = "ECOMMERCE" }: { businessType?: BusinessType }) {
+  // Which groups the merchant has opened. Only their choices are stored, so the
+  // default stays "closed except where you are" however many groups get added
+  // later.
+  const [opened, setOpened] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(OPEN_GROUPS_KEY);
+      if (raw) setOpened(new Set(JSON.parse(raw) as string[]));
+    } catch {
+      /* private window, or storage switched off - the defaults are fine */
+    }
+  }, []);
+
+  function toggleSection(label: string) {
+    setOpened((prev) => {
+      const next = new Set(prev);
+      if (next.has(label)) next.delete(label);
+      else next.add(label);
+      try {
+        localStorage.setItem(OPEN_GROUPS_KEY, JSON.stringify([...next]));
+      } catch {
+        /* not worth failing a click over */
+      }
+      return next;
+    });
+  }
+
   const open = useAdminNav((s) => s.open);
   const setOpen = useAdminNav((s) => s.setOpen);
   const collapsed = useAdminNav((s) => s.collapsed);
@@ -193,8 +225,13 @@ export function AdminSidebar({ businessType = "ECOMMERCE" }: { businessType?: Bu
   const railed = (cls: string) => (collapsed ? cls : "");
 
   const navList = (
-    <nav className="flex flex-1 flex-col gap-5 overflow-y-auto px-3 py-4 lg:px-2 xl:px-3">
-      {sectionsFor(businessType).map((section, i) => (
+    <nav className="flex flex-1 flex-col gap-3 overflow-y-auto px-3 py-3 lg:px-2 xl:px-3">
+      {sectionsFor(businessType).map((section, i) => {
+          const holdsCurrentPage = section.items.some(
+            (it) => pathname === it.href || pathname.startsWith(`${it.href}/`)
+          );
+          const isOpen = opened.has(section.label) || holdsCurrentPage;
+          return (
         <div
           key={section.label}
           className={cn(
@@ -204,10 +241,35 @@ export function AdminSidebar({ businessType = "ECOMMERCE" }: { businessType?: Bu
             i > 0 && railed("lg:border-t lg:border-border lg:pt-4")
           )}
         >
-          <p className={cn("px-3 text-[10px] font-semibold uppercase tracking-[0.09em] text-ink-soft", railed("lg:hidden"))}>
+          {/* Seven groups of links ran about 1200px tall, so most of the panel
+              was reachable only by scrolling. Closed, the whole of it fits on a
+              laptop: seven headings, and you open the one you want. Whichever
+              group holds the current page opens itself, so arriving anywhere
+              never leaves a merchant facing seven shut doors. */}
+          <button
+            type="button"
+            onClick={() => toggleSection(section.label)}
+            aria-expanded={isOpen}
+            className={cn(
+              "flex w-full items-center gap-1 rounded-md px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.09em] text-ink-soft transition-colors hover:text-ink",
+              railed("lg:hidden")
+            )}
+          >
             {section.label}
-          </p>
-          <div className="mt-1.5 flex flex-col gap-0.5">
+            <ChevronRight
+              className={cn("ml-auto h-3 w-3 transition-transform duration-200", isOpen && "rotate-90")}
+              aria-hidden
+            />
+          </button>
+          <div
+            className={cn(
+              "mt-0.5 flex-col gap-px",
+              // Rail mode has no headings to click, so links must never be
+              // hidden there or they become unreachable.
+              isOpen ? "flex" : "hidden",
+              railed("lg:flex")
+            )}
+          >
             {section.items.map((item) => {
               const Icon = item.icon;
               const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -224,7 +286,7 @@ export function AdminSidebar({ businessType = "ECOMMERCE" }: { businessType?: Bu
                   className={cn(
                     // The active rail is positioned rather than a left border,
                     // so selecting an item can't nudge its label sideways.
-                    "relative flex items-center gap-2.5 rounded-md py-2 pl-3 pr-2 text-sm",
+                    "relative flex items-center gap-2.5 rounded-md py-1.5 pl-3 pr-2 text-[13px]",
                     railed("lg:justify-center lg:px-0"),
                     active
                       ? "bg-brand-600 font-medium text-white shadow-brand"
@@ -238,7 +300,8 @@ export function AdminSidebar({ businessType = "ECOMMERCE" }: { businessType?: Bu
             })}
           </div>
         </div>
-      ))}
+        );
+      })}
     </nav>
   );
 
