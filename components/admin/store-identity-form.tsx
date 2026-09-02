@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { SingleImageField } from "@/components/admin/single-image-field";
-import { Card } from "@/components/ui/primitives";
+import { Button, Card } from "@/components/ui/primitives";
 import { saveStoreIdentity, type StoreIdentity } from "@/app/admin/identity-actions";
 import { useToast } from "@/components/ui/toast";
 
@@ -56,9 +56,15 @@ export function StoreIdentityForm({ initial }: { initial: StoreIdentity }) {
 
         <div>
           <span className={label}>Logo</span>
-          <div className="mt-1">
+          {/* A logo is a small wide mark, not a photograph. The field defaults
+              to a 4:3 box at the full width of the form, which for this is
+              roughly ten times the area the image will ever occupy on the
+              site — so it is constrained to something near the shape and size
+              it actually renders at. */}
+          <div className="mt-1 max-w-56">
             <SingleImageField
               folder="brand"
+              aspect="aspect-[3/1]"
               value={values.logoUrl}
               onChange={(url) => set("logoUrl", url)}
             />
@@ -132,23 +138,13 @@ export function StoreIdentityForm({ initial }: { initial: StoreIdentity }) {
           Discard is only offered once there is something to discard. */}
       <div className="sticky bottom-4 flex items-center justify-end gap-2">
         {dirty && (
-          <button
-            type="button"
-            onClick={() => setValues(initial)}
-            disabled={pending}
-            className="rounded-full border border-border bg-surface px-4 py-2 text-sm transition-colors hover:bg-subtle disabled:opacity-50"
-          >
+          <Button variant="secondary" onClick={() => setValues(initial)} disabled={pending}>
             Discard
-          </button>
+          </Button>
         )}
-        <button
-          type="button"
-          onClick={save}
-          disabled={!dirty || pending}
-          className="rounded-full bg-brand-600 px-5 py-2 text-sm font-medium text-white shadow-brand transition-colors hover:bg-brand-700 disabled:opacity-50"
-        >
+        <Button variant="primary" onClick={save} disabled={!dirty || pending}>
           {pending ? "Saving…" : "Save"}
-        </button>
+        </Button>
       </div>
     </div>
   );

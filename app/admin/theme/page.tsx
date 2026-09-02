@@ -1,4 +1,10 @@
 import { canonicalUrl, db, requireShop } from "@/lib/data/shop";
+import { shopSession } from "@/lib/auth-guard";
+import { roleAtLeast } from "@/lib/roles";
+import { RETENTION_DAYS } from "@/lib/store-lifecycle";
+import { getStoreSettings } from "@/lib/data/settings";
+import { StoreLifecycle } from "@/components/admin/store-lifecycle";
+import { StoreStatusBar } from "@/components/admin/store-status-bar";
 import { registryBusinessType } from "@/lib/themes/business-type";
 import { defaultThemeFor, themesFor } from "@/lib/themes/registry";
 import { PageHeader } from "@/components/ui/primitives";
@@ -17,18 +23,32 @@ export default async function ThemePage() {
   const shop = await requireShop();
   const type = registryBusinessType(shop.businessType);
 
-  const [settings, storeUrl] = await Promise.all([
+  const [settings, storeUrl, me, storeSettings] = await Promise.all([
     (await db()).themeSettings.findUnique({
       where: { shopId_businessType: { shopId: shop.id, businessType: shop.businessType } },
       select: { themeKey: true },
     }),
     canonicalUrl(shop.id),
+    shopSession(),
+    getStoreSettings(),
   ]);
 
   const current = settings?.themeKey ?? defaultThemeFor(type);
 
+  const canOpenAndClose = me ? roleAtLeast(me.role, "ADMIN") : false;
+
   return (
     <div className="space-y-5">
+      {/* Whether customers can see the shop, pinned to the top of the page that
+          is about how the shop looks. Sticky because it is the one fact that
+          changes what everything below means: a theme you are admiring is not
+          live if the store is closed. */}
+      <StoreStatusBar
+        status={shop.status}
+        maintenance={storeSettings.maintenanceMode}
+        storeUrl={storeUrl}
+      />
+
       <PageHeader
         title="Theme"
         description="How your store looks to a customer."
@@ -46,6 +66,24 @@ export default async function ThemePage() {
           previewUrl: `${storeUrl}?__theme=${t.key}`,
         }))}
       />
+
+      {canOpenAndClose && me && (
+        <section id="opening-and-closing" className="space-y-3 border-t border-border pt-5">
+          <div>
+            <h2 className="text-sm font-semibold">Opening and closing</h2>
+            <p className="mt-0.5 text-xs text-ink-soft">
+              Whether you are open for business, and what customers see when you
+              are not.
+            </p>
+          </div>
+          <StoreLifecycle
+            status={me.shop.status}
+            storeName={me.shop.name}
+            isOwner={me.role === "OWNER"}
+            retentionDays={RETENTION_DAYS}
+          />
+        </section>
+      )}
     </div>
   );
 }

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Check, ExternalLink, Loader2, Sparkles } from "lucide-react";
 import { chooseTheme } from "@/app/admin/theme/actions-theme-choice";
 import { useToast } from "@/components/ui/toast";
+import { Badge, Button, ButtonLink } from "@/components/ui/primitives";
 import { cn } from "@/lib/utils";
 
 export type GalleryTheme = {
@@ -66,13 +67,10 @@ export function ThemeGallery({
               <ExternalLink className="h-3 w-3 opacity-60" />
             </a>
             {/* 4. The main way in. */}
-            <Link
-              href="/admin/customize"
-              className="inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-4 py-1.5 text-xs font-medium text-white shadow-brand transition-colors hover:bg-brand-700"
-            >
+            <ButtonLink href="/admin/customize" variant="primary" size="sm">
               <Sparkles className="h-3.5 w-3.5" />
               Customize
-            </Link>
+            </ButtonLink>
           </div>
         </div>
         {/* Fixed height and pointer-events off: a still, not a window. */}
@@ -107,7 +105,7 @@ export function ThemeGallery({
                 key={theme.key}
                 className={cn(
                   "flex flex-col rounded-xl border bg-surface p-3.5",
-                  active ? "border-brand-500 ring-1 ring-brand-500" : "border-border"
+                  active ? "border-green ring-1 ring-green" : "border-border"
                 )}
               >
                 <div className="flex items-start justify-between gap-2">
@@ -116,10 +114,14 @@ export function ThemeGallery({
                     <p className="mt-0.5 text-xs text-ink-soft">{theme.description}</p>
                   </div>
                   {active && (
-                    <span className="inline-flex flex-shrink-0 items-center gap-1 rounded-full bg-brand-600 px-2 py-0.5 text-[10px] font-medium text-white">
+                    // Green because it reports a state, not because it is
+                    // important. The accent colour is the store's, and using it
+                    // for "this one is on" leaves nothing to tell a merchant
+                    // apart from a button they could press.
+                    <Badge tone="good" className="flex-shrink-0">
                       <Check className="h-3 w-3" />
                       In use
-                    </span>
+                    </Badge>
                   )}
                 </div>
 
@@ -134,15 +136,15 @@ export function ThemeGallery({
                     <ExternalLink className="h-3 w-3 opacity-60" />
                   </a>
                   {!active && (
-                    <button
-                      type="button"
+                    <Button
+                      variant="primary"
+                      size="sm"
                       onClick={() => activate(theme.key)}
                       disabled={pending}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-3.5 py-1.5 text-xs font-medium text-white transition-colors hover:bg-brand-700 disabled:opacity-50"
                     >
                       {busy && <Loader2 className="h-3 w-3 animate-spin" />}
                       {busy ? "Activating…" : "Activate"}
-                    </button>
+                    </Button>
                   )}
                 </div>
               </li>

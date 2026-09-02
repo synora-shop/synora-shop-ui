@@ -85,7 +85,6 @@ const NAV_SECTIONS = [
     // protection and the crawler rules belong here too and are not built yet.
     label: "Preferences", icon: SlidersHorizontal,
     items: [
-      { href: "/admin/store", label: "Store status", icon: Power },
       { href: "/admin/fonts", label: "Fonts", icon: Type },
       { href: "/admin/buttons", label: "Sticky buttons", icon: MessageCircle },
       { href: "/admin/redirects", label: "Links & redirects", icon: Link2 },

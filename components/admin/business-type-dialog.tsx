@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { Check, Info, Loader2, X } from "lucide-react";
 import { switchBusinessType } from "@/app/admin/business-type-actions";
 import { TYPE_GUIDE } from "@/lib/themes/type-guide";
+import { Badge } from "@/components/ui/primitives";
 import { cn } from "@/lib/utils";
 
 /**
@@ -124,7 +125,7 @@ export function BusinessTypeDialog({
                     className={cn(
                       "w-full rounded-xl border p-3.5 text-left transition-colors",
                       isCurrent
-                        ? "border-brand-300 bg-brand-50"
+                        ? "border-green bg-green-bg"
                         : mode === "switch"
                           ? "border-border hover:border-brand-300 hover:bg-subtle disabled:opacity-60"
                           : "border-border"
@@ -133,10 +134,10 @@ export function BusinessTypeDialog({
                     <span className="flex items-center gap-2">
                       <span className="text-sm font-semibold">{t.label}</span>
                       {isCurrent && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-brand-600 px-2 py-0.5 text-[10px] font-medium text-white">
+                        <Badge tone="good">
                           <Check className="h-3 w-3" />
                           Current
-                        </span>
+                        </Badge>
                       )}
                       {busy && <Loader2 className="h-3.5 w-3.5 animate-spin text-ink-faint" />}
                     </span>
