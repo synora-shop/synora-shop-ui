@@ -91,6 +91,60 @@
   --foreground: var(--color-ink);
 }
 
+/* The accent, per kind of business.
+ *
+ * `brand-*` is used in 104 files — every primary button, every active nav item,
+ * every focus ring. Redefining the seven variables on the admin root is what
+ * makes changing a store's type change the whole panel rather than only the bar
+ * across the top. Nothing downstream needs to know this happens.
+ *
+ * Each family keeps its own hue and its own saturation, so the muted green of a
+ * blog stays muted where the maroon of a shop stays strong. Lightness is not
+ * copied between them: it is solved per hue against white, because green at a
+ * given lightness is far brighter than red and a shared number left white text
+ * at 2.8:1 on the blog accent. Every 500 now carries white at 4.6:1 and every
+ * 600 at 6.2:1.
+ *
+ * Set by app/admin/layout.tsx. Absent — anywhere outside the admin — the
+ * platform default in :root applies. */
+[data-business-type="ecommerce"] {
+  --color-brand-50: #fff2f0;
+  --color-brand-100: #fedfdb;
+  --color-brand-300: #e4958a;
+  --color-brand-500: #cf4533;
+  --color-brand-600: #ad3829;
+  --color-brand-700: #872c20;
+  --color-brand-900: #571c14;
+}
+[data-business-type="restaurant"] {
+  --color-brand-50: #fbf0ff;
+  --color-brand-100: #f5dbfe;
+  --color-brand-300: #d093e6;
+  --color-brand-500: #ad44d3;
+  --color-brand-600: #962cbc;
+  --color-brand-700: #752293;
+  --color-brand-900: #4b165e;
+}
+[data-business-type="service"] {
+  --color-brand-50: #f0f9ff;
+  --color-brand-100: #dbf1fe;
+  --color-brand-300: #78b9df;
+  --color-brand-500: #287cab;
+  --color-brand-600: #21668e;
+  --color-brand-700: #1a506f;
+  --color-brand-900: #113347;
+}
+[data-business-type="blog"] {
+  --color-brand-50: #f3fcf4;
+  --color-brand-100: #e2f7e5;
+  --color-brand-300: #89c690;
+  --color-brand-500: #408348;
+  --color-brand-600: #356c3b;
+  --color-brand-700: #29552e;
+  --color-brand-900: #1a361e;
+}
+
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

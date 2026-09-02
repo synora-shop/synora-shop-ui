@@ -8,6 +8,7 @@ import { AdminTheme } from "@/components/admin/admin-theme";
 import { getStoreSettings } from "@/lib/data/settings";
 import { canonicalUrl, currentShop } from "@/lib/data/shop";
 import { registryBusinessType } from "@/lib/themes/business-type";
+import { chromeFor } from "@/lib/admin-chrome";
 
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   // Defense in depth — proxy.ts already gates /admin/*, this re-checks
@@ -32,20 +33,35 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   if (shop && !shop.onboardedAt) redirect("/admin/welcome");
   const settings = await getStoreSettings();
 
+  const type = registryBusinessType(shop?.businessType);
+  const skin = chromeFor(type);
+
   return (
-    <div className="min-h-screen bg-canvas font-sans text-ink lg:flex">
+    // data-business-type repaints the whole accent scale — see the palettes in
+    // globals.css. Every primary button, active nav item and focus ring in the
+    // panel follows the store's type from here, rather than only the bar.
+    <div
+      data-business-type={type}
+      className="min-h-screen font-sans text-ink"
+      style={{ backgroundColor: skin.bar }}
+    >
       <AdminTheme />
-      <AdminSidebar businessType={shop?.businessType ?? "ECOMMERCE"} />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <AdminTopbar
-          storeName={me.shop.name}
-          isLive={!settings.maintenanceMode}
-          userName={me.email}
-          userEmail={me.email}
-          storeUrl={await canonicalUrl(me.shop.id)}
-          businessType={registryBusinessType(shop?.businessType)}
-          hasOtherStores={(session.user.shops?.length ?? 0) > 1}
-        />
+      {/* The bar runs the full width, above the sidebar rather than beside it,
+          so the colour reaches both corners of the screen. */}
+      <AdminTopbar
+        storeName={me.shop.name}
+        isLive={!settings.maintenanceMode}
+        userName={me.email}
+        userEmail={me.email}
+        storeUrl={await canonicalUrl(me.shop.id)}
+        businessType={type}
+        hasOtherStores={(session.user.shops?.length ?? 0) > 1}
+      />
+      {/* The panel proper, curved away from the bar it sits under. The colour
+          shows in the two notches at the top corners, which is the whole of the
+          effect: one coloured sheet with the app resting on it. */}
+      <div className="flex min-h-[calc(100vh-3.5rem)] overflow-hidden rounded-t-2xl bg-canvas lg:min-h-[calc(100vh-3.5rem)]">
+        <AdminSidebar businessType={shop?.businessType ?? "ECOMMERCE"} />
         {/* pb-24 leaves room for the sticky save bar, which floats over the
             bottom of the viewport on every page that can be edited. */}
         <main className="gutter-fluid min-w-0 flex-1 pb-24 pt-6">{children}</main>

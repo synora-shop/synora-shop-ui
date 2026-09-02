@@ -5,7 +5,8 @@ import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { ChevronRight, ExternalLink, Info, LogOut, Menu, Settings2, Store, User, X } from "lucide-react";
 import { SettingsSearch } from "@/components/customizer/settings-search";
-import { Wordmark } from "@/components/ui/wordmark";
+import { SynoraAppMark } from "@/components/ui/synora-app-mark";
+import { BusinessTypeDialog } from "@/components/admin/business-type-dialog";
 import { chromeFor } from "@/lib/admin-chrome";
 import { cn } from "@/lib/utils";
 import { useAdminNav } from "@/lib/admin-nav-store";
@@ -55,6 +56,7 @@ export function AdminTopbar({
   hasOtherStores?: boolean;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [dialog, setDialog] = useState<"info" | "switch" | null>(null);
   const navOpen = useAdminNav((s) => s.open);
   const toggleNav = useAdminNav((s) => s.toggle);
   const skin = chromeFor(businessType);
@@ -187,27 +189,46 @@ export function AdminTopbar({
           )}
         </div>
 
-        {/* Changing what kind of business this is rewrites the sidebar, the
-            words on every screen and the colour of this bar, so it says what it
-            is and sits next to the store it would change — not buried in
-            settings, where a merchant would not think to look for it. */}
-        <Link
-          href="/admin/account"
-          className="hidden flex-shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-medium text-white/85 transition-colors hover:bg-white/10 hover:text-white xl:inline-flex"
-        >
-          <Info className="h-3.5 w-3.5 opacity-70" />
-          Change APP type
-          <ChevronRight className="h-3.5 w-3.5 opacity-70" />
-        </Link>
+        {/* Two controls, because they answer two questions a merchant asks a
+            moment apart. The ⓘ explains which type covers which sort of
+            business and changes nothing; the label beside it makes the change.
+            Both sit next to the store they concern rather than buried in
+            settings, where nobody would think to look. */}
+        <div className="hidden flex-shrink-0 items-center xl:flex">
+          <button
+            type="button"
+            onClick={() => setDialog("info")}
+            aria-label="Which type fits your business?"
+            className="rounded-full p-1.5 text-white/75 transition-colors hover:bg-white/10 hover:text-white"
+          >
+            <Info className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setDialog("switch")}
+            className="inline-flex items-center gap-1.5 rounded-full px-2 py-1.5 text-xs font-medium text-white/85 transition-colors hover:bg-white/10 hover:text-white"
+          >
+            Change APP type
+            <ChevronRight className="h-3.5 w-3.5 opacity-70" />
+          </button>
+        </div>
 
         <Link href="/admin" className="mx-auto hidden flex-shrink-0 items-center lg:flex">
-          <Wordmark size="sm" />
+          <SynoraAppMark color={skin.bar} />
         </Link>
 
         <div className="ml-auto flex min-w-0 max-w-md flex-1 lg:ml-0 lg:max-w-sm xl:max-w-md">
           <SettingsSearch className="w-full" onDark />
         </div>
       </div>
+
+      {dialog && (
+        <BusinessTypeDialog
+          current={businessType}
+          mode={dialog}
+          onClose={() => setDialog(null)}
+        />
+      )}
     </header>
   );
 }
