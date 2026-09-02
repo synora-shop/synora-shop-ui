@@ -633,6 +633,25 @@ model Product {
   description String
   details     String? // fabric, care instructions, etc. (markdown/plain text)
   images      String[]
+
+  /// What this product's variant axes are called, in Shopify's shape: up to
+  /// three freely named options. "Size" and "Colour" were hardcoded, which is
+  /// two of the three products in Shopify's own template that could not be
+  /// imported: a digital product sold by Format and a perfume sold by Title.
+  option1Name String?
+  option2Name String?
+  option3Name String?
+
+  /// Who makes it. Shopify's "Vendor", and the column merchants actually use.
+  vendor      String?
+  /// Free tags. Shopify's are one comma separated cell; stored as a list.
+  tags        String[]        @default([])
+
+  /// Columns from Shopify's product CSV that SHOP itself never reads, kept
+  /// verbatim so an export can be diffed against a Shopify export and match.
+  /// A JSON column rather than twenty real ones: thirteen of them are Google
+  /// Shopping fields nothing in this platform will ever query.
+  csvExtras   Json            @default("{}")
   basePrice   Int // stored in PKR, integer (no paisa)
   salePrice   Int?
   costPrice   Int              @default(0) // what you pay per unit, PKR — admin/profit-calc only, never sent to the storefront
@@ -685,9 +704,25 @@ model ProductVariant {
   shopId        String
   product       Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId     String
+  /// Kept while the option columns are filled in and every reader is moved
+  /// across. See the expand and contract migration in
+  /// 20261011000000_variant_named_options.
   size          String
   color         String
   colorHex      String?
+
+  /// The variant's position on each of its product's named axes. option1 holds
+  /// what size held; option2 holds what color held.
+  option1       String      @default("")
+  option2       String      @default("")
+  option3       String      @default("")
+
+  barcode       String?
+  weightGrams   Int?
+  imageUrl      String?
+  /// As above: the per variant columns SHOP does not model, kept for a
+  /// lossless round trip.
+  csvExtras     Json        @default("{}")
   sku           String
   stock         Int         @default(0)
   priceOverride Int?
@@ -695,6 +730,7 @@ model ProductVariant {
 
   @@unique([shopId, sku])
   @@unique([productId, size, color])
+  @@unique([productId, option1, option2, option3])
   @@index([productId])
   @@index([shopId])
 }

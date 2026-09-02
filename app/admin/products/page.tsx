@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Download, Plus } from "lucide-react";
 import { db } from "@/lib/data/shop";
 import { ProductList } from "@/components/admin/product-list";
 import { FilterBar, type FilterGroup } from "@/components/admin/filter-bar";
@@ -57,15 +57,26 @@ export default async function AdminProductsPage(props: PageProps<"/admin/product
 
   return (
     <div>
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="font-serif text-3xl font-semibold">Products</h1>
-        <Link
-          href="/admin/products/new"
-          className="flex items-center gap-1.5 rounded-full bg-brand-500 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-600 active:bg-brand-700"
-        >
-          <Plus className="h-4 w-4" />
-          Add Product
-        </Link>
+        <div className="flex items-center gap-2">
+          {/* A plain link, not a form: the answer is a file, and the browser
+              already knows how to receive one. */}
+          <a
+            href="/admin/products/export"
+            className="flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-sm transition-colors hover:bg-subtle"
+          >
+            <Download className="h-4 w-4" />
+            Export CSV
+          </a>
+          <Link
+            href="/admin/products/new"
+            className="flex items-center gap-1.5 rounded-full bg-brand-500 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-600 active:bg-brand-700"
+          >
+            <Plus className="h-4 w-4" />
+            Add Product
+          </Link>
+        </div>
       </div>
 
       <FilterBar basePath="/admin/products" groups={groups} filters={filters} />
