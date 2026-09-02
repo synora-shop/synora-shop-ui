@@ -49,35 +49,48 @@ import { cn } from "@/lib/utils";
  */
 const NAV_SECTIONS = [
   {
-    label: "Overview",
+    label: "Home",
     items: [{ href: "/admin", label: "Dashboard", icon: LayoutDashboard }],
   },
   {
-    label: "Catalog",
+    // The storefront, as a merchant thinks of it: what it looks like and how a
+    // visitor moves around it. The preview and theme picker that belong at the
+    // top of this group are not built yet, so for now it is the appearance
+    // screens that already work.
+    label: "Your SHOP",
     items: [
-      // A restaurant's dishes are products in categories, so it keeps these and
-      // only the words change. A blog sells nothing and keeps none of them.
+      { href: "/admin/theme", label: "Design", icon: Palette },
+      { href: "/admin/fonts", label: "Fonts", icon: Type },
+      { href: "/admin/buttons", label: "Sticky buttons", icon: MessageCircle },
+      { href: "/admin/redirects", label: "Links & redirects", icon: Link2 },
+    ],
+  },
+  {
+    // The one group that changes shape with the business. A restaurant sees
+    // Dishes and Courses, a shop sees Products and Categories, and a blog sells
+    // nothing so it sees almost none of this. Catalog and Sales used to be two
+    // groups; they are one because a merchant filling in a product and a
+    // merchant reading an order are doing the same job — running the shop.
+    label: "Catalog & orders",
+    labels: { RESTAURANT: "Menu & orders" },
+    items: [
       { href: "/admin/products", label: "Products", icon: Package, hideFor: ["BLOG"], term: "products" },
       { href: "/admin/categories", label: "Categories", icon: Tags, hideFor: ["BLOG"], term: "categories" },
+      { href: "/admin/orders", label: "Orders", icon: ShoppingBag, hideFor: ["BLOG"] },
+      { href: "/admin/customers", label: "Customers", icon: Users, hideFor: ["BLOG"] },
+      { href: "/admin/discounts", label: "Discounts", icon: Tag, hideFor: ["BLOG"] },
+      { href: "/admin/enquiries", label: "Enquiries", icon: Inbox, hideFor: ["BLOG"] },
       { href: "/admin/bin", label: "Bin", icon: Trash2, hideFor: ["BLOG"] },
     ],
   },
   {
-    label: "Sales",
-    items: [
-      { href: "/admin/orders", label: "Orders", icon: ShoppingBag, hideFor: ["BLOG"] },
-      { href: "/admin/customers", label: "Customers", icon: Users, hideFor: ["BLOG"] },
-      { href: "/admin/discounts", label: "Discounts", icon: Tag, hideFor: ["BLOG"] },
-      { href: "/admin/enquiries", label: "Enquiries", icon: Inbox },
-    ],
-  },
-  {
-    label: "Content",
+    label: "Pages",
     items: [
       { href: "/admin/pages", label: "Pages", icon: FileText },
       { href: "/admin/blog", label: "Blog", icon: Newspaper, onlyFor: ["BLOG"] },
-      { href: "/admin/hours", label: "Opening hours", icon: Clock, onlyFor: ["RESTAURANT"] },
-      { href: "/admin/locations", label: "Locations", icon: MapPin, onlyFor: ["RESTAURANT"] },
+      // A blog has no catalog group to file these under, and a group holding
+      // one link named after itself is worse than no group.
+      { href: "/admin/enquiries", label: "Enquiries", icon: Inbox, onlyFor: ["BLOG"] },
       // "Menus" here is navigation, never food. A restaurant's food menu is its
       // products, and two things called a menu in one sidebar is the confusion
       // this label avoids.
@@ -87,28 +100,31 @@ const NAV_SECTIONS = [
     ],
   },
   {
-    // "Store design" held seven entries, two of them called Themes and Theme.
-    // Nobody could tell from the names which one laid out a page, which one
-    // set the colours, and which one held an uploaded Shopify theme — so the
-    // order now runs from the thing a merchant opens daily to the thing they
-    // set once, and no two labels are a plural apart.
-    label: "Online store",
+    // Preferences of the shop, not of the account. Whether customers can see
+    // it, when it opens, where it is, what languages it speaks. Spam
+    // protection and the crawler rules belong here too and are not built yet.
+    label: "Preferences",
     items: [
-      { href: "/admin/theme", label: "Design", icon: Palette },
-      { href: "/admin/fonts", label: "Fonts", icon: Type },
-      { href: "/admin/buttons", label: "Sticky buttons", icon: MessageCircle },
-      { href: "/admin/redirects", label: "Links & redirects", icon: Link2 },
+      { href: "/admin/store", label: "Store status", icon: Power },
+      { href: "/admin/hours", label: "Opening hours", icon: Clock, onlyFor: ["RESTAURANT"] },
+      { href: "/admin/locations", label: "Locations", icon: MapPin, onlyFor: ["RESTAURANT"] },
+      { href: "/admin/regions", label: "Regions", icon: Languages },
     ],
   },
   {
-    label: "Store",
+    label: "Settings",
     items: [
       { href: "/admin/settings", label: "Settings", icon: Settings2 },
       { href: "/admin/domains", label: "Domains", icon: Globe },
-      { href: "/admin/regions", label: "Regions", icon: Languages },
-      { href: "/admin/store", label: "Store status", icon: Power },
-      { href: "/admin/staff", label: "People", icon: Users },
+    ],
+  },
+  {
+    // The account, as opposed to the shop above it. One account can hold
+    // several shops and the people who work on them.
+    label: "Account",
+    items: [
       { href: "/admin/account", label: "Your account", icon: UserCog },
+      { href: "/admin/staff", label: "People", icon: Users },
     ],
   },
 ];
@@ -131,6 +147,12 @@ type BusinessType = "ECOMMERCE" | "BLOG" | "RESTAURANT";
 function sectionsFor(businessType: BusinessType) {
   return NAV_SECTIONS.map((section) => ({
     ...section,
+    // A group's own name changes with the business too, not just the links
+    // inside it. Without this a restaurant reads "Catalog & orders" above a
+    // list that says Dishes and Courses, and a blog reads it above a single
+    // Enquiries link — the group heading contradicting everything under it.
+    label:
+      (section as { labels?: Record<string, string> }).labels?.[businessType] ?? section.label,
     items: section.items
       .filter((item) => {
         const only = (item as { onlyFor?: string[] }).onlyFor;
