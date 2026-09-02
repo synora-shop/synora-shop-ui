@@ -76,11 +76,20 @@ const NAV_SECTIONS = [
     // top of this group are not built yet, so for now it is the appearance
     // screens that already work.
     label: "Your SHOP", icon: Store,
+    items: [{ href: "/admin/theme", label: "Theme", icon: Palette }],
+  },
+  {
+    // Preferences of the shop, not of the account. Whether customers can see
+    // it, when it opens, where it is, what languages it speaks. Spam
+    // protection and the crawler rules belong here too and are not built yet.
+    label: "Preferences", icon: SlidersHorizontal,
     items: [
-      { href: "/admin/theme", label: "Design", icon: Palette },
+      { href: "/admin/store", label: "Store status", icon: Power },
       { href: "/admin/fonts", label: "Fonts", icon: Type },
       { href: "/admin/buttons", label: "Sticky buttons", icon: MessageCircle },
       { href: "/admin/redirects", label: "Links & redirects", icon: Link2 },
+      { href: "/admin/hours", label: "Opening hours", icon: Clock, onlyFor: ["RESTAURANT"] },
+      { href: "/admin/locations", label: "Locations", icon: MapPin, onlyFor: ["RESTAURANT"] },
     ],
   },
   {
@@ -115,17 +124,6 @@ const NAV_SECTIONS = [
       { href: "/admin/menus", label: "Menus", icon: ListTree, labels: { RESTAURANT: "Navigation" } },
       { href: "/admin/site-text", label: "Site text", icon: Type },
       { href: "/admin/metafields", label: "Custom fields", icon: Braces },
-    ],
-  },
-  {
-    // Preferences of the shop, not of the account. Whether customers can see
-    // it, when it opens, where it is, what languages it speaks. Spam
-    // protection and the crawler rules belong here too and are not built yet.
-    label: "Preferences", icon: SlidersHorizontal,
-    items: [
-      { href: "/admin/store", label: "Store status", icon: Power },
-      { href: "/admin/hours", label: "Opening hours", icon: Clock, onlyFor: ["RESTAURANT"] },
-      { href: "/admin/locations", label: "Locations", icon: MapPin, onlyFor: ["RESTAURANT"] },
     ],
   },
   {

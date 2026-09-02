@@ -49,7 +49,7 @@ export function groupAnchor(title: string): string {
  */
 const TOOLS: SettingEntry[] = [
   { id: "tool-customizer", label: "Customize", info: "Lay out pages section by section with a live preview.", path: ["Online store"], href: "/admin/customize", keywords: ["sections", "layout", "homepage", "pages", "drag"] },
-  { id: "tool-theme", label: "Colours & type", info: "Colours, typography, logo, favicon and shape for the whole store.", path: ["Online store"], href: "/admin/theme", keywords: ["design", "style", "branding", "look"] },
+  { id: "tool-theme", label: "Colours & type", info: "Colours, typography, logo, favicon and shape for the whole store.", path: ["Online store"], href: "/admin/customize/theme", keywords: ["design", "style", "branding", "look"] },
   { id: "tool-fonts", label: "Fonts", info: "Upload your own primary and secondary fonts.", path: ["Online store"], href: "/admin/fonts", keywords: ["typeface", "woff", "otf", "ttf", "upload", "typography"] },
   { id: "tool-buttons", label: "Sticky buttons", info: "Floating WhatsApp, Instagram and chat buttons, and where they appear.", path: ["Online store"], href: "/admin/buttons", keywords: ["whatsapp", "chat", "instagram", "floating", "contact", "bubble"] },
   { id: "tool-redirects", label: "Links & redirects", info: "Keep old addresses working, and find menu links that lead nowhere.", path: ["Online store"], href: "/admin/redirects", keywords: ["404", "broken", "url", "moved", "seo"] },
@@ -71,7 +71,7 @@ function themeEntries(): SettingEntry[] {
       label: field.label,
       info: field.info,
       path: ["Theme", group.title],
-      href: `/admin/theme#${settingAnchor(field.key)}`,
+      href: `/admin/customize/theme#${settingAnchor(field.key)}`,
       // The group name is worth matching on: someone searching "header" should
       // reach the header settings even though no label contains that word.
       keywords: [group.title],

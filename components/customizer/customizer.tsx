@@ -549,7 +549,7 @@ export function Customizer({
         </div>
 
         <a
-          href="/admin/theme"
+          href="/admin/customize/theme"
           title="Colours, fonts and shapes for the whole store"
           className="rounded-full border border-border px-3 py-1.5 text-xs font-medium text-ink-soft transition-colors hover:bg-subtle active:bg-brand-100"
         >
