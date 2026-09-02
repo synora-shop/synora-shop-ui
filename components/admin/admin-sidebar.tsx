@@ -230,12 +230,48 @@ export function AdminSidebar({ businessType = "ECOMMERCE" }: { businessType?: Bu
   const railed = (cls: string) => (collapsed ? cls : "");
 
   const navList = (
-    <nav className="flex flex-1 flex-col gap-3 overflow-y-auto px-3 py-3 lg:px-2 xl:px-3">
+    <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-2 lg:px-2 xl:px-3">
       {sectionsFor(businessType).map((section, i) => {
           const holdsCurrentPage = section.items.some(
             (it) => pathname === it.href || pathname.startsWith(`${it.href}/`)
           );
           const isOpen = opened.has(section.label) || holdsCurrentPage;
+          // A heading, a chevron and a tile wrapped around one link is three
+          // rows of furniture for one destination. A group of one is a link:
+          // it keeps the section's name and icon and goes straight there.
+          // Nothing here is special-cased — Preferences becomes a group again
+          // on the day it gains a second setting.
+          const only = section.items.length === 1 ? section.items[0] : null;
+          if (only && section.icon) {
+            const active = pathname === only.href || pathname.startsWith(`${only.href}/`);
+            return (
+              <Link
+                key={section.label}
+                href={only.href}
+                onClick={() => setOpen(false)}
+                aria-current={active ? "page" : undefined}
+                title={section.label}
+                className={cn(
+                  "flex items-center rounded-md px-2 py-1.5 text-[13px] transition-colors",
+                  railed("lg:justify-center lg:px-0"),
+                  active
+                    ? "bg-brand-600 font-medium text-white shadow-brand"
+                    : "text-ink-soft hover:bg-subtle hover:text-ink"
+                )}
+              >
+                <span
+                  className={cn(
+                    "mr-2 flex h-[22px] w-[22px] flex-shrink-0 items-center justify-center rounded-[7px] transition-colors",
+                    railed("lg:mr-0"),
+                    active ? "bg-white/20 text-white" : "bg-brand-100 text-brand-700"
+                  )}
+                >
+                  <section.icon className="h-3 w-3" aria-hidden />
+                </span>
+                <span className={cn(railed("lg:sr-only"))}>{section.label}</span>
+              </Link>
+            );
+          }
           return (
         <div
           key={section.label}
@@ -256,15 +292,27 @@ export function AdminSidebar({ businessType = "ECOMMERCE" }: { businessType?: Bu
             onClick={() => toggleSection(section.label)}
             aria-expanded={isOpen}
             className={cn(
-              "flex w-full items-center gap-1 rounded-md px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.09em] text-ink-soft transition-colors hover:text-ink",
+              "flex w-full items-center gap-1 rounded-md px-2 py-1.5 text-[10px] font-semibold uppercase tracking-[0.08em] transition-colors hover:bg-subtle",
+                holdsCurrentPage ? "text-ink" : "text-ink-soft hover:text-ink",
               railed("lg:hidden")
             )}
           >
             {section.icon && (
-              // Parents get a tinted tile, children a bare glyph: same size,
-              // different weight. Enough that the eye reads the hierarchy
-              // without the headings having to carry it on uppercase alone.
-              <span className="mr-1.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-[6px] bg-brand-100 text-brand-700">
+              // A filled tile for a parent, a bare glyph for a link. The tile is
+              // the smaller mark of the two and still the heavier one, which is
+              // the point: a heading should outweigh the things under it
+              // without being bigger than them.
+              <span
+                className={cn(
+                  "mr-2 flex h-[22px] w-[22px] flex-shrink-0 items-center justify-center rounded-[7px] transition-colors",
+                  // Solid only for the group you are actually in. Seven filled
+                  // tiles down the column would be loud, and they would compete
+                  // with the selected link, which is the same colour — so the
+                  // rest stay tinted and the weight goes where it means
+                  // something.
+                  holdsCurrentPage ? "bg-brand-600 text-white" : "bg-brand-100 text-brand-700"
+                )}
+              >
                 <section.icon className="h-3 w-3" aria-hidden />
               </span>
             )}
@@ -277,8 +325,14 @@ export function AdminSidebar({ businessType = "ECOMMERCE" }: { businessType?: Bu
           <div
             className={cn(
               "mt-0.5 flex-col gap-px",
+              // Indented, with a hairline descending from under the heading's
+              // tile. Before this a link's label began at the same x as the
+              // label of the group holding it, so nothing on screen said one
+              // was inside the other.
+              !collapsed && "ml-[18px] border-l border-border pl-2.5",
               // Rail mode has no headings to click, so links must never be
-              // hidden there or they become unreachable.
+              // hidden there or they become unreachable — and nothing is
+              // indented there either, since there is no heading to indent from.
               isOpen ? "flex" : "hidden",
               railed("lg:flex")
             )}
@@ -299,14 +353,14 @@ export function AdminSidebar({ businessType = "ECOMMERCE" }: { businessType?: Bu
                   className={cn(
                     // The active rail is positioned rather than a left border,
                     // so selecting an item can't nudge its label sideways.
-                    "relative flex items-center gap-2.5 rounded-md py-1.5 pl-3 pr-2 text-[13px]",
+                    "relative flex items-center gap-2 rounded-md py-1.5 pl-2 pr-2 text-[13px]",
                     railed("lg:justify-center lg:px-0"),
                     active
                       ? "bg-brand-600 font-medium text-white shadow-brand"
                       : "text-ink-soft hover:bg-subtle hover:text-ink active:bg-brand-100"
                   )}
                 >
-                  <Icon className="h-4 w-4 flex-shrink-0" />
+                  <Icon className="h-[15px] w-[15px] flex-shrink-0" />
                   <span className={cn(railed("lg:sr-only"))}>{item.label}</span>
                 </Link>
               );
