@@ -48,7 +48,6 @@ export function groupAnchor(title: string): string {
  * settings inside them come from the schemas below.
  */
 const TOOLS: SettingEntry[] = [
-  { id: "tool-online-store", label: "Online store", info: "Your live shop, the themes you have uploaded, and every way to change how the store looks.", path: ["Online store"], href: "/admin/online-store", keywords: ["design", "look", "theme", "themes", "storefront", "preview", "live", "shop front"] },
   { id: "tool-customizer", label: "Customize", info: "Lay out pages section by section with a live preview.", path: ["Online store"], href: "/admin/customize", keywords: ["sections", "layout", "homepage", "pages", "drag"] },
   { id: "tool-theme", label: "Colours & type", info: "Colours, typography, logo, favicon and shape for the whole store.", path: ["Online store"], href: "/admin/theme", keywords: ["design", "style", "branding", "look"] },
   { id: "tool-fonts", label: "Fonts", info: "Upload your own primary and secondary fonts.", path: ["Online store"], href: "/admin/fonts", keywords: ["typeface", "woff", "otf", "ttf", "upload", "typography"] },
