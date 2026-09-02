@@ -8,7 +8,7 @@ import {
   removeStaff,
   revokeInvite,
   transferOwnership,
-} from "@/app/admin/staff/actions";
+} from "@/app/admin/staff-actions";
 import {
   ASSIGNABLE_ROLES,
   ROLE_DESCRIPTION,

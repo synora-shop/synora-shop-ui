@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { acceptInvite } from "@/app/admin/staff/actions";
+import { acceptInvite } from "@/app/admin/staff-actions";
 import { FormMessage } from "./form-shell";
 
 export function AcceptInvite({ token, shopName }: { token: string; shopName: string }) {

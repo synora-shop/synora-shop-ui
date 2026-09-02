@@ -18,6 +18,7 @@ import {
   Inbox,
   Languages,
   LayoutDashboard,
+  LineChart,
   Link2,
   ListTree,
   MapPin,
@@ -60,7 +61,14 @@ const OPEN_GROUPS_KEY = "synora.admin.nav.open";
 const NAV_SECTIONS = [
   {
     label: "Home", icon: Home,
-    items: [{ href: "/admin", label: "Dashboard", icon: LayoutDashboard }],
+    items: [{ href: "/admin", label: "Home", icon: Home }],
+  },
+  {
+    // The figures that used to be the landing page. A merchant opening the
+    // panel for the first time has nothing to count yet and everything to
+    // fill in, so Home is what they land on and this is where they come back.
+    label: "Analytics", icon: LineChart,
+    items: [{ href: "/admin/analytics", label: "Analytics", icon: LineChart }],
   },
   {
     // The storefront, as a merchant thinks of it: what it looks like and how a
@@ -124,7 +132,6 @@ const NAV_SECTIONS = [
     label: "Settings", icon: Cog,
     items: [
       { href: "/admin/settings", label: "Settings", icon: Settings2 },
-      { href: "/admin/domains", label: "Domains", icon: Globe },
     ],
   },
   {
@@ -133,7 +140,6 @@ const NAV_SECTIONS = [
     label: "Account", icon: UserCircle,
     items: [
       { href: "/admin/account", label: "Your account", icon: UserCog },
-      { href: "/admin/staff", label: "People", icon: Users },
     ],
   },
 ];

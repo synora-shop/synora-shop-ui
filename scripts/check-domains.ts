@@ -172,7 +172,7 @@ const hostingIndex = sourceOf("lib", "hosting", "index.ts");
 check("the domain data layer names no vendor",
   !/vercel|cloudflare/i.test(sourceOf("lib", "data", "domains.ts")));
 check("the admin actions name no vendor",
-  !/vercel|cloudflare/i.test(sourceOf("app", "admin", "domains", "actions.ts")));
+  !/vercel|cloudflare/i.test(sourceOf("app", "admin", "domain-actions.ts")));
 check("the provider is chosen by configuration", hostingIndex.includes("HOSTING_PROVIDER"));
 check("an unconfigured production deploy warns rather than pretending",
   hostingIndex.includes("NODE_ENV") && hostingIndex.includes("console.warn"));
