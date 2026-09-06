@@ -39,6 +39,15 @@ arrangement. `APP.ai` remains the authority on layout and on the four greys.
 | Analytics | the stat tile, the chart frame, the ranked list, the live count |
 | Settings | the field, the fieldset, the destructive action |
 
+**One mismatch with APP.ai to fix in this pass**
+
+The layout wraps every page in one panel container, and each page then draws its
+action bar inside it. Both are `#e0e0e0`, so they merge into a single block.
+APP.ai draws them as *separate* rounded containers with the page colour showing
+between them — navigation bar, action bar, content, each its own shape. Fixing
+it means the layout stops wrapping and each screen supplies its own containers,
+which touches all 22 screens, so it belongs here rather than in a passing edit.
+
 **The rules that do not move**
 
 - Four colours: `#d2d2d2` page, `#e0e0e0` container, `#fafafa` control,

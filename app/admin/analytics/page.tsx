@@ -1,235 +1,155 @@
-import Link from "next/link";
-import { requireShop } from "@/lib/data/shop";
-import {
-  AlertTriangle,
-  ArrowRight,
-  Clock,
-  Package,
-  ShoppingBag,
-  Sparkles,
-} from "lucide-react";
-import { db } from "@/lib/data/shop";
-import { formatPKR } from "@/lib/utils";
+import { analytics } from "@/lib/analytics/queries";
+import { funnel, percentChange, readRange, type SearchParams } from "@/lib/analytics";
 import { getStoreSettings } from "@/lib/data/settings";
-import { findBrokenMenuLinks } from "@/lib/data/broken-links";
-import { Badge, ButtonLink, Card, EmptyState, PageHeader, Stat } from "@/components/ui/primitives";
-import { orderStatusTone, statusLabel } from "@/lib/order-status-style";
+import { formatPKR } from "@/lib/utils";
+import { statusLabel } from "@/lib/order-status-style";
+import { AnalyticsBar } from "@/components/admin/analytics-bar";
+import { MetricTile, RankedBars, StageBar, TrendChart } from "@/components/admin/charts";
+import { Card, PageHeader } from "@/components/ui/primitives";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminDashboardPage() {
-  // The same words the sidebar uses. A restaurant seeing "Dishes" on the left
-  // and "Add product" on the right is the admin disagreeing with itself.
+/**
+ * How the shop is doing.
+ *
+ * Only figures a merchant would act on. Every one answers a question they
+ * actually ask — is money coming in, is it more than last month, what is
+ * selling, where are people arriving from, what is stuck, and is anyone here
+ * right now. Nothing is here because it was easy to count.
+ *
+ * Revenue and orders are two charts, never one. They are different measures on
+ * different scales, and putting them on a shared axis would invent a
+ * relationship between them that the data does not contain.
+ */
+export default async function AnalyticsPage(props: PageProps<"/admin/analytics">) {
+  const sp = (await props.searchParams) as SearchParams;
+  const range = readRange(sp);
+  const comparing = sp.compare === "1";
 
-  const { lowStockThreshold } = await getStoreSettings();
+  const [data, settings] = await Promise.all([analytics(range.days), getStoreSettings()]);
+  const { current, previous } = data;
 
-  // Batched in small groups on purpose. Firing every query at once exhausted
-  // the connection pool on this page once already, and a dashboard is exactly
-  // the page where that is most likely — it reads a little of everything.
-  const [orderCount, pendingCount, productCount, lowStock] = await Promise.all([
-    (await db()).order.count({ where: { deletedAt: null } }),
-    (await db()).order.count({ where: { deletedAt: null, orderStatus: "PENDING" } }),
-    (await db()).product.count({ where: { deletedAt: null } }),
-    (await db()).productVariant.count({
-      where: { stock: { lt: lowStockThreshold }, product: { deletedAt: null } },
-    }),
-  ]);
+  // Only computed when asked for. A change figure nobody switched on is a
+  // number competing for attention with the one they came to read.
+  const change = (now: number, before: number) => (comparing ? percentChange(now, before) : undefined);
 
-  const [revenueAgg, soldItems, recentOrders] = await Promise.all([
-    (await db()).order.aggregate({
-      _sum: { total: true },
-      where: { orderStatus: { not: "CANCELLED" }, deletedAt: null },
-    }),
-    // Cost and profit aren't a plain SQL sum — price and costPrice are per line
-    // item — so the lines are reduced in JS. Binning or restoring an order
-    // changes this on the next read, with no separate bookkeeping to drift.
-    (await db()).orderItem.findMany({
-      where: { order: { orderStatus: { not: "CANCELLED" }, deletedAt: null } },
-      select: { price: true, costPrice: true, quantity: true },
-    }),
-    (await db()).order.findMany({
-      where: { deletedAt: null },
-      orderBy: { createdAt: "desc" },
-      take: 6,
-      select: { id: true, customerName: true, total: true, orderStatus: true, createdAt: true },
-    }),
-  ]);
-
-  const brokenLinks = await findBrokenMenuLinks();
-
-  const totalRevenue = revenueAgg._sum.total ?? 0;
-  const totalCost = soldItems.reduce((sum, i) => sum + i.costPrice * i.quantity, 0);
-  const totalProfit = totalRevenue - totalCost;
-  const margin = totalRevenue > 0 ? Math.round((totalProfit / totalRevenue) * 100) : 0;
-
-  /**
-   * Things that want a decision, newest problem first.
-   *
-   * A dashboard that shows seven equal numbers makes you do the triage. This
-   * band exists only when something actually needs attention, so an empty one
-   * is a genuine "nothing to do" rather than a row of zeroes to scan past.
-   */
-  const attention = [
-    pendingCount > 0 && {
-      href: "/admin/orders?status=PENDING",
-      icon: Clock,
-      tone: "warn" as const,
-      title: pendingCount === 1 ? "1 order awaiting action" : `${pendingCount} orders awaiting action`,
-      detail: "Confirm or cancel these so customers aren't left waiting.",
-    },
-    lowStock > 0 && {
-      href: "/admin/products",
-      icon: AlertTriangle,
-      tone: "warn" as const,
-      title: lowStock === 1 ? "1 variant is low on stock" : `${lowStock} variants are low on stock`,
-      detail: `Fewer than ${lowStockThreshold} left. Restock or hide them before they sell out.`,
-    },
-    brokenLinks.length > 0 && {
-      href: "/admin/redirects",
-      icon: AlertTriangle,
-      tone: "bad" as const,
-      title:
-        brokenLinks.length === 1
-          ? "1 menu link leads nowhere"
-          : `${brokenLinks.length} menu links lead nowhere`,
-      detail: "Customers clicking these get a Not Found page.",
-    },
-  ].filter(Boolean) as {
-    href: string;
-    icon: React.ComponentType<{ className?: string }>;
-    tone: "warn" | "bad";
-    title: string;
-    detail: string;
-  }[];
+  const stages = funnel(data.stages).map((s) => ({
+    stage: s.stage,
+    count: s.count,
+    label: statusLabel(s.stage),
+  }));
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       <PageHeader
         title="Analytics"
-        description="What the store has earned, what it holds, and what needs a decision."
-        actions={
-          <>
-            <ButtonLink href="/admin/customize" variant="secondary" size="sm">
-              <Sparkles className="h-3.5 w-3.5" />
-              Customize store
-            </ButtonLink>
-            <ButtonLink href="/admin/products/new" variant="primary" size="sm">
-              Add product
-            </ButtonLink>
-          </>
-        }
+        description={`${range.label.toLowerCase()}, in ${data.timeZone.replace("_", " ")}.`}
       />
 
-      {attention.length > 0 && (
-        <section>
-          <h2 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-faint">
-            Needs attention
-          </h2>
-          <div className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            {attention.map((item) => (
-              <Link
-                key={item.title}
-                href={item.href}
-                className="group flex items-start gap-3 rounded-xl border border-border bg-surface p-3.5 transition-colors hover:border-brand-300 hover:bg-brand-50"
-              >
-                <span
-                  className={
-                    item.tone === "bad"
-                      ? "mt-0.5 flex-shrink-0 rounded-lg bg-rose-bg p-1.5 text-rose"
-                      : "mt-0.5 flex-shrink-0 rounded-lg bg-amber-bg p-1.5 text-amber"
-                  }
-                >
-                  <item.icon className="h-4 w-4" />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-medium">{item.title}</span>
-                  <span className="mt-0.5 block text-xs leading-snug text-ink-soft">
-                    {item.detail}
-                  </span>
-                </span>
-                <ArrowRight className="mt-1 h-3.5 w-3.5 flex-shrink-0 text-ink-faint transition-transform group-hover:translate-x-0.5" />
-              </Link>
-            ))}
-          </div>
-        </section>
+      <AnalyticsBar searchParams={sp} range={range.value} comparing={comparing} />
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        <MetricTile
+          label="Revenue" value={formatPKR(current.revenue)}
+          change={change(current.revenue, previous.revenue)}
+          spark={data.revenueSeries}
+        />
+        <MetricTile
+          label="Profit" value={formatPKR(current.profit)}
+          change={change(current.profit, previous.profit)}
+          hint="Never shown to customers"
+        />
+        <MetricTile
+          label="Orders" value={String(current.orders)}
+          change={change(current.orders, previous.orders)}
+          spark={data.orderSeries}
+          href="/admin/orders"
+        />
+        <MetricTile
+          label="Avg order" value={formatPKR(current.averageOrder)}
+          change={change(current.averageOrder, previous.averageOrder)}
+        />
+        <MetricTile
+          label="New customers" value={String(current.customers)}
+          change={change(current.customers, previous.customers)}
+          href="/admin/customers"
+        />
+        <MetricTile
+          label="Visitors now" value={String(data.liveVisitors)}
+          hint="In the last five minutes"
+          spark={data.peopleSeries}
+        />
+      </div>
+
+      {/* Stock is not a measure of how the shop is doing — it is a thing to go
+          and fix — so it sits apart from the figures and links straight at the
+          screen that fixes it. */}
+      {(data.stock.out > 0 || data.stock.low > 0) && (
+        <div className="grid gap-3 sm:grid-cols-2">
+          <MetricTile
+            label="Out of stock" value={String(data.stock.out)}
+            goodWhen="down" href="/admin/products" hint="Cannot be bought right now"
+          />
+          <MetricTile
+            label={`Low stock (under ${settings.lowStockThreshold})`} value={String(data.stock.low)}
+            goodWhen="down" href="/admin/products" hint="Worth restocking"
+          />
+        </div>
       )}
 
-      <section>
-        <h2 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-faint">
-          Money
-        </h2>
-        <div className="mt-2 grid gap-3 sm:grid-cols-3">
-          <Stat label="Revenue" value={formatPKR(totalRevenue)} hint="Excludes cancelled orders" />
-          <Stat label="Cost of goods" value={formatPKR(totalCost)} hint="Never shown to customers" />
-          <Stat
-            label="Profit"
-            value={formatPKR(totalProfit)}
-            hint={totalRevenue > 0 ? `${margin}% margin` : "No sales yet"}
-            tone={totalProfit > 0 ? "good" : totalProfit < 0 ? "bad" : "neutral"}
-          />
-        </div>
-      </section>
+      <div className="grid gap-3 lg:grid-cols-2">
+        <Card className="p-4">
+          <h2 className="text-xs font-semibold uppercase tracking-[0.06em] text-ink-faint">Revenue</h2>
+          <p className="mb-2 font-mono text-lg font-semibold tabular-nums">{formatPKR(current.revenue)}</p>
+          <TrendChart points={data.revenueSeries} label="Revenue per day" format="currency" />
+        </Card>
+        <Card className="p-4">
+          <h2 className="text-xs font-semibold uppercase tracking-[0.06em] text-ink-faint">Orders</h2>
+          <p className="mb-2 font-mono text-lg font-semibold tabular-nums">{current.orders}</p>
+          <TrendChart points={data.orderSeries} label="Orders per day" />
+        </Card>
+      </div>
 
-      <section>
-        <h2 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-faint">
-          Catalog
-        </h2>
-        <div className="mt-2 grid gap-3 sm:grid-cols-3">
-          <Stat label="Orders" value={orderCount} href="/admin/orders" />
-          <Stat label="Products" value={productCount} href="/admin/products" />
-          <Stat
-            label={`Low stock (< ${lowStockThreshold})`}
-            value={lowStock}
-            href="/admin/products"
-          />
+      <Card className="p-4">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="text-xs font-semibold uppercase tracking-[0.06em] text-ink-faint">Visitors</h2>
+          <p className="text-xs text-ink-soft">
+            <span className="font-mono font-semibold tabular-nums text-ink">{data.totalPeople.toLocaleString("en-PK")}</span> people
+            {" · "}
+            <span className="font-mono tabular-nums">{data.totalVisits.toLocaleString("en-PK")}</span> page views
+          </p>
         </div>
-      </section>
+        <TrendChart points={data.visitSeries} label="Page views per day" height={130} width={1400} />
+      </Card>
 
-      <section>
-        <div className="flex items-baseline justify-between">
-          <h2 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-faint">
-            Recent orders
-          </h2>
-          {recentOrders.length > 0 && (
-            <Link href="/admin/orders" className="text-xs text-brand-600 hover:underline">
-              All orders
-            </Link>
+      <div className="grid gap-3 lg:grid-cols-3">
+        <Card className="p-4">
+          <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.06em] text-ink-faint">Best sellers</h2>
+          <RankedBars rows={data.topProducts} format="currency" empty="No sales in this period." />
+        </Card>
+        <Card className="p-4">
+          <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.06em] text-ink-faint">Most visited</h2>
+          <RankedBars rows={data.topPages} empty="No visits in this period." />
+        </Card>
+        <Card className="p-4">
+          <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.06em] text-ink-faint">Arriving from</h2>
+          <RankedBars rows={data.topReferrers} empty="No visits in this period." />
+        </Card>
+      </div>
+
+      <Card className="p-4">
+        <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="text-xs font-semibold uppercase tracking-[0.06em] text-ink-faint">Where the orders are</h2>
+          {/* Cancelled is not a stage an order passes through, so it is reported
+              beside the sequence rather than as its final step. */}
+          {data.cancelled > 0 && (
+            <p className="text-xs text-ink-soft">
+              <span className="font-mono tabular-nums text-rose">{data.cancelled}</span> cancelled
+            </p>
           )}
         </div>
-
-        {recentOrders.length === 0 ? (
-          <div className="mt-2">
-            <EmptyState
-              icon={ShoppingBag}
-              title="No orders yet"
-              description="Once someone checks out, their order shows up here."
-              action={
-                <ButtonLink href="/admin/customize" variant="secondary" size="sm">
-                  <Package className="h-3.5 w-3.5" />
-                  Set up your storefront
-                </ButtonLink>
-              }
-            />
-          </div>
-        ) : (
-          <Card className="mt-2 divide-y divide-border overflow-hidden">
-            {recentOrders.map((order) => (
-                <Link
-                  key={order.id}
-                  href={`/admin/orders/${order.id}`}
-                  className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-subtle"
-                >
-                  <span className="font-mono text-xs tabular-nums text-ink-faint">#{order.id}</span>
-                  <span className="min-w-0 flex-1 truncate text-sm">{order.customerName}</span>
-                  <Badge tone={orderStatusTone(order.orderStatus)}>
-                    {statusLabel(order.orderStatus)}
-                  </Badge>
-                  <span className="font-mono text-sm tabular-nums">{formatPKR(order.total)}</span>
-                </Link>
-            ))}
-          </Card>
-        )}
-      </section>
+        <StageBar stages={stages} />
+      </Card>
     </div>
   );
 }

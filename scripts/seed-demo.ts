@@ -83,8 +83,26 @@ const ORDER_STATUS = ["PENDING", "CONFIRMED", "PACKED", "SHIPPED", "DELIVERED", 
 const PAY_METHOD = ["COD", "COD", "BANK_TRANSFER", "JAZZCASH", "EASYPAISA"] as const;
 const ENQ_STATUS = ["NEW", "NEW", "IN_PROGRESS", "QUOTED", "WON", "LOST"] as const;
 
-/** Short, readable, and stable for a given index — matches lib/order-id.ts's shape. */
-const orderId = (n: number) => `D${n.toString(36).toUpperCase().padStart(4, "0")}`;
+/**
+ * A short order id, unique across shops.
+ *
+ * An Order's id is its primary key and is global, not per-shop. The first
+ * version of this used `D0001` upward, which meant seeding a second shop hit a
+ * primary-key conflict on every row — and because the insert used
+ * `skipDuplicates`, all sixty orders were dropped in silence while their line
+ * items were inserted anyway, pointing at the *first* shop's orders. A
+ * merchant's order lines attached to another merchant's orders, from one
+ * helper script.
+ *
+ * So the shop is in the id. The check below is the belt to this brace: items
+ * are only written for orders that came back from the database belonging to
+ * this shop.
+ */
+const shopKey = (shopId: string) =>
+  shopId.split("").reduce((h, ch) => (h * 33 + ch.charCodeAt(0)) >>> 0, 5381).toString(36).slice(-3).toUpperCase();
+
+const orderId = (shopId: string, n: number) =>
+  `D${shopKey(shopId)}${n.toString(36).toUpperCase().padStart(3, "0")}`;
 
 async function main() {
   const subdomain = arg("shop");
@@ -158,6 +176,17 @@ async function main() {
     const cats = await prisma.category.deleteMany({
       where: { shopId: shop.id, slug: { in: CATEGORIES.map(([, s]) => s) }, products: { none: {} } },
     });
+
+    // Lines whose order belongs to another shop, or to no order at all. An
+    // earlier version of this script could create them; nothing should.
+    const orphans = await prisma.$executeRaw`
+      DELETE FROM "OrderItem" oi
+       USING "Order" o
+       WHERE oi."orderId" = o."id"
+         AND oi."shopId" = ${shop.id}
+         AND o."shopId" <> oi."shopId"
+    `;
+    if (orphans > 0) console.log(`removed  ${orphans} line(s) attached to another shop's order`);
 
     console.log(`removed  ${products.count} products · ${orders.count} orders · ${people.count} customers · ${enquiries.count} enquiries · ${cats.count} empty categories`);
     await prisma.$disconnect();
@@ -272,13 +301,15 @@ async function main() {
     select: { id: true, title: true, basePrice: true, salePrice: true, costPrice: true, variants: { select: { id: true, size: true, color: true } } },
   });
 
+  // Global, not per shop: the id is a primary key, so a clash with any shop's
+  // order is a clash.
   const taken = new Set(
-    (await prisma.order.findMany({ where: { shopId: shop.id, id: { startsWith: "D" } }, select: { id: true } })).map((o) => o.id)
+    (await prisma.order.findMany({ where: { id: { startsWith: "D" } }, select: { id: true } })).map((o) => o.id)
   );
   const orders = [];
   const items: (Line & { id: string; orderId: string; shopId: string })[] = [];
   for (let i = 0; i < 60 && sellable.length > 0 && customers.length > 0; i++) {
-    const id = orderId(i + 1);
+    const id = orderId(shop.id, i + 1);
     if (taken.has(id)) continue;
     const who = pick(r, customers);
     const [city, province] = pick(r, CITIES);
@@ -309,8 +340,24 @@ async function main() {
     for (const l of lines) items.push({ ...l, id: newId(), orderId: id, shopId: shop.id });
   }
   await prisma.order.createMany({ data: orders, skipDuplicates: true });
-  await prisma.orderItem.createMany({ data: items, skipDuplicates: true });
-  console.log(`orders:     ${orders.length} new`);
+
+  // Read back what actually landed, and write lines only for those. createMany
+  // with skipDuplicates reports nothing about what it skipped, so without this
+  // a silently-dropped order leaves its lines attached to whatever else holds
+  // that id — which is how 129 of one shop's order lines ended up on another
+  // shop's orders.
+  const landed = new Set(
+    (await prisma.order.findMany({
+      where: { id: { in: orders.map((o) => o.id) }, shopId: shop.id },
+      select: { id: true },
+    })).map((o) => o.id)
+  );
+  const safeItems = items.filter((i) => landed.has(i.orderId));
+  if (safeItems.length !== items.length) {
+    console.log(`  note: ${items.length - safeItems.length} line(s) skipped — their order was not created`);
+  }
+  await prisma.orderItem.createMany({ data: safeItems, skipDuplicates: true });
+  console.log(`orders:     ${landed.size} new`);
 
   const already = new Set(
     (await prisma.enquiry.findMany({ where: { shopId: shop.id, email: { endsWith: MAIL } }, select: { productTitle: true, email: true } }))
