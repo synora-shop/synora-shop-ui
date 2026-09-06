@@ -7,7 +7,7 @@ import { StoreLifecycle } from "@/components/admin/store-lifecycle";
 import { StoreStatusBar } from "@/components/admin/store-status-bar";
 import { registryBusinessType } from "@/lib/themes/business-type";
 import { defaultThemeFor, themesFor } from "@/lib/themes/registry";
-import { PageHeader } from "@/components/ui/primitives";
+import { PageHeader, SectionDivider } from "@/components/ui/primitives";
 import { ThemeGallery } from "@/components/admin/theme-gallery";
 
 /**
@@ -68,14 +68,11 @@ export default async function ThemePage() {
       />
 
       {canOpenAndClose && me && (
-        <section id="opening-and-closing" className="space-y-3 border-t border-border pt-5">
-          <div>
-            <h2 className="text-sm font-semibold">Opening and closing</h2>
-            <p className="mt-0.5 text-xs text-ink-soft">
-              Whether you are open for business, and what customers see when you
-              are not.
-            </p>
-          </div>
+        <section id="opening-and-closing" className="space-y-2.5 pt-2">
+          <SectionDivider
+            title="Opening and closing"
+            description="Whether you are open for business, and what customers see when you are not."
+          />
           <StoreLifecycle
             status={me.shop.status}
             storeName={me.shop.name}

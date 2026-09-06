@@ -1,21 +1,66 @@
 import { cache } from "react";
+import { headers } from "next/headers";
 import { currentShop } from "@/lib/data/shop";
 import { cachedForShop } from "@/lib/data/cached";
+import { SHOP_PATH_HEADER } from "@/lib/shop-context";
+import { THEMES, themeFor } from "@/lib/themes/registry";
 import { resolveThemeTokens, type ThemeTokens } from "@/lib/theme-tokens";
+
+/**
+ * A theme to render this one request in, instead of the shop's own.
+ *
+ * `?__theme=meridian` is how the Themes screen shows a merchant what an
+ * *unchosen* theme would look like — on their own products, in a still and in
+ * the "View full" tab — without activating it first. The parameter was being
+ * put in those links long before anything read it, so both previews showed the
+ * theme already in use and the two cards were indistinguishable.
+ *
+ * Nothing is stored and nothing is shared: it lives in one request's query
+ * string, an unknown key is ignored, and reading a header keeps the render
+ * dynamic, so no cached page can be left wearing somebody's preview.
+ */
+async function previewTheme(): Promise<string | null> {
+  const path = (await headers()).get(SHOP_PATH_HEADER);
+  const query = path?.indexOf("?") ?? -1;
+  if (!path || query === -1) return null;
+  const key = new URLSearchParams(path.slice(query + 1)).get("__theme");
+  return key && key in THEMES ? key : null;
+}
 
 /**
  * The active theme tokens for an environment.
  *
- * No row means "unthemed" — resolveThemeTokens hands back the defaults, which
- * emit no CSS at all, so a store that has never opened the Theme panel is
- * byte-for-byte what it was before this feature existed.
+ * Three layers, weakest first: the platform's defaults, then the chosen
+ * theme's, then whatever the merchant has changed in the customizer. So
+ * picking a theme decides everything the merchant has not decided for
+ * themselves, and never overrules a colour they set by hand.
+ *
+ * The middle layer was missing. `themeKey` was written by the Themes screen
+ * and read by nobody, so activating Meridian changed the row and nothing else:
+ * the screen said "only the layout changes" and then nothing changed at all.
+ *
+ * No row still means "unthemed" — resolveThemeTokens hands back the defaults,
+ * which emit no CSS, so a store that has never opened either panel is
+ * byte-for-byte what it was before any of this existed.
  */
 export const getThemeTokens = cache(async (): Promise<ThemeTokens> => {
   const shop = await currentShop();
   if (!shop) return resolveThemeTokens(undefined);
-  const tokens = await cachedForShop(shop.id, "theme", async (t) => {
-    const row = await t.themeSettings.findFirst({});
-    return row?.tokens ?? null;
+
+  const [row, preview] = await Promise.all([
+    cachedForShop(shop.id, "theme", async (t) => {
+      const found = await t.themeSettings.findFirst({});
+      return found ? { themeKey: found.themeKey, tokens: found.tokens } : null;
+    }),
+    previewTheme(),
+  ]);
+
+  const key = preview ?? row?.themeKey;
+  if (!key && !row) return resolveThemeTokens(undefined);
+
+  // Merchant last: a value they set by hand outranks the theme it came from.
+  return resolveThemeTokens({
+    ...themeFor(key).tokens,
+    ...((row?.tokens ?? {}) as Record<string, unknown>),
   });
-  return resolveThemeTokens(tokens ?? undefined);
 });

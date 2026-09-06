@@ -5,7 +5,8 @@ import Link from "next/link";
 import { Check, ExternalLink, Loader2, Sparkles } from "lucide-react";
 import { chooseTheme } from "@/app/admin/theme/actions-theme-choice";
 import { useToast } from "@/components/ui/toast";
-import { Badge, Button, ButtonLink, buttonClass } from "@/components/ui/primitives";
+import { Badge, Button, ButtonLink, SectionDivider, buttonClass } from "@/components/ui/primitives";
+import { StorefrontStill } from "@/components/admin/storefront-still";
 import { cn } from "@/lib/utils";
 
 export type GalleryTheme = {
@@ -73,28 +74,15 @@ export function ThemeGallery({
             </ButtonLink>
           </div>
         </div>
-        {/* Fixed height and pointer-events off: a still, not a window. */}
-        <div className="relative h-64 overflow-hidden bg-subtle sm:h-80">
-          <iframe
-            src={storeUrl}
-            title="Your storefront"
-            loading="lazy"
-            tabIndex={-1}
-            aria-hidden
-            className="pointer-events-none absolute left-0 top-0 h-[1200px] w-[1440px] origin-top-left border-0"
-            style={{ transform: "scale(0.42)" }}
-          />
-        </div>
+        <StorefrontStill url={storeUrl} height={380} />
       </section>
 
       {/* 2 and 3. What else it could wear, and switching to it. */}
-      <section className="space-y-3">
-        <div>
-          <h2 className="text-sm font-semibold">Available themes</h2>
-          <p className="mt-0.5 text-xs text-ink-soft">
-            Switching keeps your colours, fonts and content. Only the layout changes.
-          </p>
-        </div>
+      <section className="space-y-2.5">
+        <SectionDivider
+          title="Available themes"
+          description="Each one is shown running on your own products, not on a stock screenshot. Switching keeps your colours, fonts and content — only the layout changes."
+        />
 
         <ul className="grid gap-3 sm:grid-cols-2">
           {themes.map((theme) => {
@@ -104,48 +92,55 @@ export function ThemeGallery({
               <li
                 key={theme.key}
                 className={cn(
-                  "flex flex-col rounded-xl border bg-surface p-3.5",
+                  "flex flex-col overflow-hidden rounded-xl border bg-surface",
                   active ? "border-green ring-1 ring-green" : "border-border"
                 )}
               >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold">{theme.name}</p>
-                    <p className="mt-0.5 text-xs text-ink-soft">{theme.description}</p>
-                  </div>
-                  {active && (
-                    // Green because it reports a state, not because it is
-                    // important. The accent colour is the store's, and using it
-                    // for "this one is on" leaves nothing to tell a merchant
-                    // apart from a button they could press.
-                    <Badge tone="good" className="flex-shrink-0">
-                      <Check className="h-3 w-3" />
-                      In use
-                    </Badge>
-                  )}
-                </div>
+                {/* A theme is a look. Choosing between two paragraphs of prose
+                    is choosing blind, so each card shows the merchant's own
+                    shop wearing it. */}
+                <StorefrontStill url={theme.previewUrl} height={200} className="border-b border-border" />
 
-                <div className="mt-3 flex items-center gap-2">
-                  <a
-                    href={theme.previewUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={buttonClass("secondary", "sm")}
-                  >
-                    View full
-                    <ExternalLink className="h-3 w-3 opacity-60" />
-                  </a>
-                  {!active && (
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={() => activate(theme.key)}
-                      disabled={pending}
+                <div className="flex flex-1 flex-col p-3.5">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-ink">{theme.name}</p>
+                      <p className="mt-0.5 text-xs text-ink-soft">{theme.description}</p>
+                    </div>
+                    {active && (
+                      // Green because it reports a state, not because it is
+                      // important. The accent colour is the store's, and using it
+                      // for "this one is on" leaves nothing to tell a merchant
+                      // apart from a button they could press.
+                      <Badge tone="good" className="flex-shrink-0">
+                        <Check className="h-3 w-3" />
+                        In use
+                      </Badge>
+                    )}
+                  </div>
+
+                  <div className="mt-3 flex items-center gap-2">
+                    <a
+                      href={theme.previewUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={buttonClass("secondary", "sm")}
                     >
-                      {busy && <Loader2 className="h-3 w-3 animate-spin" />}
-                      {busy ? "Activating…" : "Activate"}
-                    </Button>
-                  )}
+                      View full
+                      <ExternalLink className="h-3 w-3 opacity-60" />
+                    </a>
+                    {!active && (
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => activate(theme.key)}
+                        disabled={pending}
+                      >
+                        {busy && <Loader2 className="h-3 w-3 animate-spin" />}
+                        {busy ? "Activating…" : "Activate"}
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </li>
             );

@@ -287,6 +287,23 @@ check(
   rolledThumb.map((f) => relative(ROOT, f)).join(", ")
 );
 
+// The Themes screen wrote themeKey and nothing read it, so activating a theme
+// changed a database row and not one pixel of the storefront — while the screen
+// said "only the layout changes".
+const themeData = readFileSync(join(ROOT, "lib/data/theme.ts"), "utf8");
+check("the chosen theme reaches the storefront", /themeFor\(/.test(themeData));
+check("and the merchant's own colours still win", /\.\.\.themeFor\([\s\S]{0,80}\.\.\.\(\(row\?\.tokens/.test(themeData));
+// Every link to a theme preview carried ?__theme= long before anything read it,
+// so "View full" showed the theme you already had.
+check("a theme can be previewed without activating it", /__theme/.test(themeData));
+const gallery = readFileSync(join(ROOT, "components/admin/theme-gallery.tsx"), "utf8");
+check("and each card shows the shop wearing it", /<StorefrontStill url={theme\.previewUrl}/.test(gallery));
+// A preview must never outlive the request that asked for it.
+check(
+  "the preview is read from the request, and never written",
+  /headers\(\)/.test(themeData) && !/\.(upsert|update|create|createMany)\(/.test(themeData)
+);
+
 // Fifteen buttons were on screen at once in the media library — three under
 // every picture — all competing with the pictures, which are the content. The
 // picture is the button now, and the rarer two recede until it is hovered.

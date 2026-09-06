@@ -81,8 +81,12 @@ arrangement. `APP.ai` remains the authority on layout and on the four greys.
   `https://picsum.photos/seed/`) so `--undo` still removes exactly what was
   added.
 
-Still to decide: the theme card and its live preview, the bulk-select bar, and
-the order row.
+- The **theme card** now shows the shop wearing that theme, because choosing
+  between two paragraphs of prose is choosing blind. The store's own preview
+  fills the width it is given instead of sitting in the left half of it — the
+  scale is measured rather than fixed at 0.42.
+
+Still to decide: the bulk-select bar and the order row.
 
 **One mismatch with APP.ai to fix in this pass**
 
@@ -165,6 +169,18 @@ changed after an earlier database copy was taken, so older notes say AHAD1V.
 ---
 
 ## Known problems
+
+- ~~**Activating a theme did nothing at all.**~~ Fixed 6 September. The Themes
+  screen wrote `themeKey` and no code anywhere read it, so switching to
+  Meridian changed a database row and not one pixel — while the screen said
+  "switching keeps your colours, fonts and content, only the layout changes".
+  The storefront now resolves three layers: the platform's defaults, then the
+  chosen theme's tokens, then the merchant's own customizer edits, which still
+  win. `?__theme=` is read too, so a theme can be previewed without activating
+  it; it lives in one request and is never stored. **A shop on Aurora sees no
+  change** — Aurora's tokens are empty by design, so it is the platform
+  default under another name. Only a shop that had chosen Meridian changes
+  appearance, and it changes to the thing it asked for.
 
 - **The panel offers a Currency setting it then ignores.** Settings has a
   currency picker and it saves, but every price anywhere — the product list,
