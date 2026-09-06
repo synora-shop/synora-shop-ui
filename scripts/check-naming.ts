@@ -287,6 +287,24 @@ check(
   rolledThumb.map((f) => relative(ROOT, f)).join(", ")
 );
 
+// Fifteen buttons were on screen at once in the media library — three under
+// every picture — all competing with the pictures, which are the content. The
+// picture is the button now, and the rarer two recede until it is hovered.
+const media = readFileSync(join(ROOT, "components/admin/media-library.tsx"), "utf8");
+check("the picture itself copies its address", /aria-label={`Copy the address of/.test(media));
+check("copying says so where it happened", /Copied" : "Copy link/.test(media));
+check(
+  "the rarer actions recede until hover",
+  /lg:opacity-0 lg:group-hover:opacity-100/.test(media)
+);
+// A finger has no hover, so the hint that appears over the picture can be
+// hover-only, but the action underneath it must not be: the tile is a button
+// in its own right, and tapping it copies whether the hint showed or not.
+check(
+  "the tile is a button, not a hover target",
+  /<button[\s\S]{0,200}onClick={\(\) => copy\(asset\)}[\s\S]{0,1600}<img/.test(media)
+);
+
 // An empty list is a sentence in a box on some screens and a proper empty
 // state on others; the Bin was the last one telling the story in a grey line.
 for (const f of ["components/admin/bin-product-list.tsx", "components/admin/bin-order-list.tsx"]) {

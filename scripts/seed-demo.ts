@@ -20,6 +20,7 @@
  *   customers   every address is at @demo.invalid
  *   orders      placed by those customers
  *   enquiries   sent from those addresses
+ *   files       every picture's address begins https://picsum.photos/seed/
  *
  * `.invalid` is reserved by RFC 2606 and can never resolve, so no demo address
  * can ever receive real mail — which matters, because orders and enquiries here
@@ -47,6 +48,8 @@ const newId = () => `dm${Date.now().toString(36)}${randomBytes(8).toString("hex"
 
 const MARK = "DEMO-";
 const MAIL = "@demo.invalid";
+/** Every demo picture comes from here, which makes the media rows self-marking. */
+const PHOTOS = "https://picsum.photos/seed/";
 
 const arg = (name: string) => {
   const i = process.argv.indexOf(`--${name}`);
@@ -177,6 +180,10 @@ async function main() {
       where: { shopId: shop.id, slug: { in: CATEGORIES.map(([, s]) => s) }, products: { none: {} } },
     });
 
+    const files = await prisma.mediaAsset.deleteMany({
+      where: { shopId: shop.id, url: { startsWith: PHOTOS } },
+    });
+
     // Lines whose order belongs to another shop, or to no order at all. An
     // earlier version of this script could create them; nothing should.
     const orphans = await prisma.$executeRaw`
@@ -188,7 +195,7 @@ async function main() {
     `;
     if (orphans > 0) console.log(`removed  ${orphans} line(s) attached to another shop's order`);
 
-    console.log(`removed  ${products.count} products · ${orders.count} orders · ${people.count} customers · ${enquiries.count} enquiries · ${cats.count} empty categories`);
+    console.log(`removed  ${products.count} products · ${orders.count} orders · ${people.count} customers · ${enquiries.count} enquiries · ${cats.count} empty categories · ${files.count} files`);
     await prisma.$disconnect();
     return;
   }
@@ -250,7 +257,7 @@ async function main() {
     data: fresh.map((p, i) => ({
       id: p.id, shopId: shop.id, title: p.title, slug: p.slug,
       description: `A ${p.title.toLowerCase()} that does the job. Demo data — safe to delete.`,
-      images: [`https://picsum.photos/seed/${p.slug}/800/800`],
+      images: [`${PHOTOS}${p.slug}/800/800`],
       basePrice: p.basePrice, salePrice: p.salePrice, costPrice: p.costPrice,
       // A quarter left as drafts, so the status filter has something to filter
       // and the list is not uniformly green.
@@ -277,8 +284,28 @@ async function main() {
     data: variants.filter((v) => freshIds.has(v.productId)).map((v) => ({ ...v, shopId: shop.id })),
     skipDuplicates: true,
   });
+  // The library is fed by uploads, and a demo shop has never uploaded anything —
+  // so the Data screen was the one screen that stayed empty after seeding. These
+  // are the same addresses the products carry, which is what a real library
+  // holds: the pictures the shop is already using.
+  await prisma.mediaAsset.createMany({
+    data: products.map((p, i) => ({
+      id: newId(), shopId: shop.id,
+      url: `${PHOTOS}${p.slug}/800/800`,
+      filename: `${p.slug}.jpg`,
+      format: "jpg",
+      // A plausible spread rather than one number, so the library's sizes read
+      // like files instead of like a placeholder.
+      size: 90_000 + ((i * 37_211) % 700_000),
+      folder: "products",
+      createdAt: new Date(Date.now() - ((i * 7) % 300) * 86_400_000),
+    })),
+    skipDuplicates: true,
+  });
+
   console.log(`categories: ${categories.length}`);
   console.log(`products:   ${fresh.length} new (${products.length} in the set)`);
+  console.log(`files:      ${products.length}`);
 
   const people = Array.from({ length: 25 }, (_, i) => {
     const name = `${FIRST[i % FIRST.length]} ${LAST[(i * 7) % LAST.length]}`;

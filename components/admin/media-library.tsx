@@ -94,50 +94,61 @@ export function MediaLibrary({
   if (view === "list") {
     return (
       <>
-        <div className="divide-y divide-border rounded-lg border border-border bg-surface">
+        <div className="divide-y divide-border rounded-xl border border-border bg-surface">
           {assets.map((asset) => (
-            <div key={asset.id} className="flex items-center gap-3 px-3 py-2">
-              <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded border border-border bg-subtle">
+            <div
+              key={asset.id}
+              className="group grid grid-cols-[2.75rem_minmax(0,1fr)_auto] items-center gap-3 px-4 py-2.5 lg:gap-4"
+            >
+              <div className="h-11 w-11 overflow-hidden rounded-lg border border-border bg-subtle">
                 {/* eslint-disable-next-line @next/next/no-img-element -- Blob URLs
                     are arbitrary hosts; next/image would need each one allowed. */}
                 <img src={asset.url} alt="" loading="lazy" className="h-full w-full object-cover" />
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{asset.filename}</p>
-                <p className="text-[11px] text-ink-soft">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium text-ink">{asset.filename}</p>
+                <p className="truncate text-xs text-ink-faint">
                   {asset.format.toUpperCase()} · {formatSize(asset.size)}
                   {asset.folder && ` · ${asset.folder}`}
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => copy(asset)}
-                className={cn(
-                  "flex flex-shrink-0 items-center gap-1 rounded-pill border border-border px-2.5 py-1 text-[11px] transition-colors hover:bg-subtle",
-                  copied === asset.id && "border-green/40 bg-green-bg text-green"
-                )}
-              >
-                {copied === asset.id ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-                {copied === asset.id ? "Copied" : "Copy link"}
-              </button>
-              <a
-                href={asset.url}
-                target="_blank"
-                rel="noreferrer"
-                aria-label={`Open ${asset.filename} in a new tab`}
-                className="flex-shrink-0 rounded-pill border border-border p-1.5 text-ink-soft transition-colors hover:bg-subtle hover:text-ink"
-              >
-                <ExternalLink className="h-3 w-3" />
-              </a>
-              <button
-                type="button"
-                onClick={() => remove(asset)}
-                disabled={pending}
-                aria-label={`Delete ${asset.filename}`}
-                className="flex-shrink-0 rounded-pill border border-border p-1.5 text-ink-soft transition-colors hover:border-rose/40 hover:bg-rose-bg hover:text-rose disabled:opacity-50"
-              >
-                <Trash2 className="h-3 w-3" />
-              </button>
+              <div className="flex flex-shrink-0 items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => copy(asset)}
+                  className={cn(
+                    "flex items-center gap-1.5 rounded-pill border px-2.5 py-1 text-xs transition-colors",
+                    copied === asset.id
+                      ? "border-green/40 bg-green-bg text-green"
+                      : "border-border text-ink-soft hover:bg-subtle hover:text-ink"
+                  )}
+                >
+                  {copied === asset.id ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copied === asset.id ? "Copied" : "Copy link"}
+                </button>
+                {/* The rarer two recede until the row is under the pointer, the
+                    same as every other list in the panel. */}
+                <div className="flex items-center gap-1 transition-opacity lg:opacity-0 lg:group-hover:opacity-100 lg:group-focus-within:opacity-100">
+                  <a
+                    href={asset.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={`Open ${asset.filename} in a new tab`}
+                    className="flex h-8 w-8 items-center justify-center rounded-full text-ink-soft transition-colors hover:bg-subtle hover:text-ink"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => remove(asset)}
+                    disabled={pending}
+                    aria-label={`Delete ${asset.filename}`}
+                    className="flex h-8 w-8 items-center justify-center rounded-full text-ink-soft transition-colors hover:bg-rose-bg hover:text-rose disabled:opacity-50"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
             </div>
           ))}
         </div>
@@ -152,68 +163,81 @@ export function MediaLibrary({
         {assets.map((asset) => (
           <li
             key={asset.id}
-            className="group overflow-hidden rounded-xl border border-border bg-surface"
+            className="group relative overflow-hidden rounded-xl border border-border bg-surface transition-shadow hover:shadow-sm"
           >
-            {/* Chequerboard behind the picture, so a transparent PNG reads as
-                transparent rather than as a white rectangle. */}
-            <div
-              className="flex aspect-square items-center justify-center bg-[length:16px_16px] bg-[position:0_0,8px_8px] bg-[image:linear-gradient(45deg,#e4e4e4_25%,transparent_25%,transparent_75%,#e4e4e4_75%),linear-gradient(45deg,#e4e4e4_25%,transparent_25%,transparent_75%,#e4e4e4_75%)]"
+            {/* The picture is the button. Copying the address is what a merchant
+                comes here to do — every image field in the admin accepts a
+                pasted URL — so it is the whole tile rather than one of three
+                pills competing with the picture for attention. */}
+            <button
+              type="button"
+              onClick={() => copy(asset)}
+              aria-label={`Copy the address of ${asset.filename}`}
+              className="block w-full text-left"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element -- Blob URLs
-                  are arbitrary hosts; next/image would need each one allowed. */}
-              <img
-                src={asset.url}
-                alt={asset.filename}
-                loading="lazy"
-                className="h-full w-full object-contain"
-              />
-            </div>
-            <div className="space-y-1.5 p-2.5">
-              <p className="truncate text-xs font-medium" title={asset.filename}>
-                {asset.filename}
-              </p>
-              <p className="text-[11px] text-ink-soft">
-                {asset.format.toUpperCase()} · {formatSize(asset.size)}
-                {asset.folder && ` · ${asset.folder}`}
-              </p>
-              <div className="flex items-center gap-1 pt-0.5">
-                <button
-                  type="button"
-                  onClick={() => copy(asset)}
+              {/* Chequerboard behind the picture, so a transparent PNG reads as
+                  transparent rather than as a white rectangle. */}
+              <span className="relative flex aspect-square items-center justify-center bg-[length:16px_16px] bg-[position:0_0,8px_8px] bg-[image:linear-gradient(45deg,#e4e4e4_25%,transparent_25%,transparent_75%,#e4e4e4_75%),linear-gradient(45deg,#e4e4e4_25%,transparent_25%,transparent_75%,#e4e4e4_75%)]">
+                {/* eslint-disable-next-line @next/next/no-img-element -- Blob URLs
+                    are arbitrary hosts; next/image would need each one allowed. */}
+                <img
+                  src={asset.url}
+                  alt={asset.filename}
+                  loading="lazy"
+                  className="h-full w-full object-contain"
+                />
+                <span
                   className={cn(
-                    "flex flex-1 items-center justify-center gap-1 rounded-pill border border-border px-2 py-1 text-[11px] transition-colors hover:bg-subtle",
-                    copied === asset.id && "border-green/40 bg-green-bg text-green"
+                    "absolute inset-0 flex items-center justify-center transition-opacity",
+                    copied === asset.id
+                      ? "bg-green/15 opacity-100"
+                      : "bg-ink/35 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"
                   )}
                 >
-                  {copied === asset.id ? (
-                    <>
-                      <Check className="h-3 w-3" /> Copied
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="h-3 w-3" /> Copy link
-                    </>
-                  )}
-                </button>
-                <a
-                  href={asset.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label={`Open ${asset.filename} in a new tab`}
-                  className="rounded-pill border border-border p-1.5 text-ink-soft transition-colors hover:bg-subtle hover:text-ink"
-                >
-                  <ExternalLink className="h-3 w-3" />
-                </a>
-                <button
-                  type="button"
-                  onClick={() => remove(asset)}
-                  disabled={pending}
-                  aria-label={`Delete ${asset.filename}`}
-                  className="rounded-pill border border-border p-1.5 text-ink-soft transition-colors hover:border-rose/40 hover:bg-rose-bg hover:text-rose disabled:opacity-50"
-                >
-                  <Trash2 className="h-3 w-3" />
-                </button>
-              </div>
+                  <span
+                    className={cn(
+                      "flex items-center gap-1.5 rounded-pill px-3 py-1.5 text-xs font-medium shadow-sm",
+                      copied === asset.id ? "bg-green text-white" : "bg-white text-ink"
+                    )}
+                  >
+                    {copied === asset.id ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                    {copied === asset.id ? "Copied" : "Copy link"}
+                  </span>
+                </span>
+              </span>
+              <span className="block space-y-0.5 p-2.5">
+                <span className="block truncate text-xs font-medium text-ink" title={asset.filename}>
+                  {asset.filename}
+                </span>
+                <span className="block text-[11px] text-ink-faint">
+                  {asset.format.toUpperCase()} · {formatSize(asset.size)}
+                  {asset.folder && ` · ${asset.folder}`}
+                </span>
+              </span>
+            </button>
+
+            {/* Opening and deleting are rarer, so they sit on the picture and
+                come forward on hover. Always visible below lg: a finger has no
+                hover, and an invisible delete is no delete. */}
+            <div className="absolute right-1.5 top-1.5 flex items-center gap-1 transition-opacity lg:opacity-0 lg:group-hover:opacity-100 lg:group-focus-within:opacity-100">
+              <a
+                href={asset.url}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`Open ${asset.filename} in a new tab`}
+                className="flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-ink-soft shadow-sm backdrop-blur transition-colors hover:text-ink"
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+              <button
+                type="button"
+                onClick={() => remove(asset)}
+                disabled={pending}
+                aria-label={`Delete ${asset.filename}`}
+                className="flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-ink-soft shadow-sm backdrop-blur transition-colors hover:text-rose disabled:opacity-50"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
             </div>
           </li>
         ))}

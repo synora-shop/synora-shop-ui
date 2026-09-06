@@ -68,8 +68,21 @@ arrangement. `APP.ai` remains the authority on layout and on the four greys.
 - The **Bin** shows the same row, dimmed, instead of a different-looking one,
   and both bins have a real empty state rather than a grey sentence in a box.
 
-Still to decide: the theme card and its live preview, the media tile, the
-bulk-select bar, and the order row.
+- The **media tile** is settled. Fifteen buttons used to be on screen at once
+  — three under every picture — competing with the pictures, which are the
+  content. The picture is the button now: clicking it copies the address, and
+  says "Copied" where it happened. Opening and deleting recede until the tile
+  is hovered, and stay put below the desktop breakpoint, because a finger has
+  no hover and an invisible delete is no delete. The list view matches.
+- The **demo seeder now fills the media library**, which was the one screen
+  that stayed empty after seeding: a demo shop has never uploaded anything.
+  The rows carry the same addresses the products carry, which is what a real
+  library holds. They are self-marking (every address begins
+  `https://picsum.photos/seed/`) so `--undo` still removes exactly what was
+  added.
+
+Still to decide: the theme card and its live preview, the bulk-select bar, and
+the order row.
 
 **One mismatch with APP.ai to fix in this pass**
 
