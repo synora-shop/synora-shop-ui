@@ -54,6 +54,30 @@ export function statusLabel(status: string): string {
   return status.charAt(0) + status.slice(1).toLowerCase().replace(/_/g, " ");
 }
 
+/**
+ * How a payment method is written for a person.
+ *
+ * The enum was reaching the screen raw — an order list reading BANK_TRANSFER
+ * and EASYPAISA in shouting capitals, which is the database's spelling, not a
+ * merchant's. Anything unrecognised falls back to sentence case rather than
+ * being hidden, so a method added later reads acceptably before anyone
+ * remembers to name it here.
+ */
+export function paymentLabel(method: string): string {
+  switch (method) {
+    case "COD":
+      return "Cash on delivery";
+    case "BANK_TRANSFER":
+      return "Bank transfer";
+    case "JAZZCASH":
+      return "JazzCash";
+    case "EASYPAISA":
+      return "EasyPaisa";
+    default:
+      return statusLabel(method);
+  }
+}
+
 export function paymentStatusStyle(status: string): string {
   switch (status) {
     case "CONFIRMED":

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { buttonClass } from "@/components/ui/primitives";
 import { useRouter } from "next/navigation";
 import { Check, ChevronDown, ChevronRight, Plus, Trash2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -144,7 +145,7 @@ export function MenuManager({
             <button
               type="button"
               onClick={() => setCreating(true)}
-              className="flex items-center gap-1.5 rounded-full bg-brand-500 px-4 py-1.5 text-xs font-medium text-white transition-colors hover:bg-brand-600 active:bg-brand-700"
+              className={buttonClass("primary", "sm")}
             >
               <Plus className="h-3.5 w-3.5" />
               New menu
@@ -172,7 +173,7 @@ export function MenuManager({
               type="button"
               onClick={handleCreate}
               disabled={busy || !newName.trim()}
-              className="rounded-full bg-brand-500 px-4 py-1.5 text-xs font-medium text-white transition-colors hover:bg-brand-600 active:bg-brand-700 disabled:opacity-40"
+              className={buttonClass("primary", "sm")}
             >
               {busy ? "Creating…" : "Create"}
             </button>

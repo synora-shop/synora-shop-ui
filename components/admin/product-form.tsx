@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { buttonClass } from "@/components/ui/primitives";
 import { useRouter } from "next/navigation";
 import { Plus, RotateCcw, Trash2 } from "lucide-react";
 import { saveProduct, type ProductInput, type VariantInput } from "@/app/admin/products/actions";
@@ -389,7 +390,7 @@ export function ProductForm({ categories, product }: { categories: Category[]; p
           type="button"
           disabled={submitting !== null}
           onClick={() => handleSubmit("draft")}
-          className="rounded-full border border-border px-6 py-3 text-sm font-medium text-ink-soft transition-colors hover:bg-subtle active:bg-brand-100 disabled:opacity-50"
+          className={buttonClass("secondary", "md")}
         >
           {submitting === "draft" ? "Saving…" : "Save Draft"}
         </button>
@@ -397,7 +398,7 @@ export function ProductForm({ categories, product }: { categories: Category[]; p
           type="button"
           disabled={submitting !== null}
           onClick={() => handleSubmit("publish")}
-          className="rounded-full bg-brand-500 px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-brand-600 active:bg-brand-700 disabled:opacity-50"
+          className={buttonClass("primary", "md")}
         >
           {submitting === "publish" ? "Publishing…" : "Publish"}
         </button>

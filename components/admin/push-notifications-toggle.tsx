@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { buttonClass } from "@/components/ui/primitives";
 import { Bell, BellOff } from "lucide-react";
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
@@ -122,7 +123,7 @@ export function PushNotificationsToggle() {
         type="button"
         onClick={status === "subscribed" ? disable : enable}
         disabled={busy}
-        className="flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-medium text-ink transition-colors hover:bg-subtle active:bg-brand-100 disabled:opacity-50"
+        className={buttonClass("secondary", "md")}
       >
         {status === "subscribed" ? <BellOff className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
         {busy

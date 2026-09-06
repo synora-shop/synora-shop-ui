@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { buttonClass } from "@/components/ui/primitives";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 
@@ -109,7 +110,7 @@ export function AdminLoginForm() {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full rounded-full bg-brand-500 px-8 py-3 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-50"
+          className={buttonClass("primary", "md", "w-full")}
         >
           {submitting ? "Verifying…" : "Verify & sign in"}
         </button>
@@ -147,7 +148,7 @@ export function AdminLoginForm() {
       <button
         type="submit"
         disabled={submitting}
-        className="w-full rounded-full bg-brand-500 px-8 py-3 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-50"
+        className={buttonClass("primary", "md", "w-full")}
       >
         {submitting ? "Sending code…" : "Continue"}
       </button>

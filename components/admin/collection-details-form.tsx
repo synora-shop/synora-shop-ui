@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { buttonClass } from "@/components/ui/primitives";
 import { useRouter } from "next/navigation";
 import { updateCollectionDetails, type CollectionDetails } from "@/app/admin/categories/actions";
 import { SingleImageField } from "@/components/admin/single-image-field";
@@ -110,7 +111,7 @@ export function CollectionDetailsForm({
           type="button"
           onClick={handleSave}
           disabled={!dirty || saving}
-          className="rounded-full bg-brand-500 px-4 py-1.5 text-xs font-medium text-white transition-colors hover:bg-brand-600 active:bg-brand-700 disabled:opacity-40"
+          className={buttonClass("primary", "sm")}
         >
           {saving ? "Saving…" : dirty ? "Save" : "Saved"}
         </button>

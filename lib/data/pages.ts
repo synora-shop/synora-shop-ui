@@ -147,7 +147,13 @@ export async function getPageById(id: string): Promise<PageWithSections | null> 
 export async function getAllPages() {
   return (await db()).page.findMany({
     orderBy: { createdAt: "asc" },
-    include: { category: true },
+    include: {
+      category: true,
+      // How many blocks a page is built from. The admin list showed a title and
+      // a slug and nothing else, so an empty page and a finished one were
+      // indistinguishable until you opened them.
+      _count: { select: { sections: true } },
+    },
   });
 }
 

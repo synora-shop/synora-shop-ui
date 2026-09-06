@@ -1,4 +1,5 @@
 import { getAllPages } from "@/lib/data/pages";
+import { buttonClass } from "@/components/ui/primitives";
 import { createPage } from "@/app/admin/pages/actions";
 import { PageList } from "@/components/admin/page-list";
 
@@ -17,17 +18,17 @@ export default async function AdminPagesPage() {
         Collection pages are managed from Categories instead.
       </p>
 
-      <div className="mt-6 grid gap-8 lg:grid-cols-2">
-        <PageList pages={pages} />
+      <div className="mt-4 grid items-start gap-4 lg:grid-cols-2">
+        <PageList pages={pages.map((p) => ({ ...p, sections: p._count.sections }))} />
 
-        <form action={createPage} className="h-fit space-y-3 rounded-lg border border-border bg-white p-5">
-          <h2 className="font-serif text-lg font-semibold">Add Page</h2>
+        <form action={createPage} className="h-fit space-y-3 rounded-xl border border-border bg-surface p-4">
+          <h2 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-faint">Add a page</h2>
           <input name="title" required placeholder="Title (e.g. Shipping Policy)" className="input" />
           <input name="slug" placeholder="URL slug (auto-generated if left blank)" className="input" />
           <p className="text-xs text-ink-soft">Add it to the header or footer menu from the Menus page.</p>
           <button
             type="submit"
-            className="rounded-full bg-brand-500 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-600"
+            className={buttonClass("primary", "md")}
           >
             Add Page
           </button>

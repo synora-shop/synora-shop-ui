@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { buttonClass } from "@/components/ui/primitives";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -551,7 +552,7 @@ export function Customizer({
         <a
           href="/admin/customize/theme"
           title="Colours, fonts and shapes for the whole store"
-          className="rounded-full border border-border px-3 py-1.5 text-xs font-medium text-ink-soft transition-colors hover:bg-subtle active:bg-brand-100"
+          className={buttonClass("secondary", "sm")}
         >
           Theme
         </a>
@@ -839,7 +840,7 @@ export function Customizer({
               <button
                 type="button"
                 onClick={() => setNewPageOpen(false)}
-                className="rounded-full border border-border px-4 py-2 text-sm font-medium text-ink-soft transition-colors hover:bg-subtle active:bg-brand-100"
+                className={buttonClass("secondary", "md")}
               >
                 Cancel
               </button>

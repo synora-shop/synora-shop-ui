@@ -1,5 +1,7 @@
 import { cn } from "@/lib/utils";
 import { db } from "@/lib/data/shop";
+import { getStoreSettings } from "@/lib/data/settings";
+import { formatRelativeTime } from "@/lib/format-relative-time";
 import { OrderList } from "@/components/admin/order-list";
 import { FilterBar, type FilterGroup } from "@/components/admin/filter-bar";
 import { activeCount, keepKnown, readFilter, whereIn } from "@/lib/filters";
@@ -19,6 +21,7 @@ const STATUSES = ["PENDING", "CONFIRMED", "PACKED", "SHIPPED", "DELIVERED", "CAN
 
 export default async function AdminOrdersPage(props: PageProps<"/admin/orders">) {
   const sp = await props.searchParams;
+  const { timeZone } = await getStoreSettings();
   const status = keepKnown(readFilter(sp, "status"), STATUSES);
 
   // An order is looked for by its number, or by whoever placed it. Those are
@@ -45,7 +48,11 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
 
   const orders = await (await db()).order.findMany({
     where,
-    include: { items: { select: { price: true, costPrice: true, quantity: true } } },
+    select: {
+      id: true, customerName: true, shippingCity: true, createdAt: true,
+      total: true, paymentMethod: true, orderStatus: true,
+      items: { select: { price: true, costPrice: true, quantity: true } },
+    },
     orderBy: sort.orderBy as { createdAt: "desc" },
     skip,
     take,
@@ -83,7 +90,17 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
         </div>
       </ActionBar>
 
-      <OrderList orders={orders} />
+      <OrderList
+        orders={orders.map((o) => ({
+          ...o,
+          // Written out here rather than in the row: a client component
+          // formatting a date disagrees with the server that rendered it.
+          placed: formatRelativeTime(o.createdAt),
+          placedExact: new Intl.DateTimeFormat("en-GB", {
+            dateStyle: "medium", timeStyle: "short", timeZone,
+          }).format(o.createdAt),
+        }))}
+      />
 
       <PaginationBar basePath="/admin/orders" searchParams={sp} total={total} />
     </div>

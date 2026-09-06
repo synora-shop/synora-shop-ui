@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { buttonClass } from "@/components/ui/primitives";
 import { PageCrumb } from "@/components/admin/page-crumb";
 import { db } from "@/lib/data/shop";
 import { formatPKR, cn } from "@/lib/utils";
@@ -102,7 +103,7 @@ export default async function AdminOrderDetailPage(props: PageProps<"/admin/orde
               </select>
               <button
                 type="submit"
-                className="shrink-0 rounded-full bg-brand-500 px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-brand-600 active:bg-brand-700"
+                className={buttonClass("primary", "sm", "shrink-0")}
               >
                 Update
               </button>
@@ -133,7 +134,7 @@ export default async function AdminOrderDetailPage(props: PageProps<"/admin/orde
               </select>
               <button
                 type="submit"
-                className="shrink-0 rounded-full bg-brand-500 px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-brand-600 active:bg-brand-700"
+                className={buttonClass("primary", "sm", "shrink-0")}
               >
                 Update
               </button>

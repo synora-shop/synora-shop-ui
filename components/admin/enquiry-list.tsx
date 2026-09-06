@@ -9,7 +9,7 @@ import {
   saveEnquiryNotes,
   updateEnquiryStatus,
 } from "@/app/enquiry/actions";
-import { Badge, Button } from "@/components/ui/primitives";
+import { Badge, Button, buttonClass } from "@/components/ui/primitives";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast";
 import { formatRelativeTime } from "@/lib/format-relative-time";
@@ -129,13 +129,13 @@ export function EnquiryList({ enquiries }: { enquiries: EnquiryRow[] }) {
                       can't prove was delivered. */}
                   <a
                     href={`mailto:${row.email}?subject=${encodeURIComponent(`Re: ${row.productTitle}`)}`}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs transition-colors hover:bg-subtle"
+                    className={buttonClass("secondary", "sm")}
                   >
                     <Mail className="h-3.5 w-3.5" /> {row.email}
                   </a>
                   <a
                     href={`tel:${row.phone}`}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs transition-colors hover:bg-subtle"
+                    className={buttonClass("secondary", "sm")}
                   >
                     <Phone className="h-3.5 w-3.5" /> {row.phone}
                   </a>
@@ -143,7 +143,7 @@ export function EnquiryList({ enquiries }: { enquiries: EnquiryRow[] }) {
                     <Link
                       href={`/product/${row.productSlug}`}
                       target="_blank"
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs transition-colors hover:bg-subtle"
+                      className={buttonClass("secondary", "sm")}
                     >
                       View product
                     </Link>

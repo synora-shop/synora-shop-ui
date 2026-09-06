@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { buttonClass } from "@/components/ui/primitives";
 import { useRouter } from "next/navigation";
 import { createCategory } from "@/app/admin/categories/actions";
 import { useConfirm } from "@/components/ui/confirm-dialog";
@@ -61,7 +62,7 @@ export function AddCategoryForm() {
       <button
         type="submit"
         disabled={submitting}
-        className="rounded-full bg-brand-500 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-600 active:bg-brand-700 disabled:opacity-50"
+        className={buttonClass("primary", "md")}
       >
         {submitting ? "Creating…" : "Add Category"}
       </button>

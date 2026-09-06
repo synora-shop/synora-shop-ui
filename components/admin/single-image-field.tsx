@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { buttonClass } from "@/components/ui/primitives";
 import { ImagePlus, Loader2, RefreshCw, X } from "lucide-react";
 import { uploadImage } from "@/lib/actions/media";
 
@@ -164,7 +165,7 @@ export function SingleImageField({
           type="button"
           onClick={applyUrl}
           disabled={!urlInput.trim()}
-          className="rounded-full border border-border px-3 py-1.5 text-xs transition-colors hover:bg-subtle active:bg-brand-100 disabled:opacity-40"
+          className={buttonClass("secondary", "sm")}
         >
           Use
         </button>

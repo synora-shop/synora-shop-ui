@@ -159,6 +159,20 @@ const side = readFileSync(join(ROOT, "components/admin/admin-sidebar.tsx"), "utf
 check("the sidebar rows are 40px, not 48", /"h-10"/.test(side) && !/"h-12"/.test(side));
 check("the sidebar is narrower than 15rem", /lg:w-\[13rem\]/.test(side));
 
+// Twenty-five different buttons shipped while a Button primitive sat unused in
+// half the panel — five paddings for the primary alone. A button built out of
+// utilities is a twenty-sixth nobody will remember to keep in step.
+const rolledButtons = files.filter((f) => {
+  if (!/(components|app)\/admin\//.test(f)) return false;
+  const src = readFileSync(f, "utf8");
+  return /className="[^"]*rounded-(full|pill)[^"]*(border border-border|bg-brand-500)[^"]*px-\d/.test(src);
+});
+check(
+  "no screen builds a button out of utilities",
+  rolledButtons.length === 0,
+  rolledButtons.map((f) => relative(ROOT, f)).join(", ")
+);
+
 // A gap is not a divider — on a page of stacked cards it reads as more list.
 check(
   "there is a named section divider",

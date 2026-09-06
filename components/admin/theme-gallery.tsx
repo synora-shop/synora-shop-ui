@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Check, ExternalLink, Loader2, Sparkles } from "lucide-react";
 import { chooseTheme } from "@/app/admin/theme/actions-theme-choice";
 import { useToast } from "@/components/ui/toast";
-import { Badge, Button, ButtonLink } from "@/components/ui/primitives";
+import { Badge, Button, ButtonLink, buttonClass } from "@/components/ui/primitives";
 import { cn } from "@/lib/utils";
 
 export type GalleryTheme = {
@@ -61,7 +61,7 @@ export function ThemeGallery({
               href={storeUrl}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-subtle"
+              className={buttonClass("secondary", "sm")}
             >
               Open store
               <ExternalLink className="h-3 w-3 opacity-60" />
@@ -130,7 +130,7 @@ export function ThemeGallery({
                     href={theme.previewUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-subtle"
+                    className={buttonClass("secondary", "sm")}
                   >
                     View full
                     <ExternalLink className="h-3 w-3 opacity-60" />

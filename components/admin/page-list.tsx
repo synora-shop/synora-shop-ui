@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Trash2 } from "lucide-react";
+import { ChevronRight, Trash2 } from "lucide-react";
+import { Badge } from "@/components/ui/primitives";
 import { deletePage } from "@/app/admin/pages/actions";
 import { useServerRows } from "@/components/ui/use-server-rows";
 import { SwipeRow } from "@/components/ui/swipe-row";
@@ -15,6 +16,8 @@ type PageRow = {
   slug: string;
   isPublished: boolean;
   isSystem: boolean;
+  /** How many blocks it is built from — an empty page should look empty. */
+  sections: number;
 };
 
 export function PageList({ pages }: { pages: PageRow[] }) {
@@ -47,8 +50,19 @@ export function PageList({ pages }: { pages: PageRow[] }) {
     }
   }
 
+  if (rows.length === 0) {
+    return (
+      <>
+        {dialog}
+        <p className="rounded-xl border border-dashed border-border bg-surface px-5 py-10 text-center text-sm text-ink-soft">
+          No pages yet. Add one on the right.
+        </p>
+      </>
+    );
+  }
+
   return (
-    <div className="divide-y divide-border rounded-lg border border-border bg-white">
+    <div className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface">
       {dialog}
       {rows.map((page) => (
         <SwipeRow
@@ -61,19 +75,33 @@ export function PageList({ pages }: { pages: PageRow[] }) {
         >
           <Link
             href={`/admin/pages/${page.id}`}
-            className="no-tap-scale flex items-center justify-between px-5 py-4 transition-colors hover:bg-subtle active:bg-subtle"
+            className="no-tap-scale group flex items-center gap-3 px-4 py-2.5 transition-colors hover:bg-subtle active:bg-subtle"
           >
-            <div>
-              <p className="text-sm font-medium">{page.title}</p>
-              <p className="text-xs text-ink-soft">
+            <div className="min-w-0 flex-1">
+              <p className="flex flex-wrap items-center gap-1.5 text-[13px] font-medium">
+                <span className="truncate">{page.title}</span>
+                {/* A page that cannot be deleted should say so before somebody
+                    goes looking for the button. */}
+                {page.isSystem && <Badge>Default</Badge>}
+                {!page.isPublished && <Badge tone="warn">Hidden</Badge>}
+              </p>
+              <p className="truncate font-mono text-[11px] text-ink-faint">
                 {page.slug === "home" ? "/" : `/p/${page.slug}`}
-                {!page.isPublished && " · Unpublished"}
               </p>
             </div>
+
+            <span className="flex-shrink-0 text-[11px] text-ink-soft">
+              {page.sections === 0 ? "Empty" : `${page.sections} section${page.sections === 1 ? "" : "s"}`}
+            </span>
+
+            {/* The row is a link, and until now nothing said so. */}
+            <ChevronRight
+              className="h-4 w-4 flex-shrink-0 text-ink-faint transition-transform group-hover:translate-x-0.5"
+              aria-hidden
+            />
           </Link>
         </SwipeRow>
       ))}
-      {rows.length === 0 && <p className="px-5 py-4 text-sm text-ink-soft">No pages yet.</p>}
     </div>
   );
 }

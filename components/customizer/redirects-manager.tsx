@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { buttonClass } from "@/components/ui/primitives";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, ArrowRight, Plus, Trash2, Wand2 } from "lucide-react";
 import { saveRedirect, deleteRedirect, toggleRedirect } from "@/app/admin/redirects/actions";
@@ -100,7 +101,7 @@ function RedirectForm({
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-full border border-border px-3 py-1.5 text-xs font-medium text-ink-soft transition-colors hover:bg-subtle active:bg-brand-100"
+            className={buttonClass("secondary", "sm")}
           >
             Cancel
           </button>
