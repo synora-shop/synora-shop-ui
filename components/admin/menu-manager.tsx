@@ -122,7 +122,7 @@ export function MenuManager({
                 id={`slot-${slot.slot}`}
                 value={slot.menuId ?? ""}
                 onChange={(e) => handleAssign(slot.slot, e.target.value || null)}
-                className="input mt-1 w-full text-sm"
+                className="input mt-1"
               >
                 <option value="">, use my first menu,</option>
                 {menus.map((menu) => (
@@ -166,7 +166,7 @@ export function MenuManager({
                 }
               }}
               placeholder="Menu name, e.g. Legal"
-              className="input h-9 flex-1 text-sm"
+              className="input flex-1"
             />
             <button
               type="button"
@@ -277,7 +277,7 @@ function MenuCard({
                     setEditing(false);
                   }
                 }}
-                className="input h-8 w-48 text-sm"
+                className="input input-sm w-48"
               />
               {dirty && (
                 <span

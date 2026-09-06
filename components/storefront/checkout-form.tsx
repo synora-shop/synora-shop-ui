@@ -364,7 +364,7 @@ export function CheckoutForm({
                 }}
                 placeholder={discountPlaceholder}
                 aria-invalid={codeError ? true : undefined}
-                className="input h-9 flex-1 font-mono text-sm uppercase"
+                className="input flex-1 font-mono uppercase"
               />
               <button
                 type="button"

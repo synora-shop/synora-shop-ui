@@ -294,7 +294,7 @@ export function ButtonsManager({ initial }: { initial: StickyButtonInput[] }) {
                             color: STICKY_KIND_META[kind].color,
                           });
                         }}
-                        className="input mt-1 h-9 text-sm"
+                        className="input mt-1"
                       >
                         {STICKY_KINDS.map((k) => (
                           <option key={k} value={k}>
@@ -310,7 +310,7 @@ export function ButtonsManager({ initial }: { initial: StickyButtonInput[] }) {
                       <select
                         value={button.scope}
                         onChange={(e) => patch(button.key, { scope: e.target.value })}
-                        className="input mt-1 h-9 text-sm"
+                        className="input mt-1"
                       >
                         {STICKY_SCOPES.map((s) => (
                           <option key={s} value={s}>
@@ -330,7 +330,7 @@ export function ButtonsManager({ initial }: { initial: StickyButtonInput[] }) {
                         value={button.value}
                         placeholder={meta.valuePlaceholder}
                         onChange={(e) => patch(button.key, { value: e.target.value })}
-                        className="input mt-1 h-9 text-sm"
+                        className="input mt-1"
                       />
                     </div>
                     <div>
@@ -340,7 +340,7 @@ export function ButtonsManager({ initial }: { initial: StickyButtonInput[] }) {
                       <input
                         value={button.label}
                         onChange={(e) => patch(button.key, { label: e.target.value })}
-                        className="input mt-1 h-9 text-sm"
+                        className="input mt-1"
                       />
                     </div>
                   </div>
@@ -355,7 +355,7 @@ export function ButtonsManager({ initial }: { initial: StickyButtonInput[] }) {
                         rows={2}
                         placeholder="Hi! I have a question…"
                         onChange={(e) => patch(button.key, { message: e.target.value })}
-                        className="input mt-1 text-sm"
+                        className="input mt-1"
                       />
                     </div>
                   )}
@@ -376,7 +376,7 @@ export function ButtonsManager({ initial }: { initial: StickyButtonInput[] }) {
                       <input
                         value={button.color}
                         onChange={(e) => patch(button.key, { color: e.target.value })}
-                        className="input h-9 text-sm"
+                        className="input"
                       />
                     </div>
                   </div>

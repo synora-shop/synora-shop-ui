@@ -32,8 +32,8 @@ const BULK_PRICING_META: Record<BulkPricing, { label: string; help: string }> = 
   },
 };
 
-const input =
-  "w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-300";
+// The shared text box — see .input in globals.css.
+const input = "input";
 const labelClass = "text-xs font-medium text-ink";
 
 export type KindState = {

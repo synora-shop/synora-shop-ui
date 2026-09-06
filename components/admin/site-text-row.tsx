@@ -62,7 +62,7 @@ export function SiteTextRow({
           setCurrent(e.target.value);
           setSaveState("idle");
         }}
-        className="input h-9 flex-1 text-sm"
+        className="input flex-1"
       />
       {(dirty || saveState === "saved" || saveState === "error") && (
         <SaveButton state={dirty ? (saveState === "saving" ? "saving" : "idle") : saveState} onClick={handleSave} size="sm" />

@@ -211,7 +211,7 @@ export function ImageDropzone({
             }
           }}
           placeholder="Or paste an image URL…"
-          className="input h-8 w-56 text-xs"
+          className="input input-sm w-56"
         />
         <button
           type="button"

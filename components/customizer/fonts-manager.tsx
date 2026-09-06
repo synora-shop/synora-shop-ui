@@ -36,7 +36,7 @@ function FontSelect({
   onChange: (value: string) => void;
 }) {
   return (
-    <select value={value} onChange={(e) => onChange(e.target.value)} className="input h-9 text-sm">
+    <select value={value} onChange={(e) => onChange(e.target.value)} className="input">
       <optgroup label="Built in">
         {Object.entries(FONT_STACKS).map(([key, { label }]) => (
           <option key={key} value={key}>

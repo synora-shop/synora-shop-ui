@@ -54,7 +54,7 @@ export function VisibilityForm({ initial }: { initial: Visibility }) {
 
   return (
     <div className="space-y-4">
-      <Card className="space-y-4 p-5">
+      <Card className="space-y-4 p-4">
         <div
           className={
             fields.maintenanceMode
@@ -84,7 +84,7 @@ export function VisibilityForm({ initial }: { initial: Visibility }) {
         />
       </Card>
 
-      <Card className="space-y-4 p-5">
+      <Card className="space-y-4 p-4">
         <ToggleSwitch
           label="Let search engines list your store"
           description="Google and the others are invited in, and your store can turn up in search results. Turn this off while you are still building, or if your catalogue is only meant to be shared by link."

@@ -199,7 +199,7 @@ function Row({
             setSaveState("idle");
           }}
           pages={pages}
-          className="input h-8 flex-1 text-sm"
+          className="input input-sm flex-1"
         />
         {showGroup && (
           <input
@@ -209,7 +209,7 @@ function Row({
               setSaveState("idle");
             }}
             placeholder="Column"
-            className="input h-8 w-28 text-sm"
+            className="input input-sm w-28"
           />
         )}
         {(dirty || saveState === "saved" || saveState === "error") && (
@@ -334,13 +334,13 @@ export function MenuEditor({
       </div>
 
       <div className="flex flex-wrap items-center gap-2 border-t border-border p-3">
-        <TargetSelect value={newTarget} onChange={setNewTarget} pages={pages} className="input h-8 flex-1 text-sm" />
+        <TargetSelect value={newTarget} onChange={setNewTarget} pages={pages} className="input input-sm flex-1" />
         {showGroup && (
           <input
             value={newGroup}
             onChange={(e) => setNewGroup(e.target.value)}
             placeholder="Column (e.g. Shop)"
-            className="input h-8 w-28 text-sm"
+            className="input input-sm w-28"
           />
         )}
         <button

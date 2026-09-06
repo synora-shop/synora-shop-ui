@@ -347,7 +347,7 @@ export function ProductForm({ categories, product }: { categories: Category[]; p
                   value={v.sku}
                   onChange={(e) => updateVariant(i, { sku: e.target.value })}
                   aria-label="SKU"
-                  className="input pr-8 font-mono text-xs"
+                  className="input input-sm pr-8 font-mono"
                 />
                 {v.sku && (
                   <button

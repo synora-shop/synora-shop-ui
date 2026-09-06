@@ -398,16 +398,47 @@ body {
     line-height: 1.2;
   }
 
+  /* One text box for the whole panel.
+     --------------------------------------------------------------------
+     It already existed, but every caller re-stated the parts it should have
+     owned — "input mt-1 h-9 text-sm" appeared a dozen times, "input h-9
+     text-sm" three more, and two screens defined a field of their own. So
+     three heights and two type sizes shipped as one control.
+
+     Everything a text box needs is here now, height included. A caller adds
+     only where it sits, never how it looks. */
   .input {
     width: 100%;
+    height: 2.25rem;
     border-radius: 0.5rem;
     border: 1px solid var(--color-border);
-    background: var(--color-surface);
-    padding: 0.5rem 0.75rem;
-    font-size: 0.875rem;
-    line-height: 1.5;
+    background: var(--color-control);
+    padding: 0 0.625rem;
+    font-size: 0.8125rem;
+    line-height: 1.4;
     color: var(--color-ink);
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  /* A textarea has no single line to centre, so it keeps vertical padding and
+     grows instead of standing at a fixed height. */
+  textarea.input,
+  select[multiple].input {
+    height: auto;
+    padding: 0.45rem 0.625rem;
+  }
+  /* Compact, for a field that lives inside a row — a menu item being renamed,
+     a staff member's role — where a full-height box would push the row apart.
+     A real second size, declared once, rather than h-8 written at each site. */
+  .input-sm {
+    height: 2rem;
+    font-size: 0.75rem;
+  }
+
+  /* The search field in an action bar: same control, pill-shaped, because it
+     sits in a row of pills rather than in a form. */
+  .input-pill {
+    border-radius: 9999px;
+    padding-inline: 0.875rem;
   }
   .input:hover:not(:focus):not(:disabled) {
     border-color: var(--color-brand-300);

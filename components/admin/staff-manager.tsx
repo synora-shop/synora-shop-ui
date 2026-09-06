@@ -200,7 +200,7 @@ export function StaffManager({
                       onChange={(e) =>
                         run(() => changeRole(member.membershipId, e.target.value as MemberRole))
                       }
-                      className="input h-8 w-auto py-0 text-xs"
+                      className="input input-sm w-auto"
                       aria-label={`Access level for ${member.email}`}
                     >
                       {grantable.map((role) => (

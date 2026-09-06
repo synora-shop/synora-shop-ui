@@ -5,7 +5,7 @@ import { formatPKR } from "@/lib/utils";
 import { statusLabel } from "@/lib/order-status-style";
 import { AnalyticsBar } from "@/components/admin/analytics-bar";
 import { MetricTile, RankedBars, StageBar, TrendChart } from "@/components/admin/charts";
-import { Card, PageHeader } from "@/components/ui/primitives";
+import { Card, PageHeader, SectionDivider } from "@/components/ui/primitives";
 
 export const dynamic = "force-dynamic";
 
@@ -40,7 +40,7 @@ export default async function AnalyticsPage(props: PageProps<"/admin/analytics">
   }));
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <PageHeader
         title="Analytics"
         description={`${range.label.toLowerCase()}, in ${data.timeZone.replace("_", " ")}.`}
@@ -48,7 +48,9 @@ export default async function AnalyticsPage(props: PageProps<"/admin/analytics">
 
       <AnalyticsBar searchParams={sp} range={range.value} comparing={comparing} />
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <SectionDivider title="How the shop is doing" />
+
+      <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <MetricTile
           label="Revenue" value={formatPKR(current.revenue)}
           change={change(current.revenue, previous.revenue)}
@@ -85,7 +87,7 @@ export default async function AnalyticsPage(props: PageProps<"/admin/analytics">
           and fix — so it sits apart from the figures and links straight at the
           screen that fixes it. */}
       {(data.stock.out > 0 || data.stock.low > 0) && (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-2.5 sm:grid-cols-2">
           <MetricTile
             label="Out of stock" value={String(data.stock.out)}
             goodWhen="down" href="/admin/products" hint="Cannot be bought right now"
@@ -97,7 +99,9 @@ export default async function AnalyticsPage(props: PageProps<"/admin/analytics">
         </div>
       )}
 
-      <div className="grid gap-3 lg:grid-cols-2">
+      <SectionDivider title="Over time" description="Revenue and orders are two charts on two scales, never one." />
+
+      <div className="grid gap-2.5 lg:grid-cols-2">
         <Card className="p-4">
           <h2 className="text-xs font-semibold uppercase tracking-[0.06em] text-ink-faint">Revenue</h2>
           <p className="mb-2 font-mono text-lg font-semibold tabular-nums">{formatPKR(current.revenue)}</p>
@@ -122,7 +126,9 @@ export default async function AnalyticsPage(props: PageProps<"/admin/analytics">
         <TrendChart points={data.visitSeries} label="Page views per day" height={130} width={1400} />
       </Card>
 
-      <div className="grid gap-3 lg:grid-cols-3">
+      <SectionDivider title="What and who" />
+
+      <div className="grid gap-2.5 lg:grid-cols-3">
         <Card className="p-4">
           <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.06em] text-ink-faint">Best sellers</h2>
           <RankedBars rows={data.topProducts} format="currency" empty="No sales in this period." />
@@ -137,9 +143,11 @@ export default async function AnalyticsPage(props: PageProps<"/admin/analytics">
         </Card>
       </div>
 
+      <SectionDivider title="Fulfilment" />
+
       <Card className="p-4">
         <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-          <h2 className="text-xs font-semibold uppercase tracking-[0.06em] text-ink-faint">Where the orders are</h2>
+          <h2 className="sr-only">Where the orders are</h2>
           {/* Cancelled is not a stage an order passes through, so it is reported
               beside the sequence rather than as its final step. */}
           {data.cancelled > 0 && (

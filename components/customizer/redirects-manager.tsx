@@ -59,7 +59,7 @@ function RedirectForm({
             value={fromPath}
             onChange={(e) => setFromPath(e.target.value)}
             placeholder="/collections/sale"
-            className="input mt-1 h-9 text-sm"
+            className="input mt-1"
           />
           <p className="mt-1 text-[11px] leading-snug text-ink-soft">
             The link that currently leads nowhere.
@@ -73,7 +73,7 @@ function RedirectForm({
             value={toPath}
             onChange={(e) => setToPath(e.target.value)}
             placeholder="/shop"
-            className="input mt-1 h-9 text-sm"
+            className="input mt-1"
           />
           <p className="mt-1 text-[11px] leading-snug text-ink-soft">
             A page on this site, or a full https:// address.
@@ -88,7 +88,7 @@ function RedirectForm({
           value={note}
           onChange={(e) => setNote(e.target.value)}
           placeholder="Sale collection retired, Feb 2026"
-          className="input mt-1 h-9 text-sm"
+          className="input mt-1"
         />
         <p className="mt-1 text-[11px] leading-snug text-ink-soft">
           Why this exists, useful when you come back to it in a year.

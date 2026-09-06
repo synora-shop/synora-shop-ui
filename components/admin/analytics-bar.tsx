@@ -39,7 +39,7 @@ export function AnalyticsBar({
 }) {
   const base = "/admin/analytics";
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-panel p-2.5">
+    <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-panel p-2">
       <div className="flex items-center gap-0.5 rounded-pill border border-control-line bg-control p-1">
         {RANGES.map((r) => (
           <Link

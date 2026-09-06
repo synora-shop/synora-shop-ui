@@ -75,7 +75,7 @@ export function CollectionDetailsForm({
           onChange={(e) => set("description", e.target.value)}
           rows={3}
           placeholder="Shown at the top of the collection page."
-          className="input mt-1 w-full text-sm"
+          className="input mt-1"
         />
         <p className="mt-0.5 text-right text-[11px]">{counter(details.description, 2000)}</p>
       </div>
@@ -86,7 +86,7 @@ export function CollectionDetailsForm({
           value={details.seoTitle}
           onChange={(e) => set("seoTitle", e.target.value)}
           placeholder="Defaults to the collection name."
-          className="input mt-1 w-full text-sm"
+          className="input mt-1"
         />
         <p className="mt-0.5 text-right text-[11px]">{counter(details.seoTitle, 120)}</p>
       </div>
@@ -98,7 +98,7 @@ export function CollectionDetailsForm({
           onChange={(e) => set("seoDescription", e.target.value)}
           rows={2}
           placeholder="The sentence under the link in search results."
-          className="input mt-1 w-full text-sm"
+          className="input mt-1"
         />
         <p className="mt-0.5 text-right text-[11px]">{counter(details.seoDescription, 320)}</p>
       </div>

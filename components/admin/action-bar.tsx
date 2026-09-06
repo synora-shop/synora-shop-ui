@@ -21,7 +21,7 @@ export function ActionBar({
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center gap-2 rounded-2xl bg-panel p-2.5",
+        "flex flex-wrap items-center gap-2 rounded-2xl bg-panel p-2",
         className
       )}
     >

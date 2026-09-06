@@ -214,7 +214,7 @@ export function SectionList({ pageId, sections: initial }: { pageId: string; sec
         <select
           value={addType}
           onChange={(e) => setAddType(e.target.value as SectionType)}
-          className="input h-9 w-56 text-sm transition-colors hover:border-brand-300"
+          className="input w-56 transition-colors hover:border-brand-300"
         >
           {SECTION_TYPES.map((t) => (
             <option key={t} value={t}>

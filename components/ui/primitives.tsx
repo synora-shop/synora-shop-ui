@@ -87,7 +87,7 @@ export function Card({
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn("rounded-lg border border-border bg-surface shadow-sm", className)}
+      className={cn("rounded-xl border border-border bg-surface shadow-sm", className)}
       {...props}
     >
       {children}
@@ -131,6 +131,45 @@ export function PageHeader({
         <p className="min-w-0 max-w-2xl text-sm leading-snug text-ink-soft">{description}</p>
       )}
       {actions && <div className="ml-auto flex flex-shrink-0 flex-wrap items-center gap-2">{actions}</div>}
+    </div>
+  );
+}
+
+/**
+ * The line between one part of a screen and the next.
+ *
+ * Screens were separating their sections with nothing but a gap, and a gap is
+ * not a divider — on a page of stacked cards it reads as more of the same list.
+ * A named rule says where one subject ends and another begins, and names the
+ * new one while it is at it.
+ *
+ * The rule runs to the edge rather than stopping at the text, so the eye has a
+ * full line to break on. Actions ride the right-hand end, where they belong to
+ * the section being introduced rather than to the page.
+ */
+export function SectionDivider({
+  title,
+  description,
+  actions,
+  className,
+}: {
+  title: React.ReactNode;
+  description?: React.ReactNode;
+  actions?: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn("pt-1", className)}>
+      <div className="flex items-center gap-3">
+        <h2 className="flex-shrink-0 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-faint">
+          {title}
+        </h2>
+        <span className="h-px flex-1 bg-border" aria-hidden />
+        {actions && <div className="flex flex-shrink-0 items-center gap-2">{actions}</div>}
+      </div>
+      {description && (
+        <p className="mt-1 max-w-2xl text-xs leading-snug text-ink-soft">{description}</p>
+      )}
     </div>
   );
 }

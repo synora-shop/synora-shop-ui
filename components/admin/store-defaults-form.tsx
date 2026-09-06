@@ -87,7 +87,7 @@ export function StoreDefaultsForm({ initial }: { initial: StoreDefaults }) {
 
   return (
     <>
-      <Card className="p-5">
+      <Card className="p-4">
         <h2 className="text-sm font-semibold">Store defaults</h2>
         <p className="mt-0.5 text-xs text-ink-soft">
           What your store is called, what it charges in, and where it trades from.

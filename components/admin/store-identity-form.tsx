@@ -27,8 +27,9 @@ export function StoreIdentityForm({ initial }: { initial: StoreIdentity }) {
   const set = <K extends keyof StoreIdentity>(key: K, value: StoreIdentity[K]) =>
     setValues((v) => ({ ...v, [key]: value }));
 
-  const field =
-    "h-10 w-full rounded-lg border border-border bg-surface px-3 text-sm outline-none transition-colors focus:border-brand-500";
+  // The shared text box — see .input in globals.css. This screen used to carry
+  // its own, one pixel and one type size away from every other field.
+  const field = "input";
   const label = "text-xs font-semibold uppercase tracking-wide text-ink-soft";
 
   // Returns a promise so the action bar can wait for it and show "Saving…"

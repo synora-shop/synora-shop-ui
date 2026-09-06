@@ -23,7 +23,7 @@ export function AdminNavBar() {
   if (tabs.length === 0) return null;
 
   return (
-    <div className="rounded-2xl bg-panel px-4 py-3 sm:px-6">
+    <div className="rounded-2xl bg-panel px-4 py-2.5 sm:px-5">
       {/* Scrolls rather than wraps: a wrapped tab row changes height as you move
           between sections, and everything below it jumps. */}
       <nav className="flex items-center gap-5 overflow-x-auto sm:gap-7 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">

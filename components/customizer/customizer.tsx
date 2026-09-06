@@ -798,7 +798,7 @@ export function Customizer({
                 onChange={(e) => setNewPageTitle(e.target.value)}
                 placeholder="Size guide"
                 autoFocus
-                className="input mt-1 h-9 text-sm"
+                className="input mt-1"
               />
               <p className="mt-1 text-[11px] text-ink-soft">
                 Its web address is made from this, and can be changed later.

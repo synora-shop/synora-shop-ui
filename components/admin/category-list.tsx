@@ -112,7 +112,7 @@ function Row({
                     setEditing(false);
                   }
                 }}
-                className="input h-8 w-48 text-sm"
+                className="input input-sm w-48"
               />
               {dirty && (
                 <button

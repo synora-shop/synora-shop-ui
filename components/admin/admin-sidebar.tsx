@@ -44,7 +44,7 @@ export function AdminSidebar() {
         id="admin-nav"
         className={cn(
           "fixed inset-y-0 left-0 z-30 flex w-64 flex-col bg-shell shadow-lg transition-transform duration-200",
-          "lg:sticky lg:top-0 lg:h-screen lg:w-[15rem] lg:flex-shrink-0 lg:translate-x-0 lg:bg-transparent lg:shadow-none lg:transition-none",
+          "lg:sticky lg:top-0 lg:h-screen lg:w-[13rem] lg:flex-shrink-0 lg:translate-x-0 lg:bg-transparent lg:shadow-none lg:transition-none",
           open ? "translate-x-0" : "-translate-x-full"
         )}
       >
@@ -64,7 +64,7 @@ export function AdminSidebar() {
           </button>
         </div>
 
-        <nav className="flex flex-col gap-2 px-3 py-3 lg:py-4">
+        <nav className="flex flex-col gap-1 px-2.5 py-2.5">
           {sections.map((item) => {
             const active = item.key === section.key;
             const Icon = item.icon;
@@ -75,17 +75,18 @@ export function AdminSidebar() {
                 onClick={() => setOpen(false)}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "flex items-center gap-3 rounded-pill px-5 text-[15px] transition-colors",
-                  // 48px, not the drawing's 70px. The proportion is the
-                  // drawing's; the absolute size is not, because APP.ai is
-                  // drawn at 1920×1080 and a merchant's laptop is not that tall.
-                  "h-12",
+                  "flex items-center gap-2.5 rounded-pill px-3.5 text-[13.5px] transition-colors",
+                  // 40px. APP.ai draws these at 70px on a 1920x1080 artboard,
+                  // which is a sixth of the height of a laptop screen for six
+                  // links that never change. The proportion is the drawing's;
+                  // the absolute size is not.
+                  "h-10",
                   active
                     ? "bg-brand-500 font-medium text-white"
                     : "border border-control-line bg-panel text-control-ink hover:bg-control"
                 )}
               >
-                <Icon />
+                <Icon className="h-4 w-4" />
                 <span className="truncate">{item.label}</span>
               </Link>
             );

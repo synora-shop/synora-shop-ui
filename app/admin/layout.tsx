@@ -65,13 +65,13 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
           {/* The four bars of the drawing, in order: navigation, then whatever
               the page puts in its action bar, then the content container. pb-24
               leaves room for the floating save bar on editable screens. */}
-          <main className="gutter-fluid min-w-0 flex-1 space-y-3 pb-24">
+          <main className="gutter-fluid min-w-0 flex-1 space-y-2.5 pb-20">
             <AdminNavBar />
             {/* Discard and Save for whatever screen is open. Draws nothing on a
                 screen with nothing to save, so a list page keeps its own action
                 bar and a form page gets one without building it. */}
             <EditorBar />
-            <div className="rounded-2xl bg-panel p-4 sm:p-5">{children}</div>
+            <div className="rounded-2xl bg-panel p-3 sm:p-4">{children}</div>
           </main>
         </div>
       </div>

@@ -112,5 +112,58 @@ for (const file of [
   );
 }
 
+/* -------------------------------------------------------------------------- */
+/* One text box                                                               */
+/* -------------------------------------------------------------------------- */
+
+// The panel shipped three heights and two type sizes as one control, because
+// .input owned the border and the colour but callers restated the rest —
+// "input mt-1 h-9 text-sm" a dozen times, and two screens with a field of
+// their own. Everything a text box needs lives in .input now.
+const restating = files.filter((f) => {
+  const src = readFileSync(f, "utf8");
+  return /className="[^"]*\binput\b(?![-\w])[^"]*\b(h-\d|text-(xs|sm|base|lg)|px-\d|py-\d|rounded)/.test(src);
+});
+check(
+  "no screen restates what .input already owns",
+  restating.length === 0,
+  restating.map((f) => relative(ROOT, f)).join(", ")
+);
+
+// A field built out of utility classes is a fourth text box nobody will
+// remember to keep in step.
+const handRolled = files.filter((f) => {
+  const src = readFileSync(f, "utf8");
+  return /const (field|inputClass) =\s*\n?\s*"[^"]*border[^"]*px-/.test(src);
+});
+check(
+  "no screen builds a text box of its own",
+  handRolled.length === 0,
+  handRolled.map((f) => relative(ROOT, f)).join(", ")
+);
+
+const css = readFileSync(join(ROOT, "app/globals.css"), "utf8");
+check("the shared text box sets its own height", /\.input \{[^}]*height:/.test(css));
+check("a textarea is exempt from that height", /textarea\.input[\s\S]{0,120}height: auto/.test(css));
+// Two sizes, both declared. A field inside a row needs to be shorter than one
+// in a form — that is a real difference, and it belongs in the stylesheet
+// rather than as h-8 written at each site.
+check("the compact size is declared once", /\.input-sm \{[^}]*height:/.test(css));
+
+/* -------------------------------------------------------------------------- */
+/* Space                                                                      */
+/* -------------------------------------------------------------------------- */
+
+const side = readFileSync(join(ROOT, "components/admin/admin-sidebar.tsx"), "utf8");
+// Six links that never change should not take a sixth of the screen.
+check("the sidebar rows are 40px, not 48", /"h-10"/.test(side) && !/"h-12"/.test(side));
+check("the sidebar is narrower than 15rem", /lg:w-\[13rem\]/.test(side));
+
+// A gap is not a divider — on a page of stacked cards it reads as more list.
+check(
+  "there is a named section divider",
+  /export function SectionDivider/.test(readFileSync(join(ROOT, "components/ui/primitives.tsx"), "utf8"))
+);
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);

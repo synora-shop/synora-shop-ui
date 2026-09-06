@@ -110,7 +110,7 @@ export function SettingFieldInput({
               if (urlError) setUrlError(null);
             }}
             onBlur={(e) => commitUrl(e.target.value)}
-            className={cn("input mt-1 h-9 text-sm", urlError && "border-rose")}
+            className={cn("input mt-1", urlError && "border-rose")}
           />
           {urlError && <p className="mt-1 text-[11px] leading-snug text-rose">{urlError}</p>}
           {help}
@@ -125,7 +125,7 @@ export function SettingFieldInput({
             value={(value as string) ?? ""}
             placeholder={field.placeholder}
             onChange={(e) => onChange(e.target.value)}
-            className="input mt-1 h-9 text-sm"
+            className="input mt-1"
           />
           {help}
         </div>
@@ -141,7 +141,7 @@ export function SettingFieldInput({
             placeholder={field.placeholder}
             rows={field.kind === "richtext" ? 5 : 3}
             onChange={(e) => onChange(e.target.value)}
-            className="input mt-1 text-sm"
+            className="input mt-1"
           />
           {help}
         </div>
@@ -158,7 +158,7 @@ export function SettingFieldInput({
             max={field.max}
             step={field.step}
             onChange={(e) => onChange(Number(e.target.value))}
-            className="input mt-1 h-9 text-sm"
+            className="input mt-1"
           />
           {help}
         </div>
@@ -204,7 +204,7 @@ export function SettingFieldInput({
             <input
               value={(value as string) ?? ""}
               onChange={(e) => onChange(e.target.value)}
-              className="input h-9 text-sm"
+              className="input"
             />
           </div>
           {help}
@@ -218,7 +218,7 @@ export function SettingFieldInput({
           <select
             value={(value as string) ?? ""}
             onChange={(e) => onChange(e.target.value)}
-            className="input mt-1 h-9 text-sm"
+            className="input mt-1"
           >
             {(field.options ?? []).map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -246,7 +246,7 @@ export function SettingFieldInput({
           <select
             value={current}
             onChange={(e) => onChange(e.target.value)}
-            className="input mt-1 h-9 text-sm"
+            className="input mt-1"
           >
             <option value={AUTO}>Automatic, always readable</option>
             {options.map((option) => (

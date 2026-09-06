@@ -158,7 +158,7 @@ export function SingleImageField({
             }
           }}
           placeholder="or paste an image URL"
-          className="input h-8 flex-1 text-xs"
+          className="input input-sm flex-1"
         />
         <button
           type="button"

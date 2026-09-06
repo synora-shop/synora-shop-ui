@@ -359,7 +359,7 @@ export function MetricTile({
   );
 
   const shell =
-    "rounded-xl border border-control-line bg-control p-3.5 transition-colors";
+    "rounded-xl border border-control-line bg-control p-3 transition-colors";
   return href ? (
     <a href={href} className={cn(shell, "block hover:border-brand-300")}>{body}</a>
   ) : (
