@@ -12,8 +12,7 @@ export default async function AdminCategoriesPage() {
 
   return (
     <div>
-      <h1 className="font-serif text-3xl font-semibold">Categories</h1>
-      <p className="mt-1 text-sm text-ink-soft">
+      <p className="text-sm text-ink-soft">
         Click a name to rename it, or a picture to edit the collection, products stay
         linked and every menu link updates automatically, only the label changes. Creating a
         category also creates a matching page you can add to the header/footer from Menus. A

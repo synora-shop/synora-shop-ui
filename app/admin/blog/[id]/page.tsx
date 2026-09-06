@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PageCrumb } from "@/components/admin/page-crumb";
 import { FormSaveButton } from "@/components/admin/form-save-button";
 import { DestructiveButton } from "@/components/admin/destructive-button";
 import { notFound } from "next/navigation";
@@ -26,9 +27,10 @@ export default async function EditArticlePage(props: PageProps<"/admin/blog/[id]
       </Link>
 
       <div className="mt-2 flex flex-wrap items-center gap-3">
-        <h1 className="min-w-0 flex-1 truncate font-serif text-3xl font-semibold">
+        <PageCrumb label={article.title} />
+        <h2 className="min-w-0 flex-1 truncate font-serif text-xl font-semibold">
           {article.title}
-        </h1>
+        </h2>
 
         {live ? (
           <>

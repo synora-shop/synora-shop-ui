@@ -17,8 +17,7 @@ export default async function AdminLocationsPage() {
 
   return (
     <div className="max-w-3xl">
-      <h1 className="font-serif text-3xl font-semibold">Locations</h1>
-      <p className="mt-1 text-sm text-ink-soft">
+      <p className="text-sm text-ink-soft">
         Where people can find you. Shown wherever you add the Find us section.
       </p>
 

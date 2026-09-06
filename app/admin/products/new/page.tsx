@@ -1,4 +1,5 @@
 import { db } from "@/lib/data/shop";
+import { PageCrumb } from "@/components/admin/page-crumb";
 import { ProductForm } from "@/components/admin/product-form";
 
 export const dynamic = "force-dynamic";
@@ -8,8 +9,9 @@ export default async function NewProductPage() {
 
   return (
     <div>
-      <h1 className="font-serif text-3xl font-semibold">Add Product</h1>
-      <div className="mt-6">
+      {/* The chrome names the screen; this names the record being made. */}
+      <PageCrumb label="New" />
+      <div>
         <ProductForm categories={categories} />
       </div>
     </div>

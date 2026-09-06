@@ -86,14 +86,6 @@ export async function updateGlobalEdits(formData: FormData) {
     announcementText: str("announcementText", GLOBAL_EDITS_DEFAULTS.announcementText),
     announcementBgColor: str("announcementBgColor", GLOBAL_EDITS_DEFAULTS.announcementBgColor),
     whatsappOrderButton: bool("whatsappOrderButton"),
-    maintenanceMode: bool("maintenanceMode"),
-    // Sent as one comma-separated field rather than a checkbox each: there are
-    // two hundred countries, and a form with two hundred checkboxes in it is
-    // not a form anyone fills in. cleanBlockedList discards anything that is
-    // not a country code, so a hand-edited value cannot store rubbish.
-    blockedCountries: cleanBlockedList(
-      String(formData.get("blockedCountries") ?? "").split(",")
-    ),
     shopFilterBar: bool("shopFilterBar"),
   };
 

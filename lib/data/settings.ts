@@ -2,6 +2,7 @@ import { cache } from "react";
 import { currentShop } from "@/lib/data/shop";
 import { cachedForShop } from "@/lib/data/cached";
 import { GLOBAL_EDITS_DEFAULTS } from "@/lib/global-edits";
+import { VISIBILITY_DEFAULTS } from "@/lib/visibility";
 import { STORE_DEFAULTS } from "@/lib/store-defaults";
 
 const DEFAULTS = {
@@ -17,6 +18,7 @@ const DEFAULTS = {
   shippingFee: 250,
   freeShippingThreshold: null as number | null,
   ...GLOBAL_EDITS_DEFAULTS,
+  ...VISIBILITY_DEFAULTS,
   ...STORE_DEFAULTS,
 };
 

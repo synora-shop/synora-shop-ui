@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { PageCrumb } from "@/components/admin/page-crumb";
 import { db } from "@/lib/data/shop";
 import { ProductForm } from "@/components/admin/product-form";
 
@@ -14,8 +15,8 @@ export default async function EditProductPage(props: PageProps<"/admin/products/
 
   return (
     <div>
-      <h1 className="font-serif text-3xl font-semibold">Edit Product</h1>
-      <div className="mt-6">
+      <PageCrumb label={product.title} />
+      <div>
         <ProductForm categories={categories} product={product} />
       </div>
     </div>

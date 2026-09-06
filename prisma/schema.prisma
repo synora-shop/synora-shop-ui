@@ -268,6 +268,7 @@ model Shop {
   openingHours      OpeningHours[]
   locations         Location[]
   metafields        Metafield[]
+  media             MediaAsset[]
   siteTexts         SiteText[]
   settings          StoreSettings[]
   themes            ThemeSettings[]
@@ -872,6 +873,21 @@ model StoreSettings {
   /// and the reason this is worded as hiding rather than as security.
   blockedCountries String[] @default([])
 
+  /// Whether search engines are invited in — see app/robots.ts.
+  ///
+  /// On by default, because a shop nobody can find is not a shop. A merchant
+  /// turns it off while a store is being built, or for a private catalogue that
+  /// is meant to be shared by link only. It is an instruction, not a lock:
+  /// robots.txt is obeyed by search engines and ignored by everything else.
+  searchIndexing   Boolean  @default(true)
+
+  /// Whether public forms carry the honeypot field — see lib/spam.ts.
+  ///
+  /// On by default. A merchant only turns it off to diagnose a genuine
+  /// submission that went missing, which is the one case where a silent filter
+  /// is worse than the spam it stops.
+  spamProtection   Boolean  @default(true)
+
   // --- Store defaults -----------------------------------------------------
   // The facts about the business that everything else is expressed in: what
   // it's called, what it charges in, where it trades from, and what "now"
@@ -889,6 +905,36 @@ model StoreSettings {
   shopFilterBar Boolean @default(true)
 
   @@unique([shopId])
+}
+
+/// One file a merchant has uploaded, and where it lives.
+///
+/// The uploads themselves are in Blob storage and always were; what was missing
+/// was any record of them. A photo attached to a product could be found again
+/// only by opening that product, and a photo attached to nothing at all could
+/// not be found at all — it was in the bucket, paid for, and invisible.
+///
+/// Listing the bucket is not an alternative. Storage keys are grouped by what
+/// the file is for ("products/", "logos/") and not by which shop uploaded it,
+/// so a bucket listing would show every merchant on the platform each other's
+/// pictures. The row is what makes the library one shop's own.
+model MediaAsset {
+  id        String   @id @default(cuid())
+  shop      Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId    String
+  /// The public Blob URL. Unique because the same upload is one asset.
+  url       String   @unique
+  /// What the merchant called the file on their computer, for searching by.
+  filename  String
+  /// "png", "jpg", "webp", "svg" — the detected format, not the claimed one.
+  format    String
+  /// Bytes, so the library can say what the storage is being spent on.
+  size      Int      @default(0)
+  /// Which upload field it came from: "products", "logos", "sections".
+  folder    String   @default("")
+  createdAt DateTime @default(now())
+
+  @@index([shopId, createdAt])
 }
 
 // A URL that should send visitors somewhere else instead of 404ing.

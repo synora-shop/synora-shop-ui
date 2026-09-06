@@ -46,7 +46,7 @@ export function StoreStatusBar({
   return (
     <div
       className={cn(
-        "sticky top-14 z-20 -mx-2 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border px-3 py-2 backdrop-blur",
+        "sticky top-20 z-20 -mx-2 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border px-3 py-2 backdrop-blur",
         live ? "border-green/25 bg-green-bg/90" : "border-amber/25 bg-amber-bg/90"
       )}
     >

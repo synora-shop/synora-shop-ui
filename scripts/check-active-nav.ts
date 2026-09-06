@@ -12,9 +12,10 @@
  *
  * Dependency-free; exits non-zero on failure.
  */
-import { readFileSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 import { activeHref } from "../lib/active-nav";
+import { resolveNav, sectionsFor } from "../lib/admin-nav";
 
 let pass = 0,
   fail = 0;
@@ -58,22 +59,23 @@ check(
 );
 
 /* -------------------------------------------------------------------------- */
-/* Exactly one, against the real sidebar                                      */
+/* Exactly one, against the real navigation                                   */
 /* -------------------------------------------------------------------------- */
 
-const source = readFileSync(join(process.cwd(), "components/admin/admin-sidebar.tsx"), "utf8");
+// Read from lib/admin-nav.ts rather than from the sidebar component: the
+// sidebar draws six section names now, and every address in the panel lives in
+// the navigation model beside them.
+const source = readFileSync(join(process.cwd(), "lib/admin-nav.ts"), "utf8");
 
-// Every href the sidebar actually offers, read from the file so this test
-// cannot drift from the navigation it is about.
 const entries = [...source.matchAll(/\{ href: "(\/admin[^"]*)"[^}]*\}/g)].map((m) => ({
   href: m[1],
   gated: /onlyFor|hideFor/.test(m[0]),
 }));
-check("the sidebar's hrefs were found", entries.length > 5, `found ${entries.length}`);
+check("the navigation's hrefs were found", entries.length > 15, `found ${entries.length}`);
 
-// The same address may legitimately appear twice — a blog files its enquiries
-// under Pages where a shop files them under orders — but only if each copy is
-// gated to a business type, or both would render at once.
+// The same address may legitimately appear twice — a blog files its posts where
+// a shop files its products — but only if each copy is gated to a business
+// type, or both would render at once.
 const byHref = new Map<string, typeof entries>();
 for (const e of entries) byHref.set(e.href, [...(byHref.get(e.href) ?? []), e]);
 for (const [href, copies] of byHref) {
@@ -91,13 +93,59 @@ for (const path of hrefs) {
   check(`${path} activates itself and nothing longer`, winner === path, `activated ${winner}`);
 }
 
-// The sidebar must compare by equality against the winner, never re-derive the
-// old rule per link.
-check(
-  "the sidebar no longer prefix-matches per link",
-  !/pathname\.startsWith/.test(source),
-  "that is the rule that lit two links at once"
-);
+// Nothing in the sidebar or the navigation bar may prefix-match per link: that
+// is the rule that lit two links at once.
+for (const file of ["components/admin/admin-sidebar.tsx", "components/admin/admin-navbar.tsx"]) {
+  check(
+    `${file} does not prefix-match per link`,
+    !/pathname\.startsWith/.test(readFileSync(join(process.cwd(), file), "utf8"))
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Every tab is a real screen                                                 */
+/* -------------------------------------------------------------------------- */
+
+// A tab pointing at a route that does not exist is a door to nowhere, and the
+// navigation bar makes those far easier to add than the old sidebar did: one
+// line in a list, and it renders beside five that work.
+for (const href of hrefs) {
+  const segments = href.replace(/^\//, "").split("/");
+  const dir = join(process.cwd(), "app", ...segments);
+  check(`${href} has a page`, existsSync(join(dir, "page.tsx")), `no app${href}/page.tsx`);
+}
+
+/* -------------------------------------------------------------------------- */
+/* The two levels agree                                                       */
+/* -------------------------------------------------------------------------- */
+
+for (const type of ["ECOMMERCE", "RESTAURANT", "BLOG"] as const) {
+  const sections = sectionsFor(type);
+  check(`${type}: the sidebar has sections`, sections.length > 0);
+  for (const section of sections) {
+    // Clicking a sidebar item must land inside that item, or the sidebar would
+    // light one thing and the navigation bar another.
+    const resolved = resolveNav(section.href, type);
+    check(
+      `${type}: ${section.label} lands on itself`,
+      resolved.section.key === section.key,
+      `landed on ${resolved.section.label}`
+    );
+    check(
+      `${type}: ${section.label} starts at its first tab`,
+      section.href === section.tabs[0].href
+    );
+  }
+  // A section of one draws no navigation bar — a bar with a single tab is
+  // furniture, not navigation.
+  for (const section of sections) {
+    const { tabs } = resolveNav(section.href, type);
+    check(
+      `${type}: ${section.label} draws a bar only when it has somewhere to go`,
+      section.tabs.length > 1 ? tabs.length === section.tabs.length : tabs.length === 0
+    );
+  }
+}
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);

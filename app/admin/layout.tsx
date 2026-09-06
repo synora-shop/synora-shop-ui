@@ -2,13 +2,13 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { shopSession } from "@/lib/auth-guard";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
-import { AdminTopbar } from "@/components/admin/admin-topbar";
+import { AdminTopbar, type Alert } from "@/components/admin/admin-topbar";
+import { AdminNavBar } from "@/components/admin/admin-navbar";
 import { RefreshButton } from "@/components/admin/refresh-button";
-import { AdminTheme } from "@/components/admin/admin-theme";
 import { getStoreSettings } from "@/lib/data/settings";
-import { canonicalUrl, currentShop } from "@/lib/data/shop";
+import { canonicalUrl, currentShop, db } from "@/lib/data/shop";
 import { registryBusinessType } from "@/lib/themes/business-type";
-import { chromeFor } from "@/lib/admin-chrome";
+import type { BusinessType } from "@/lib/admin-nav";
 
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   // Defense in depth — proxy.ts already gates /admin/*, this re-checks
@@ -34,39 +34,80 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const settings = await getStoreSettings();
 
   const type = registryBusinessType(shop?.businessType);
-  const skin = chromeFor(type);
+  const schemaType = (shop?.businessType ?? "ECOMMERCE") as BusinessType;
 
   return (
-    // data-business-type repaints the whole accent scale — see the palettes in
-    // globals.css. Every primary button, active nav item and focus ring in the
-    // panel follows the store's type from here, rather than only the bar.
+    // data-business-type no longer repaints anything — the panel is one palette
+    // now, whatever the trade. It stays because screens read it to choose their
+    // words: a restaurant's products are dishes.
     <div
       data-business-type={type}
-      className="min-h-screen font-sans text-ink"
-      style={{ backgroundColor: skin.bar }}
+      className="admin-shell min-h-screen bg-shell font-sans text-ink"
     >
-      <AdminTheme />
-      {/* The bar runs the full width, above the sidebar rather than beside it,
-          so the colour reaches both corners of the screen. */}
-      <AdminTopbar
-        storeName={me.shop.name}
-        isLive={!settings.maintenanceMode}
-        userName={me.email}
-        userEmail={me.email}
-        storeUrl={await canonicalUrl(me.shop.id)}
-        businessType={type}
-        hasOtherStores={(session.user.shops?.length ?? 0) > 1}
-      />
-      {/* The panel proper, curved away from the bar it sits under. The colour
-          shows in the two notches at the top corners, which is the whole of the
-          effect: one coloured sheet with the app resting on it. */}
-      <div className="flex min-h-[calc(100vh-3.5rem)] rounded-t-2xl bg-canvas">
-        <AdminSidebar businessType={shop?.businessType ?? "ECOMMERCE"} />
-        {/* pb-24 leaves room for the sticky save bar, which floats over the
-            bottom of the viewport on every page that can be edited. */}
-        <main className="gutter-fluid min-w-0 flex-1 pb-24 pt-6">{children}</main>
+      <div className="flex">
+        {/* The sidebar starts at the very top of the window, beside the heading
+            bar rather than under it — one column of six, full height, its own
+            thing. That is APP.ai's arrangement. */}
+        <AdminSidebar businessType={schemaType} />
+
+        <div className="flex min-w-0 flex-1 flex-col">
+          <AdminTopbar
+            storeName={me.shop.name}
+            isLive={!settings.maintenanceMode}
+            userEmail={me.email}
+            storeUrl={await canonicalUrl(me.shop.id)}
+            businessType={schemaType}
+            registryType={type}
+            hasOtherStores={(session.user.shops?.length ?? 0) > 1}
+            alerts={await pendingWork(schemaType)}
+          />
+
+          {/* The four bars of the drawing, in order: navigation, then whatever
+              the page puts in its action bar, then the content container. pb-24
+              leaves room for the floating save bar on editable screens. */}
+          <main className="gutter-fluid min-w-0 flex-1 space-y-3 pb-24">
+            <AdminNavBar businessType={schemaType} />
+            <div className="rounded-2xl bg-panel p-4 sm:p-5">{children}</div>
+          </main>
+        </div>
       </div>
       <RefreshButton />
     </div>
   );
+}
+
+/**
+ * What is waiting on the merchant, for the bell in the top bar.
+ *
+ * Two counts and no more. A notification centre that lists everything that has
+ * ever happened is a second inbox nobody reads; the bell is only worth having
+ * if a dot on it means something needs doing today.
+ */
+async function pendingWork(businessType: BusinessType): Promise<Alert[]> {
+  const prisma = await db();
+  const alerts: Alert[] = [];
+
+  const enquiries = await prisma.enquiry.count({ where: { status: "NEW" } });
+  if (enquiries > 0) {
+    alerts.push({
+      label: `${enquiries} new ${enquiries === 1 ? "enquiry" : "enquiries"}`,
+      href: "/admin/enquiries",
+    });
+  }
+
+  // A blog has no orders, and counting them would be a query for a number that
+  // is always zero.
+  if (businessType !== "BLOG") {
+    const orders = await prisma.order.count({
+      where: { orderStatus: "PENDING", deletedAt: null },
+    });
+    if (orders > 0) {
+      alerts.push({
+        label: `${orders} ${orders === 1 ? "order" : "orders"} awaiting fulfilment`,
+        href: "/admin/orders",
+      });
+    }
+  }
+
+  return alerts;
 }

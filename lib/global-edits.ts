@@ -33,9 +33,6 @@ export type GlobalEdits = {
   announcementText: string;
   announcementBgColor: string;
   whatsappOrderButton: boolean;
-  maintenanceMode: boolean;
-  /** ISO 3166-1 alpha-2 codes this shop will not serve. Empty serves everyone. */
-  blockedCountries: string[];
   shopFilterBar: boolean;
 };
 
@@ -59,8 +56,6 @@ export const GLOBAL_EDITS_DEFAULTS: GlobalEdits = {
   announcementText: "",
   announcementBgColor: "#4c100f",
   whatsappOrderButton: true,
-  maintenanceMode: false,
-  blockedCountries: [],
   shopFilterBar: true,
 };
 
@@ -104,9 +99,19 @@ export function toGlobalEdits(row: Record<string, unknown>): GlobalEdits {
     const v = row[key];
     return typeof v === "string" && (allowed as readonly string[]).includes(v) ? (v as T) : fallback;
   }
+  // Whether the shop is visible at all, and to whom, used to live in this
+  // bag. It moved to Preferences, and the row still carries those columns, so
+  // they are dropped here rather than spread in — otherwise saving a badge
+  // colour would also rewrite maintenance mode from a form that no longer
+  // shows it.
+  const { maintenanceMode, blockedCountries, searchIndexing, spamProtection, ...rest } = row;
+  void maintenanceMode;
+  void blockedCountries;
+  void searchIndexing;
+  void spamProtection;
   return {
     ...GLOBAL_EDITS_DEFAULTS,
-    ...row,
+    ...rest,
     outOfStockDisplay: pick("outOfStockDisplay", ["HIDE", "SOLD_OUT", "NORMAL"] as const, GLOBAL_EDITS_DEFAULTS.outOfStockDisplay),
     defaultShopSort: pick(
       "defaultShopSort",

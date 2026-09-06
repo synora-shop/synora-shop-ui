@@ -5,7 +5,13 @@ import { PageHeader, EmptyState } from "@/components/ui/primitives";
 import { EnquiryList } from "@/components/admin/enquiry-list";
 import { parseCustomFields } from "@/lib/product-kind";
 import { FilterBar, type FilterGroup } from "@/components/admin/filter-bar";
-import { keepKnown, readFilter, whereIn } from "@/lib/filters";
+import { activeCount, keepKnown, readFilter, whereIn } from "@/lib/filters";
+import { readPaging } from "@/lib/paging";
+import { ActionBar } from "@/components/admin/action-bar";
+import { ListSearch } from "@/components/admin/list-search";
+import { FilterDisclosure } from "@/components/admin/filter-disclosure";
+import { PerPageSelect } from "@/components/admin/per-page-select";
+import { PaginationBar } from "@/components/admin/pagination-bar";
 
 export const dynamic = "force-dynamic";
 
@@ -27,13 +33,33 @@ export default async function EnquiriesPage(props: PageProps<"/admin/enquiries">
   // Nothing chosen keeps the old default — an inbox that opens on Won and Lost
   // buries the ones that still need an answer. Choosing any status replaces
   // that default outright, so what is on screen always matches the chips.
-  const where = status.length > 0 ? { status: whereIn(status) } : { status: { in: OPEN } };
+  const q = readFilter(sp, "q")[0] ?? "";
+  const where = {
+    ...(status.length > 0 ? { status: whereIn(status) } : { status: { in: OPEN } }),
+    ...(q
+      ? {
+          OR: [
+            { name: { contains: q, mode: "insensitive" as const } },
+            { email: { contains: q, mode: "insensitive" as const } },
+            { phone: { contains: q, mode: "insensitive" as const } },
+            { productTitle: { contains: q, mode: "insensitive" as const } },
+            { message: { contains: q, mode: "insensitive" as const } },
+          ],
+        }
+      : {}),
+  };
+
+  // The list used to stop at a hard `take: 100`, which is a cliff rather than a
+  // page: the hundred and first enquiry simply was not in the admin.
+  const total = await (await db()).enquiry.count({ where });
+  const { skip, take } = readPaging(sp, total);
 
   const [enquiries, counts] = await Promise.all([
     (await db()).enquiry.findMany({
       where,
       orderBy: { createdAt: "desc" },
-      take: 100,
+      skip,
+      take,
       include: { product: { select: { slug: true, customFields: true } } },
     }),
     (await db()).enquiry.groupBy({ by: ["status"], _count: true }),
@@ -73,20 +99,26 @@ export default async function EnquiriesPage(props: PageProps<"/admin/enquiries">
   }));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <PageHeader
         title="Enquiries"
         description="Questions about bulk and made-to-order products. These aren't orders, nothing has been paid for yet."
       />
 
-      <div>
-        <FilterBar basePath="/admin/enquiries" groups={groups} filters={{ status }} />
-        {status.length === 0 && (
-          <p className="mt-2 text-xs text-ink-faint">
-            Showing enquiries that still need an answer. Pick any status above to change that.
-          </p>
-        )}
-      </div>
+      <ActionBar>
+        <ListSearch placeholder="Search enquiries" />
+        <FilterDisclosure activeCount={activeCount({ status })}>
+          <FilterBar basePath="/admin/enquiries" groups={groups} filters={{ status }} />
+          {status.length === 0 && (
+            <p className="mt-2 text-xs text-ink-faint">
+              Showing enquiries that still need an answer. Pick any status above to change that.
+            </p>
+          )}
+        </FilterDisclosure>
+        <div className="ml-auto">
+          <PerPageSelect basePath="/admin/enquiries" searchParams={sp} total={total} />
+        </div>
+      </ActionBar>
 
       {rows.length === 0 ? (
         <EmptyState
@@ -99,7 +131,10 @@ export default async function EnquiriesPage(props: PageProps<"/admin/enquiries">
           }
         />
       ) : (
-        <EnquiryList enquiries={rows} />
+        <>
+          <EnquiryList enquiries={rows} />
+          <PaginationBar basePath="/admin/enquiries" searchParams={sp} total={total} />
+        </>
       )}
     </div>
   );

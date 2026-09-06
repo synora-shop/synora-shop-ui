@@ -12,8 +12,7 @@ export default async function AdminPagesPage() {
 
   return (
     <div>
-      <h1 className="font-serif text-3xl font-semibold">Pages</h1>
-      <p className="mt-1 text-sm text-ink-soft">
+      <p className="text-sm text-ink-soft">
         Add, hide, and reorder the sections that make up each page, like the homepage layout.
         Collection pages are managed from Categories instead.
       </p>
