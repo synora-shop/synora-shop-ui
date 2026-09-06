@@ -136,6 +136,49 @@ export function PageHeader({
 }
 
 /**
+ * One setting, or one group of them: what it is on the left, the controls on
+ * the right.
+ *
+ * Settings screens were a column of cards, each stretched to the full width of
+ * a 1500px panel around a form 380px wide — most of every card empty, and the
+ * explanation stacked above the field so the eye travelled down and back for
+ * each one. Side by side, the width is spent on the explanation instead of on
+ * nothing, and a column of these scans as a list of decisions.
+ *
+ * Below lg it stacks, because at that width there is only one column to give.
+ */
+export function Fieldset({
+  title,
+  description,
+  children,
+  className,
+}: {
+  title: React.ReactNode;
+  description?: React.ReactNode;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "grid gap-3 rounded-xl border border-border bg-surface p-4 lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)] lg:gap-6",
+        className
+      )}
+    >
+      <div className="min-w-0">
+        <h3 className="text-[13px] font-semibold text-ink">{title}</h3>
+        {description && (
+          <p className="mt-1 text-xs leading-snug text-ink-soft">{description}</p>
+        )}
+      </div>
+      {/* Capped rather than filling the rest: a text field the width of a
+          window is harder to read, not easier. */}
+      <div className="min-w-0 max-w-lg space-y-3">{children}</div>
+    </div>
+  );
+}
+
+/**
  * The line between one part of a screen and the next.
  *
  * Screens were separating their sections with nothing but a gap, and a gap is

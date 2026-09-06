@@ -257,7 +257,7 @@ export function NestableList({
 
   return (
     <div className={cn(dragged && "select-none", className)}>
-      <ul className="space-y-1">
+      <ul className="space-y-0.5">
         {items.map((item, index) => {
           const canIndent = changeDepth(index, 1) !== null;
           const canOutdent = changeDepth(index, -1) !== null;
@@ -283,7 +283,7 @@ export function NestableList({
                 aria-grabbed={isDragging || undefined}
                 style={{ marginLeft: item.depth * INDENT_PX }}
                 className={cn(
-                  "flex items-center gap-1 rounded-lg border bg-surface px-2 py-1.5 transition-shadow",
+                  "flex items-center gap-1 rounded-lg border bg-surface px-2 py-1 transition-shadow",
                   // A dragged row is lifted rather than faded. Fading alone
                   // reads as "disabled"; the ring and shadow read as "held".
                   isDragging

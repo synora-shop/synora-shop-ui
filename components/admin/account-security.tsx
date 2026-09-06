@@ -5,7 +5,7 @@ import { signOut } from "next-auth/react";
 import { LogOut, ShieldCheck } from "lucide-react";
 import { changePassword, resendVerification, revokeAllSessions } from "@/app/merchant/actions";
 import { PasswordInput } from "@/components/ui/password-input";
-import { Button, Card } from "@/components/ui/primitives";
+import { Button, Card, Fieldset } from "@/components/ui/primitives";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast";
 import { Field, FormMessage } from "@/components/merchant/form-shell";
@@ -47,7 +47,7 @@ export function AccountSecurity({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {dialog}
 
       {!emailVerified && (
@@ -74,13 +74,11 @@ export function AccountSecurity({
         </Card>
       )}
 
-      <Card className="p-4">
-        <h2 className="text-sm font-medium text-ink">Change your password</h2>
-        <p className="mt-0.5 text-xs text-ink-soft">
-          Changing it signs you out on every other device.
-        </p>
-
-        <form onSubmit={handleChangePassword} className="mt-4 max-w-sm space-y-4">
+      <Fieldset
+        title="Change your password"
+        description="Changing it signs you out on every other device."
+      >
+        <form onSubmit={handleChangePassword} className="space-y-3">
           <Field label="Current password">
             <PasswordInput name="current" autoComplete="current-password" required />
           </Field>
@@ -98,17 +96,19 @@ export function AccountSecurity({
             {pending ? "Changing…" : "Change password"}
           </Button>
         </form>
-      </Card>
+      </Fieldset>
 
-      <Card className="p-4">
-        <h2 className="text-sm font-medium text-ink">Sign out everywhere</h2>
-        <p className="mt-0.5 max-w-prose text-xs leading-snug text-ink-soft">
-          Ends every session on every device, including this one. Use it if you&rsquo;ve signed in
-          somewhere you don&rsquo;t control, or you think someone else has your password, then
-          change it.
-        </p>
+      <Fieldset
+        title="Sign out everywhere"
+        description={
+          <>
+            Ends every session on every device, including this one. Use it if
+            you&rsquo;ve signed in somewhere you don&rsquo;t control, or you think someone
+            else has your password, then change it.
+          </>
+        }
+      >
         <Button
-          className="mt-4"
           variant="danger"
           disabled={pending}
           onClick={async () => {
@@ -137,7 +137,7 @@ export function AccountSecurity({
           <LogOut className="h-4 w-4" />
           Sign out everywhere
         </Button>
-      </Card>
+      </Fieldset>
     </div>
   );
 }

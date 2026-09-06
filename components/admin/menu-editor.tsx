@@ -191,7 +191,9 @@ function Row({
 
   return (
     <SwipeRow actions={[{ key: "delete", label: "Delete", icon: Trash2, tone: "danger", onClick: handleDelete }]}>
-      <div className="flex flex-wrap items-center gap-2 px-3 py-2">
+      {/* No padding of its own: the reorder wrapper already provides it, and
+          carrying both made every menu item 74px tall for a 32px field. */}
+      <div className="flex flex-wrap items-center gap-2">
         <TargetSelect
           value={target}
           onChange={(v) => {
@@ -304,10 +306,10 @@ export function MenuEditor({
   }
 
   return (
-    <div className="rounded-lg border border-border bg-white">
+    <div className="rounded-xl border border-border bg-surface">
       {dialog}
       {error && <p className="px-3 pt-3 text-sm text-rose">{error}</p>}
-      <div className="p-3">
+      <div className="p-2">
         <NestableList
           items={items.map((item) => ({
             id: item.id,
@@ -330,10 +332,14 @@ export function MenuEditor({
             );
           }}
         />
-        {items.length === 0 && <p className="p-4 text-sm text-ink-soft">No items yet.</p>}
+        {items.length === 0 && (
+          <p className="px-2 py-6 text-center text-xs text-ink-soft">
+            No links yet. Add one below.
+          </p>
+        )}
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 border-t border-border p-3">
+      <div className="flex flex-wrap items-center gap-2 border-t border-border p-2">
         <TargetSelect value={newTarget} onChange={setNewTarget} pages={pages} className="input input-sm flex-1" />
         {showGroup && (
           <input
