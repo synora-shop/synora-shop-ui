@@ -88,7 +88,10 @@ export function AdminTopbar({
         </Link>
       </span>
 
-      <div className="gutter-fluid flex items-center gap-3 py-3">
+      {/* A fixed height, so a screen without a breadcrumb does not make the
+          bar shorter than its neighbours — the mark is centred against this
+          height from a fixed position and would drift with it. */}
+      <div className="gutter-fluid flex h-[76px] items-center gap-3">
         <button
           type="button"
           aria-label={navOpen ? "Close menu" : "Open menu"}
@@ -105,6 +108,7 @@ export function AdminTopbar({
           <h1 className="text-page-title truncate font-normal tracking-tight text-ink">
             {section.label}
           </h1>
+          {trail.length > 0 && (
           <nav aria-label="Breadcrumb" className="mt-0.5 flex items-center gap-1 text-[13px]">
             {trail.map((crumb, i) => (
               <span key={`${crumb.href}-${i}`} className="flex min-w-0 items-center gap-1">
@@ -122,6 +126,7 @@ export function AdminTopbar({
               </span>
             ))}
           </nav>
+          )}
         </div>
 
         {/* Which type this store is, and what the types mean. Two questions a

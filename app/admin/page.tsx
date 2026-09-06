@@ -34,7 +34,7 @@ export default async function AdminHomePage() {
   const tokens = resolveThemeTokens((theme?.tokens as object) ?? {});
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="space-y-4">
       <PageHeader
         title="Home"
         description="Your store's name, logo and where to find you."

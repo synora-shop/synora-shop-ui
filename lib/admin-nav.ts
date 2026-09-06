@@ -200,14 +200,20 @@ export function resolveNav(pathname: string, businessType: BusinessType) {
   const tab = section.tabs.find((t) => t.href === current) ?? null;
 
   const crumbs: Crumb[] = [{ label: section.label, href: section.href }];
-  // A section of one is its own tab — "Home > Home" says nothing twice.
-  if (tab && section.tabs.length > 1) crumbs.push({ label: tab.label, href: tab.href });
+  // A crumb that repeats the heading above it is noise. "Products > Products"
+  // and a lone "Home" under a heading that already says Home are both the
+  // trail telling you something you have just read.
+  if (tab && section.tabs.length > 1 && tab.label !== section.label) {
+    crumbs.push({ label: tab.label, href: tab.href });
+  }
 
   return {
     sections,
     section,
     current,
-    crumbs,
+    // One crumb is not a trail — it is the heading again. The breadcrumb only
+    // earns its line once there is somewhere above you to go back to.
+    crumbs: crumbs.length > 1 ? crumbs : [],
     tabs: section.tabs.length > 1 ? section.tabs : [],
   };
 }

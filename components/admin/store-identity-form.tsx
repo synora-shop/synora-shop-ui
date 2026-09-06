@@ -35,7 +35,7 @@ export function StoreIdentityForm({ initial }: { initial: StoreIdentity }) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 lg:grid lg:grid-cols-2 lg:items-start lg:gap-4 lg:space-y-0">
       <Card className="space-y-4 p-4">
         <div>
           <label className={label} htmlFor="storeName">
@@ -136,7 +136,7 @@ export function StoreIdentityForm({ initial }: { initial: StoreIdentity }) {
 
       {/* Discard and Save on every editable screen, per the documentation.
           Discard is only offered once there is something to discard. */}
-      <div className="sticky bottom-4 flex items-center justify-end gap-2">
+      <div className="sticky bottom-4 flex items-center justify-end gap-2 lg:col-span-2">
         {dirty && (
           <Button variant="secondary" onClick={() => setValues(initial)} disabled={pending}>
             Discard
