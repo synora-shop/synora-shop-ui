@@ -7,7 +7,49 @@ purpose — this is the list Abdul works from, not a ticket tracker.
 
 ## Next up
 
-### 1. Switching APP type must go through pausing the store
+### 1. Element design, section by section
+
+**Where:** every section. Not a layout pass — an *element* pass.
+
+**The source:** the screenshots in `SHOP extra/Assestz/` are a **vocabulary of
+element design, not a layout to copy**. They are a different kind of system;
+what transfers is how the pieces behave and how alive they feel, never the
+arrangement. `APP.ai` remains the authority on layout and on the four greys.
+
+**What "element design" means here.** For each section, decide deliberately:
+
+- what a **row** looks like, and what a **tile** looks like, and which of the
+  two that section should default to
+- which parts are **interactive**, and how they say so before being touched
+- what **state** each element can be in — empty, loading, error, over limit,
+  disabled — and what it looks like in each
+- what carries a **figure**, and whether that figure needs a change-against-last
+  and a trend beside it to mean anything
+- what makes it **feel alive**: a count that moves, a status that is current, a
+  thumbnail instead of a grey square
+
+**Section by section**
+
+| Section | The elements that need deciding |
+| --- | --- |
+| Home | the identity card, the logo drop, the address block |
+| Products | the product row vs the product tile, stock and status marks, the bulk-select bar |
+| Your App | the theme card and its live preview, the page row, the menu builder, the media tile |
+| Preferences | the toggle, the country picker, the grouped setting card |
+| Analytics | the stat tile, the chart frame, the ranked list, the live count |
+| Settings | the field, the fieldset, the destructive action |
+
+**The rules that do not move**
+
+- Four colours: `#d2d2d2` page, `#e0e0e0` container, `#fafafa` control,
+  `#6666ff` active and nothing else.
+- The references use five pastel tints because they have five accents. We have
+  one — tint with `#6666ff` at low opacity on `#fafafa`, never a second hue.
+- Colour means *selected*. It never means "this tile is the orange one".
+- Status colours (green, amber, rose) are reserved for state and always carry a
+  word or an icon, never colour alone.
+
+### 2. Switching APP type must go through pausing the store
 
 **Where:** the top header, where *Change APP type* already sits.
 
@@ -40,13 +82,10 @@ about to stop being. Pausing first makes the switch a deliberate act.
   so switching back brings the old one straight back.
 - The control is currently `xl:` only. It needs to be reachable on a laptop.
 
-### 2. AHAD1V is still a RESTAURANT row in the live database
+### 3. ~~AHAD1V is still a RESTAURANT row in the live database~~ — done 6 Sep
 
-It renders the e-commerce panel correctly, but the row is wrong. Fixed by:
-
-```
-npx tsx scripts/seed-demo.ts --shop ahad1v --set-type ecommerce
-```
+Switched. The shop is called **bashinda** in production, not AHAD1V — the name
+changed after an earlier database copy was taken, so older notes say AHAD1V.
 
 ---
 
@@ -77,3 +116,9 @@ npx tsx scripts/seed-demo.ts --shop ahad1v --set-type ecommerce
   while nothing deploys from it; a real failure the day something does.
 - **Image upload does not work locally** — no `BLOB_READ_WRITE_TOKEN` in
   `.env`. Pasting a URL still works.
+- **A script that writes straight to the database does not clear the cache.**
+  Shop settings are wrapped in Next's data cache with a 300-second life, kept on
+  disk in `.next/cache`. So `seed-demo.ts --hide` / `--show` appears to do
+  nothing for up to five minutes, and a server restart does not help. Either
+  wait, or delete `.next/cache`. Anything writing settings from outside the app
+  needs to invalidate the tag the way the server actions do.

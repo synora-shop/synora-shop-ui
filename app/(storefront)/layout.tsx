@@ -14,7 +14,10 @@ import { getSiteText, text } from "@/lib/site-text";
 import { toGlobalEdits, footerCopyright } from "@/lib/global-edits";
 import { resolveLogoColor } from "@/lib/theme-tokens";
 import { guardCanonicalHost, guardShopHost } from "@/lib/canonical";
+import { headers } from "next/headers";
+import { SHOP_PATH_HEADER } from "@/lib/shop-context";
 import { canonicalUrl, currentShop } from "@/lib/data/shop";
+import { recordVisit } from "@/lib/analytics/visits";
 import { STORE_DEFAULTS } from "@/lib/store-defaults";
 import type { Metadata } from "next";
 
@@ -86,6 +89,20 @@ export default async function StorefrontLayout({ children }: LayoutProps<"/">) {
   // and a basket left on one host is not there on another. Everything that is
   // not the canonical address redirects.
   await guardCanonicalHost();
+
+  // Counted here, after the two guards, so a redirect is never recorded as a
+  // visit — otherwise every non-canonical request would be counted twice, once
+  // on the way through and once at its destination. The write itself happens
+  // after the response; see lib/analytics/visits.ts.
+  const visiting = await currentShop();
+  if (visiting) {
+    // The proxy already passes the path down for the canonical redirect. Its
+    // query is dropped: a URL's parameters carry campaign tags and sometimes
+    // worse, and none of it belongs in a table this size.
+    const raw = (await headers()).get(SHOP_PATH_HEADER) ?? "/";
+    const path = raw.split("?")[0] || "/";
+    await recordVisit(visiting.id, path);
+  }
 
 
   const [settings, menus, siteText, tokens, fonts, stickyButtons] = await Promise.all([

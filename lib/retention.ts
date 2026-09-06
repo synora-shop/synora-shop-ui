@@ -39,6 +39,12 @@ export const RETENTION = {
    * account?") is usually asked long after the fact.
    */
   auditDays: 365,
+  /**
+   * Storefront visits. Long enough for a year-on-year comparison to mean
+   * something, short enough that the busiest table on the platform stays a
+   * known size rather than an open-ended one.
+   */
+  visitDays: 400,
 } as const;
 
 const day = 24 * 60 * 60 * 1000;
@@ -93,6 +99,10 @@ export async function pruneExpiredRows(): Promise<PruneReport> {
     })
   );
 
+
+  await step("visit", () =>
+    prisma.visit.deleteMany({ where: { createdAt: { lt: ago(RETENTION.visitDays) } } })
+  );
 
   await step("auditLog", () =>
     prisma.auditLog.deleteMany({ where: { createdAt: { lt: ago(RETENTION.auditDays) } } })
