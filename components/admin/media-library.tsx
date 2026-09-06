@@ -3,6 +3,8 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Copy, ExternalLink, ImageOff, Trash2 } from "lucide-react";
+import { EmptyState } from "@/components/ui/primitives";
+import { ListEmpty } from "@/components/admin/list-empty";
 import { deleteAsset } from "@/app/admin/data/actions";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast";
@@ -45,18 +47,14 @@ export function MediaLibrary({
   const [pending, startTransition] = useTransition();
 
   if (assets.length === 0) {
-    return (
-      <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-border bg-surface px-6 py-14 text-center">
-        <ImageOff className="h-6 w-6 text-ink-faint" aria-hidden />
-        <p className="text-sm font-medium">
-          {searching ? "No files match that." : "Nothing uploaded yet."}
-        </p>
-        <p className="max-w-sm text-xs text-ink-soft">
-          {searching
-            ? "Try a shorter word, or clear the search."
-            : "Pictures you add to a product, a page or your logo appear here automatically, ready to use again."}
-        </p>
-      </div>
+    return searching ? (
+      <ListEmpty filtered basePath="/admin/data" thing="files" />
+    ) : (
+      <EmptyState
+        icon={ImageOff}
+        title="Nothing uploaded yet"
+        description="Pictures you add to a product, a page or your logo appear here automatically, ready to use again."
+      />
     );
   }
 

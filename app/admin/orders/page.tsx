@@ -91,6 +91,7 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
       </ActionBar>
 
       <OrderList
+        filtered={q.length > 0 || activeCount({ status }) > 0}
         orders={orders.map((o) => ({
           ...o,
           // Written out here rather than in the row: a client component

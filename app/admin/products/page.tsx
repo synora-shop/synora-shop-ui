@@ -46,6 +46,10 @@ export default async function AdminProductsPage(props: PageProps<"/admin/product
   // Free-text search, in the URL like the filters. Title and SKU because those
   // are the two things a merchant actually knows about a product they are
   // trying to find — nobody searches a description.
+  //
+  // The SKU lives on the variant, not the product: one product can carry a
+  // dozen of them. Searching Product.sku threw on every non-empty query, and
+  // only on a non-empty one — so the screen worked until someone used it.
   const q = readFilter(sp, "q")[0] ?? "";
   const where = {
     deletedAt: null,
@@ -57,7 +61,7 @@ export default async function AdminProductsPage(props: PageProps<"/admin/product
       ? {
           OR: [
             { title: { contains: q, mode: "insensitive" as const } },
-            { sku: { contains: q, mode: "insensitive" as const } },
+            { variants: { some: { sku: { contains: q, mode: "insensitive" as const } } } },
           ],
         }
       : {}),
@@ -124,7 +128,13 @@ export default async function AdminProductsPage(props: PageProps<"/admin/product
         </div>
       </ActionBar>
 
-      <ProductList products={products} view={view} />
+      <ProductList
+        products={products}
+        view={view}
+        // Whether the list is empty because there is nothing, or because the
+        // merchant is looking at a slice of it — two different answers.
+        filtered={q.length > 0 || activeCount(filters) > 0}
+      />
 
       <PaginationBar basePath="/admin/products" searchParams={sp} total={total} />
     </div>

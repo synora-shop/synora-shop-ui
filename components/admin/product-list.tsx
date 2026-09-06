@@ -3,7 +3,9 @@
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { Trash2 } from "lucide-react";
+import { Package, Trash2 } from "lucide-react";
+import { ButtonLink } from "@/components/ui/primitives";
+import { ListEmpty } from "@/components/admin/list-empty";
 import { formatPKR, cn } from "@/lib/utils";
 import { useServerRows } from "@/components/ui/use-server-rows";
 import { effectivePrice, unitProfit, profitMargin } from "@/lib/product-pricing";
@@ -36,9 +38,12 @@ type ProductRow = {
 export function ProductList({
   products,
   view = "list",
+  filtered = false,
 }: {
   products: ProductRow[];
   view?: "list" | "grid";
+  /** Whether a search or filter is what emptied this — see ListEmpty. */
+  filtered?: boolean;
 }) {
   const router = useRouter();
   const [rows, setRows] = useServerRows(products);
@@ -73,9 +78,17 @@ export function ProductList({
     return (
       <>
         {dialog}
-        <p className="rounded-lg border border-border bg-surface px-5 py-8 text-center text-sm text-ink-soft">
-          No products here.
-        </p>
+        <ListEmpty
+          filtered={filtered}
+          basePath="/admin/products"
+          thing="products"
+          icon={Package}
+          action={
+            <ButtonLink href="/admin/products/new" variant="primary" size="sm">
+              Add your first product
+            </ButtonLink>
+          }
+        />
       </>
     );
   }

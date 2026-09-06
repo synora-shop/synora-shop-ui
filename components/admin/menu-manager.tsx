@@ -110,9 +110,9 @@ export function MenuManager({
           Pick which menu fills each part of your storefront. One menu can fill both.
         </p>
 
-        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <div className="mt-2.5 grid gap-2.5 sm:grid-cols-2">
           {slots.map((slot) => (
-            <div key={slot.slot} className="rounded-lg border border-border bg-white p-4">
+            <div key={slot.slot} className="rounded-xl border border-border bg-surface p-3">
               <label
                 htmlFor={`slot-${slot.slot}`}
                 className="text-xs font-semibold uppercase tracking-wide text-ink-soft"
@@ -125,7 +125,7 @@ export function MenuManager({
                 onChange={(e) => handleAssign(slot.slot, e.target.value || null)}
                 className="input mt-1"
               >
-                <option value="">, use my first menu,</option>
+                <option value="">Not set — use my first menu</option>
                 {menus.map((menu) => (
                   <option key={menu.id} value={menu.id}>
                     {menu.name}

@@ -2,6 +2,7 @@ import { Inbox } from "lucide-react";
 import { db } from "@/lib/data/shop";
 import type { EnquiryStatus } from "@/lib/generated/prisma/client";
 import { PageHeader, EmptyState } from "@/components/ui/primitives";
+import { ListEmpty } from "@/components/admin/list-empty";
 import { EnquiryList } from "@/components/admin/enquiry-list";
 import { parseCustomFields } from "@/lib/product-kind";
 import { FilterBar, type FilterGroup } from "@/components/admin/filter-bar";
@@ -132,15 +133,17 @@ export default async function EnquiriesPage(props: PageProps<"/admin/enquiries">
       </ActionBar>
 
       {rows.length === 0 ? (
-        <EmptyState
-          icon={Inbox}
-          title={status.length === 0 ? "No open enquiries" : "Nothing here"}
-          description={
-            status.length === 0
-              ? "When someone asks about a bulk or made-to-order product, it lands here."
-              : "No enquiries match these filters."
-          }
-        />
+        // Searching or filtering is a dead end that needs a way back; an inbox
+        // that has simply never had a message is an explanation.
+        q.length > 0 || status.length > 0 ? (
+          <ListEmpty filtered basePath="/admin/enquiries" thing="enquiries" />
+        ) : (
+          <EmptyState
+            icon={Inbox}
+            title="No open enquiries"
+            description="When someone asks about a bulk or made-to-order product, it lands here."
+          />
+        )
       ) : (
         <>
           <EnquiryList enquiries={rows} />

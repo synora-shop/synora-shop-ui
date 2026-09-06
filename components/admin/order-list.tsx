@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Trash2 } from "lucide-react";
+import { ShoppingBag, Trash2 } from "lucide-react";
+import { ListEmpty } from "@/components/admin/list-empty";
 import { formatPKR, cn } from "@/lib/utils";
 import { useServerRows } from "@/components/ui/use-server-rows";
 import { orderStatusDotStyle, orderStatusStyle, paymentLabel, statusLabel } from "@/lib/order-status-style";
@@ -33,7 +34,7 @@ type OrderRow = {
   items: { price: number; costPrice: number; quantity: number }[];
 };
 
-export function OrderList({ orders }: { orders: OrderRow[] }) {
+export function OrderList({ orders, filtered = false }: { orders: OrderRow[]; filtered?: boolean }) {
   const router = useRouter();
   const [rows, setRows] = useServerRows(orders);
   const { confirm, dialog } = useConfirm();
@@ -71,9 +72,7 @@ export function OrderList({ orders }: { orders: OrderRow[] }) {
     return (
       <>
         {dialog}
-        <p className="rounded-xl border border-dashed border-border bg-surface px-5 py-10 text-center text-sm text-ink-soft">
-          No orders match this.
-        </p>
+        <ListEmpty filtered={filtered} basePath="/admin/orders" thing="orders" icon={ShoppingBag} />
       </>
     );
   }

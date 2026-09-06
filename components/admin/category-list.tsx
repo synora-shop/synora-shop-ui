@@ -190,7 +190,7 @@ export function CategoryList({ categories }: { categories: CategoryRow[] }) {
             refresh={() => router.refresh()}
           />
         ))}
-        {rows.length === 0 && <p className="px-5 py-4 text-sm text-ink-soft">No categories yet.</p>}
+        
       </div>
     </div>
   );
