@@ -25,7 +25,21 @@ type ProductRow = {
   variants: { stock: number }[];
 };
 
-export function ProductList({ products }: { products: ProductRow[] }) {
+/**
+ * The catalogue, as rows or as tiles.
+ *
+ * Which is better depends on what is being sold — a rail of dresses is a wall
+ * of pictures, a shelf of spare parts is a table of names and numbers — so the
+ * merchant picks and the choice is in the URL. Deleting, the confirm dialog and
+ * the optimistic row removal are shared between both; only the markup differs.
+ */
+export function ProductList({
+  products,
+  view = "list",
+}: {
+  products: ProductRow[];
+  view?: "list" | "grid";
+}) {
   const router = useRouter();
   const [rows, setRows] = useServerRows(products);
   const { confirm, dialog } = useConfirm();
@@ -55,10 +69,67 @@ export function ProductList({ products }: { products: ProductRow[] }) {
     }
   }
 
+  if (rows.length === 0) {
+    return (
+      <>
+        {dialog}
+        <p className="rounded-lg border border-border bg-surface px-5 py-8 text-center text-sm text-ink-soft">
+          No products here.
+        </p>
+      </>
+    );
+  }
+
+  if (view === "grid") {
+    return (
+      <>
+        {dialog}
+        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          {rows.map((p) => {
+            const stock = p.variants.reduce((sum, v) => sum + v.stock, 0);
+            return (
+              <li key={p.id} className="overflow-hidden rounded-xl border border-border bg-surface">
+                <Link href={`/admin/products/${p.id}`} className="block transition-colors hover:bg-subtle">
+                  <div className="relative aspect-square bg-brand-50">
+                    {p.images[0] && (
+                      <Image src={p.images[0]} alt="" fill sizes="(max-width:640px) 50vw, 20vw" className="object-cover" />
+                    )}
+                    {p.status === "DRAFT" && (
+                      <span className="absolute left-2 top-2 rounded-full bg-amber-bg px-2 py-0.5 text-[10px] font-medium uppercase text-amber">
+                        Draft
+                      </span>
+                    )}
+                  </div>
+                  <div className="space-y-0.5 p-2.5">
+                    <p className="line-clamp-2 text-xs font-medium">{p.title}</p>
+                    <p className="text-[11px] text-ink-soft">
+                      {formatPKR(effectivePrice(p))} · {stock} in stock
+                    </p>
+                  </div>
+                </Link>
+                {/* No swipe in the grid — a tile has no long edge to swipe
+                    along, so the action has to be a button you can see. */}
+                <button
+                  type="button"
+                  onClick={() => handleDelete(p.id, p.title)}
+                  aria-label={`Move ${p.title} to the Bin`}
+                  className="flex w-full items-center justify-center gap-1.5 border-t border-border py-1.5 text-[11px] text-ink-soft transition-colors hover:bg-rose-bg hover:text-rose"
+                >
+                  <Trash2 className="h-3 w-3" />
+                  Bin
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </>
+    );
+  }
+
   return (
     <>
       {dialog}
-      <div className="mt-6 divide-y divide-border rounded-lg border border-border bg-white">
+      <div className="divide-y divide-border rounded-lg border border-border bg-surface">
         {rows.map((p) => {
           const stock = p.variants.reduce((sum, v) => sum + v.stock, 0);
           return (
@@ -103,9 +174,6 @@ export function ProductList({ products }: { products: ProductRow[] }) {
             </SwipeRow>
           );
         })}
-        {rows.length === 0 && (
-          <p className="px-5 py-4 text-sm text-ink-soft">No products here.</p>
-        )}
       </div>
     </>
   );

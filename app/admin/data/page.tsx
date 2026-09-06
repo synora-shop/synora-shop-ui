@@ -1,6 +1,9 @@
 import { db } from "@/lib/data/shop";
 import { readFilter } from "@/lib/filters";
 import { readPaging } from "@/lib/paging";
+import { MEDIA_SORTS, readSort, sortHref } from "@/lib/sorting";
+import { SortMenu } from "@/components/admin/sort-menu";
+import { ViewToggle, readView } from "@/components/admin/view-toggle";
 import { ActionBar } from "@/components/admin/action-bar";
 import { ListSearch } from "@/components/admin/list-search";
 import { PerPageSelect } from "@/components/admin/per-page-select";
@@ -33,10 +36,15 @@ export default async function DataPage(props: PageProps<"/admin/data">) {
 
   const total = await prisma.mediaAsset.count({ where });
   const { skip, take } = readPaging(sp, total);
+  const sort = readSort(sp, MEDIA_SORTS);
+  // Pictures start as tiles. A library of filenames tells a merchant nothing —
+  // the only reliable way to find "the one with the blue background" is to see
+  // it — but the row view is there for when the name is what matters.
+  const view = readView(sp, "grid");
 
   const assets = await prisma.mediaAsset.findMany({
     where,
-    orderBy: { createdAt: "desc" },
+    orderBy: sort.orderBy as { createdAt: "desc" },
     skip,
     take,
   });
@@ -50,6 +58,15 @@ export default async function DataPage(props: PageProps<"/admin/data">) {
 
       <ActionBar>
         <ListSearch placeholder="Search files" />
+        <SortMenu
+          current={sort.value}
+          options={MEDIA_SORTS.map((o) => ({
+            value: o.value,
+            label: o.label,
+            href: sortHref("/admin/data", sp, o.value, MEDIA_SORTS),
+          }))}
+        />
+        <ViewToggle basePath="/admin/data" searchParams={sp} current={view} fallback="grid" />
         <div className="ml-auto flex items-center gap-2">
           <PerPageSelect basePath="/admin/data" searchParams={sp} total={total} />
         </div>
@@ -66,6 +83,7 @@ export default async function DataPage(props: PageProps<"/admin/data">) {
           uploadedAt: a.createdAt.toISOString(),
         }))}
         searching={q.length > 0}
+        view={view}
       />
 
       <PaginationBar basePath="/admin/data" searchParams={sp} total={total} />

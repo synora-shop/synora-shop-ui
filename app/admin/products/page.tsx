@@ -10,6 +10,9 @@ import { PaginationBar } from "@/components/admin/pagination-bar";
 import { ButtonLink, buttonClass } from "@/components/ui/primitives";
 import { activeCount, keepKnown, readFilter, whereIn } from "@/lib/filters";
 import { readPaging } from "@/lib/paging";
+import { PRODUCT_SORTS, readSort, sortHref } from "@/lib/sorting";
+import { SortMenu } from "@/components/admin/sort-menu";
+import { ViewToggle, readView } from "@/components/admin/view-toggle";
 import { registryBusinessType } from "@/lib/themes/business-type";
 import { vocabularyFor } from "@/lib/themes/vocabulary";
 
@@ -66,11 +69,15 @@ export default async function AdminProductsPage(props: PageProps<"/admin/product
 
   const total = await (await db()).product.count({ where });
   const { skip, take } = readPaging(sp, total);
+  const sort = readSort(sp, PRODUCT_SORTS);
+  const view = readView(sp);
 
   const products = await (await db()).product.findMany({
     where,
     include: { categories: true, variants: true },
-    orderBy: { createdAt: "desc" },
+    // Ordered by the database, not in the browser. With paging on, sorting the
+    // rows already sent would only ever re-arrange the current page.
+    orderBy: sort.orderBy as { createdAt: "desc" },
     skip,
     take,
   });
@@ -94,6 +101,15 @@ export default async function AdminProductsPage(props: PageProps<"/admin/product
         <FilterDisclosure activeCount={activeCount(filters)}>
           <FilterBar basePath="/admin/products" groups={groups} filters={filters} />
         </FilterDisclosure>
+        <SortMenu
+          current={sort.value}
+          options={PRODUCT_SORTS.map((o) => ({
+            value: o.value,
+            label: o.label,
+            href: sortHref("/admin/products", sp, o.value, PRODUCT_SORTS),
+          }))}
+        />
+        <ViewToggle basePath="/admin/products" searchParams={sp} current={view} />
         <div className="ml-auto flex flex-wrap items-center gap-2">
           <PerPageSelect basePath="/admin/products" searchParams={sp} total={total} />
           {/* A plain link, not a form: the answer is a file, and the browser
@@ -112,7 +128,7 @@ export default async function AdminProductsPage(props: PageProps<"/admin/product
         </div>
       </ActionBar>
 
-      <ProductList products={products} />
+      <ProductList products={products} view={view} />
 
       <PaginationBar basePath="/admin/products" searchParams={sp} total={total} />
     </div>

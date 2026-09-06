@@ -11,6 +11,8 @@ import { ListSearch } from "@/components/admin/list-search";
 import { PerPageSelect } from "@/components/admin/per-page-select";
 import { PaginationBar } from "@/components/admin/pagination-bar";
 import { readPaging } from "@/lib/paging";
+import { CUSTOMER_SORTS, compareCustomers, sortHref } from "@/lib/sorting";
+import { SortMenu } from "@/components/admin/sort-menu";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +24,14 @@ export default async function CustomersPage(props: PageProps<"/admin/customers">
   const search = typeof sp.q === "string" ? sp.q : undefined;
 
   const all = await listCustomers(search);
+
+  // Sorted here, not by the database: lifetime spend is the sum of a customer's
+  // orders, a number no column holds. Every customer has to be read and
+  // totalled before they can be put in order — see lib/sorting.ts.
+  const sortValue =
+    CUSTOMER_SORTS.find((o) => o.value === (typeof sp.sort === "string" ? sp.sort : ""))?.value ??
+    CUSTOMER_SORTS[0].value;
+  all.sort(compareCustomers(sortValue));
 
   // Sliced here rather than in the query, because the order is by lifetime
   // spend — a number the database does not hold, since it is the sum of an
@@ -64,6 +74,14 @@ export default async function CustomersPage(props: PageProps<"/admin/customers">
 
       <ActionBar>
         <ListSearch placeholder="Search by name, email or phone" />
+        <SortMenu
+          current={sortValue}
+          options={CUSTOMER_SORTS.map((o) => ({
+            value: o.value,
+            label: o.label,
+            href: sortHref("/admin/customers", sp, o.value, CUSTOMER_SORTS),
+          }))}
+        />
         <div className="ml-auto">
           <PerPageSelect basePath="/admin/customers" searchParams={sp} total={all.length} />
         </div>

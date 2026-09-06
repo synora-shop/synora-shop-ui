@@ -29,7 +29,15 @@ export type Asset = {
  * actually needs — every image field in the admin accepts a pasted URL, so the
  * library is useful before it is wired into the pickers.
  */
-export function MediaLibrary({ assets, searching }: { assets: Asset[]; searching: boolean }) {
+export function MediaLibrary({
+  assets,
+  searching,
+  view = "grid",
+}: {
+  assets: Asset[];
+  searching: boolean;
+  view?: "list" | "grid";
+}) {
   const router = useRouter();
   const toast = useToast();
   const { confirm, dialog } = useConfirm();
@@ -83,6 +91,61 @@ export function MediaLibrary({ assets, searching }: { assets: Asset[]; searching
         router.refresh();
       }
     });
+  }
+
+  if (view === "list") {
+    return (
+      <>
+        <div className="divide-y divide-border rounded-lg border border-border bg-surface">
+          {assets.map((asset) => (
+            <div key={asset.id} className="flex items-center gap-3 px-3 py-2">
+              <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded border border-border bg-subtle">
+                {/* eslint-disable-next-line @next/next/no-img-element -- Blob URLs
+                    are arbitrary hosts; next/image would need each one allowed. */}
+                <img src={asset.url} alt="" loading="lazy" className="h-full w-full object-cover" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium">{asset.filename}</p>
+                <p className="text-[11px] text-ink-soft">
+                  {asset.format.toUpperCase()} · {formatSize(asset.size)}
+                  {asset.folder && ` · ${asset.folder}`}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => copy(asset)}
+                className={cn(
+                  "flex flex-shrink-0 items-center gap-1 rounded-pill border border-border px-2.5 py-1 text-[11px] transition-colors hover:bg-subtle",
+                  copied === asset.id && "border-green/40 bg-green-bg text-green"
+                )}
+              >
+                {copied === asset.id ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                {copied === asset.id ? "Copied" : "Copy link"}
+              </button>
+              <a
+                href={asset.url}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`Open ${asset.filename} in a new tab`}
+                className="flex-shrink-0 rounded-pill border border-border p-1.5 text-ink-soft transition-colors hover:bg-subtle hover:text-ink"
+              >
+                <ExternalLink className="h-3 w-3" />
+              </a>
+              <button
+                type="button"
+                onClick={() => remove(asset)}
+                disabled={pending}
+                aria-label={`Delete ${asset.filename}`}
+                className="flex-shrink-0 rounded-pill border border-border p-1.5 text-ink-soft transition-colors hover:border-rose/40 hover:bg-rose-bg hover:text-rose disabled:opacity-50"
+              >
+                <Trash2 className="h-3 w-3" />
+              </button>
+            </div>
+          ))}
+        </div>
+        {dialog}
+      </>
+    );
   }
 
   return (

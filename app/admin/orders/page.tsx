@@ -4,6 +4,8 @@ import { OrderList } from "@/components/admin/order-list";
 import { FilterBar, type FilterGroup } from "@/components/admin/filter-bar";
 import { activeCount, keepKnown, readFilter, whereIn } from "@/lib/filters";
 import { readPaging } from "@/lib/paging";
+import { ORDER_SORTS, readSort, sortHref } from "@/lib/sorting";
+import { SortMenu } from "@/components/admin/sort-menu";
 import { orderStatusDotStyle } from "@/lib/order-status-style";
 import { ActionBar } from "@/components/admin/action-bar";
 import { ListSearch } from "@/components/admin/list-search";
@@ -39,11 +41,12 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
 
   const total = await (await db()).order.count({ where });
   const { skip, take } = readPaging(sp, total);
+  const sort = readSort(sp, ORDER_SORTS);
 
   const orders = await (await db()).order.findMany({
     where,
     include: { items: { select: { price: true, costPrice: true, quantity: true } } },
-    orderBy: { createdAt: "desc" },
+    orderBy: sort.orderBy as { createdAt: "desc" },
     skip,
     take,
   });
@@ -67,6 +70,14 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
         <FilterDisclosure activeCount={activeCount({ status })}>
           <FilterBar basePath="/admin/orders" groups={groups} filters={{ status }} />
         </FilterDisclosure>
+        <SortMenu
+          current={sort.value}
+          options={ORDER_SORTS.map((o) => ({
+            value: o.value,
+            label: o.label,
+            href: sortHref("/admin/orders", sp, o.value, ORDER_SORTS),
+          }))}
+        />
         <div className="ml-auto">
           <PerPageSelect basePath="/admin/orders" searchParams={sp} total={total} />
         </div>

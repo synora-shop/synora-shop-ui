@@ -7,6 +7,8 @@ import { parseCustomFields } from "@/lib/product-kind";
 import { FilterBar, type FilterGroup } from "@/components/admin/filter-bar";
 import { activeCount, keepKnown, readFilter, whereIn } from "@/lib/filters";
 import { readPaging } from "@/lib/paging";
+import { ENQUIRY_SORTS, readSort, sortHref } from "@/lib/sorting";
+import { SortMenu } from "@/components/admin/sort-menu";
 import { ActionBar } from "@/components/admin/action-bar";
 import { ListSearch } from "@/components/admin/list-search";
 import { FilterDisclosure } from "@/components/admin/filter-disclosure";
@@ -53,11 +55,12 @@ export default async function EnquiriesPage(props: PageProps<"/admin/enquiries">
   // page: the hundred and first enquiry simply was not in the admin.
   const total = await (await db()).enquiry.count({ where });
   const { skip, take } = readPaging(sp, total);
+  const sort = readSort(sp, ENQUIRY_SORTS);
 
   const [enquiries, counts] = await Promise.all([
     (await db()).enquiry.findMany({
       where,
-      orderBy: { createdAt: "desc" },
+      orderBy: sort.orderBy as { createdAt: "desc" },
       skip,
       take,
       include: { product: { select: { slug: true, customFields: true } } },
@@ -115,6 +118,14 @@ export default async function EnquiriesPage(props: PageProps<"/admin/enquiries">
             </p>
           )}
         </FilterDisclosure>
+        <SortMenu
+          current={sort.value}
+          options={ENQUIRY_SORTS.map((o) => ({
+            value: o.value,
+            label: o.label,
+            href: sortHref("/admin/enquiries", sp, o.value, ENQUIRY_SORTS),
+          }))}
+        />
         <div className="ml-auto">
           <PerPageSelect basePath="/admin/enquiries" searchParams={sp} total={total} />
         </div>
