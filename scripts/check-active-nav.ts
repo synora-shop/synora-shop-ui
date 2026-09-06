@@ -12,10 +12,10 @@
  *
  * Dependency-free; exits non-zero on failure.
  */
-import { existsSync, readFileSync } from "fs";
+import { existsSync, readFileSync, readdirSync } from "fs";
 import { join } from "path";
 import { activeHref } from "../lib/active-nav";
-import { resolveNav, sectionsFor } from "../lib/admin-nav";
+import { resolveNav, sections } from "../lib/admin-nav";
 
 let pass = 0,
   fail = 0;
@@ -119,32 +119,81 @@ for (const href of hrefs) {
 /* The two levels agree                                                       */
 /* -------------------------------------------------------------------------- */
 
-for (const type of ["ECOMMERCE", "RESTAURANT", "BLOG"] as const) {
-  const sections = sectionsFor(type);
-  check(`${type}: the sidebar has sections`, sections.length > 0);
-  for (const section of sections) {
-    // Clicking a sidebar item must land inside that item, or the sidebar would
-    // light one thing and the navigation bar another.
-    const resolved = resolveNav(section.href, type);
-    check(
-      `${type}: ${section.label} lands on itself`,
-      resolved.section.key === section.key,
-      `landed on ${resolved.section.label}`
-    );
-    check(
-      `${type}: ${section.label} starts at its first tab`,
-      section.href === section.tabs[0].href
-    );
-  }
-  // A section of one draws no navigation bar — a bar with a single tab is
+const all = sections();
+check("the sidebar has sections", all.length === 6, `found ${all.length}`);
+
+for (const section of all) {
+  // Clicking a sidebar item must land inside that item, or the sidebar would
+  // light one thing and the navigation bar another.
+  const resolved = resolveNav(section.href);
+  check(`${section.label} lands on itself`, resolved.section.key === section.key,
+    `landed on ${resolved.section.label}`);
+  check(`${section.label} starts at its first tab`, section.href === section.tabs[0].href);
+  // A section of one draws no navigation bar — a bar with a single tab in it is
   // furniture, not navigation.
-  for (const section of sections) {
-    const { tabs } = resolveNav(section.href, type);
-    check(
-      `${type}: ${section.label} draws a bar only when it has somewhere to go`,
-      section.tabs.length > 1 ? tabs.length === section.tabs.length : tabs.length === 0
-    );
+  check(`${section.label} draws a bar only when it has somewhere to go`,
+    section.tabs.length > 1
+      ? resolved.tabs.length === section.tabs.length
+      : resolved.tabs.length === 0);
+}
+
+/* -------------------------------------------------------------------------- */
+/* One panel, one set of words                                                */
+/* -------------------------------------------------------------------------- */
+
+// APP.ai and the documentation were drawn for a shop that sells products. A
+// restaurant is not this panel with "Dishes" written over "Products" — it gets
+// its own design. Half-renaming put "Dishes" in the sidebar above a screen
+// still built on SKUs, variants and shipping.
+const navSource = readFileSync(join(process.cwd(), "lib/admin-nav.ts"), "utf8");
+for (const banned of ["vocabularyFor", "wordFor", "onlyFor", "hideFor", "RESTAURANT:", "BLOG:"]) {
+  check(`the navigation does not branch on business type (${banned})`,
+    !navSource.includes(banned));
+}
+check("resolveNav takes only a path", /export function resolveNav\(pathname: string\)/.test(navSource));
+
+/* -------------------------------------------------------------------------- */
+/* No admin route that nothing links to                                       */
+/* -------------------------------------------------------------------------- */
+
+// The other half of "every tab has a page": every page is reachable. A route
+// with nothing pointing at it renders under whatever heading resolveNav falls
+// back to, and is found only by someone typing a URL — which is how a screen
+// ends up live, broken, and unnoticed for months.
+function routes(dir: string, prefix = "/admin"): string[] {
+  const out: string[] = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    const here = `${prefix}/${entry.name}`;
+    if (existsSync(join(dir, entry.name, "page.tsx"))) out.push(here);
+    out.push(...routes(join(dir, entry.name), here));
   }
+  return out;
+}
+
+const adminRoutes = routes(join(process.cwd(), "app", "admin"));
+check("admin routes were found", adminRoutes.length > 15, `found ${adminRoutes.length}`);
+
+/** Routes reached from within a tab rather than from the navigation itself. */
+const CHILD_OF_A_TAB = /^\/admin\/[a-z-]+\/(\[[a-z]+\]|new)$/;
+/**
+ * Screens deliberately outside this design, which redirect rather than render.
+ * They belong to business types whose panels have not been drawn.
+ */
+const REDIRECTS_OUT = ["/admin/blog", "/admin/hours", "/admin/locations"];
+/** Its own flow, entered before a shop has a panel to show. */
+const OWN_FLOW = ["/admin/welcome"];
+
+for (const route of adminRoutes) {
+  if (hrefs.includes(route)) continue;
+  if (CHILD_OF_A_TAB.test(route)) continue;
+  if (OWN_FLOW.some((f) => route.startsWith(f))) continue;
+  if (REDIRECTS_OUT.includes(route)) {
+    const src = readFileSync(join(process.cwd(), "app", route.replace("/admin/", "admin/"), "page.tsx"), "utf8");
+    check(`${route} redirects rather than rendering`, /redirect\("\/admin"\)/.test(src));
+    continue;
+  }
+  check(`${route} is reachable from the navigation`, false, "nothing links to it");
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);

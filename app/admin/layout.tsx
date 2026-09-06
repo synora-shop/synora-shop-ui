@@ -49,7 +49,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
         {/* The sidebar starts at the very top of the window, beside the heading
             bar rather than under it — one column of six, full height, its own
             thing. That is APP.ai's arrangement. */}
-        <AdminSidebar businessType={schemaType} />
+        <AdminSidebar />
 
         <div className="flex min-w-0 flex-1 flex-col">
           <AdminTopbar
@@ -57,7 +57,6 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
             isLive={!settings.maintenanceMode}
             userEmail={me.email}
             storeUrl={await canonicalUrl(me.shop.id)}
-            businessType={schemaType}
             registryType={type}
             hasOtherStores={(session.user.shops?.length ?? 0) > 1}
             alerts={await pendingWork(schemaType)}
@@ -67,7 +66,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
               the page puts in its action bar, then the content container. pb-24
               leaves room for the floating save bar on editable screens. */}
           <main className="gutter-fluid min-w-0 flex-1 space-y-3 pb-24">
-            <AdminNavBar businessType={schemaType} />
+            <AdminNavBar />
             {/* Discard and Save for whatever screen is open. Draws nothing on a
                 screen with nothing to save, so a list page keeps its own action
                 bar and a form page gets one without building it. */}

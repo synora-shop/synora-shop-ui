@@ -1,5 +1,5 @@
 import { Download, Plus } from "lucide-react";
-import { db, requireShop } from "@/lib/data/shop";
+import { db } from "@/lib/data/shop";
 import { ProductList } from "@/components/admin/product-list";
 import { FilterBar, type FilterGroup } from "@/components/admin/filter-bar";
 import { FilterDisclosure } from "@/components/admin/filter-disclosure";
@@ -13,8 +13,6 @@ import { readPaging } from "@/lib/paging";
 import { PRODUCT_SORTS, readSort, sortHref } from "@/lib/sorting";
 import { SortMenu } from "@/components/admin/sort-menu";
 import { ViewToggle, readView } from "@/components/admin/view-toggle";
-import { registryBusinessType } from "@/lib/themes/business-type";
-import { vocabularyFor } from "@/lib/themes/vocabulary";
 
 export const dynamic = "force-dynamic";
 
@@ -25,8 +23,6 @@ const STATUSES = [
 
 export default async function AdminProductsPage(props: PageProps<"/admin/products">) {
   const sp = await props.searchParams;
-  const shop = await requireShop();
-  const words = vocabularyFor(registryBusinessType(shop.businessType));
 
   // Live-fetched every render, so a deleted category simply stops appearing
   // here — no stale filter option left dangling.
@@ -123,7 +119,7 @@ export default async function AdminProductsPage(props: PageProps<"/admin/product
           </a>
           <ButtonLink href="/admin/products/new" variant="primary" size="sm">
             <Plus className="h-4 w-4" />
-            {words.addProduct}
+            Add product
           </ButtonLink>
         </div>
       </ActionBar>

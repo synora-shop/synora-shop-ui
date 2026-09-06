@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { X } from "lucide-react";
 import { useAdminNav } from "@/lib/admin-nav-store";
-import { type BusinessType, resolveNav } from "@/lib/admin-nav";
+import { resolveNav } from "@/lib/admin-nav";
 import { SynoraAppMark } from "@/components/ui/synora-app-mark";
 import { cn } from "@/lib/utils";
 
@@ -22,12 +22,12 @@ import { cn } from "@/lib/utils";
  * is APP.ai's arrangement and it is doing real work: with no container edge, the
  * only lit thing on the left is the page you are on.
  */
-export function AdminSidebar({ businessType = "ECOMMERCE" }: { businessType?: BusinessType }) {
+export function AdminSidebar() {
   const open = useAdminNav((s) => s.open);
   const setOpen = useAdminNav((s) => s.setOpen);
   const pathname = usePathname();
 
-  const { sections, section } = resolveNav(pathname, businessType);
+  const { sections, section } = resolveNav(pathname);
 
   return (
     <>

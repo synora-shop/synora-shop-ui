@@ -7,11 +7,19 @@ import {
   YourAppIcon,
 } from "@/components/admin/nav-icons";
 import { activeHref } from "@/lib/active-nav";
-import { registryBusinessType } from "@/lib/themes/business-type";
-import { vocabularyFor } from "@/lib/themes/vocabulary";
 
 /**
  * The whole of the panel's navigation, in one place.
+ *
+ * This is the e-commerce panel. APP.ai and the documentation were drawn for one
+ * kind of business — a shop that sells products — and everything here follows
+ * that: the six sections, the tabs under them, and the words they use.
+ *
+ * A restaurant is not this panel with "Dishes" written over "Products". It has
+ * different sections, different screens and its own naming, and it gets its own
+ * design rather than a translation layer over this one. Half-renaming was worse
+ * than either: a merchant saw "Dishes" in the sidebar above a screen still
+ * built around SKUs, variants and shipping.
  *
  * Two levels and no more, which is the change. The sidebar used to hold seven
  * collapsible groups with links nested inside them, so reaching Orders meant
@@ -27,18 +35,15 @@ import { vocabularyFor } from "@/lib/themes/vocabulary";
  * the sidebar and another in a crumb.
  */
 
+/**
+ * Still the schema's three, because a shop row carries one. The panel is drawn
+ * for ECOMMERCE; the other two are types a shop can be, not designs that exist.
+ */
 export type BusinessType = "ECOMMERCE" | "BLOG" | "RESTAURANT";
 
 export type NavTab = {
   href: string;
   label: string;
-  /** A different word for the same screen — a restaurant's products are dishes. */
-  labels?: Partial<Record<BusinessType, string>>;
-  /** Takes its word from the shared vocabulary instead, so it cannot drift. */
-  term?: "products" | "categories";
-  /** Business types this belongs to. Absent means all of them. */
-  onlyFor?: BusinessType[];
-  hideFor?: BusinessType[];
 };
 
 export type NavIcon = (props: { className?: string; title?: string }) => React.ReactElement;
@@ -71,18 +76,15 @@ export const NAV_SECTIONS: readonly NavSection[] = [
   {
     key: "products",
     label: "Products",
-    labels: { RESTAURANT: "Menu", BLOG: "Posts" },
     icon: ProductIcon,
-    // Everything about selling: the catalogue, and what happens to it. A blog
-    // sells nothing, so it keeps only the two screens that still mean something.
+    // Everything about selling: the catalogue, and what happens to it.
     tabs: [
-      { href: "/admin/products", label: "Products", term: "products", hideFor: ["BLOG"] },
-      { href: "/admin/categories", label: "Categories", term: "categories", hideFor: ["BLOG"] },
-      { href: "/admin/blog", label: "Posts", onlyFor: ["BLOG"] },
-      { href: "/admin/orders", label: "Orders", hideFor: ["BLOG"] },
-      { href: "/admin/customers", label: "Customers", hideFor: ["BLOG"] },
+      { href: "/admin/products", label: "Products" },
+      { href: "/admin/categories", label: "Categories" },
+      { href: "/admin/orders", label: "Orders" },
+      { href: "/admin/customers", label: "Customers" },
       { href: "/admin/enquiries", label: "Enquiries" },
-      { href: "/admin/bin", label: "Bin", hideFor: ["BLOG"] },
+      { href: "/admin/bin", label: "Bin" },
     ],
   },
   {
@@ -97,7 +99,7 @@ export const NAV_SECTIONS: readonly NavSection[] = [
       { href: "/admin/theme", label: "Themes" },
       { href: "/admin/data", label: "Data" },
       { href: "/admin/menus", label: "Menus" },
-      { href: "/admin/discounts", label: "Discounts", hideFor: ["BLOG"] },
+      { href: "/admin/discounts", label: "Discounts" },
       { href: "/admin/site-text", label: "Site text" },
     ],
   },
@@ -113,8 +115,6 @@ export const NAV_SECTIONS: readonly NavSection[] = [
       { href: "/admin/buttons", label: "Sticky buttons" },
       { href: "/admin/redirects", label: "Links & redirects" },
       { href: "/admin/metafields", label: "Custom fields" },
-      { href: "/admin/hours", label: "Opening hours", onlyFor: ["RESTAURANT"] },
-      { href: "/admin/locations", label: "Locations", onlyFor: ["RESTAURANT"] },
     ],
   },
   {
@@ -135,7 +135,7 @@ export const NAV_SECTIONS: readonly NavSection[] = [
   },
 ];
 
-/** A section with its words and its tabs settled for one kind of business. */
+/** A section, ready to draw. */
 export type ResolvedSection = {
   key: string;
   label: string;
@@ -145,38 +145,22 @@ export type ResolvedSection = {
 };
 
 /**
- * The navigation for one kind of business.
+ * The navigation.
  *
- * Hiding is narrow and deliberate: a blog has no orders and a shop has no
- * opening hours, and offering either is a door to nowhere. Everything a
- * merchant might plausibly use stays.
+ * It used to take a business type and filter and rename its way to a different
+ * answer for each. There is one answer now. The parameter is gone rather than
+ * ignored, so nothing can pass a type and quietly expect a different panel.
  */
-export function sectionsFor(businessType: BusinessType): ResolvedSection[] {
-  const words = vocabularyFor(registryBusinessType(businessType));
-  return NAV_SECTIONS.map((section) => {
-    const tabs = section.tabs
-      .filter((tab) => {
-        if (tab.onlyFor && !tab.onlyFor.includes(businessType)) return false;
-        if (tab.hideFor && tab.hideFor.includes(businessType)) return false;
-        return true;
-      })
-      .map((tab) => ({
-        href: tab.href,
-        label: tab.term
-          ? words[tab.term]
-          : (tab.labels?.[businessType] ?? tab.label),
-      }));
-    return {
-      key: section.key,
-      label: section.labels?.[businessType] ?? section.label,
-      icon: section.icon,
-      // A section is a link as well as a heading — clicking it lands on its
-      // first tab. Computed rather than written down so the two can never
-      // disagree about where the section starts.
-      href: tabs[0]?.href ?? "/admin",
-      tabs,
-    };
-  }).filter((section) => section.tabs.length > 0);
+export function sections(): ResolvedSection[] {
+  return NAV_SECTIONS.map((section) => ({
+    key: section.key,
+    label: section.label,
+    icon: section.icon,
+    // A section is a link as well as a heading — clicking it lands on its first
+    // tab. Computed rather than written down so the two cannot disagree.
+    href: section.tabs[0].href,
+    tabs: section.tabs.map((t) => ({ href: t.href, label: t.label })),
+  }));
 }
 
 export type Crumb = { label: string; href: string };
@@ -192,13 +176,12 @@ export type Crumb = { label: string; href: string };
  * beats /admin, and a detail page like /admin/products/abc still belongs to the
  * Products tab. See lib/active-nav.ts for why the obvious rule does not work.
  */
-export function resolveNav(pathname: string, businessType: BusinessType) {
-  const sections = sectionsFor(businessType);
-  const everyHref = sections.flatMap((s) => s.tabs.map((t) => t.href));
+export function resolveNav(pathname: string) {
+  const all = sections();
+  const everyHref = all.flatMap((s) => s.tabs.map((t) => t.href));
   const current = activeHref(everyHref, pathname);
 
-  const section =
-    sections.find((s) => s.tabs.some((t) => t.href === current)) ?? sections[0];
+  const section = all.find((s) => s.tabs.some((t) => t.href === current)) ?? all[0];
   const tab = section.tabs.find((t) => t.href === current) ?? null;
 
   const crumbs: Crumb[] = [{ label: section.label, href: section.href }];
@@ -210,7 +193,7 @@ export function resolveNav(pathname: string, businessType: BusinessType) {
   }
 
   return {
-    sections,
+    sections: all,
     section,
     current,
     // One crumb is not a trail — it is the heading again. The breadcrumb only

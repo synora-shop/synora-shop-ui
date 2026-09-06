@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { type BusinessType, resolveNav } from "@/lib/admin-nav";
+import { resolveNav } from "@/lib/admin-nav";
 import { cn } from "@/lib/utils";
 
 /**
@@ -17,9 +17,9 @@ import { cn } from "@/lib/utils";
  * Nothing is drawn for a section with one screen. A bar containing a single tab
  * is furniture that says "you are where you are".
  */
-export function AdminNavBar({ businessType = "ECOMMERCE" }: { businessType?: BusinessType }) {
+export function AdminNavBar() {
   const pathname = usePathname();
-  const { tabs, current } = resolveNav(pathname, businessType);
+  const { tabs, current } = resolveNav(pathname);
   if (tabs.length === 0) return null;
 
   return (

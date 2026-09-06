@@ -1,7 +1,5 @@
 import { db } from "@/lib/data/shop";
 import { requireShop } from "@/lib/data/shop";
-import { registryBusinessType } from "@/lib/themes/business-type";
-import { vocabularyFor } from "@/lib/themes/vocabulary";
 
 export type BrokenLink = { href: string; labels: string[]; reason: string };
 
@@ -22,7 +20,6 @@ export async function findBrokenMenuLinks(): Promise<BrokenLink[]> {
   // collection" no longer exists is the admin describing their shop in a
   // vocabulary they never chose.
   const shop = await requireShop();
-  const words = vocabularyFor(registryBusinessType(shop.businessType));
 
   const [items, categories, pages, redirects] = await Promise.all([
     (await db()).menuItem.findMany({
@@ -53,7 +50,7 @@ export async function findBrokenMenuLinks(): Promise<BrokenLink[]> {
     const custom = /^\/p\/([^/?#]+)$/.exec(href);
 
     if (collection && !liveCollections.has(collection[1])) {
-      reason = `The "${collection[1]}" ${words.category.toLowerCase()} no longer exists.`;
+      reason = `The "${collection[1]}" category no longer exists.`;
     } else if (custom && !livePages.has(custom[1])) {
       reason = `The "${custom[1]}" page no longer exists.`;
     }

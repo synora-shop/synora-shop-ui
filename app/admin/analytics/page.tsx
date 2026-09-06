@@ -1,7 +1,5 @@
 import Link from "next/link";
 import { requireShop } from "@/lib/data/shop";
-import { registryBusinessType } from "@/lib/themes/business-type";
-import { vocabularyFor } from "@/lib/themes/vocabulary";
 import {
   AlertTriangle,
   ArrowRight,
@@ -22,7 +20,6 @@ export const dynamic = "force-dynamic";
 export default async function AdminDashboardPage() {
   // The same words the sidebar uses. A restaurant seeing "Dishes" on the left
   // and "Add product" on the right is the admin disagreeing with itself.
-  const words = vocabularyFor(registryBusinessType((await requireShop()).businessType));
 
   const { lowStockThreshold } = await getStoreSettings();
 
@@ -117,7 +114,7 @@ export default async function AdminDashboardPage() {
               Customize store
             </ButtonLink>
             <ButtonLink href="/admin/products/new" variant="primary" size="sm">
-              {words.addProduct}
+              Add product
             </ButtonLink>
           </>
         }
@@ -179,9 +176,9 @@ export default async function AdminDashboardPage() {
         </h2>
         <div className="mt-2 grid gap-3 sm:grid-cols-3">
           <Stat label="Orders" value={orderCount} href="/admin/orders" />
-          <Stat label={words.products} value={productCount} href="/admin/products" />
+          <Stat label="Products" value={productCount} href="/admin/products" />
           <Stat
-            label={`${words.lowStock} (< ${lowStockThreshold})`}
+            label={`Low stock (< ${lowStockThreshold})`}
             value={lowStock}
             href="/admin/products"
           />

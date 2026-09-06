@@ -19,7 +19,7 @@ import {
 import { SettingsSearch } from "@/components/customizer/settings-search";
 import { SynoraAppMark } from "@/components/ui/synora-app-mark";
 import { BusinessTypeDialog } from "@/components/admin/business-type-dialog";
-import { type BusinessType, resolveNav } from "@/lib/admin-nav";
+import { resolveNav } from "@/lib/admin-nav";
 import { useAdminNav } from "@/lib/admin-nav-store";
 import { cn } from "@/lib/utils";
 
@@ -45,7 +45,6 @@ export function AdminTopbar({
   isLive,
   userEmail,
   storeUrl,
-  businessType,
   registryType,
   hasOtherStores = false,
   alerts = [],
@@ -55,8 +54,6 @@ export function AdminTopbar({
   userEmail: string;
   /** The shop's own public address — absolute, because "/" is the platform's. */
   storeUrl: string;
-  /** Schema spelling, for the navigation model. */
-  businessType: BusinessType;
   /** Registry spelling — "ecommerce", not "ECOMMERCE". For the type dialog. */
   registryType: string;
   hasOtherStores?: boolean;
@@ -70,7 +67,7 @@ export function AdminTopbar({
   const trailing = useAdminNav((s) => s.crumb);
   const pathname = usePathname();
 
-  const { section, crumbs } = resolveNav(pathname, businessType);
+  const { section, crumbs } = resolveNav(pathname);
   const trail = trailing ? [...crumbs, { label: trailing, href: pathname }] : crumbs;
 
   const close = () => setMenu(null);
