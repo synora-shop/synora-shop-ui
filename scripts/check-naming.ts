@@ -15,7 +15,7 @@
  *
  * Dependency-free; exits non-zero on failure.
  */
-import { readFileSync, readdirSync, statSync } from "fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "fs";
 import { join, relative } from "path";
 
 let pass = 0, fail = 0;
@@ -171,6 +171,20 @@ check(
   "no screen builds a button out of utilities",
   rolledButtons.length === 0,
   rolledButtons.map((f) => relative(ROOT, f)).join(", ")
+);
+
+// Every admin screen is dynamic, so a navigation waits on the server. Without a
+// loading state the old screen sits there and the panel appears to have ignored
+// the click.
+check("the panel has a loading state", existsSync(join(ROOT, "app/admin/loading.tsx")));
+// A list skeleton drawn over a page of tiles is the wrong shape, and the page
+// jumps when the real thing lands.
+check("analytics has its own", existsSync(join(ROOT, "app/admin/analytics/loading.tsx")));
+// A page of throbbing blocks is what someone who turned animation off turned it
+// off to avoid.
+check(
+  "the skeleton pulse respects reduced motion",
+  /motion-safe:animate-pulse/.test(readFileSync(join(ROOT, "components/ui/skeleton.tsx"), "utf8"))
 );
 
 // A gap is not a divider — on a page of stacked cards it reads as more list.
