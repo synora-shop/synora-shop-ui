@@ -29,7 +29,7 @@ export const dynamic = "force-dynamic";
  *
  * Without it every store inherits the root layout's metadata, so a merchant's
  * own shopfront opened in a browser tab, shared on WhatsApp, or crawled by a
- * search engine announced itself as "Shop by Synora Digitals — commerce that
+ * search engine announced itself as "APP by Synora Digitals — commerce that
  * catches your mistakes", and every inner page was suffixed "· Shop". The
  * platform's marketing copy has no business on a merchant's storefront.
  *

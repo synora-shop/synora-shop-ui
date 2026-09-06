@@ -1,12 +1,11 @@
 import {
-  BarChart3,
-  Home,
-  List,
-  Settings,
-  Square,
-  Tag,
-  type LucideIcon,
-} from "lucide-react";
+  AnalyticsIcon,
+  HomeIcon,
+  PreferencesIcon,
+  ProductIcon,
+  SettingsIcon,
+  YourAppIcon,
+} from "@/components/admin/nav-icons";
 import { activeHref } from "@/lib/active-nav";
 import { registryBusinessType } from "@/lib/themes/business-type";
 import { vocabularyFor } from "@/lib/themes/vocabulary";
@@ -42,11 +41,14 @@ export type NavTab = {
   hideFor?: BusinessType[];
 };
 
+export type NavIcon = (props: { className?: string; title?: string }) => React.ReactElement;
+
 export type NavSection = {
   key: string;
   label: string;
   labels?: Partial<Record<BusinessType, string>>;
-  icon: LucideIcon;
+  /** The drawn glyph for this section — see components/admin/nav-icons.tsx. */
+  icon: NavIcon;
   tabs: NavTab[];
 };
 
@@ -61,7 +63,7 @@ export const NAV_SECTIONS: readonly NavSection[] = [
   {
     key: "home",
     label: "Home",
-    icon: Home,
+    icon: HomeIcon,
     // The store's own identity: its name, its logo, its address and its phone
     // number. One screen, so no navigation bar is drawn for it.
     tabs: [{ href: "/admin", label: "Home" }],
@@ -70,7 +72,7 @@ export const NAV_SECTIONS: readonly NavSection[] = [
     key: "products",
     label: "Products",
     labels: { RESTAURANT: "Menu", BLOG: "Posts" },
-    icon: Tag,
+    icon: ProductIcon,
     // Everything about selling: the catalogue, and what happens to it. A blog
     // sells nothing, so it keeps only the two screens that still mean something.
     tabs: [
@@ -85,8 +87,8 @@ export const NAV_SECTIONS: readonly NavSection[] = [
   },
   {
     key: "shop",
-    label: "Your SHOP",
-    icon: Square,
+    label: "Your App",
+    icon: YourAppIcon,
     // The storefront as a visitor meets it. Pages, Themes, Data, Menus and
     // Discounts are the five named in the documentation, in that order; Site
     // text is the sixth because it is the same job — words on the shop.
@@ -102,7 +104,7 @@ export const NAV_SECTIONS: readonly NavSection[] = [
   {
     key: "preferences",
     label: "Preferences",
-    icon: List,
+    icon: PreferencesIcon,
     // How the shop behaves, as opposed to how it looks. Whether it is open to
     // customers at all is the first question, so it is the first tab.
     tabs: [
@@ -118,13 +120,13 @@ export const NAV_SECTIONS: readonly NavSection[] = [
   {
     key: "analytics",
     label: "Analytics",
-    icon: BarChart3,
+    icon: AnalyticsIcon,
     tabs: [{ href: "/admin/analytics", label: "Analytics" }],
   },
   {
     key: "settings",
     label: "Settings",
-    icon: Settings,
+    icon: SettingsIcon,
     tabs: [
       { href: "/admin/settings", label: "General" },
       { href: "/admin/domains", label: "Domains" },
@@ -137,7 +139,7 @@ export const NAV_SECTIONS: readonly NavSection[] = [
 export type ResolvedSection = {
   key: string;
   label: string;
-  icon: LucideIcon;
+  icon: NavIcon;
   href: string;
   tabs: { href: string; label: string }[];
 };

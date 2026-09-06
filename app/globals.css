@@ -209,8 +209,8 @@
 
   --font-sans: var(--font-sans-brand), ui-sans-serif, system-ui, sans-serif;
   /* "serif" is the heading role, kept under its original name so the theme
-     engine and every existing heading keep working. bettershp's headings are
-     the sans at a heavier weight, not a serif — the name is a role, not a
+     engine and every existing heading keep working. The headings here are the
+     sans at a heavier weight, not a serif — the name is a role, not a
      classification. */
   --font-serif: var(--font-sans-brand), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-mono-brand), ui-monospace, SFMono-Regular, Menlo, monospace;

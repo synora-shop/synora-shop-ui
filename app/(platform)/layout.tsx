@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { appUrl } from "@/lib/shop-context";
-import { Wordmark } from "@/components/ui/wordmark";
+import { SynoraAppMark } from "@/components/ui/synora-app-mark";
 
 /**
  * The product's own site, at shop.synoradigitals.com.
@@ -26,7 +26,7 @@ export default function PlatformLayout({ children }: LayoutProps<"/">) {
             href="/"
             className="rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-4"
           >
-            <Wordmark size="md" maker="by synoradigitals" />
+            <SynoraAppMark color="var(--color-brand-500)" tone="onLight" />
           </Link>
 
           <nav className="flex items-center gap-1 text-sm">
@@ -50,7 +50,7 @@ export default function PlatformLayout({ children }: LayoutProps<"/">) {
 
       <footer className="border-t border-border/60">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-8 text-xs text-ink-faint">
-          <Wordmark size="sm" />
+          <SynoraAppMark color="var(--color-brand-500)" tone="onLight" className="scale-90" />
           <p>Built for people who sell things.</p>
         </div>
       </footer>

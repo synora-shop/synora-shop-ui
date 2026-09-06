@@ -27,13 +27,13 @@ const mono = IBM_Plex_Mono({
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 const DESCRIPTION =
-  "Open an online store in minutes. Your own domain, your own team, and a shop that stops you making the mistakes that cost sales.";
+  "Open an online store in minutes. Your own domain, your own team, and an app that stops you making the mistakes that cost sales.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Shop by Synora Digitals · commerce that catches your mistakes",
-    template: "%s · Shop",
+    default: "APP by Synora Digitals · commerce that catches your mistakes",
+    template: "%s · APP",
   },
   description: DESCRIPTION,
   // Declared here rather than as app/icon.svg, and that is load-bearing. Next
@@ -49,13 +49,13 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    siteName: "Shop by Synora Digitals",
-    title: "Shop by Synora Digitals, commerce that catches your mistakes",
+    siteName: "APP by Synora Digitals",
+    title: "APP by Synora Digitals, commerce that catches your mistakes",
     description: DESCRIPTION,
   },
   twitter: {
     card: "summary_large_image",
-    title: "Shop by Synora Digitals, commerce that catches your mistakes",
+    title: "APP by Synora Digitals, commerce that catches your mistakes",
     description: DESCRIPTION,
   },
 };

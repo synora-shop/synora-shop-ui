@@ -2,13 +2,9 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { adoptLegacyKey } from "@/lib/legacy-storage";
 
 const CART_KEY = "shp-cart";
 
-// Run before the store is created, so persist() reads the carried-over entry on
-// its first hydration rather than finding nothing and emptying a live basket.
-adoptLegacyKey("bettershp-cart", CART_KEY);
 
 export type CartItem = {
   /** Composite key so the same product in a different size/color is a separate line */

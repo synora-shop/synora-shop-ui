@@ -85,7 +85,7 @@ export function AdminSidebar({ businessType = "ECOMMERCE" }: { businessType?: Bu
                     : "border border-control-line bg-panel text-control-ink hover:bg-control"
                 )}
               >
-                <Icon className="h-[18px] w-[18px] flex-shrink-0" aria-hidden />
+                <Icon />
                 <span className="truncate">{item.label}</span>
               </Link>
             );

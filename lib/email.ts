@@ -14,7 +14,7 @@ const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KE
 //                  separate so it can be filtered/prioritised and, later,
 //                  carry a stricter DMARC policy than marketing-adjacent mail.
 const FROM =
-  process.env.RESEND_FROM ?? "Shop by Synora Digitals <onboarding@resend.dev>";
+  process.env.RESEND_FROM ?? "APP by Synora Digitals <onboarding@resend.dev>";
 const SECURITY_FROM = process.env.RESEND_FROM_SECURITY ?? FROM;
 
 type OrderEmailItem = { title: string; size: string; color: string; price: number; quantity: number };
@@ -143,7 +143,7 @@ export async function sendVerificationEmail(to: string, token: string) {
     to,
     subject: "Confirm your email to finish setting up your store",
     text:
-      `Welcome to Shop by Synora Digitals.\n\n` +
+      `Welcome to APP by Synora Digitals.\n\n` +
       `Confirm this address to finish setting up your store:\n${link}\n\n` +
       `The link works for 24 hours and can only be used once.\n\n` +
       `If you didn't sign up, you can ignore this, no store was created in your name.`,
@@ -189,7 +189,7 @@ export async function sendStaffInviteEmail(
     to,
     subject: `${invitedBy} invited you to help run ${shopName}`,
     text:
-      `${invitedBy} has invited you to work on ${shopName} on Shop by Synora Digitals.\n\n${link}\n\n` +
+      `${invitedBy} has invited you to work on ${shopName} on APP by Synora Digitals.\n\n${link}\n\n` +
       `The invitation is good for 7 days.\n\n` +
       `If you weren't expecting this, ignore it, nothing happens until you accept.`,
   });

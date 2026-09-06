@@ -100,7 +100,7 @@ export function Card({
  *
  * It used to print the page's name in a large heading. It no longer does, and
  * that is the change: the chrome names the page now. The heading bar carries
- * the section — "Your SHOP" — and the navigation bar under it carries the
+ * the section — "Your App" — and the navigation bar under it carries the
  * screen — "Themes" — so a third copy of the same word in the body was the
  * page telling the merchant something they had just read twice.
  *

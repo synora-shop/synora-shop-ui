@@ -61,12 +61,12 @@ const TOOLS: SettingEntry[] = [
   { id: "tool-enquiries", label: "Enquiries", info: "Questions about bulk and made-to-order products.", path: ["Products", "Enquiries"], href: "/admin/enquiries", keywords: ["leads", "questions", "quotes", "inbox", "contact"] },
   { id: "tool-bin", label: "Bin", info: "Deleted products and orders, recoverable before they're gone for good.", path: ["Products", "Bin"], href: "/admin/bin", keywords: ["trash", "deleted", "restore", "recover"] },
 
-  { id: "tool-pages", label: "Pages", info: "Custom pages like About or Size Guide.", path: ["Your SHOP", "Pages"], href: "/admin/pages", keywords: ["about", "faq", "content", "custom page"] },
-  { id: "tool-theme-page", label: "Themes", info: "Which theme your store wears, and a preview of it running on your own content.", path: ["Your SHOP", "Themes"], href: "/admin/theme", keywords: ["theme", "look", "template", "preview", "activate", "design"] },
-  { id: "tool-data", label: "Data", info: "Every picture you have uploaded, ready to use again.", path: ["Your SHOP", "Data"], href: "/admin/data", keywords: ["media", "images", "pictures", "library", "uploads", "files", "photos"] },
-  { id: "tool-menus", label: "Menus", info: "What appears in the header and footer navigation.", path: ["Your SHOP", "Menus"], href: "/admin/menus", keywords: ["navigation", "nav", "header", "footer", "links"] },
-  { id: "tool-discounts", label: "Discounts", info: "Codes and automatic reductions at checkout.", path: ["Your SHOP", "Discounts"], href: "/admin/discounts", keywords: ["coupon", "code", "promo", "sale", "offer", "voucher"] },
-  { id: "tool-site-text", label: "Site text", info: "Wording of buttons and labels across the store.", path: ["Your SHOP", "Site text"], href: "/admin/site-text", keywords: ["copy", "wording", "labels", "translate", "strings"] },
+  { id: "tool-pages", label: "Pages", info: "Custom pages like About or Size Guide.", path: ["Your App", "Pages"], href: "/admin/pages", keywords: ["about", "faq", "content", "custom page"] },
+  { id: "tool-theme-page", label: "Themes", info: "Which theme your store wears, and a preview of it running on your own content.", path: ["Your App", "Themes"], href: "/admin/theme", keywords: ["theme", "look", "template", "preview", "activate", "design"] },
+  { id: "tool-data", label: "Data", info: "Every picture you have uploaded, ready to use again.", path: ["Your App", "Data"], href: "/admin/data", keywords: ["media", "images", "pictures", "library", "uploads", "files", "photos"] },
+  { id: "tool-menus", label: "Menus", info: "What appears in the header and footer navigation.", path: ["Your App", "Menus"], href: "/admin/menus", keywords: ["navigation", "nav", "header", "footer", "links"] },
+  { id: "tool-discounts", label: "Discounts", info: "Codes and automatic reductions at checkout.", path: ["Your App", "Discounts"], href: "/admin/discounts", keywords: ["coupon", "code", "promo", "sale", "offer", "voucher"] },
+  { id: "tool-site-text", label: "Site text", info: "Wording of buttons and labels across the store.", path: ["Your App", "Site text"], href: "/admin/site-text", keywords: ["copy", "wording", "labels", "translate", "strings"] },
 
   { id: "tool-visibility", label: "Visibility", info: "Coming soon and maintenance, blocked countries, search engines and spam protection.", path: ["Preferences", "Visibility"], href: "/admin/preferences", keywords: ["maintenance", "coming soon", "offline", "hide", "countries", "block", "google", "crawler", "robots", "index", "seo", "spam", "honeypot"] },
   { id: "tool-fonts", label: "Fonts", info: "Upload your own primary and secondary fonts.", path: ["Preferences", "Fonts"], href: "/admin/fonts", keywords: ["typeface", "woff", "otf", "ttf", "upload", "typography"] },
@@ -78,8 +78,8 @@ const TOOLS: SettingEntry[] = [
   { id: "tool-domains", label: "Domains", info: "Where your store can be found, and how to point your own address at it.", path: ["Settings", "Domains"], href: "/admin/domains", keywords: ["domain", "dns", "url", "address", "custom domain", "ssl", "certificate"] },
   { id: "tool-account", label: "Account", info: "Your login, your staff, and the security of both.", path: ["Settings", "Account"], href: "/admin/account", keywords: ["login", "password", "staff", "team", "security", "sessions", "email"] },
 
-  { id: "tool-customizer", label: "Customize", info: "Lay out pages section by section with a live preview.", path: ["Your SHOP", "Themes"], href: "/admin/customize", keywords: ["sections", "layout", "homepage", "pages", "drag"] },
-  { id: "tool-theme", label: "Colours & type", info: "Colours, typography, logo, favicon and shape for the whole store.", path: ["Your SHOP", "Themes"], href: "/admin/customize/theme", keywords: ["design", "style", "branding", "look", "colour", "color", "font"] },
+  { id: "tool-customizer", label: "Customize", info: "Lay out pages section by section with a live preview.", path: ["Your App", "Themes"], href: "/admin/customize", keywords: ["sections", "layout", "homepage", "pages", "drag"] },
+  { id: "tool-theme", label: "Colours & type", info: "Colours, typography, logo, favicon and shape for the whole store.", path: ["Your App", "Themes"], href: "/admin/customize/theme", keywords: ["design", "style", "branding", "look", "colour", "color", "font"] },
 ];
 
 function themeEntries(): SettingEntry[] {
