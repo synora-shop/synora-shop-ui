@@ -10,7 +10,8 @@
 // drift: a writer that forgets its tag leaves merchants editing a page that
 // will not change, which is the single worst bug this admin has had. Naming
 // the tags in one place, and asserting the pairing in scripts/check-cache.ts,
-// is what stops that being a matter of memory.
+// is what stops that being a matter of memory — that script exists now;
+// for a long time this comment was the only place it did.
 //
 // Client-safe: pure strings, no Prisma, no next/headers.
 

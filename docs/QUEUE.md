@@ -182,6 +182,20 @@ changed after an earlier database copy was taken, so older notes say AHAD1V.
   default under another name. Only a shop that had chosen Meridian changes
   appearance, and it changes to the thing it asked for.
 
+- ~~**A shop that changed business type wore the wrong theme.**~~ Fixed 6
+  September. The theme row is keyed by shop *and* business type, but the
+  storefront read it with `findFirst({})` — whichever row came back first — so
+  a shop that had been a restaurant and became a shop was served the
+  restaurant theme's colours. It now reads its own type's row, and changing
+  type drops that shop's whole presentation cache instead of leaving the old
+  kind of shop on screen for five minutes.
+- ~~**`scripts/check-cache.ts` did not exist.**~~ Written 6 September.
+  `lib/cache-tags.ts` had claimed since it was written that a script asserted
+  the pairing between what is cached and what drops it — calling a forgotten
+  tag "the worst bug this admin has had". Nothing checked it. It does now: 25
+  assertions covering every kind's reader, its invalidator, and every server
+  action that writes a cached model.
+
 - **The panel offers a Currency setting it then ignores.** Settings has a
   currency picker and it saves, but every price anywhere — the product list,
   orders, the storefront, the cart, checkout — is printed by `formatPKR()` in

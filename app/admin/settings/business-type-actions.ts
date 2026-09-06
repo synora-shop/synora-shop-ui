@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/auth-guard";
 import { currentShopId } from "@/lib/data/shop";
+import { invalidateShop } from "@/lib/data/cached";
+import { CACHE_KINDS } from "@/lib/cache-tags";
 import { prisma } from "@/lib/prisma";
 import { isBusinessType, storedBusinessType } from "@/lib/themes/business-type";
 
@@ -21,10 +23,19 @@ export async function changeBusinessType(value: string) {
   await requireRole("ADMIN");
   if (!isBusinessType(value)) return;
 
+  const shopId = await currentShopId();
   await prisma.shop.update({
-    where: { id: await currentShopId() },
+    where: { id: shopId },
     data: { businessType: storedBusinessType(value) },
   });
+
+  // Everything cached about how this shop presents itself is partitioned by
+  // business type, so all of it is wrong the moment the type changes. Without
+  // this the storefront keeps wearing the old kind of shop for as long as the
+  // cache holds — up to five minutes of a merchant watching for the switch to
+  // take effect and seeing nothing happen. A type change is rare; dropping the
+  // whole of one shop's presentation cache costs nothing.
+  for (const kind of CACHE_KINDS) invalidateShop(shopId, kind);
 
   // The sidebar, the theme picker and the storefront all read this.
   revalidatePath("/admin", "layout");

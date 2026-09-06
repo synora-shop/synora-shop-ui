@@ -48,8 +48,14 @@ export const getThemeTokens = cache(async (): Promise<ThemeTokens> => {
   if (!shop) return resolveThemeTokens(undefined);
 
   const [row, preview] = await Promise.all([
+    // Keyed by business type, and read that way. It used to be findFirst({}),
+    // which took whichever row came back first: a shop that had been a
+    // restaurant and became a shop was served the restaurant theme's colours
+    // on its storefront, because that was the row that existed.
     cachedForShop(shop.id, "theme", async (t) => {
-      const found = await t.themeSettings.findFirst({});
+      const found = await t.themeSettings.findFirst({
+        where: { businessType: shop.businessType },
+      });
       return found ? { themeKey: found.themeKey, tokens: found.tokens } : null;
     }),
     previewTheme(),
