@@ -16,6 +16,7 @@ import {
   type ProductKind,
 } from "@/lib/product-kind";
 import { cn } from "@/lib/utils";
+import { Field } from "@/components/merchant/form-shell";
 
 type Category = { id: string; name: string; slug: string };
 
@@ -46,7 +47,16 @@ type ExistingProduct = {
 
 const emptyVariant: VariantInput = { size: "", color: "", colorHex: "#4b45e0", sku: "", stock: 15 };
 
-export function ProductForm({ categories, product }: { categories: Category[]; product?: ExistingProduct }) {
+export function ProductForm({
+  categories,
+  product,
+  currency,
+}: {
+  categories: Category[];
+  product?: ExistingProduct;
+  /** The store's own currency symbol, beside every box a price is typed into. */
+  currency: string;
+}) {
   const router = useRouter();
   const [title, setTitle] = useState(product?.title ?? "");
   const [slug, setSlug] = useState(product?.slug ?? "");
@@ -164,96 +174,84 @@ export function ProductForm({ categories, product }: { categories: Category[]; p
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="space-y-4">
-          <div>
-            <label className="text-xs font-semibold uppercase text-ink-soft">Title</label>
-            <input required value={title} onChange={(e) => setTitle(e.target.value)} className="input mt-1" />
-          </div>
-          <div>
-            <label className="text-xs font-semibold uppercase text-ink-soft">
-              Slug (auto-generated from title if left blank)
-            </label>
-            <input value={slug} onChange={(e) => setSlug(e.target.value)} className="input mt-1" />
-          </div>
-          <div>
-            <label className="text-xs font-semibold uppercase text-ink-soft">Description</label>
+          <Field label="Title">
+            <input required value={title} onChange={(e) => setTitle(e.target.value)} className="input" />
+          </Field>
+          <Field label="Web address" hint="The last part of the product's link. Left blank, it is made from the title.">
+            <input value={slug} onChange={(e) => setSlug(e.target.value)} className="input" />
+          </Field>
+          <Field label="Description">
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
-              className="input mt-1"
+              className="input"
             />
-          </div>
-          <div>
-            <label className="text-xs font-semibold uppercase text-ink-soft">
-              Details (fabric, care instructions)
-            </label>
+          </Field>
+          <Field label="Details" hint="Fabric, care instructions — anything a shopper asks before buying.">
             <textarea
               value={details ?? ""}
               onChange={(e) => setDetails(e.target.value)}
               rows={3}
-              className="input mt-1"
+              className="input"
             />
-          </div>
+          </Field>
         </div>
 
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-xs font-semibold uppercase text-ink-soft">Base Price (PKR)</label>
+            <Field label={`Base price (${currency})`}>
               <input
                 type="number"
                 min={0}
                 value={basePrice}
                 onChange={(e) => setBasePrice(Number(e.target.value))}
-                className="input mt-1"
+                className="input"
               />
-            </div>
-            <div>
-              <label className="text-xs font-semibold uppercase text-ink-soft">
-                Sale Price (optional)
-              </label>
+            </Field>
+            <Field label={`Sale price (${currency})`} hint="Leave blank to sell at the base price.">
               <input
                 type="number"
                 min={0}
                 value={salePrice}
                 onChange={(e) => setSalePrice(e.target.value === "" ? "" : Number(e.target.value))}
-                className="input mt-1"
+                className="input"
               />
-            </div>
+            </Field>
           </div>
 
-          <div>
-            <label className="text-xs font-semibold uppercase text-ink-soft">
-              Cost Price (PKR), hidden from customers
-            </label>
-            <input
-              type="number"
-              min={0}
-              value={costPrice}
-              onChange={(e) => setCostPrice(Number(e.target.value))}
-              className="input mt-1"
-            />
-            <p className="mt-1 text-xs text-ink-soft">
-              What you pay per unit. Used only for profit calculations in the admin panel,
-              customers never see this.{" "}
-              {(() => {
-                const sell = salePrice === "" ? basePrice : Number(salePrice);
-                const profit = sell - Number(costPrice || 0);
-                const margin = sell > 0 ? ((profit / sell) * 100).toFixed(0) : "0";
-                return (
-                  <span className={profit < 0 ? "font-medium text-rose" : "font-medium text-ink"}>
-                    Profit per unit: PKR {profit.toLocaleString()} ({margin}% margin)
-                  </span>
-                );
-              })()}
-            </p>
+          <div className="space-y-1.5">
+            <Field
+              label={`Cost price (${currency})`}
+              hint="What you pay per unit. Used only for profit in this panel — customers never see it."
+            >
+              <input
+                type="number"
+                min={0}
+                value={costPrice}
+                onChange={(e) => setCostPrice(Number(e.target.value))}
+                className="input max-w-48"
+              />
+            </Field>
+            {(() => {
+              const sell = salePrice === "" ? basePrice : Number(salePrice);
+              const profit = sell - Number(costPrice || 0);
+              const margin = sell > 0 ? ((profit / sell) * 100).toFixed(0) : "0";
+              return (
+                <p
+                  className={cn(
+                    "text-xs font-medium",
+                    profit < 0 ? "text-rose" : "text-ink"
+                  )}
+                >
+                  Profit per unit: {currency} {profit.toLocaleString("en-US")} ({margin}% margin)
+                </p>
+              );
+            })()}
           </div>
 
-          <div>
-            <label className="text-xs font-semibold uppercase text-ink-soft">
-              Categories (a product can belong to more than one)
-            </label>
-            <div className="mt-1 flex flex-wrap gap-3 rounded-lg border border-border p-3">
+          <Field label="Categories" hint="A product can belong to more than one.">
+            <div className="flex flex-wrap gap-3 rounded-lg border border-border p-3">
               {categories.map((c) => {
                 const isSale = c.id === saleCategory?.id;
                 const locked = isSale && onSale;
@@ -280,7 +278,7 @@ export function ProductForm({ categories, product }: { categories: Category[]; p
                 <p className="text-xs text-ink-soft">No categories yet, add one from the Categories page.</p>
               )}
             </div>
-          </div>
+          </Field>
 
           <div className="flex gap-6">
             <label className="flex items-center gap-2 text-sm">
@@ -304,7 +302,7 @@ export function ProductForm({ categories, product }: { categories: Category[]; p
           than shown empty and unexplained. */}
       <div className={enquiryOnly ? "hidden" : undefined}>
         <div className="flex items-center justify-between">
-          <h2 className="font-serif text-lg font-semibold">Variants (size / color / stock)</h2>
+          <h3 className="text-[13px] font-semibold text-ink">Variants (size / color / stock)</h3>
           <button
             type="button"
             onClick={() => setVariants((prev) => [...prev, { ...emptyVariant }])}

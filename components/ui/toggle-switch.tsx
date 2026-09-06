@@ -10,6 +10,7 @@ export function ToggleSwitch({
   label,
   description,
   hideLabel = false,
+  inline = false,
 }: {
   checked: boolean;
   onChange: (checked: boolean) => void;
@@ -24,7 +25,54 @@ export function ToggleSwitch({
    * a screen reader whatever it looks like.
    */
   hideLabel?: boolean;
+  /**
+   * Switch first, label beside it, hugging its own width.
+   *
+   * The default pushes the switch to the right edge of whatever contains it,
+   * which is right in a list of rows that share an edge. Inside a Fieldset it
+   * is wrong: the control column is as wide as a text field, so a lone switch
+   * ends up marooned an inch of empty white away from the words it belongs to.
+   */
+  inline?: boolean;
 }) {
+  const control = (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      onClick={() => onChange(!checked)}
+      className={cn(
+        "no-tap-scale relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors",
+        !inline && "mt-0.5",
+        checked ? "bg-brand-500" : "bg-border"
+      )}
+    >
+      <span
+        className={cn(
+          "inline-block h-4.5 w-4.5 transform rounded-full bg-white shadow transition-transform",
+          checked ? "translate-x-6" : "translate-x-1"
+        )}
+      />
+    </button>
+  );
+
+  const text = (
+    <span>
+      <span className="block text-sm font-medium text-ink">{label}</span>
+      {description && <span className="mt-0.5 block text-xs leading-snug text-ink-soft">{description}</span>}
+    </span>
+  );
+
+  if (inline && !hideLabel) {
+    return (
+      <div className={cn("flex gap-3", description ? "items-start" : "items-center")}>
+        {control}
+        {text}
+      </div>
+    );
+  }
+
   return (
     <div
       className={cn(
@@ -32,30 +80,8 @@ export function ToggleSwitch({
         hideLabel ? "justify-end" : "justify-between"
       )}
     >
-      {!hideLabel && (
-        <span>
-          <span className="block text-sm font-medium text-ink">{label}</span>
-          {description && <span className="mt-0.5 block text-xs text-ink-soft">{description}</span>}
-        </span>
-      )}
-      <button
-        type="button"
-        role="switch"
-        aria-checked={checked}
-        aria-label={label}
-        onClick={() => onChange(!checked)}
-        className={cn(
-          "no-tap-scale relative mt-0.5 inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors",
-          checked ? "bg-brand-500" : "bg-border"
-        )}
-      >
-        <span
-          className={cn(
-            "inline-block h-4.5 w-4.5 transform rounded-full bg-white shadow transition-transform",
-            checked ? "translate-x-6" : "translate-x-1"
-          )}
-        />
-      </button>
+      {!hideLabel && text}
+      {control}
     </div>
   );
 }

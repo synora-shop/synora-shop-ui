@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import { updateSiteText, resetSiteText } from "@/app/admin/site-text/actions";
 import { SaveButton, type SaveState } from "@/components/ui/save-button";
@@ -21,6 +21,7 @@ export function SiteTextRow({
   isOverridden: boolean;
 }) {
   const router = useRouter();
+  const inputId = useId();
   const [current, setCurrent] = useState(value);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [error, setError] = useState<string | null>(null);
@@ -54,15 +55,22 @@ export function SiteTextRow({
   }
 
   return (
-    <div className="flex flex-col gap-2 border-b border-border py-3 last:border-0 sm:flex-row sm:items-center">
-      <label className="w-56 shrink-0 text-xs text-ink-soft">{label}</label>
+    <div className="flex flex-col gap-2 border-b border-border py-2 last:border-0 sm:flex-row sm:items-center sm:gap-3">
+      {/* The label used to point at nothing: no htmlFor, and not wrapping the
+          box either, so a screen reader read it and then landed nowhere. */}
+      <label htmlFor={inputId} className="w-48 shrink-0 text-sm font-medium text-ink">
+        {label}
+      </label>
+      {/* Capped: a box the width of the screen for the words "Buy Now" is
+          harder to read, not easier. */}
       <input
+        id={inputId}
         value={current}
         onChange={(e) => {
           setCurrent(e.target.value);
           setSaveState("idle");
         }}
-        className="input flex-1"
+        className="input flex-1 sm:max-w-2xl"
       />
       {(dirty || saveState === "saved" || saveState === "error") && (
         <SaveButton state={dirty ? (saveState === "saving" ? "saving" : "idle") : saveState} onClick={handleSave} size="sm" />

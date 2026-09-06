@@ -105,7 +105,7 @@ export function MenuManager({
       {error && <p className="text-sm text-rose">{error}</p>}
 
       <section>
-        <h2 className="font-serif text-lg font-semibold">Where menus appear</h2>
+        <h3 className="text-[13px] font-semibold text-ink">Where menus appear</h3>
         <p className="mt-1 text-sm text-ink-soft">
           Pick which menu fills each part of your storefront. One menu can fill both.
         </p>
@@ -140,7 +140,7 @@ export function MenuManager({
 
       <section>
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="font-serif text-lg font-semibold">Your menus</h2>
+          <h3 className="text-[13px] font-semibold text-ink">Your menus</h3>
           {!creating && (
             <button
               type="button"

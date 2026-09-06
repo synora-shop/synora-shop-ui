@@ -16,6 +16,7 @@ import {
 } from "@/lib/product-kind";
 import { Button } from "@/components/ui/primitives";
 import { cn } from "@/lib/utils";
+import { FieldLabel } from "@/components/merchant/form-shell";
 
 const BULK_PRICING_META: Record<BulkPricing, { label: string; help: string }> = {
   HIDDEN: {
@@ -34,7 +35,6 @@ const BULK_PRICING_META: Record<BulkPricing, { label: string; help: string }> = 
 
 // The shared text box — see .input in globals.css.
 const input = "input";
-const labelClass = "text-xs font-medium text-ink";
 
 export type KindState = {
   kind: ProductKind;
@@ -118,8 +118,8 @@ export function ProductKindFields({
       {value.kind === "BULK" && (
         <>
           <div>
-            <label className={labelClass} htmlFor="moq">Minimum order</label>
-            <div className="mt-1 flex items-center gap-2">
+            <FieldLabel htmlFor="moq">Minimum order</FieldLabel>
+            <div className="flex items-center gap-2">
               <input
                 id="moq" type="number" min={1} className={cn(input, "max-w-32")}
                 value={value.minOrderQuantity}
@@ -134,8 +134,8 @@ export function ProductKindFields({
           </div>
 
           <div>
-            <p className={labelClass}>Price display</p>
-            <div className="mt-1.5 space-y-1.5">
+            <FieldLabel>Price display</FieldLabel>
+            <div className="space-y-1.5">
               {BULK_PRICING_MODES.map((mode) => (
                 <label
                   key={mode}
@@ -162,13 +162,13 @@ export function ProductKindFields({
           {value.bulkPricing === "RANGE" && (
             <div className="flex flex-wrap items-end gap-3">
               <div>
-                <label className={labelClass} htmlFor="pmin">From (PKR/unit)</label>
+                <FieldLabel htmlFor="pmin">From (PKR/unit)</FieldLabel>
                 <input id="pmin" type="number" min={0} className={cn(input, "mt-1 max-w-36")}
                   value={value.bulkPriceMin}
                   onChange={(e) => set("bulkPriceMin", e.target.value === "" ? "" : Number(e.target.value))} />
               </div>
               <div>
-                <label className={labelClass} htmlFor="pmax">To (PKR/unit)</label>
+                <FieldLabel htmlFor="pmax">To (PKR/unit)</FieldLabel>
                 <input id="pmax" type="number" min={0} className={cn(input, "mt-1 max-w-36")}
                   value={value.bulkPriceMax}
                   onChange={(e) => set("bulkPriceMax", e.target.value === "" ? "" : Number(e.target.value))} />
@@ -178,8 +178,8 @@ export function ProductKindFields({
 
           {value.bulkPricing === "TIERED" && (
             <div>
-              <p className={labelClass}>Quantity breaks</p>
-              <div className="mt-1.5 space-y-1.5">
+              <FieldLabel>Quantity breaks</FieldLabel>
+              <div className="space-y-1.5">
                 {value.tiers.map((tier, i) => (
                   <div key={i} className="flex items-center gap-2">
                     <span className="text-xs text-ink-soft">From</span>
@@ -248,7 +248,7 @@ export function ProductKindFields({
 
       {value.kind === "CUSTOM" && (
         <div>
-          <p className={labelClass}>What you need from the customer</p>
+          <FieldLabel>What you need from the customer</FieldLabel>
           <p className="mt-0.5 text-xs text-ink-soft">
             These become the fields on the enquiry form. Ask for what you actually need to quote,
             every extra box loses a few enquiries.
@@ -341,11 +341,9 @@ export function ProductKindFields({
 
       {value.kind !== "NORMAL" && (
         <div>
-          <label className={labelClass} htmlFor="enqUrl">
-            Send enquiries somewhere else <span className="text-ink-faint">(optional)</span>
-          </label>
+          <FieldLabel htmlFor="enqUrl">Send enquiries somewhere else <span className="text-ink-faint">(optional)</span></FieldLabel>
           <input
-            id="enqUrl" type="url" placeholder="https://…" className={cn(input, "mt-1")}
+            id="enqUrl" type="url" placeholder="https://…" className={input}
             value={value.enquiryUrl}
             onChange={(e) => set("enquiryUrl", e.target.value)}
           />

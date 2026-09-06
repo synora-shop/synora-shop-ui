@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 import { PageCrumb } from "@/components/admin/page-crumb";
+import { getStoreSettings } from "@/lib/data/settings";
+import { currencySymbol, resolveStoreDefaults } from "@/lib/store-defaults";
 import { db } from "@/lib/data/shop";
 import { ProductForm } from "@/components/admin/product-form";
 
@@ -13,11 +15,17 @@ export default async function EditProductPage(props: PageProps<"/admin/products/
   ]);
   if (!product || product.deletedAt) notFound();
 
+  const defaults = resolveStoreDefaults(await getStoreSettings());
+
   return (
     <div>
       <PageCrumb label={product.title} />
       <div>
-        <ProductForm categories={categories} product={product} />
+        <ProductForm
+          categories={categories}
+          product={product}
+          currency={currencySymbol(defaults.currency)}
+        />
       </div>
     </div>
   );

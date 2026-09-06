@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { GripVertical, UploadCloud, X } from "lucide-react";
 import { uploadImage } from "@/lib/actions/media";
 import { useConfirm } from "@/components/ui/confirm-dialog";
+import { FieldLabel } from "@/components/merchant/form-shell";
 
 // Reusable multi-image field: drag files in from the desktop, click to
 // browse (multi-select supported), reorder by dragging thumbnails, or paste
@@ -88,9 +89,9 @@ export function ImageDropzone({
   return (
     <div>
       {dialog}
-      <label className="text-xs font-semibold uppercase text-ink-soft">
+      <FieldLabel>
         {label} {images.length > 1 && "(first is primary, drag to reorder)"}
-      </label>
+      </FieldLabel>
 
       {images.length > 0 && (
         <div className="mt-2 grid grid-cols-3 gap-3 sm:grid-cols-4">

@@ -5,6 +5,7 @@ import { buttonClass } from "@/components/ui/primitives";
 import { useRouter } from "next/navigation";
 import { updateCollectionDetails, type CollectionDetails } from "@/app/admin/categories/actions";
 import { SingleImageField } from "@/components/admin/single-image-field";
+import { Field } from "@/components/merchant/form-shell";
 
 /**
  * Everything about a collection except its name.
@@ -69,40 +70,34 @@ export function CollectionDetailsForm({
         aspect="aspect-[16/9]"
       />
 
-      <div>
-        <label className="text-xs font-semibold uppercase text-ink-soft">Description</label>
-        <textarea
-          value={details.description}
-          onChange={(e) => set("description", e.target.value)}
-          rows={3}
-          placeholder="Shown at the top of the collection page."
-          className="input mt-1"
-        />
-        <p className="mt-0.5 text-right text-[11px]">{counter(details.description, 2000)}</p>
-      </div>
+      <Field label="Description" hint={counter(details.description, 2000)}>
+          <textarea
+            value={details.description}
+            onChange={(e) => set("description", e.target.value)}
+            rows={3}
+            placeholder="Shown at the top of the collection page."
+            className="input"
+          />
+      </Field>
 
-      <div>
-        <label className="text-xs font-semibold uppercase text-ink-soft">SEO title</label>
-        <input
-          value={details.seoTitle}
-          onChange={(e) => set("seoTitle", e.target.value)}
-          placeholder="Defaults to the collection name."
-          className="input mt-1"
-        />
-        <p className="mt-0.5 text-right text-[11px]">{counter(details.seoTitle, 120)}</p>
-      </div>
+      <Field label="SEO title" hint={counter(details.seoTitle, 120)}>
+          <input
+            value={details.seoTitle}
+            onChange={(e) => set("seoTitle", e.target.value)}
+            placeholder="Defaults to the collection name."
+            className="input"
+          />
+      </Field>
 
-      <div>
-        <label className="text-xs font-semibold uppercase text-ink-soft">SEO description</label>
-        <textarea
-          value={details.seoDescription}
-          onChange={(e) => set("seoDescription", e.target.value)}
-          rows={2}
-          placeholder="The sentence under the link in search results."
-          className="input mt-1"
-        />
-        <p className="mt-0.5 text-right text-[11px]">{counter(details.seoDescription, 320)}</p>
-      </div>
+      <Field label="SEO description" hint={counter(details.seoDescription, 320)}>
+          <textarea
+            value={details.seoDescription}
+            onChange={(e) => set("seoDescription", e.target.value)}
+            rows={2}
+            placeholder="The sentence under the link in search results."
+            className="input"
+          />
+      </Field>
 
       {error && <p className="text-sm text-rose">{error}</p>}
 

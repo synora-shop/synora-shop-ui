@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { shopSession } from "@/lib/auth-guard";
 import { ROLE_RANK, roleAtLeast } from "@/lib/roles";
-import { PageHeader } from "@/components/ui/primitives";
+import { PageHeader, SectionDivider } from "@/components/ui/primitives";
 import { AccountSecurity } from "@/components/admin/account-security";
 import { StaffManager } from "@/components/admin/staff-manager";
 
@@ -75,12 +75,10 @@ export default async function AccountPage() {
 
       {canManagePeople && (
         <section className="space-y-3">
-          <div>
-            <h2 className="font-serif text-lg font-semibold">People</h2>
-            <p className="mt-1 text-sm text-ink-soft">
-              Who can work on {me.shop.name}, and what they can reach.
-            </p>
-          </div>
+          <SectionDivider
+            title="People"
+            description={`Who can work on ${me.shop.name}, and what they can reach.`}
+          />
           <StaffManager
             members={members}
             invites={invites.map((i) => ({

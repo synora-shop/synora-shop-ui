@@ -31,8 +31,8 @@ export default async function AdminOrderDetailPage(props: PageProps<"/admin/orde
 
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
-          <div className="rounded-lg border border-border bg-white p-5">
-            <h2 className="font-serif text-lg font-semibold">Items</h2>
+          <div className="rounded-xl border border-border bg-surface p-4">
+            <h3 className="text-[13px] font-semibold text-ink">Items</h3>
             <div className="mt-3 divide-y divide-border">
               {order.items.map((item) => (
                 <div key={item.id} className="flex justify-between gap-3 py-2 text-sm">
@@ -63,8 +63,8 @@ export default async function AdminOrderDetailPage(props: PageProps<"/admin/orde
             </div>
           </div>
 
-          <div className="rounded-lg border border-border bg-white p-5">
-            <h2 className="font-serif text-lg font-semibold">Customer & Shipping</h2>
+          <div className="rounded-xl border border-border bg-surface p-4">
+            <h3 className="text-[13px] font-semibold text-ink">Customer & Shipping</h3>
             <div className="mt-3 space-y-1 text-sm text-ink-soft">
               <p>{order.customerName}</p>
               <p>{order.customerEmail}</p>
@@ -80,9 +80,9 @@ export default async function AdminOrderDetailPage(props: PageProps<"/admin/orde
         </div>
 
         <div className="space-y-6">
-          <div className="rounded-lg border border-border bg-white p-5">
+          <div className="rounded-xl border border-border bg-surface p-4">
             <div className="flex items-center justify-between">
-              <h2 className="font-serif text-lg font-semibold">Order Status</h2>
+              <h3 className="text-[13px] font-semibold text-ink">Order Status</h3>
               <span
                 className={cn(
                   "rounded-full px-2 py-0.5 text-[10px] font-medium uppercase",
@@ -110,9 +110,9 @@ export default async function AdminOrderDetailPage(props: PageProps<"/admin/orde
             </form>
           </div>
 
-          <div className="rounded-lg border border-border bg-white p-5">
+          <div className="rounded-xl border border-border bg-surface p-4">
             <div className="flex items-center justify-between">
-              <h2 className="font-serif text-lg font-semibold">Payment</h2>
+              <h3 className="text-[13px] font-semibold text-ink">Payment</h3>
               <span
                 className={cn(
                   "rounded-full px-2 py-0.5 text-[10px] font-medium uppercase",

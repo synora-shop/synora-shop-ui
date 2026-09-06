@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { buttonClass } from "@/components/ui/primitives";
 import { ImagePlus, Loader2, RefreshCw, X } from "lucide-react";
 import { uploadImage } from "@/lib/actions/media";
+import { FieldLabel } from "@/components/merchant/form-shell";
 
 /**
  * One image, uploaded or pasted.
@@ -63,7 +64,7 @@ export function SingleImageField({
 
   return (
     <div>
-      {label && <label className="text-xs font-semibold uppercase text-ink-soft">{label}</label>}
+      {label && <FieldLabel>{label}</FieldLabel>}
 
       <div
         onDragOver={(e) => {
@@ -76,7 +77,6 @@ export function SingleImageField({
           setDraggingOver(false);
           upload(e.dataTransfer.files?.[0]);
         }}
-        className={label ? "mt-1" : undefined}
       >
         {value ? (
           <div

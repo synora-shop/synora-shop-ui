@@ -193,5 +193,95 @@ check(
   /export function SectionDivider/.test(readFileSync(join(ROOT, "components/ui/primitives.tsx"), "utf8"))
 );
 
+// A form label was written three ways: a wrapping <label> at text-sm, a bare
+// uppercase text-xs, and a flex row with an info popover in it. On one screen
+// all three were visible at once. Field and FieldLabel are the only two.
+const strayLabels = files.filter((f) => {
+  if (!/(components|app)\/admin\//.test(f)) return false;
+  const src = readFileSync(f, "utf8");
+  return (
+    /text-xs font-semibold uppercase text-ink-soft/.test(src) ||
+    /className="flex items-center gap-1\.5 text-xs font-medium text-ink"/.test(src) ||
+    /const label = "[^"]*text-ink"/.test(src)
+  );
+});
+check(
+  "no screen invents its own field label",
+  strayLabels.length === 0,
+  strayLabels.map((f) => relative(ROOT, f)).join(", ")
+);
+
+// The label has to reach the control. A wrapping <label> does it by containment
+// and needs no id; anything else needs htmlFor, and a popover button cannot go
+// inside a <label> because it would eat the click meant for the input.
+const shell = readFileSync(join(ROOT, "components/merchant/form-shell.tsx"), "utf8");
+check("the wrapping label exists", /export function Field\(/.test(shell));
+check("the explicit one takes htmlFor", /export function FieldLabel\([\s\S]{0,600}htmlFor\?: string/.test(shell));
+check(
+  "the info popover sits outside the label element",
+  /<\/label>\s*\) : \([\s\S]{0,120}\)\}\s*\{info &&/.test(shell)
+);
+
+// Settings is where a merchant meets the most controls at once, so it is where
+// an inconsistency is loudest. Every block on it is one primitive.
+const settings = readFileSync(join(ROOT, "app/admin/settings/page.tsx"), "utf8");
+check("settings builds no ad-hoc panel", !/<section className="[^"]*rounded-xl/.test(settings));
+check("settings is divided, not just spaced", /<SectionDivider/.test(settings));
+for (const f of [
+  "components/admin/global-edits-form.tsx",
+  "components/admin/store-defaults-form.tsx",
+  "components/admin/store-settings-form.tsx",
+  "components/admin/business-type-form.tsx",
+  "components/admin/visibility-form.tsx",
+]) {
+  const src = readFileSync(join(ROOT, f), "utf8");
+  check(`${f.split("/").pop()} uses the shared fieldset`, /<Fieldset/.test(src));
+  check(`${f.split("/").pop()} declares no serif heading`, !/font-serif/.test(src));
+}
+
+// A lone switch in a column as wide as a text field ends up an inch of empty
+// white away from its own label. Inside a fieldset it goes first, and hugs.
+const toggle = readFileSync(join(ROOT, "components/ui/toggle-switch.tsx"), "utf8");
+check("the switch has a hugging variant", /inline\?: boolean/.test(toggle));
+const marooned = files.filter((f) => {
+  if (!/(components|app)\/admin\//.test(f)) return false;
+  const src = readFileSync(f, "utf8");
+  if (!/<Fieldset/.test(src)) return false;
+  // every ToggleSwitch inside a fieldset screen must ask for the inline form
+  const opens = src.match(/<ToggleSwitch\b/g)?.length ?? 0;
+  const inlines = src.match(/<ToggleSwitch\s+inline\b/g)?.length ?? 0;
+  return opens !== inlines;
+});
+check(
+  "no switch is marooned in a fieldset",
+  marooned.length === 0,
+  marooned.map((f) => relative(ROOT, f)).join(", ")
+);
+
+// The panel is sans-serif. The serif face belongs to the storefront and to a
+// full-screen message (an error, a locked door) — never to a heading inside a
+// screen, where it read as a different product bolted on. Sections are named by
+// SectionDivider, cards by a 13px semibold line.
+const serif = files.filter((f) => {
+  if (!/(components|app)\/admin\//.test(f)) return false;
+  if (/(access-denied|error)\.tsx$/.test(f)) return false;
+  return /font-serif/.test(readFileSync(f, "utf8"));
+});
+check(
+  "no serif heading inside a screen",
+  serif.length === 0,
+  serif.map((f) => relative(ROOT, f)).join(", ")
+);
+
+// A switch with no accessible name is a nameless button to a screen reader.
+const namelessSwitch = files.filter(
+  (f) => /\/components\//.test(f) && /<ToggleSwitch[\s\S]{0,80}label=""/.test(readFileSync(f, "utf8"))
+);
+check(
+  "every switch is named",
+  namelessSwitch.length === 0,
+  namelessSwitch.map((f) => relative(ROOT, f)).join(", ")
+);
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);

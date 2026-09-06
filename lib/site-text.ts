@@ -5,6 +5,28 @@ import { cachedForShop } from "@/lib/data/cached";
 // fallback — this is what ships even if the SiteText table is empty, so
 // landing this infrastructure changes nothing visually until an admin
 // actually edits a value in /admin/site-text. Grouped for the admin UI.
+/**
+ * The merchant-facing name of a site-text key.
+ *
+ * The keys are code — "product.addToCart", "contact.whatsappButton" — and the
+ * screen was printing the half after the dot exactly as written, so a merchant
+ * read "addToCart" and "orderViaWhatsApp". This turns the camel back into
+ * words, and keeps the two names that are spelled a particular way.
+ */
+export function siteTextLabel(key: string): string {
+  const tail = key.split(".").slice(1).join(" ") || key;
+  const words = tail
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/[._-]+/g, " ")
+    .toLowerCase()
+    .trim();
+  const spelled = words
+    .replace(/\bwhats ?app\b/g, "WhatsApp")
+    .replace(/\bseo\b/g, "SEO")
+    .replace(/\bsku\b/g, "SKU");
+  return spelled.charAt(0).toUpperCase() + spelled.slice(1);
+}
+
 export const SITE_TEXT_DEFAULTS: Record<string, { value: string; group: string }> = {
   "footer.tagline": {
     group: "Header & Footer",

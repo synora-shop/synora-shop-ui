@@ -1,4 +1,5 @@
 import { changeBusinessType } from "@/app/admin/settings/business-type-actions";
+import { Fieldset } from "@/components/ui/primitives";
 import {
   BUSINESS_TYPES,
   BUSINESS_TYPE_LABELS,
@@ -23,13 +24,11 @@ const EFFECT: Record<BusinessType, string> = {
  */
 export function BusinessTypeForm({ current }: { current: BusinessType }) {
   return (
-    <section className="max-w-xl rounded-xl border border-border bg-surface p-5">
-      <h2 className="font-serif text-lg font-semibold">What you sell</h2>
-      <p className="mt-1 text-sm text-ink-soft">
-        This decides what your dashboard shows and which designs you can pick from.
-      </p>
-
-      <div className="mt-4 space-y-2">
+    <Fieldset
+      title="What you sell"
+      description="This decides what your dashboard shows and which designs you can pick from. Nothing is deleted when you switch: your pages, design and colours are kept for each kind separately, so switching back brings your old storefront straight back. Products, posts and orders are always kept."
+    >
+      <div className="space-y-1.5">
         {BUSINESS_TYPES.map((type) => {
           const active = type === current;
           return (
@@ -37,7 +36,7 @@ export function BusinessTypeForm({ current }: { current: BusinessType }) {
               <button
                 disabled={active}
                 className={
-                  "flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left transition-colors " +
+                  "flex w-full items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors " +
                   (active
                     ? "border-brand-500 bg-brand-50"
                     : "border-border hover:border-ink-faint hover:bg-subtle")
@@ -55,12 +54,6 @@ export function BusinessTypeForm({ current }: { current: BusinessType }) {
           );
         })}
       </div>
-
-      <p className="mt-4 text-xs text-ink-faint">
-        Nothing is deleted when you switch. Your pages, design and colours are kept for each
-        kind separately, so switching back brings your old storefront straight back. Products,
-        posts and orders are always kept.
-      </p>
-    </section>
+    </Fieldset>
   );
 }

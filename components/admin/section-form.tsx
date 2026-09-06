@@ -8,6 +8,7 @@ import { ImageDropzone } from "@/components/admin/image-dropzone";
 import { ReorderButtons } from "@/components/ui/reorder-buttons";
 import type { SectionType } from "@/lib/generated/prisma/client";
 import type { HeroSlide } from "@/components/storefront/sections/hero-slideshow";
+import { Field } from "@/components/merchant/form-shell";
 
 type FaqItem = { question: string; answer: string };
 
@@ -25,15 +26,6 @@ function SingleImage({
       folder="pages"
       label="Image"
     />
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <label className="text-xs font-semibold uppercase text-ink-soft">{label}</label>
-      <div className="mt-1">{children}</div>
-    </div>
   );
 }
 
@@ -129,7 +121,7 @@ export function SectionForm({
           {slides.map((slide, i) => (
             <div key={i} className="space-y-3 rounded-lg border border-border p-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold uppercase text-ink-soft">Slide {i + 1}</span>
+                <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-faint">Slide {i + 1}</span>
                 <div className="flex items-center gap-2">
                   <ReorderButtons index={i} count={slides.length} onMove={moveSlide} />
                   <button
@@ -314,7 +306,7 @@ export function SectionForm({
           {items.map((item, i) => (
             <div key={i} className="space-y-2 rounded-lg border border-border p-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold uppercase text-ink-soft">Question {i + 1}</span>
+                <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-faint">Question {i + 1}</span>
                 <div className="flex items-center gap-2">
                   <ReorderButtons index={i} count={items.length} onMove={moveItem} />
                   <button

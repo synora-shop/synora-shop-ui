@@ -3,8 +3,8 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { saveStoreDefaults } from "@/app/admin/settings/actions";
-import { Card } from "@/components/ui/primitives";
-import { InfoPopover } from "@/components/ui/info-popover";
+import { Fieldset } from "@/components/ui/primitives";
+import { FieldHint, FieldLabel } from "@/components/merchant/form-shell";
 import { useEditor } from "@/components/admin/use-editor";
 import { useToast } from "@/components/ui/toast";
 import type { SaveState } from "@/components/ui/save-button";
@@ -83,38 +83,28 @@ export function StoreDefaultsForm({ initial }: { initial: StoreDefaults }) {
   });
 
   const weightOptions = WEIGHT_UNITS.filter((w) => w.system === values.unitSystem);
-  const label = "flex items-center gap-1.5 text-xs font-medium text-ink";
 
   return (
-    <>
-      <Card className="p-4">
-        <h2 className="text-sm font-semibold">Store defaults</h2>
-        <p className="mt-0.5 text-xs text-ink-soft">
-          What your store is called, what it charges in, and where it trades from.
-        </p>
-
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+    <Fieldset
+        title="Store defaults"
+        description="What your store is called, what it charges in, and where it trades from."
+      >
+        <div className="grid gap-3 sm:grid-cols-2">
           <div className="sm:col-span-2">
-            <label className={label} htmlFor="storeName">
-              Store name
-              <InfoPopover text="Shown in the admin, in order emails, and anywhere your store refers to itself by name." />
-            </label>
+            <FieldLabel htmlFor="storeName" info="Shown in the admin, in order emails, and anywhere your store refers to itself by name.">Store name</FieldLabel>
             <input
               id="storeName"
-              className="input mt-1"
+              className="input"
               value={values.storeName}
               onChange={(e) => set("storeName", e.target.value)}
             />
           </div>
 
           <div>
-            <label className={label} htmlFor="currency">
-              Currency
-              <InfoPopover text="How prices are shown to customers. Changing this does not convert your existing prices, a product priced at 2500 stays 2500, in the new currency." />
-            </label>
+            <FieldLabel htmlFor="currency" info="How prices are shown to customers. Changing this does not convert your existing prices, a product priced at 2500 stays 2500, in the new currency.">Currency</FieldLabel>
             <select
               id="currency"
-              className="input mt-1"
+              className="input"
               value={values.currency}
               onChange={(e) => set("currency", e.target.value)}
             >
@@ -127,13 +117,10 @@ export function StoreDefaultsForm({ initial }: { initial: StoreDefaults }) {
           </div>
 
           <div>
-            <label className={label} htmlFor="country">
-              Country
-              <InfoPopover text="Where your business operates from. Used for shipping defaults and tax." />
-            </label>
+            <FieldLabel htmlFor="country" info="Where your business operates from. Used for shipping defaults and tax.">Country</FieldLabel>
             <select
               id="country"
-              className="input mt-1"
+              className="input"
               value={values.countryCode}
               onChange={(e) => set("countryCode", e.target.value)}
             >
@@ -146,10 +133,10 @@ export function StoreDefaultsForm({ initial }: { initial: StoreDefaults }) {
           </div>
 
           <div>
-            <label className={label} htmlFor="unitSystem">Unit system</label>
+            <FieldLabel htmlFor="unitSystem">Unit system</FieldLabel>
             <select
               id="unitSystem"
-              className="input mt-1"
+              className="input"
               value={values.unitSystem}
               onChange={(e) => setSystem(e.target.value as "METRIC" | "IMPERIAL")}
             >
@@ -159,16 +146,15 @@ export function StoreDefaultsForm({ initial }: { initial: StoreDefaults }) {
                 </option>
               ))}
             </select>
-            <p className="mt-1 text-xs text-ink-soft">
-              {UNIT_SYSTEMS.find((u) => u.value === values.unitSystem)?.hint}
-            </p>
+            <FieldHint>{UNIT_SYSTEMS.find((u) => u.value === values.unitSystem)?.hint}
+            </FieldHint>
           </div>
 
           <div>
-            <label className={label} htmlFor="weightUnit">Default weight unit</label>
+            <FieldLabel htmlFor="weightUnit">Default weight unit</FieldLabel>
             <select
               id="weightUnit"
-              className="input mt-1"
+              className="input"
               value={values.weightUnit}
               onChange={(e) => set("weightUnit", e.target.value)}
             >
@@ -181,13 +167,10 @@ export function StoreDefaultsForm({ initial }: { initial: StoreDefaults }) {
           </div>
 
           <div className="sm:col-span-2">
-            <label className={label} htmlFor="timeZone">
-              Time zone
-              <InfoPopover text="Sets when orders and analytics are recorded. Changing it moves which day a sale is counted on, so past reports may shift by a day." />
-            </label>
+            <FieldLabel htmlFor="timeZone" info="Sets when orders and analytics are recorded. Changing it moves which day a sale is counted on, so past reports may shift by a day.">Time zone</FieldLabel>
             <select
               id="timeZone"
-              className="input mt-1"
+              className="input"
               value={values.timeZone}
               onChange={(e) => set("timeZone", e.target.value)}
             >
@@ -197,13 +180,8 @@ export function StoreDefaultsForm({ initial }: { initial: StoreDefaults }) {
                 </option>
               ))}
             </select>
-            <p className="mt-1 text-xs text-ink-soft">
-              Sets the time for when orders and analytics are recorded.
-            </p>
           </div>
         </div>
-      </Card>
-
-    </>
+    </Fieldset>
   );
 }

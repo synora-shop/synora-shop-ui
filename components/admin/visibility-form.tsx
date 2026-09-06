@@ -7,7 +7,7 @@ import { saveVisibility } from "@/app/admin/preferences/actions";
 import { BlockedCountriesField } from "@/components/admin/blocked-countries-field";
 import { useEditor } from "@/components/admin/use-editor";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
-import { Card } from "@/components/ui/primitives";
+import { Fieldset } from "@/components/ui/primitives";
 import type { Visibility } from "@/lib/visibility";
 
 /**
@@ -53,62 +53,61 @@ export function VisibilityForm({ initial }: { initial: Visibility }) {
   useEditor({ dirty, saving, onSave: save, onDiscard: () => setFields(saved) });
 
   return (
-    <div className="space-y-4">
-      <Card className="space-y-4 p-4">
-        <div
-          className={
-            fields.maintenanceMode
-              ? "rounded-lg border border-amber bg-amber-bg p-3"
-              : "rounded-lg border border-border p-3"
-          }
-        >
-          <ToggleSwitch
-            label="Coming soon / maintenance"
-            description="Customers see a holding page instead of your store. You and your staff still get in, so you can keep working on it."
-            checked={fields.maintenanceMode}
-            onChange={(v) => set("maintenanceMode", v)}
-          />
-          {fields.maintenanceMode && (
-            <p className="mt-2 flex items-center gap-1.5 text-xs font-medium text-amber">
-              <AlertTriangle className="h-3.5 w-3.5" />
-              Your store is hidden from customers until you turn this off and save.
-            </p>
-          )}
-        </div>
+    <div className="space-y-2.5">
+      <Fieldset
+        title="Coming soon / maintenance"
+        description="Customers see a holding page instead of your store. You and your staff still get in, so you can keep working on it."
+        className={fields.maintenanceMode ? "border-amber/40 bg-amber-bg" : undefined}
+      >
+        <ToggleSwitch
+          inline
+          label="Hide my store from customers"
+          checked={fields.maintenanceMode}
+          onChange={(v) => set("maintenanceMode", v)}
+        />
+        {fields.maintenanceMode && (
+          <p className="flex items-center gap-1.5 text-xs font-medium text-amber">
+            <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0" />
+            Your store is hidden from customers until you turn this off and save.
+          </p>
+        )}
+      </Fieldset>
 
-        {/* The same decision as maintenance mode, only narrower — who can see
-            the shop — so it sits directly under it. */}
+      {/* The same decision as maintenance mode, only narrower — who can see the
+          shop — so it sits directly under it. */}
+      <Fieldset
+        title="Hide from certain countries"
+        description="Visitors from these countries see a closed-store page instead of your shop. The country comes from their address, so a VPN gets around it — this is hiding, not security."
+      >
         <BlockedCountriesField
           value={fields.blockedCountries}
           onChange={(next) => set("blockedCountries", next)}
         />
-      </Card>
+      </Fieldset>
 
-      <Card className="space-y-4 p-4">
+      <Fieldset
+        title="Search engines"
+        description="Google and the others are invited in, and your store can turn up in results. Turn it off while you are still building, or if your catalogue is only meant to be shared by link. A request, not a lock — anyone with the address can still open your store."
+      >
         <ToggleSwitch
-          label="Let search engines list your store"
-          description="Google and the others are invited in, and your store can turn up in search results. Turn this off while you are still building, or if your catalogue is only meant to be shared by link."
+          inline
+          label="Let search engines list my store"
           checked={fields.searchIndexing}
           onChange={(v) => set("searchIndexing", v)}
         />
-        <p className="text-xs text-ink-soft">
-          This is a request, not a lock. Search engines respect it; anyone with
-          the address can still open your store.
-        </p>
+      </Fieldset>
 
-        <div className="border-t border-border pt-4">
-          <ToggleSwitch
-            label="Spam protection on your forms"
-            description="A hidden field that people never see and automated form-fillers always fill in. Anything that fills it is quietly thrown away."
-            checked={fields.spamProtection}
-            onChange={(v) => set("spamProtection", v)}
-          />
-          <p className="mt-2 text-xs text-ink-soft">
-            Leave this on. The only reason to turn it off is to work out why a
-            real enquiry never reached you.
-          </p>
-        </div>
-      </Card>
+      <Fieldset
+        title="Spam protection"
+        description="A hidden field that people never see and automated form-fillers always fill in. Anything that fills it is quietly thrown away. Leave it on — the only reason to turn it off is to work out why a real enquiry never reached you."
+      >
+        <ToggleSwitch
+          inline
+          label="Protect my public forms"
+          checked={fields.spamProtection}
+          onChange={(v) => set("spamProtection", v)}
+        />
+      </Fieldset>
 
     </div>
   );

@@ -1,6 +1,7 @@
 import { db } from "@/lib/data/shop";
-import { SITE_TEXT_DEFAULTS } from "@/lib/site-text";
+import { SITE_TEXT_DEFAULTS, siteTextLabel } from "@/lib/site-text";
 import { SiteTextRow } from "@/components/admin/site-text-row";
+import { SectionDivider } from "@/components/ui/primitives";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +13,7 @@ export default async function AdminSiteTextPage() {
 
   const groups = new Map<string, { key: string; label: string; group: string }[]>();
   for (const [key, { group }] of Object.entries(SITE_TEXT_DEFAULTS)) {
-    const label = key.split(".").slice(1).join(" ") || key;
+    const label = siteTextLabel(key);
     if (!groups.has(group)) groups.set(group, []);
     groups.get(group)!.push({ key, label, group });
   }
@@ -26,9 +27,9 @@ export default async function AdminSiteTextPage() {
 
       <div className="mt-6 space-y-8">
         {Array.from(groups.entries()).map(([group, keys]) => (
-          <div key={group} className="rounded-lg border border-border bg-white p-5">
-            <h2 className="font-serif text-lg font-semibold">{group}</h2>
-            <div className="mt-2">
+          <div key={group}>
+            <SectionDivider title={group} />
+            <div className="mt-2 rounded-xl border border-border bg-surface p-4">
               {keys.map(({ key, label }) => {
                 const defaultValue = SITE_TEXT_DEFAULTS[key].value;
                 const isOverridden = overrideMap.has(key);

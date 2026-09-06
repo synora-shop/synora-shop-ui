@@ -240,7 +240,8 @@ export function RedirectsManager({
                 </div>
                 <div className="flex flex-shrink-0 items-center gap-2">
                   <ToggleSwitch
-                    label=""
+                    label={`Redirect ${row.fromPath} active`}
+                    hideLabel
                     checked={row.isActive}
                     onChange={async () => {
                       await toggleRedirect(row.id);

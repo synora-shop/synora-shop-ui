@@ -39,6 +39,26 @@ arrangement. `APP.ai` remains the authority on layout and on the four greys.
 | Analytics | the stat tile, the chart frame, the ranked list, the live count |
 | Settings | the field, the fieldset, the destructive action |
 
+**Done so far in this pass**
+
+- The **field** is settled: one label style, one text box. `Field` wraps its
+  control and needs no id; `FieldLabel` is for the two cases it cannot wrap — a
+  control with an info popover beside its label, and a caption over a group of
+  controls like a gallery. The three ad-hoc label styles that were in the panel
+  (uppercase 11px, a 12px flex row, a hand-rolled copy of `Field` at 12px) are
+  gone from every admin screen and `check:naming` fails if one comes back.
+- The **fieldset** is settled: a name and its explanation on the left, controls
+  capped at a readable width on the right. Preferences and all of Settings are
+  built from it, so a lone switch is no longer marooned an inch of white from
+  its own words — inside a fieldset the switch goes first and hugs its label.
+- The **destructive action** already had its shape (confirm by typing the store
+  name, then a password); it now uses the same field as everything else.
+- Settings itself is divided rather than merely spaced: *Customers* and *Global
+  edits* are named rules, not gaps.
+
+Still to decide: the theme card and its live preview, the media tile, the
+product tile, and the bulk-select bar.
+
 **One mismatch with APP.ai to fix in this pass**
 
 The layout wraps every page in one panel container, and each page then draws its
@@ -121,6 +141,18 @@ changed after an earlier database copy was taken, so older notes say AHAD1V.
 
 ## Known problems
 
+- **The panel offers a Currency setting it then ignores.** Settings has a
+  currency picker and it saves, but every price anywhere — the product list,
+  orders, the storefront, the cart, checkout — is printed by `formatPKR()` in
+  `lib/utils.ts`, which hard-codes "Rs." Twenty files call it. A store set to
+  dollars would type dollars into Settings and see rupees everywhere else. The
+  fix is one currency-aware formatter fed by the store's own setting, and it
+  touches all twenty. Until then the labels beside a price box are honest (they
+  read the setting) and the printed amounts are not.
+- **The store type can be changed with one click, ungated.** Settings → What you
+  sell switches a live store instantly. Queue item 2 says it must require the
+  store to be paused first; that gate is not built yet, so the loophole is open
+  in production today.
 - **`synora-shop-api`'s schema is ~99 lines behind this repo's.** Harmless
   while nothing deploys from it; a real failure the day something does.
 - **Image upload does not work locally** — no `BLOB_READ_WRITE_TOKEN` in

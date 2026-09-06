@@ -43,7 +43,7 @@ export function AddCategoryForm() {
   return (
     <form onSubmit={handleSubmit} className="h-fit space-y-3 rounded-lg border border-border bg-white p-5">
       {dialog}
-      <h2 className="font-serif text-lg font-semibold">Add Category</h2>
+      <h3 className="text-[13px] font-semibold text-ink">Add Category</h3>
       <input
         value={name}
         onChange={(e) => setName(e.target.value)}

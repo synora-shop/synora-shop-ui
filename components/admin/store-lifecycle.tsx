@@ -7,7 +7,7 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { Badge, Button, Card } from "@/components/ui/primitives";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast";
-import { FormMessage } from "@/components/merchant/form-shell";
+import { Field, FormMessage } from "@/components/merchant/form-shell";
 
 type Status = "TRIAL" | "ACTIVE" | "PAUSED" | "PAST_DUE" | "SUSPENDED" | "CLOSED";
 
@@ -129,16 +129,18 @@ export function StoreLifecycle({
               }}
               className="mt-4 max-w-sm space-y-3"
             >
-              <label className="block">
-                <span className="mb-1.5 block text-xs font-medium text-ink">
-                  Type <span className="font-mono">{storeName}</span> to confirm
-                </span>
+              <Field
+                label={
+                  <>
+                    Type <span className="font-mono">{storeName}</span> to confirm
+                  </>
+                }
+              >
                 <input name="confirmation" required autoFocus className="input" />
-              </label>
-              <label className="block">
-                <span className="mb-1.5 block text-xs font-medium text-ink">Your password</span>
+              </Field>
+              <Field label="Your password">
                 <PasswordInput name="password" autoComplete="current-password" required />
-              </label>
+              </Field>
 
               {closeError && <FormMessage tone="error">{closeError}</FormMessage>}
 

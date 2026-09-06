@@ -2,31 +2,43 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle } from "lucide-react";
 import { updateGlobalEdits } from "@/app/admin/settings/actions";
 import { type SaveState } from "@/components/ui/save-button";
 import { useEditor } from "@/components/admin/use-editor";
-import { BlockedCountriesField } from "@/components/admin/blocked-countries-field";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
+import { Fieldset } from "@/components/ui/primitives";
+import { Field } from "@/components/merchant/form-shell";
 import { SHOP_SORT_LABELS, type GlobalEdits } from "@/lib/global-edits";
 
-function Card({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
+/** A colour, twice: the swatch you pick from and the hex you can paste into. */
+function ColorField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
   return (
-    <section className="rounded-lg border border-border bg-white p-5">
-      <h3 className="font-serif text-base font-semibold">{title}</h3>
-      {description && <p className="mt-1 text-xs text-ink-soft">{description}</p>}
-      <div className="mt-4 space-y-4">{children}</div>
-    </section>
+    <Field label={label}>
+      <div className="flex items-center gap-2">
+        <input
+          type="color"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          aria-label={`${label} swatch`}
+          className="h-9 w-12 flex-shrink-0 cursor-pointer rounded-lg border border-border bg-control p-1"
+        />
+        <input value={value} onChange={(e) => onChange(e.target.value)} className="input font-mono" />
+      </div>
+    </Field>
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <label className="text-xs font-semibold uppercase text-ink-soft">{label}</label>
-      <div className="mt-1">{children}</div>
-    </div>
-  );
+/** Two controls that belong on one line where there is room for two. */
+function Pair({ children }: { children: React.ReactNode }) {
+  return <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">{children}</div>;
 }
 
 export function GlobalEditsForm({ settings }: { settings: GlobalEdits }) {
@@ -73,21 +85,19 @@ export function GlobalEditsForm({ settings }: { settings: GlobalEdits }) {
   });
 
   return (
-    <div className="mt-6 max-w-3xl space-y-6">
-      <p className="text-sm text-ink-soft">
-        Site-wide behavior, every edit here applies live across the whole storefront,
-        including products and pages you add later. Turning an edit back off always
-        restores the site&apos;s normal behavior.
-      </p>
-
-      <Card title="Inventory & Stock">
+    <div className="space-y-2.5">
+      <Fieldset
+        title="Inventory & stock"
+        description="What a shopper is told about how many you have left, and what happens to a product when you run out."
+      >
         <ToggleSwitch
+          inline
           label="Show inventory count"
           description={'When off, product pages say "In stock" instead of the exact number left.'}
           checked={fields.showInventoryCount}
           onChange={(v) => set("showInventoryCount", v)}
         />
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <Pair>
           <Field label="Low stock threshold">
             <input
               type="number"
@@ -97,14 +107,14 @@ export function GlobalEditsForm({ settings }: { settings: GlobalEdits }) {
               className="input"
             />
           </Field>
-          <Field label="Low stock badge text (use {n} for the count)">
+          <Field label="Low stock badge" hint="Use {n} for the count.">
             <input
               value={fields.lowStockBadgeText}
               onChange={(e) => set("lowStockBadgeText", e.target.value)}
               className="input"
             />
           </Field>
-        </div>
+        </Pair>
         <Field label="Out-of-stock products">
           <select
             value={fields.outOfStockDisplay}
@@ -116,16 +126,20 @@ export function GlobalEditsForm({ settings }: { settings: GlobalEdits }) {
             <option value="HIDE">Hide from listings</option>
           </select>
         </Field>
-      </Card>
+      </Fieldset>
 
-      <Card title="Merchandising">
+      <Fieldset
+        title="Badges"
+        description="The small labels on a product card. They only appear where they are true, so leaving them on costs nothing."
+      >
         <ToggleSwitch
+          inline
           label='"New" badge on recent products'
           checked={fields.newArrivalBadge}
           onChange={(v) => set("newArrivalBadge", v)}
         />
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="New-arrival window (days)">
+        <Pair>
+          <Field label="Counts as new for (days)">
             <input
               type="number"
               min={0}
@@ -141,14 +155,21 @@ export function GlobalEditsForm({ settings }: { settings: GlobalEdits }) {
               className="input"
             />
           </Field>
-        </div>
+        </Pair>
         <ToggleSwitch
+          inline
           label="Sale badge on discounted products"
           checked={fields.saleBadge}
           onChange={(v) => set("saleBadge", v)}
         />
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Default shop sort order">
+      </Fieldset>
+
+      <Fieldset
+        title="The Shop page"
+        description="How your catalogue is laid out and ordered the first time somebody opens it."
+      >
+        <Pair>
+          <Field label="Default sort order">
             <select
               value={fields.defaultShopSort}
               onChange={(e) => set("defaultShopSort", e.target.value as GlobalEdits["defaultShopSort"])}
@@ -161,7 +182,7 @@ export function GlobalEditsForm({ settings }: { settings: GlobalEdits }) {
               ))}
             </select>
           </Field>
-          <Field label="Shop grid columns (desktop)">
+          <Field label="Columns on a computer">
             <select
               value={fields.shopGridColumns}
               onChange={(e) => set("shopGridColumns", Number(e.target.value))}
@@ -172,31 +193,25 @@ export function GlobalEditsForm({ settings }: { settings: GlobalEdits }) {
               <option value={5}>5</option>
             </select>
           </Field>
-        </div>
+        </Pair>
         <ToggleSwitch
+          inline
           label="Filter bar on the Shop page"
           checked={fields.shopFilterBar}
           onChange={(v) => set("shopFilterBar", v)}
         />
-      </Card>
+      </Fieldset>
 
-      <Card title="Branding">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Accent color">
-            <div className="flex items-center gap-2">
-              <input
-                type="color"
-                value={fields.accentColor}
-                onChange={(e) => set("accentColor", e.target.value)}
-                className="h-9 w-12 rounded border border-border"
-              />
-              <input
-                value={fields.accentColor}
-                onChange={(e) => set("accentColor", e.target.value)}
-                className="input"
-              />
-            </div>
-          </Field>
+      <Fieldset
+        title="Branding"
+        description="The accent colour is used for buttons and links on your storefront. It does not change this panel."
+      >
+        <Pair>
+          <ColorField
+            label="Accent colour"
+            value={fields.accentColor}
+            onChange={(v) => set("accentColor", v)}
+          />
           <Field label="Heading style">
             <select
               value={fields.headingStyle}
@@ -208,17 +223,20 @@ export function GlobalEditsForm({ settings }: { settings: GlobalEdits }) {
               <option value="titlecase">Title Case</option>
             </select>
           </Field>
-        </div>
-        <Field label="Footer copyright text (use {year} for the current year)">
+        </Pair>
+        <Field label="Footer copyright" hint="Use {year} for the current year.">
           <input
             value={fields.footerCopyrightText}
             onChange={(e) => set("footerCopyrightText", e.target.value)}
             className="input"
           />
         </Field>
-      </Card>
+      </Fieldset>
 
-      <Card title="Site Announcement" description="Leave the text blank to hide the banner entirely.">
+      <Fieldset
+        title="Announcement bar"
+        description="A single line across the top of every page. Leave the text blank to hide it entirely."
+      >
         <Field label="Announcement text">
           <input
             value={fields.announcementText}
@@ -227,31 +245,24 @@ export function GlobalEditsForm({ settings }: { settings: GlobalEdits }) {
             className="input"
           />
         </Field>
-        <Field label="Background color">
-          <div className="flex items-center gap-2">
-            <input
-              type="color"
-              value={fields.announcementBgColor}
-              onChange={(e) => set("announcementBgColor", e.target.value)}
-              className="h-9 w-12 rounded border border-border"
-            />
-            <input
-              value={fields.announcementBgColor}
-              onChange={(e) => set("announcementBgColor", e.target.value)}
-              className="input"
-            />
-          </div>
-        </Field>
-      </Card>
+        <ColorField
+          label="Background colour"
+          value={fields.announcementBgColor}
+          onChange={(v) => set("announcementBgColor", v)}
+        />
+      </Fieldset>
 
-      <Card title="Operations">
+      <Fieldset
+        title="Ordering"
+        description="Ways to buy that sit alongside the normal checkout."
+      >
         <ToggleSwitch
+          inline
           label='"Order via WhatsApp" button on product pages'
           checked={fields.whatsappOrderButton}
           onChange={(v) => set("whatsappOrderButton", v)}
         />
-      </Card>
-
+      </Fieldset>
     </div>
   );
 }

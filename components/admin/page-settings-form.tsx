@@ -4,6 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { updatePageMeta } from "@/app/admin/pages/actions";
 import { SaveButton, type SaveState } from "@/components/ui/save-button";
+import { Field } from "@/components/merchant/form-shell";
+import { Fieldset } from "@/components/ui/primitives";
+import { ToggleSwitch } from "@/components/ui/toggle-switch";
 
 type PageMeta = {
   id: string;
@@ -51,10 +54,11 @@ export function PageSettingsForm({ page }: { page: PageMeta }) {
   }
 
   return (
-    <div className="mt-6 space-y-3 rounded-lg border border-border bg-white p-5">
-      <h2 className="font-serif text-lg font-semibold">Page settings</h2>
-      <div>
-        <label className="text-xs font-semibold uppercase text-ink-soft">Title</label>
+    <Fieldset
+      title="Page settings"
+      description="The name you see in this list, and what a search engine shows when it lists the page."
+    >
+      <Field label="Title">
         <input
           required
           value={title}
@@ -62,22 +66,20 @@ export function PageSettingsForm({ page }: { page: PageMeta }) {
             setTitle(e.target.value);
             markDirty();
           }}
-          className="input mt-1"
+          className="input"
         />
-      </div>
-      <div>
-        <label className="text-xs font-semibold uppercase text-ink-soft">SEO title (optional)</label>
+      </Field>
+      <Field label="SEO title" hint="Optional — the page title falls back to the one above.">
         <input
           value={seoTitle}
           onChange={(e) => {
             setSeoTitle(e.target.value);
             markDirty();
           }}
-          className="input mt-1"
+          className="input"
         />
-      </div>
-      <div>
-        <label className="text-xs font-semibold uppercase text-ink-soft">SEO description (optional)</label>
+      </Field>
+      <Field label="SEO description" hint="Optional — the sentence under the link in search results.">
         <textarea
           value={seoDescription}
           onChange={(e) => {
@@ -85,21 +87,19 @@ export function PageSettingsForm({ page }: { page: PageMeta }) {
             markDirty();
           }}
           rows={2}
-          className="input mt-1"
+          className="input"
         />
-      </div>
-      <label className="flex items-center gap-2 text-sm">
-        <input
-          type="checkbox"
-          checked={isPublished}
-          onChange={(e) => {
-            setIsPublished(e.target.checked);
-            markDirty();
-          }}
-        />
-        Published
-      </label>
+      </Field>
+      <ToggleSwitch
+        inline
+        label="Published"
+        checked={isPublished}
+        onChange={(v) => {
+          setIsPublished(v);
+          markDirty();
+        }}
+      />
       <SaveButton state={dirty ? (saveState === "saving" ? "saving" : "idle") : saveState} onClick={handleSave} />
-    </div>
+    </Fieldset>
   );
 }

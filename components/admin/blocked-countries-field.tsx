@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Globe, Search, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { COUNTRIES } from "@/lib/store-defaults";
 import { cn } from "@/lib/utils";
 
@@ -41,18 +41,12 @@ export function BlockedCountriesField({
     ).slice(0, 6);
   }, [query, value]);
 
+  // No heading of its own: it sits inside a Fieldset that names it. Carrying
+  // both meant the screen said "Hide from certain countries" twice, a centimetre
+  // apart.
   return (
-    <div className="rounded-lg border border-border p-3">
-      <div className="flex items-start gap-2">
-        <Globe className="mt-0.5 h-4 w-4 flex-shrink-0 text-ink-faint" aria-hidden />
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium">Hide from certain countries</p>
-          <p className="mt-0.5 text-xs text-ink-soft">
-            Visitors from these countries see a closed-store page instead of your
-            shop. Your own staff still see it normally.
-          </p>
-
-          <div className="relative mt-2.5">
+    <div className="min-w-0">
+          <div className="relative">
             <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-faint" aria-hidden />
             <input
               type="search"
@@ -60,7 +54,7 @@ export function BlockedCountriesField({
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search for a country to add…"
               aria-label="Search for a country to block"
-              className="h-9 w-full rounded-lg border border-border bg-surface pl-8 pr-3 text-sm outline-none transition-colors focus:border-brand-500"
+              className="input pl-8"
             />
             {matches.length > 0 && (
               <ul className="absolute left-0 right-0 top-full z-20 mt-1 overflow-hidden rounded-lg border border-border bg-surface shadow-lg">
@@ -84,7 +78,7 @@ export function BlockedCountriesField({
           </div>
 
           {chosen.length > 0 ? (
-            <ul className="mt-2.5 flex flex-wrap gap-1.5">
+            <ul className="mt-2 flex flex-wrap gap-1.5">
               {chosen.map((c) => (
                 <li key={c.code}>
                   <button
@@ -103,7 +97,7 @@ export function BlockedCountriesField({
               ))}
             </ul>
           ) : (
-            <p className="mt-2.5 text-xs text-ink-faint">
+            <p className="mt-2 text-xs text-ink-faint">
               Not hidden anywhere. Your shop is visible worldwide.
             </p>
           )}
@@ -120,8 +114,6 @@ export function BlockedCountriesField({
           {/* What the form actually submits. One field, so the server reads a
               single value rather than reassembling a list from many. */}
           <input type="hidden" name="blockedCountries" value={value.join(",")} />
-        </div>
-      </div>
     </div>
   );
 }

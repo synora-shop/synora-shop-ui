@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { InfoPopover } from "@/components/ui/info-popover";
 import { cn } from "@/lib/utils";
 
 /**
@@ -27,13 +28,51 @@ export function FormHeading({
   );
 }
 
+/**
+ * The one label style for a form control, anywhere in the panel.
+ *
+ * `Field` wraps its control and needs no id; this one is for the cases that
+ * cannot wrap — a control with an info popover beside its label, because a
+ * button inside a `<label>` is invalid and would steal the click that should
+ * have gone to the input.
+ */
+export function FieldLabel({
+  htmlFor,
+  info,
+  children,
+}: {
+  /**
+   * The control this names. Leave it out only when there is no single control
+   * to name — a gallery, a drop zone — and it renders as a caption instead: a
+   * `<label>` pointing at nothing is worse than no label at all, because a
+   * screen reader announces it and then lands the user somewhere unrelated.
+   */
+  htmlFor?: string;
+  info?: string;
+  children: React.ReactNode;
+}) {
+  const text = "text-sm font-medium text-ink";
+  return (
+    <div className="mb-1.5 flex items-center gap-1.5">
+      {htmlFor ? (
+        <label htmlFor={htmlFor} className={text}>
+          {children}
+        </label>
+      ) : (
+        <span className={text}>{children}</span>
+      )}
+      {info && <InfoPopover text={info} />}
+    </div>
+  );
+}
+
 /** A labelled field. The label is always present — placeholders are not labels. */
 export function Field({
   label,
   hint,
   children,
 }: {
-  label: string;
+  label: React.ReactNode;
   hint?: React.ReactNode;
   children: React.ReactNode;
 }) {
@@ -44,6 +83,11 @@ export function Field({
       {hint && <span className="mt-1.5 block text-xs leading-snug text-ink-soft">{hint}</span>}
     </label>
   );
+}
+
+/** The hint under a control, for the cases `Field` cannot wrap. */
+export function FieldHint({ children }: { children: React.ReactNode }) {
+  return <p className="mt-1.5 text-xs leading-snug text-ink-soft">{children}</p>;
 }
 
 /**

@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { updateSettings } from "@/app/admin/settings/actions";
 import { type SaveState } from "@/components/ui/save-button";
 import { useEditor } from "@/components/admin/use-editor";
+import { Fieldset } from "@/components/ui/primitives";
+import { Field } from "@/components/merchant/form-shell";
 
 type Settings = {
   whatsappNumber: string;
@@ -28,7 +30,14 @@ function toFields(s: Settings) {
   };
 }
 
-export function StoreSettingsForm({ settings }: { settings: Settings }) {
+export function StoreSettingsForm({
+  settings,
+  currency,
+}: {
+  settings: Settings;
+  /** The store's own currency, so the money fields are not labelled in somebody else's. */
+  currency: string;
+}) {
   const router = useRouter();
   const [fields, setFields] = useState(toFields(settings));
   const [saved, setSaved] = useState(fields);
@@ -66,81 +75,87 @@ export function StoreSettingsForm({ settings }: { settings: Settings }) {
   });
 
   return (
-    <div className="mt-6 max-w-xl space-y-5">
-      <div>
-        <label className="text-xs font-semibold uppercase text-ink-soft">
-          WhatsApp Number (E.164, no leading +, e.g. 923001234567)
-        </label>
-        <input value={fields.whatsappNumber} onChange={(e) => set("whatsappNumber", e.target.value)} className="input mt-1" />
-      </div>
-
-      <div>
-        <label className="text-xs font-semibold uppercase text-ink-soft">
-          Contact Email (shown on the Contact page)
-        </label>
-        <input
-          type="email"
-          value={fields.contactEmail}
-          onChange={(e) => set("contactEmail", e.target.value)}
-          className="input mt-1"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div>
-          <label className="text-xs font-semibold uppercase text-ink-soft">Shipping Fee (PKR)</label>
+    <div className="space-y-2.5">
+      <Fieldset
+        title="How customers reach you"
+        description="Both appear on your storefront, so use an address and a number you actually watch."
+      >
+        <Field
+          label="WhatsApp number"
+          hint="Country code first, no plus sign and no spaces — 923001234567."
+        >
           <input
-            type="number"
-            value={fields.shippingFee}
-            onChange={(e) => set("shippingFee", e.target.value)}
-            className="input mt-1"
+            inputMode="numeric"
+            value={fields.whatsappNumber}
+            onChange={(e) => set("whatsappNumber", e.target.value)}
+            className="input"
           />
-        </div>
-        <div>
-          <label className="text-xs font-semibold uppercase text-ink-soft">
-            Free Shipping Threshold (PKR, optional)
-          </label>
+        </Field>
+        <Field label="Contact email" hint="Shown on your Contact page.">
           <input
-            type="number"
-            value={fields.freeShippingThreshold}
-            onChange={(e) => set("freeShippingThreshold", e.target.value)}
-            className="input mt-1"
+            type="email"
+            value={fields.contactEmail}
+            onChange={(e) => set("contactEmail", e.target.value)}
+            className="input"
           />
+        </Field>
+      </Fieldset>
+
+      <Fieldset
+        title="Shipping"
+        description="What delivery costs, and when you stop charging for it."
+      >
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <Field label={`Shipping fee (${currency})`}>
+            <input
+              type="number"
+              min={0}
+              value={fields.shippingFee}
+              onChange={(e) => set("shippingFee", e.target.value)}
+              className="input"
+            />
+          </Field>
+          <Field label={`Free above (${currency})`} hint="Leave blank to always charge.">
+            <input
+              type="number"
+              min={0}
+              value={fields.freeShippingThreshold}
+              onChange={(e) => set("freeShippingThreshold", e.target.value)}
+              className="input"
+            />
+          </Field>
         </div>
-      </div>
+      </Fieldset>
 
-      <div>
-        <label className="text-xs font-semibold uppercase text-ink-soft">
-          Bank Transfer Details (shown at checkout)
-        </label>
-        <textarea
-          value={fields.bankAccountDetails}
-          onChange={(e) => set("bankAccountDetails", e.target.value)}
-          rows={3}
-          className="input mt-1"
-        />
-      </div>
-
-      <div>
-        <label className="text-xs font-semibold uppercase text-ink-soft">JazzCash Details</label>
-        <textarea
-          value={fields.jazzcashAccountDetails}
-          onChange={(e) => set("jazzcashAccountDetails", e.target.value)}
-          rows={2}
-          className="input mt-1"
-        />
-      </div>
-
-      <div>
-        <label className="text-xs font-semibold uppercase text-ink-soft">EasyPaisa Details</label>
-        <textarea
-          value={fields.easypaisaAccountDetails}
-          onChange={(e) => set("easypaisaAccountDetails", e.target.value)}
-          rows={2}
-          className="input mt-1"
-        />
-      </div>
-
+      <Fieldset
+        title="Payment details"
+        description="Shown at checkout to a customer who picks that method. Leave one blank and it is not offered."
+      >
+        <Field label="Bank transfer">
+          <textarea
+            value={fields.bankAccountDetails}
+            onChange={(e) => set("bankAccountDetails", e.target.value)}
+            rows={3}
+            className="input"
+          />
+        </Field>
+        <Field label="JazzCash">
+          <textarea
+            value={fields.jazzcashAccountDetails}
+            onChange={(e) => set("jazzcashAccountDetails", e.target.value)}
+            rows={2}
+            className="input"
+          />
+        </Field>
+        <Field label="EasyPaisa">
+          <textarea
+            value={fields.easypaisaAccountDetails}
+            onChange={(e) => set("easypaisaAccountDetails", e.target.value)}
+            rows={2}
+            className="input"
+          />
+        </Field>
+      </Fieldset>
     </div>
   );
 }
