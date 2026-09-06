@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { X } from "lucide-react";
 import { useAdminNav } from "@/lib/admin-nav-store";
 import { resolveNav } from "@/lib/admin-nav";
-import { SynoraAppMark } from "@/components/ui/synora-app-mark";
+import { SynoraAppMark } from "@/components/ui/synora-marks";
 import { cn } from "@/lib/utils";
 
 /**
@@ -52,7 +52,7 @@ export function AdminSidebar() {
             instead, dead centre, so this header is hidden there. */}
         <div className="flex h-14 shrink-0 items-center justify-between px-4 lg:hidden">
           <Link href="/admin" onClick={() => setOpen(false)}>
-            <SynoraAppMark color="var(--color-brand-500)" tone="onLight" />
+            <SynoraAppMark />
           </Link>
           <button
             type="button"

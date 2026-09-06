@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { SynoraAppMark } from "@/components/ui/synora-app-mark";
+import { SynoraAppMark } from "@/components/ui/synora-marks";
 
 /**
  * The shell for merchant account flows: signing up, signing in, confirming an
@@ -19,7 +19,7 @@ export default function MerchantLayout({ children }: LayoutProps<"/merchant">) {
           href="/"
           className="rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-4"
         >
-          <SynoraAppMark color="var(--color-brand-500)" tone="onLight" />
+          <SynoraAppMark />
         </Link>
       </header>
 

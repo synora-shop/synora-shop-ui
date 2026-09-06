@@ -269,6 +269,7 @@ model Shop {
   locations         Location[]
   metafields        Metafield[]
   media             MediaAsset[]
+  visits            Visit[]
   siteTexts         SiteText[]
   settings          StoreSettings[]
   themes            ThemeSettings[]
@@ -905,6 +906,39 @@ model StoreSettings {
   shopFilterBar Boolean @default(true)
 
   @@unique([shopId])
+}
+
+/// One visit to a storefront page.
+///
+/// The documentation asks for "visits grouped by IP address", and that phrase is
+/// doing the work: this counts *people*, not requests, by storing a hash of the
+/// address rather than the address itself. The hash is salted with the server's
+/// own secret, so the rows cannot be turned back into addresses even by someone
+/// holding the database — a visitor count should not become a list of who
+/// visited.
+///
+/// Storefront only. Nobody wants their own admin sessions counted as traffic.
+///
+/// Written on every page render, so it is deliberately the smallest row that can
+/// answer the question, and it is pruned — see lib/retention.ts. Without that it
+/// is the fastest-growing table on the platform and the one that eventually
+/// fills the disk.
+model Visit {
+  id        String   @id @default(cuid())
+  shop      Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId    String
+  /// The page that was viewed, e.g. "/product/blue-shirt".
+  path      String
+  /// Salted SHA-256 of the visitor's address. Never the address itself.
+  visitor   String
+  /// Two-letter country from the edge, when the platform knows it.
+  country   String?
+  /// Where they came from — host only, never the full URL with its query.
+  referrer  String?
+  createdAt DateTime @default(now())
+
+  @@index([shopId, createdAt])
+  @@index([shopId, visitor])
 }
 
 /// One file a merchant has uploaded, and where it lives.

@@ -1,36 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Shop by Synora Digitals">
-  <title>Shop by Synora Digitals</title>
-  <!--
-    The platform's app icon.
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 54.51 54.51">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #fafafa;
+      }
 
-    What was here before was Nautaar's wordmark, left behind from when this
-    repo was a single-tenant store. The platform and every merchant storefront
-    carried one particular shop's branding on the browser tab, so a merchant's
-    own customers saw another merchant's logo.
-
-    Same idea as public/logo.svg: the product's own window, a settings panel
-    beside a live preview. Drawn differently, because that mark is a ring in a
-    single colour, and at tab size its outlined frame and filled panel merge
-    into one blob that reads as a notebook.
-
-    So the window is solid here and the detail is knocked out of it. Three
-    shapes, all high contrast, none thinner than two device pixels at 16px: the
-    field, the divider that makes the left column a panel, and two rows that
-    say the panel has settings in it.
-
-    Petrol (brand-600, the AAA line on white) rather than Synora's indigo. This
-    is a product of that company, not the company; the family resemblance is the
-    tile and the geometry, not a borrowed hue.
-  -->
-  <rect width="64" height="64" rx="14" fill="#2f29c9"/>
-
-  <!-- The window. -->
-  <rect x="13" y="15" width="38" height="34" rx="5" fill="#ffffff"/>
-
-  <!-- The divider: what turns the left edge into a panel rather than a margin. -->
-  <rect x="24" y="15" width="2.6" height="34" fill="#2f29c9"/>
-
-  <!-- Two rows in the preview field. Solid, so they survive at 16px. -->
-  <rect x="31" y="24" width="14" height="3.4" rx="1.7" fill="#2f29c9"/>
-  <rect x="31" y="33" width="9" height="3.4" rx="1.7" fill="#2f29c9"/>
+      .cls-2 {
+        fill: #333;
+      }
+    </style>
+  </defs>
+  <g id="Layer_1-2" data-name="Layer 1">
+    <rect class="cls-1" width="54.51" height="54.51" rx="11.39" ry="11.39"/>
+    <path class="cls-2" d="M43.78,18.1c-2.1,0-3.8.71-4.98,2.04v-1.64h-2.18v19.41h2.18v-6.89c1.19,1.37,2.92,2.12,4.98,2.12,4.19,0,7.24-3.19,7.24-7.58s-2.97-7.46-7.24-7.46ZM43.77,31.01c-2.92,0-4.96-2.23-4.96-5.46s1.99-5.35,4.96-5.35,5.06,2.19,5.06,5.35c0,3.59-2.55,5.46-5.06,5.46ZM27.89,18.1c-2.08,0-3.8.71-4.98,2.04v-1.64h-2.17v19.41h2.17v-6.91c1.19,1.38,2.93,2.14,4.98,2.14,4.21,0,7.25-3.19,7.25-7.58s-2.97-7.46-7.25-7.46ZM27.88,31.01c-2.92,0-4.96-2.23-4.96-5.46s2-5.35,4.96-5.35,5.06,2.19,5.06,5.35c0,3.59-2.55,5.46-5.06,5.46ZM15.71,18.5v1.64c-1.18-1.33-2.89-2.04-4.98-2.04-4.28,0-7.24,3.07-7.24,7.46s3.04,7.58,7.24,7.58c2.06,0,3.78-.75,4.98-2.12v1.71h2.15v-14.23h-2.15ZM10.75,31.01c-2.51,0-5.06-1.86-5.06-5.46,0-3.15,2.08-5.35,5.06-5.35s4.96,2.15,4.96,5.35-2.04,5.46-4.96,5.46Z"/>
+  </g>
 </svg>

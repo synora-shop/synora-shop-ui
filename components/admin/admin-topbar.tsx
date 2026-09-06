@@ -7,8 +7,6 @@ import { signOut } from "next-auth/react";
 import {
   Bell,
   ChevronRight,
-  ExternalLink,
-  Info,
   LogOut,
   Menu,
   Search,
@@ -17,7 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { SettingsSearch } from "@/components/customizer/settings-search";
-import { SynoraAppMark } from "@/components/ui/synora-app-mark";
+import { ExternalLinkIcon, InfoIcon, SynoraAppMark } from "@/components/ui/synora-marks";
 import { BusinessTypeDialog } from "@/components/admin/business-type-dialog";
 import { resolveNav } from "@/lib/admin-nav";
 import { useAdminNav } from "@/lib/admin-nav-store";
@@ -81,7 +79,7 @@ export function AdminTopbar({
           title, and the mark would sit on top of the word it is beside. */}
       <span className="pointer-events-none fixed inset-x-0 top-0 z-50 hidden h-[76px] items-center justify-center xl:flex">
         <Link href="/admin" className="pointer-events-auto">
-          <SynoraAppMark color="var(--color-brand-500)" tone="onLight" />
+          <SynoraAppMark />
         </Link>
       </span>
 
@@ -135,7 +133,7 @@ export function AdminTopbar({
             aria-label="Which type fits your business?"
             className="rounded-full p-2 text-control-soft transition-colors hover:bg-panel hover:text-ink"
           >
-            <Info className="h-4 w-4" />
+            <InfoIcon />
           </button>
           <button
             type="button"
@@ -256,7 +254,7 @@ export function AdminTopbar({
                     >
                       <Store className="h-4 w-4 text-control-soft" />
                       Preview store
-                      <ExternalLink className="ml-auto h-3 w-3 opacity-60" />
+                      <ExternalLinkIcon className="ml-auto opacity-60" />
                     </a>
                     <Link
                       href="/admin/account"
