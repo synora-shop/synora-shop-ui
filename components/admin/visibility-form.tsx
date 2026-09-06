@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import { AlertTriangle } from "lucide-react";
 import { saveVisibility } from "@/app/admin/preferences/actions";
 import { BlockedCountriesField } from "@/components/admin/blocked-countries-field";
+import { useEditor } from "@/components/admin/use-editor";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
-import { SaveButton, type SaveState } from "@/components/ui/save-button";
 import { Card } from "@/components/ui/primitives";
 import type { Visibility } from "@/lib/visibility";
 
@@ -23,7 +23,7 @@ export function VisibilityForm({ initial }: { initial: Visibility }) {
   const router = useRouter();
   const [fields, setFields] = useState<Visibility>(initial);
   const [saved, setSaved] = useState<Visibility>(initial);
-  const [state, setState] = useState<SaveState>("idle");
+  const [saving, setSaving] = useState(false);
 
   const dirty =
     fields.maintenanceMode !== saved.maintenanceMode ||
@@ -33,24 +33,24 @@ export function VisibilityForm({ initial }: { initial: Visibility }) {
 
   function set<K extends keyof Visibility>(key: K, value: Visibility[K]) {
     setFields((f) => ({ ...f, [key]: value }));
-    if (state !== "idle") setState("idle");
   }
 
   async function save() {
-    setState("saving");
+    setSaving(true);
     try {
       const result = await saveVisibility(fields);
-      if (result.error) {
-        setState("error");
-        return;
-      }
+      if (result.error) throw new Error(result.error);
       setSaved(fields);
-      setState("saved");
       router.refresh();
-    } catch {
-      setState("error");
+    } finally {
+      setSaving(false);
     }
   }
+
+  // Discard and Save are in the action bar with every other screen's, and
+  // registering here guards the work against the tab closing, a link, and the
+  // back button — see components/admin/use-editor.ts.
+  useEditor({ dirty, saving, onSave: save, onDiscard: () => setFields(saved) });
 
   return (
     <div className="space-y-4">
@@ -110,12 +110,6 @@ export function VisibilityForm({ initial }: { initial: Visibility }) {
         </div>
       </Card>
 
-      <SaveButton
-        state={dirty ? (state === "saving" ? "saving" : "idle") : state}
-        onClick={save}
-        size="lg"
-        idleLabel="Save preferences"
-      />
     </div>
   );
 }

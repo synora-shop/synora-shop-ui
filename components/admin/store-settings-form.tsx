@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { updateSettings } from "@/app/admin/settings/actions";
-import { SaveButton, type SaveState } from "@/components/ui/save-button";
+import { type SaveState } from "@/components/ui/save-button";
+import { useEditor } from "@/components/admin/use-editor";
 
 type Settings = {
   whatsappNumber: string;
@@ -53,6 +54,16 @@ export function StoreSettingsForm({ settings }: { settings: Settings }) {
       setSaveState("error");
     }
   }
+
+  // Discard and Save live in the action bar with every other screen's, and
+  // registering guards the work against the tab closing, a link, and the back
+  // button — see components/admin/use-editor.ts.
+  useEditor({
+    dirty,
+    saving: saveState === "saving",
+    onSave: handleSave,
+    onDiscard: () => setFields(saved),
+  });
 
   return (
     <div className="mt-6 max-w-xl space-y-5">
@@ -130,12 +141,6 @@ export function StoreSettingsForm({ settings }: { settings: Settings }) {
         />
       </div>
 
-      <SaveButton
-        state={dirty ? (saveState === "saving" ? "saving" : "idle") : saveState}
-        onClick={handleSave}
-        size="lg"
-        idleLabel="Save Settings"
-      />
     </div>
   );
 }

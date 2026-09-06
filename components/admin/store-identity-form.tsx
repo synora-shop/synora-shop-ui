@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { SingleImageField } from "@/components/admin/single-image-field";
-import { Button, Card } from "@/components/ui/primitives";
+import { useEditor } from "@/components/admin/use-editor";
+import { Card } from "@/components/ui/primitives";
 import { saveStoreIdentity, type StoreIdentity } from "@/app/admin/identity-actions";
 import { useToast } from "@/components/ui/toast";
 
@@ -16,9 +17,12 @@ import { useToast } from "@/components/ui/toast";
  */
 export function StoreIdentityForm({ initial }: { initial: StoreIdentity }) {
   const [values, setValues] = useState(initial);
-  const [pending, startTransition] = useTransition();
+  // What the server last accepted, not what it sent on first render — without
+  // this the form stays "dirty" after a successful save until a refresh lands.
+  const [saved, setSaved] = useState(initial);
+  const [pending, setPending] = useState(false);
   const toast = useToast();
-  const dirty = JSON.stringify(values) !== JSON.stringify(initial);
+  const dirty = JSON.stringify(values) !== JSON.stringify(saved);
 
   const set = <K extends keyof StoreIdentity>(key: K, value: StoreIdentity[K]) =>
     setValues((v) => ({ ...v, [key]: value }));
@@ -27,12 +31,23 @@ export function StoreIdentityForm({ initial }: { initial: StoreIdentity }) {
     "h-10 w-full rounded-lg border border-border bg-surface px-3 text-sm outline-none transition-colors focus:border-brand-500";
   const label = "text-xs font-semibold uppercase tracking-wide text-ink-soft";
 
-  function save() {
-    startTransition(async () => {
+  // Returns a promise so the action bar can wait for it and show "Saving…"
+  // — a fire-and-forget transition would resolve the moment it started.
+  async function save() {
+    setPending(true);
+    try {
       await saveStoreIdentity(values);
+      setSaved(values);
       toast.success("Saved");
-    });
+    } finally {
+      setPending(false);
+    }
   }
+
+  // Discard and Save now live in the action bar at the top of the screen, with
+  // every other screen's — see components/admin/use-editor.ts. Registering here
+  // also guards the work against the tab closing, a link, and the back button.
+  useEditor({ dirty, saving: pending, onSave: save, onDiscard: () => setValues(saved) });
 
   return (
     <div className="space-y-4 lg:grid lg:grid-cols-2 lg:items-start lg:gap-4 lg:space-y-0">
@@ -134,18 +149,6 @@ export function StoreIdentityForm({ initial }: { initial: StoreIdentity }) {
         </div>
       </Card>
 
-      {/* Discard and Save on every editable screen, per the documentation.
-          Discard is only offered once there is something to discard. */}
-      <div className="sticky bottom-4 flex items-center justify-end gap-2 lg:col-span-2">
-        {dirty && (
-          <Button variant="secondary" onClick={() => setValues(initial)} disabled={pending}>
-            Discard
-          </Button>
-        )}
-        <Button variant="primary" onClick={save} disabled={!dirty || pending}>
-          {pending ? "Saving…" : "Save"}
-        </Button>
-      </div>
     </div>
   );
 }

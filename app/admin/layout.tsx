@@ -4,6 +4,7 @@ import { shopSession } from "@/lib/auth-guard";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { AdminTopbar, type Alert } from "@/components/admin/admin-topbar";
 import { AdminNavBar } from "@/components/admin/admin-navbar";
+import { EditorBar } from "@/components/admin/editor-bar";
 import { RefreshButton } from "@/components/admin/refresh-button";
 import { getStoreSettings } from "@/lib/data/settings";
 import { canonicalUrl, currentShop, db } from "@/lib/data/shop";
@@ -67,6 +68,10 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
               leaves room for the floating save bar on editable screens. */}
           <main className="gutter-fluid min-w-0 flex-1 space-y-3 pb-24">
             <AdminNavBar businessType={schemaType} />
+            {/* Discard and Save for whatever screen is open. Draws nothing on a
+                screen with nothing to save, so a list page keeps its own action
+                bar and a form page gets one without building it. */}
+            <EditorBar />
             <div className="rounded-2xl bg-panel p-4 sm:p-5">{children}</div>
           </main>
         </div>

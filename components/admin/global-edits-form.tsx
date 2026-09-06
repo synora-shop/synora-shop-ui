@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AlertTriangle } from "lucide-react";
 import { updateGlobalEdits } from "@/app/admin/settings/actions";
-import { SaveButton, type SaveState } from "@/components/ui/save-button";
+import { type SaveState } from "@/components/ui/save-button";
+import { useEditor } from "@/components/admin/use-editor";
 import { BlockedCountriesField } from "@/components/admin/blocked-countries-field";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { SHOP_SORT_LABELS, type GlobalEdits } from "@/lib/global-edits";
@@ -60,6 +61,16 @@ export function GlobalEditsForm({ settings }: { settings: GlobalEdits }) {
       setSaveState("error");
     }
   }
+
+  // Discard and Save live in the action bar with every other screen's, and
+  // registering guards the work against the tab closing, a link, and the back
+  // button — see components/admin/use-editor.ts.
+  useEditor({
+    dirty,
+    saving: saveState === "saving",
+    onSave: handleSave,
+    onDiscard: () => setFields(saved),
+  });
 
   return (
     <div className="mt-6 max-w-3xl space-y-6">
@@ -241,12 +252,6 @@ export function GlobalEditsForm({ settings }: { settings: GlobalEdits }) {
         />
       </Card>
 
-      <SaveButton
-        state={dirty ? (saveState === "saving" ? "saving" : "idle") : saveState}
-        onClick={handleSave}
-        size="lg"
-        idleLabel="Save Global Edits"
-      />
     </div>
   );
 }

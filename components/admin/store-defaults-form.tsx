@@ -5,9 +5,7 @@ import { useRouter } from "next/navigation";
 import { saveStoreDefaults } from "@/app/admin/settings/actions";
 import { Card } from "@/components/ui/primitives";
 import { InfoPopover } from "@/components/ui/info-popover";
-import { StickySaveBar } from "@/components/ui/sticky-save-bar";
-import { useUnsavedChanges } from "@/components/ui/use-unsaved-changes";
-import { useConfirm } from "@/components/ui/confirm-dialog";
+import { useEditor } from "@/components/admin/use-editor";
 import { useToast } from "@/components/ui/toast";
 import type { SaveState } from "@/components/ui/save-button";
 import {
@@ -31,21 +29,10 @@ export function StoreDefaultsForm({ initial }: { initial: StoreDefaults }) {
   const [values, setValues] = useState<StoreDefaults>(initial);
   const [saved, setSaved] = useState<StoreDefaults>(initial);
   const [saveState, setSaveState] = useState<SaveState>("idle");
-  const { confirm, dialog } = useConfirm();
   const toast = useToast();
   const router = useRouter();
 
   const dirty = useMemo(() => JSON.stringify(values) !== JSON.stringify(saved), [values, saved]);
-
-  useUnsavedChanges(dirty, () =>
-    confirm({
-      title: "Leave without saving?",
-      description: "Your store defaults haven't been saved.",
-      confirmLabel: "Leave and lose changes",
-      cancelLabel: "Stay here",
-      danger: true,
-    })
-  );
 
   // Switching system re-picks the weight unit, so the two can never disagree on
   // screen — an imperial store offering grams is a contradiction.
@@ -82,12 +69,24 @@ export function StoreDefaultsForm({ initial }: { initial: StoreDefaults }) {
     }
   }
 
+  // Discard and Save live in the action bar with every other screen's, and
+  // registering installs the leave-guard this form used to carry alone — see
+  // components/admin/use-editor.ts.
+  useEditor({
+    dirty,
+    saving: saveState === "saving",
+    onSave: handleSave,
+    onDiscard: () => {
+      setValues(saved);
+      setSaveState("idle");
+    },
+  });
+
   const weightOptions = WEIGHT_UNITS.filter((w) => w.system === values.unitSystem);
   const label = "flex items-center gap-1.5 text-xs font-medium text-ink";
 
   return (
     <>
-      {dialog}
       <Card className="p-5">
         <h2 className="text-sm font-semibold">Store defaults</h2>
         <p className="mt-0.5 text-xs text-ink-soft">
@@ -205,17 +204,6 @@ export function StoreDefaultsForm({ initial }: { initial: StoreDefaults }) {
         </div>
       </Card>
 
-      <StickySaveBar
-        dirty={dirty}
-        saveState={saveState}
-        onSave={handleSave}
-        onDiscard={() => {
-          setValues(saved);
-          setSaveState("idle");
-          toast.info("Changes discarded.");
-        }}
-        saveLabel="Save defaults"
-      />
     </>
   );
 }
