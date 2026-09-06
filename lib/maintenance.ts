@@ -1,4 +1,6 @@
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { GEO_COUNTRY_HEADER, isBlocked, normaliseCountry } from "@/lib/geo-block";
 import { shopSession } from "@/lib/auth-guard";
 import { currentShop, isServingCustomers } from "@/lib/data/shop";
 import { getStoreSettings } from "@/lib/data/settings";
@@ -17,7 +19,7 @@ import { getStoreSettings } from "@/lib/data/settings";
  * on holiday" and "this store has closed" send a customer to very different
  * next actions.
  */
-export type ClosedReason = "paused" | "closed" | "suspended" | "maintenance";
+export type ClosedReason = "paused" | "closed" | "suspended" | "maintenance" | "blocked";
 
 export async function storefrontClosure(): Promise<ClosedReason | null> {
   const shop = await currentShop();
@@ -28,7 +30,20 @@ export async function storefrontClosure(): Promise<ClosedReason | null> {
   }
 
   const settings = await getStoreSettings();
-  return settings.maintenanceMode ? "maintenance" : null;
+  if (settings.maintenanceMode) return "maintenance";
+
+  // Country blocking rides on the gate every storefront page already calls,
+  // rather than a check of its own in each of them — one of those would
+  // eventually be forgotten on a new page and the shop would leak through it.
+  //
+  // Read last because it costs a header lookup, and because a shop that is shut
+  // for any other reason is shut for everyone anyway.
+  if (settings.blockedCountries.length > 0) {
+    const country = normaliseCountry((await headers()).get(GEO_COUNTRY_HEADER));
+    if (isBlocked(country, settings.blockedCountries)) return "blocked";
+  }
+
+  return null;
 }
 
 /**

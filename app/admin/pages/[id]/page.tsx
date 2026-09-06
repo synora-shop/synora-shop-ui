@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { PageCrumb } from "@/components/admin/page-crumb";
 import { getPageById } from "@/lib/data/pages";
 import { SectionList } from "@/components/admin/section-list";
 import { PageSettingsForm } from "@/components/admin/page-settings-form";
@@ -16,8 +17,8 @@ export default async function EditPagePage(props: PageProps<"/admin/pages/[id]">
 
   return (
     <div>
-      <h1 className="font-serif text-3xl font-semibold">{page.title}</h1>
-      <p className="mt-1 text-sm text-ink-soft">{page.slug === "home" ? "/" : `/p/${page.slug}`}</p>
+      <PageCrumb label={page.title} />
+      <p className="text-sm text-ink-soft">{page.slug === "home" ? "/" : `/p/${page.slug}`}</p>
 
       <PageSettingsForm page={page} />
 

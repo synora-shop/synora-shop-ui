@@ -19,8 +19,7 @@ export default async function AdminSiteTextPage() {
 
   return (
     <div>
-      <h1 className="font-serif text-3xl font-semibold">Site Text</h1>
-      <p className="mt-1 text-sm text-ink-soft">
+      <p className="text-sm text-ink-soft">
         Button labels and small pieces of copy used across the site. Editing more of these
         rolls out over time, this is the first batch.
       </p>

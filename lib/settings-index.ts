@@ -48,20 +48,38 @@ export function groupAnchor(title: string): string {
  * settings inside them come from the schemas below.
  */
 const TOOLS: SettingEntry[] = [
-  { id: "tool-customizer", label: "Customize", info: "Lay out pages section by section with a live preview.", path: ["Online store"], href: "/admin/customize", keywords: ["sections", "layout", "homepage", "pages", "drag"] },
-  { id: "tool-theme", label: "Colours & type", info: "Colours, typography, logo, favicon and shape for the whole store.", path: ["Online store"], href: "/admin/theme", keywords: ["design", "style", "branding", "look"] },
-  { id: "tool-fonts", label: "Fonts", info: "Upload your own primary and secondary fonts.", path: ["Online store"], href: "/admin/fonts", keywords: ["typeface", "woff", "otf", "ttf", "upload", "typography"] },
-  { id: "tool-buttons", label: "Sticky buttons", info: "Floating WhatsApp, Instagram and chat buttons, and where they appear.", path: ["Online store"], href: "/admin/buttons", keywords: ["whatsapp", "chat", "instagram", "floating", "contact", "bubble"] },
-  { id: "tool-redirects", label: "Links & redirects", info: "Keep old addresses working, and find menu links that lead nowhere.", path: ["Online store"], href: "/admin/redirects", keywords: ["404", "broken", "url", "moved", "seo"] },
-  { id: "tool-products", label: "Products", info: "Your catalog: prices, images, stock and descriptions.", path: ["Admin"], href: "/admin/products", keywords: ["catalog", "items", "stock", "price", "inventory"] },
-  { id: "tool-categories", label: "Categories", info: "Collections that group your products.", path: ["Admin"], href: "/admin/categories", keywords: ["collections", "groups", "taxonomy"] },
-  { id: "tool-bin", label: "Bin", info: "Deleted products, recoverable before they're gone for good.", path: ["Admin"], href: "/admin/bin", keywords: ["trash", "deleted", "restore", "recover"] },
-  { id: "tool-pages", label: "Pages", info: "Custom pages like About or Size Guide.", path: ["Admin"], href: "/admin/pages", keywords: ["about", "faq", "content", "custom page"] },
-  { id: "tool-menus", label: "Menus", info: "What appears in the header and footer navigation.", path: ["Admin"], href: "/admin/menus", keywords: ["navigation", "nav", "header", "footer", "links"] },
-  { id: "tool-site-text", label: "Site Text", info: "Wording of buttons and labels across the store.", path: ["Admin"], href: "/admin/site-text", keywords: ["copy", "wording", "labels", "translate", "strings"] },
-  { id: "tool-metafields", label: "Custom fields", info: "Extra information on products, categories and pages that your theme can read. Shopify calls these metafields.", path: ["Admin"], href: "/admin/metafields", keywords: ["metafield", "metafields", "custom", "extra", "attribute", "specification", "care", "size guide"] },
-  { id: "tool-orders", label: "Orders", info: "Customer orders and their status.", path: ["Admin"], href: "/admin/orders", keywords: ["sales", "purchases", "customers"] },
-  { id: "tool-settings", label: "Settings", info: "Store-wide settings like contact details and payment methods.", path: ["Admin"], href: "/admin/settings", keywords: ["store", "config", "whatsapp", "payment", "shipping"] },
+  // The breadcrumb is the sidebar section and then the tab, which is what the
+  // heading bar shows once you arrive. A result that teaches you where a screen
+  // lives is worth more than one that only takes you there.
+  { id: "tool-home", label: "Home", info: "Your store's name, logo, address and phone number.", path: ["Home"], href: "/admin", keywords: ["store name", "logo", "address", "phone", "identity", "contact"] },
+  { id: "tool-analytics", label: "Analytics", info: "Revenue, orders and where your visitors come from.", path: ["Analytics"], href: "/admin/analytics", keywords: ["revenue", "sales", "visits", "traffic", "dashboard", "figures", "reports"] },
+
+  { id: "tool-products", label: "Products", info: "Your catalog: prices, images, stock and descriptions.", path: ["Products", "Products"], href: "/admin/products", keywords: ["catalog", "items", "stock", "price", "inventory", "dishes", "menu"] },
+  { id: "tool-categories", label: "Categories", info: "Collections that group your products.", path: ["Products", "Categories"], href: "/admin/categories", keywords: ["collections", "groups", "taxonomy", "courses"] },
+  { id: "tool-orders", label: "Orders", info: "Customer orders and their status.", path: ["Products", "Orders"], href: "/admin/orders", keywords: ["sales", "purchases", "fulfilment", "shipping"] },
+  { id: "tool-customers", label: "Customers", info: "Everyone who has bought from you, and what they're worth.", path: ["Products", "Customers"], href: "/admin/customers", keywords: ["buyers", "people", "accounts", "repeat", "lifetime"] },
+  { id: "tool-enquiries", label: "Enquiries", info: "Questions about bulk and made-to-order products.", path: ["Products", "Enquiries"], href: "/admin/enquiries", keywords: ["leads", "questions", "quotes", "inbox", "contact"] },
+  { id: "tool-bin", label: "Bin", info: "Deleted products and orders, recoverable before they're gone for good.", path: ["Products", "Bin"], href: "/admin/bin", keywords: ["trash", "deleted", "restore", "recover"] },
+
+  { id: "tool-pages", label: "Pages", info: "Custom pages like About or Size Guide.", path: ["Your App", "Pages"], href: "/admin/pages", keywords: ["about", "faq", "content", "custom page"] },
+  { id: "tool-theme-page", label: "Themes", info: "Which theme your store wears, and a preview of it running on your own content.", path: ["Your App", "Themes"], href: "/admin/theme", keywords: ["theme", "look", "template", "preview", "activate", "design"] },
+  { id: "tool-data", label: "Data", info: "Every picture you have uploaded, ready to use again.", path: ["Your App", "Data"], href: "/admin/data", keywords: ["media", "images", "pictures", "library", "uploads", "files", "photos"] },
+  { id: "tool-menus", label: "Menus", info: "What appears in the header and footer navigation.", path: ["Your App", "Menus"], href: "/admin/menus", keywords: ["navigation", "nav", "header", "footer", "links"] },
+  { id: "tool-discounts", label: "Discounts", info: "Codes and automatic reductions at checkout.", path: ["Your App", "Discounts"], href: "/admin/discounts", keywords: ["coupon", "code", "promo", "sale", "offer", "voucher"] },
+  { id: "tool-site-text", label: "Site text", info: "Wording of buttons and labels across the store.", path: ["Your App", "Site text"], href: "/admin/site-text", keywords: ["copy", "wording", "labels", "translate", "strings"] },
+
+  { id: "tool-visibility", label: "Visibility", info: "Coming soon and maintenance, blocked countries, search engines and spam protection.", path: ["Preferences", "Visibility"], href: "/admin/preferences", keywords: ["maintenance", "coming soon", "offline", "hide", "countries", "block", "google", "crawler", "robots", "index", "seo", "spam", "honeypot"] },
+  { id: "tool-fonts", label: "Fonts", info: "Upload your own primary and secondary fonts.", path: ["Preferences", "Fonts"], href: "/admin/fonts", keywords: ["typeface", "woff", "otf", "ttf", "upload", "typography"] },
+  { id: "tool-buttons", label: "Sticky buttons", info: "Floating WhatsApp, Instagram and chat buttons, and where they appear.", path: ["Preferences", "Sticky buttons"], href: "/admin/buttons", keywords: ["whatsapp", "chat", "instagram", "floating", "contact", "bubble"] },
+  { id: "tool-redirects", label: "Links & redirects", info: "Keep old addresses working, and find menu links that lead nowhere.", path: ["Preferences", "Links & redirects"], href: "/admin/redirects", keywords: ["404", "broken", "url", "moved", "seo"] },
+  { id: "tool-metafields", label: "Custom fields", info: "Extra information on products, categories and pages that your theme can read.", path: ["Preferences", "Custom fields"], href: "/admin/metafields", keywords: ["metafield", "metafields", "custom", "extra", "attribute", "specification", "care", "size guide"] },
+
+  { id: "tool-settings", label: "General", info: "Contact details, payment methods, shipping and the words your store uses.", path: ["Settings", "General"], href: "/admin/settings", keywords: ["store", "config", "whatsapp", "payment", "shipping", "currency", "timezone", "notifications"] },
+  { id: "tool-domains", label: "Domains", info: "Where your store can be found, and how to point your own address at it.", path: ["Settings", "Domains"], href: "/admin/domains", keywords: ["domain", "dns", "url", "address", "custom domain", "ssl", "certificate"] },
+  { id: "tool-account", label: "Account", info: "Your login, your staff, and the security of both.", path: ["Settings", "Account"], href: "/admin/account", keywords: ["login", "password", "staff", "team", "security", "sessions", "email"] },
+
+  { id: "tool-customizer", label: "Customize", info: "Lay out pages section by section with a live preview.", path: ["Your App", "Themes"], href: "/admin/customize", keywords: ["sections", "layout", "homepage", "pages", "drag"] },
+  { id: "tool-theme", label: "Colours & type", info: "Colours, typography, logo, favicon and shape for the whole store.", path: ["Your App", "Themes"], href: "/admin/customize/theme", keywords: ["design", "style", "branding", "look", "colour", "color", "font"] },
 ];
 
 function themeEntries(): SettingEntry[] {
@@ -71,7 +89,7 @@ function themeEntries(): SettingEntry[] {
       label: field.label,
       info: field.info,
       path: ["Theme", group.title],
-      href: `/admin/theme#${settingAnchor(field.key)}`,
+      href: `/admin/customize/theme#${settingAnchor(field.key)}`,
       // The group name is worth matching on: someone searching "header" should
       // reach the header settings even though no label contains that word.
       keywords: [group.title],

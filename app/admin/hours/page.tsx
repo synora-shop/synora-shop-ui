@@ -14,8 +14,7 @@ export default async function AdminHoursPage() {
 
   return (
     <div className="max-w-3xl">
-      <h1 className="font-serif text-3xl font-semibold">Opening hours</h1>
-      <p className="mt-1 text-sm text-ink-soft">
+      <p className="text-sm text-ink-soft">
         Shown on your storefront wherever you add the opening hours section. Leave a day empty
         to say nothing about it at all.
       </p>

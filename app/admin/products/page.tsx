@@ -1,9 +1,17 @@
-import Link from "next/link";
 import { Download, Plus } from "lucide-react";
-import { db } from "@/lib/data/shop";
+import { db, requireShop } from "@/lib/data/shop";
 import { ProductList } from "@/components/admin/product-list";
 import { FilterBar, type FilterGroup } from "@/components/admin/filter-bar";
-import { keepKnown, readFilter, whereIn } from "@/lib/filters";
+import { FilterDisclosure } from "@/components/admin/filter-disclosure";
+import { ActionBar } from "@/components/admin/action-bar";
+import { ListSearch } from "@/components/admin/list-search";
+import { PerPageSelect } from "@/components/admin/per-page-select";
+import { PaginationBar } from "@/components/admin/pagination-bar";
+import { ButtonLink, buttonClass } from "@/components/ui/primitives";
+import { activeCount, keepKnown, readFilter, whereIn } from "@/lib/filters";
+import { readPaging } from "@/lib/paging";
+import { registryBusinessType } from "@/lib/themes/business-type";
+import { vocabularyFor } from "@/lib/themes/vocabulary";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +22,8 @@ const STATUSES = [
 
 export default async function AdminProductsPage(props: PageProps<"/admin/products">) {
   const sp = await props.searchParams;
+  const shop = await requireShop();
+  const words = vocabularyFor(registryBusinessType(shop.businessType));
 
   // Live-fetched every render, so a deleted category simply stops appearing
   // here — no stale filter option left dangling.
@@ -34,16 +44,35 @@ export default async function AdminProductsPage(props: PageProps<"/admin/product
   );
   const filters = { status, category };
 
+  // Free-text search, in the URL like the filters. Title and SKU because those
+  // are the two things a merchant actually knows about a product they are
+  // trying to find — nobody searches a description.
+  const q = readFilter(sp, "q")[0] ?? "";
+  const where = {
+    deletedAt: null,
+    status: whereIn(status as ("PUBLISHED" | "DRAFT")[]),
+    // Several categories read as "in any of these", which is what picking two
+    // of them looks like it ought to do.
+    ...(category.length > 0 ? { categories: { some: { slug: { in: category } } } } : {}),
+    ...(q
+      ? {
+          OR: [
+            { title: { contains: q, mode: "insensitive" as const } },
+            { sku: { contains: q, mode: "insensitive" as const } },
+          ],
+        }
+      : {}),
+  };
+
+  const total = await (await db()).product.count({ where });
+  const { skip, take } = readPaging(sp, total);
+
   const products = await (await db()).product.findMany({
-    where: {
-      deletedAt: null,
-      status: whereIn(status as ("PUBLISHED" | "DRAFT")[]),
-      // Several categories read as "in any of these", which is what picking two
-      // of them looks like it ought to do.
-      ...(category.length > 0 ? { categories: { some: { slug: { in: category } } } } : {}),
-    },
+    where,
     include: { categories: true, variants: true },
     orderBy: { createdAt: "desc" },
+    skip,
+    take,
   });
 
   const groups: FilterGroup[] = [
@@ -56,32 +85,36 @@ export default async function AdminProductsPage(props: PageProps<"/admin/product
   ];
 
   return (
-    <div>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-serif text-3xl font-semibold">Products</h1>
-        <div className="flex items-center gap-2">
+    <div className="space-y-4">
+      {/* Everything you can do to this list, in the one place every list keeps
+          it: search, filters, how many rows, and the buttons that make or take
+          away rows. */}
+      <ActionBar>
+        <ListSearch placeholder="Search products" />
+        <FilterDisclosure activeCount={activeCount(filters)}>
+          <FilterBar basePath="/admin/products" groups={groups} filters={filters} />
+        </FilterDisclosure>
+        <div className="ml-auto flex flex-wrap items-center gap-2">
+          <PerPageSelect basePath="/admin/products" searchParams={sp} total={total} />
           {/* A plain link, not a form: the answer is a file, and the browser
               already knows how to receive one. */}
           <a
             href="/admin/products/export"
-            className="flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-sm transition-colors hover:bg-subtle"
+            className={buttonClass("secondary", "sm")}
           >
             <Download className="h-4 w-4" />
             Export CSV
           </a>
-          <Link
-            href="/admin/products/new"
-            className="flex items-center gap-1.5 rounded-full bg-brand-500 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-600 active:bg-brand-700"
-          >
+          <ButtonLink href="/admin/products/new" variant="primary" size="sm">
             <Plus className="h-4 w-4" />
-            Add Product
-          </Link>
+            {words.addProduct}
+          </ButtonLink>
         </div>
-      </div>
-
-      <FilterBar basePath="/admin/products" groups={groups} filters={filters} />
+      </ActionBar>
 
       <ProductList products={products} />
+
+      <PaginationBar basePath="/admin/products" searchParams={sp} total={total} />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { headers } from "next/headers";
 import { canonicalHost, canonicalUrl, currentShop, isServingCustomers } from "@/lib/data/shop";
+import { getStoreSettings } from "@/lib/data/settings";
 import { PLATFORM_DOMAIN, classifyHost, normaliseHost } from "@/lib/shop-context";
 
 // Per shop, per host — not one file for the whole platform.
@@ -37,6 +38,15 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
   // crawler would find is a notice saying it is shut, and that notice replacing
   // a shop's search results is a real cost of a two-week holiday.
   if (!isServingCustomers(shop)) {
+    return { rules: { userAgent: "*", disallow: "/" } };
+  }
+
+  // The merchant's own answer, from Preferences. A shop still being built, or
+  // a catalogue meant to be shared by link, asks not to be listed. Search
+  // engines obey this; nothing else has to, which is why the screen calls it
+  // asking rather than blocking.
+  const settings = await getStoreSettings();
+  if (!settings.searchIndexing) {
     return { rules: { userAgent: "*", disallow: "/" } };
   }
 

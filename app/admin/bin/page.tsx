@@ -27,8 +27,7 @@ export default async function AdminBinPage(props: PageProps<"/admin/bin">) {
 
   return (
     <div>
-      <h1 className="font-serif text-3xl font-semibold">Bin</h1>
-      <p className="mt-1 text-sm text-ink-soft">
+      <p className="text-sm text-ink-soft">
         Deleted products and orders land here first. Restore anytime, or permanently delete
         to free the data for good.
       </p>

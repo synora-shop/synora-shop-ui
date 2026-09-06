@@ -21,13 +21,13 @@
      canvas reads as deliberate rather than as an unpainted gap. */
 
   /* Brand */
-  --color-brand-50: #f1f0ff;
-  --color-brand-100: #dedcff;
-  --color-brand-300: #9a95f7;
-  --color-brand-500: #4b45e0;
-  --color-brand-600: #2f29c9;
-  --color-brand-700: #241fa8;
-  --color-brand-900: #14116b;
+  --color-brand-50: #f2f2ff;
+  --color-brand-100: #e2e2ff;
+  --color-brand-300: #a5a5ff;
+  --color-brand-500: #6666ff;
+  --color-brand-600: #5050e0;
+  --color-brand-700: #3f3fbe;
+  --color-brand-900: #24246b;
 
   /* Accent. Dark surfaces only. */
   --color-accent: #ccf034;
@@ -91,12 +91,83 @@
   --foreground: var(--color-ink);
 }
 
+/* The admin panel's own surfaces — APP.ai, exactly.
+ *
+ * Three greys and one accent, and nothing in the panel is painted with
+ * anything else:
+ *
+ *   #d2d2d2  shell     the page itself, behind everything
+ *   #e0e0e0  panel     containers — nav bar, action bar, content, sidebar items
+ *   #fafafa  control   things you type in or press that sit on a container
+ *   #6666ff  brand-500 the active state, and only the active state
+ *
+ * The four per-business-type palettes that used to live here are gone. A shop,
+ * a restaurant and a blog now look identical in the panel, because the drawing
+ * says so: the colour tells you what is selected, not what kind of business
+ * you run. data-business-type is still set on the admin root — screens read it
+ * to choose their words — it just no longer repaints anything.
+ *
+ * Scoped to .admin-shell rather than :root so the storefront, the customizer
+ * and the marketing site keep the white canvas they were designed on. */
+.admin-shell {
+  /* Pinned here, not inherited. The store's own brand colour repaints :root
+     for the customizer, where it belongs — you are editing the shop there and
+     seeing it is the point. It must not reach the panel: the panel is grey so
+     that #6666ff can mean "selected", and a merchant whose brand is red would
+     otherwise get a red Save button beside a red active tab with nothing to
+     tell them apart. */
+  --color-brand-50: #f2f2ff;
+  --color-brand-100: #e2e2ff;
+  --color-brand-300: #a5a5ff;
+  --color-brand-500: #6666ff;
+  --color-brand-600: #5050e0;
+  --color-brand-700: #3f3fbe;
+  --color-brand-900: #24246b;
+
+  --color-shell: #d2d2d2;
+  --color-panel: #e0e0e0;
+  --color-control: #fafafa;
+  /* Text and icons on a control. The document says #808080; the drawing shows
+     near-black, and near-black is what a merchant can actually read at 13px.
+     #808080 stays as the outline and as secondary text, which is the job it
+     does well. */
+  --color-control-ink: #333333;
+  --color-control-soft: #808080;
+  /* "0.1px outline" is a hairline. A device pixel is the thinnest a browser
+     will draw, so the weight is carried by the alpha instead. */
+  --color-control-line: rgb(128 128 128 / 0.28);
+
+  /* The panel's three depths, from the back forward: the page, the containers
+     drawn on it, and the cards and controls inside those. A card has to be
+     lighter than the container holding it or the two read as one flat area,
+     which is what the drawing shows and what these three greys give. */
+  --color-canvas: #d2d2d2;
+  --color-surface: #fafafa;
+  --color-subtle: #ececec;
+  --color-border: rgb(128 128 128 / 0.28);
+}
+
+/* Anything you type into is a control, not a surface. Without this every input
+   in the panel would inherit the container grey it sits on and disappear into
+   it — the drawing puts a light field inside a grey bar for exactly this
+   reason. Scoped to the panel, and only where a component has not already
+   said otherwise. */
+.admin-shell :is(input, textarea, select):not([type="checkbox"]):not([type="radio"]):not([type="range"]) {
+  background-color: var(--color-control);
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
   --color-canvas: var(--color-canvas);
   --color-surface: var(--color-surface);
+  --color-shell: var(--color-shell);
+  --color-panel: var(--color-panel);
+  --color-control: var(--color-control);
+  --color-control-ink: var(--color-control-ink);
+  --color-control-soft: var(--color-control-soft);
+  --color-control-line: var(--color-control-line);
   --color-subtle: var(--color-subtle);
   --color-accent-soft: var(--color-accent-soft);
   --color-brand-50: var(--color-brand-50);
@@ -138,8 +209,8 @@
 
   --font-sans: var(--font-sans-brand), ui-sans-serif, system-ui, sans-serif;
   /* "serif" is the heading role, kept under its original name so the theme
-     engine and every existing heading keep working. bettershp's headings are
-     the sans at a heavier weight, not a serif — the name is a role, not a
+     engine and every existing heading keep working. The headings here are the
+     sans at a heavier weight, not a serif — the name is a role, not a
      classification. */
   --font-serif: var(--font-sans-brand), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-mono-brand), ui-monospace, SFMono-Regular, Menlo, monospace;

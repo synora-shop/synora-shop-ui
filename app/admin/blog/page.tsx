@@ -20,8 +20,7 @@ export default async function AdminBlogPage() {
 
   return (
     <div>
-      <h1 className="font-serif text-3xl font-semibold">Blog</h1>
-      <p className="mt-1 text-sm text-ink-soft">
+      <p className="text-sm text-ink-soft">
         Write posts and publish them when they are ready. Drafts are only visible here.
       </p>
 

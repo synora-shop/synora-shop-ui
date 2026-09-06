@@ -36,6 +36,10 @@ const MESSAGES: Record<ClosedReason, { title: string; body: string }> = {
     title: "This store is unavailable",
     body: "It isn't accepting orders at the moment. Please try again later.",
   },
+  blocked: {
+    title: "Not available here",
+    body: "This store does not currently serve customers in your country.",
+  },
 };
 
 export default async function MaintenancePage() {

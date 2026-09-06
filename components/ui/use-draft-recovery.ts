@@ -1,13 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { adoptLegacyPrefix } from "@/lib/legacy-storage";
 
 const PREFIX = "shp:draft:";
 
-// Drafts written under the old prefix are moved across on load, so a rename
-// does not quietly orphan work a merchant has not saved yet.
-adoptLegacyPrefix("bettershp:draft:", PREFIX);
 /** Drafts older than this are ignored — resurfacing week-old work is worse than losing it. */
 const MAX_AGE_MS = 24 * 60 * 60 * 1000;
 

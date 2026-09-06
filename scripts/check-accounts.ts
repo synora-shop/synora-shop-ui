@@ -229,7 +229,7 @@ check("the refusal says which address it was for",
   canAcceptInvite("b@example.com", "a@example.com")?.includes("a@example.com") === true);
 
 console.log("  · the writes these rules guard");
-const staff = sourceOf("app", "admin", "staff", "actions.ts");
+const staff = sourceOf("app", "admin", "staff-actions.ts");
 // Ownership is two rows changing together. Halfway through, a shop has either
 // two owners or none, and nothing else here is written to expect that.
 check("ownership transfer moves both rows in one transaction", staff.includes("$transaction"));

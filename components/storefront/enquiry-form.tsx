@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { CheckCircle2, Loader2, Send } from "lucide-react";
 import { submitEnquiry } from "@/app/enquiry/actions";
+import { HONEYPOT_FIELD } from "@/lib/spam";
 import { useToast } from "@/components/ui/toast";
 import type { CustomField } from "@/lib/product-kind";
 import { cn } from "@/lib/utils";
@@ -51,6 +52,7 @@ export function EnquiryForm({
         quantity: askQuantity && values.quantity ? Number(values.quantity) : null,
         message: values.message ?? "",
         details,
+        website: values[HONEYPOT_FIELD] ?? "",
       });
 
       if (result.ok) setSent(true);
@@ -81,6 +83,22 @@ export function EnquiryForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {/* The honeypot — see lib/spam.ts. Off-screen rather than display:none or
+          hidden, because a form-filler skips a field the browser reports as
+          invisible, and skipping it is exactly what this needs it not to do.
+          aria-hidden and tabIndex keep it away from anybody using a keyboard or
+          a screen reader. */}
+      <div aria-hidden className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden">
+        <label htmlFor="enq-website">Website</label>
+        <input
+          id="enq-website"
+          name={HONEYPOT_FIELD}
+          tabIndex={-1}
+          autoComplete="off"
+          value={values[HONEYPOT_FIELD] ?? ""}
+          onChange={(e) => set(HONEYPOT_FIELD, e.target.value)}
+        />
+      </div>
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <label className={label} htmlFor="enq-name">Your name</label>

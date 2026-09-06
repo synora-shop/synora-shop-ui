@@ -35,8 +35,7 @@ export default async function AdminMenusPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-serif text-3xl font-semibold">Menus</h1>
-        <p className="mt-1 text-sm text-ink-soft">
+        <p className="text-sm text-ink-soft">
           Build as many menus as you like, then choose which one shows in the header and the
           footer. Drag to reorder. Pick from the pages and collections that already exist,
           renaming one updates every menu that links to it automatically.

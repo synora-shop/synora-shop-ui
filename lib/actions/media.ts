@@ -4,6 +4,7 @@ import { put } from "@vercel/blob";
 import { requireRole } from "@/lib/auth-guard";
 import { scanBuffer, scanPolicyBlocks } from "@/lib/virus-scan";
 import { imageStorageKey, validateImageFile } from "@/lib/image-validation";
+import { currentShopId, db } from "@/lib/data/shop";
 
 async function requireAdmin() {
   await requireRole("STAFF");
@@ -49,6 +50,31 @@ export async function uploadImage(
     const blob = await put(imageStorageKey(folder, checked.format), Buffer.from(checked.bytes), {
       access: "public",
     });
+
+    // Write down that this happened. Blob keys are grouped by what a file is
+    // for ("products/", "logos/") and not by which shop uploaded it, so the
+    // bucket cannot be listed per merchant — this row is the only thing that
+    // makes a media library possible, and without it an uploaded picture is
+    // findable only by opening whatever it was attached to.
+    //
+    // Never fatal. The file is already stored and already usable; failing the
+    // upload because the bookkeeping failed would lose the merchant their work
+    // to save a row.
+    try {
+      await (await db()).mediaAsset.create({
+        data: {
+          shopId: await currentShopId(),
+          url: blob.url,
+          filename: file.name.slice(0, 200),
+          format: checked.format,
+          size: checked.bytes.byteLength,
+          folder,
+        },
+      });
+    } catch {
+      /* the picture is uploaded; the library will simply not know about it */
+    }
+
     return { url: blob.url };
   } catch {
     return { error: "Upload failed, paste an image URL instead." };

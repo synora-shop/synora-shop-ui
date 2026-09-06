@@ -1,0 +1,104 @@
+import { cn } from "@/lib/utils";
+
+/**
+ * The sidebar's six icons, drawn for this product.
+ *
+ * These are the shapes from Assestz/SVG — the same file the rest of the panel
+ * was drawn in — not a general-purpose icon set standing in for them. A stock
+ * library gets you a house and a gear; it does not get you *these* six, at
+ * these weights, sized against each other the way a designer sized them.
+ *
+ * Each arrives with its own viewBox and its own proportions, which is the point
+ * and also the catch: Analytics is tall and narrow, Products is square. They
+ * are drawn into a fixed square box with the aspect ratio preserved and
+ * centred, so a row of them reads as one set rather than six drawings of
+ * different sizes.
+ *
+ * `currentColor` throughout — the source files carry #343434 and #e0e0e0 fills,
+ * which would ignore the active pill and leave a dark glyph on the brand
+ * colour. The colour belongs to the state, not to the file.
+ */
+
+type IconProps = {
+  className?: string;
+  /** Decorative by default: the label beside it already names the destination. */
+  title?: string;
+};
+
+function Glyph({
+  viewBox,
+  className,
+  title,
+  children,
+}: IconProps & { viewBox: string; children: React.ReactNode }) {
+  return (
+    <svg
+      viewBox={viewBox}
+      // Fitted rather than stretched. Without this the tall Analytics bars and
+      // the square Products tag would be scaled to the same box and arrive at
+      // visibly different weights.
+      preserveAspectRatio="xMidYMid meet"
+      fill="currentColor"
+      role={title ? "img" : undefined}
+      aria-hidden={title ? undefined : true}
+      className={cn("h-[18px] w-[18px] flex-shrink-0", className)}
+    >
+      {title && <title>{title}</title>}
+      {children}
+    </svg>
+  );
+}
+
+/** Home — Assestz/SVG/Home icon.svg */
+export function HomeIcon(props: IconProps) {
+  return (
+    <Glyph viewBox="0 0 22.21 20.37" {...props}>
+      <path d="M11.11,0c-.42,0-.84.14-1.19.43L.36,8.41c-.35.3-.48.81-.25,1.21.3.51.96.6,1.39.24l.33-.28v8.47c0,1.28,1.04,2.31,2.31,2.31h13.89c1.28,0,2.31-1.04,2.31-2.31v-8.47l.33.28c.17.14.38.22.59.22.32,0,.64-.17.82-.49.22-.39.09-.89-.25-1.18l-1.49-1.24v-3.93c0-.51-.41-.93-.93-.93h-.93c-.51,0-.93.41-.93.93v1.61L12.29.43c-.34-.29-.77-.43-1.19-.43ZM11.11,1.92c.05,0,.11.02.15.05l7.26,6.06v9.55c0,.51-.41.93-.93.93h-3.7v-6.48c0-.51-.41-.93-.93-.93h-3.7c-.51,0-.93.41-.93.93v6.48h-3.7c-.51,0-.93-.41-.93-.93v-9.55L10.96,1.98s.1-.05.15-.05Z" />
+    </Glyph>
+  );
+}
+
+/** Products — Assestz/SVG/Product icon.svg */
+export function ProductIcon(props: IconProps) {
+  return (
+    <Glyph viewBox="0 0 21.1 21.1" {...props}>
+      <path d="M6.5,7.99c.82,0,1.49-.67,1.49-1.49s-.67-1.49-1.49-1.49-1.49.67-1.49,1.49.67,1.49,1.49,1.49ZM2.48,0C1.11,0,0,1.11,0,2.48v7.51c0,.79.31,1.55.87,2.1l7.84,7.84c1.55,1.55,4.06,1.55,5.61,0l5.61-5.61c1.55-1.55,1.55-4.06,0-5.61L12.1.87c-.56-.56-1.32-.87-2.1-.87H2.48ZM1.98,2.48c0-.27.22-.5.5-.5h7.51c.26,0,.52.1.7.29l7.84,7.84c.77.78.77,2.03,0,2.81l-5.61,5.61c-.77.77-2.03.77-2.81,0l-7.84-7.84c-.19-.19-.29-.44-.29-.7V2.48Z" />
+    </Glyph>
+  );
+}
+
+/** Your App — Assestz/SVG/Your App icon.svg */
+export function YourAppIcon(props: IconProps) {
+  return (
+    <Glyph viewBox="0 0 19.03 19.04" {...props}>
+      <path fillRule="evenodd" clipRule="evenodd" d="M16.18,0H2.85C1.28,0,0,1.28,0,2.86v13.32c0,1.58,1.28,2.86,2.85,2.86h13.33c1.57,0,2.85-1.28,2.85-2.86V2.86c0-1.58-1.28-2.86-2.85-2.86ZM17.13,16.18c0,.53-.43.95-.95.95H2.85c-.52,0-.95-.42-.95-.95V2.86c0-.53.43-.95.95-.95h13.33c.52,0,.95.42.95.95v13.32Z" />
+    </Glyph>
+  );
+}
+
+/** Preferences — Assestz/SVG/Preferences icon.svg */
+export function PreferencesIcon(props: IconProps) {
+  return (
+    <Glyph viewBox="0 0 19.03 14.27" {...props}>
+      <path d="M1.43,2.85c.79,0,1.43-.64,1.43-1.43s-.64-1.43-1.43-1.43S0,.64,0,1.43s.64,1.43,1.43,1.43ZM5.71.48c-.53,0-.95.43-.95.95s.43.95.95.95h12.37c.53,0,.95-.43.95-.95s-.43-.95-.95-.95H5.71ZM13.32,6.19c.53,0,.95.43.95.95s-.43.95-.95.95H.95c-.53,0-.95-.43-.95-.95s.43-.95.95-.95h12.37ZM4.76,12.85c0-.53.43-.95.95-.95h12.37c.53,0,.95.43.95.95s-.43.95-.95.95H5.71c-.53,0-.95-.43-.95-.95ZM16.18,7.14c0,.79.64,1.43,1.43,1.43s1.43-.64,1.43-1.43-.64-1.43-1.43-1.43-1.43.64-1.43,1.43ZM1.43,14.27c.79,0,1.43-.64,1.43-1.43s-.64-1.43-1.43-1.43-1.43.64-1.43,1.43.64,1.43,1.43,1.43Z" />
+    </Glyph>
+  );
+}
+
+/** Analytics — Assestz/SVG/Analytics icon.svg */
+export function AnalyticsIcon(props: IconProps) {
+  return (
+    <Glyph viewBox="0 0 13.32 19.03" {...props}>
+      <path d="M7.61,18.08c0,.53.43.95.95.95s.95-.43.95-.95V.95c0-.53-.43-.95-.95-.95s-.95.43-.95.95v17.13ZM0,18.08c0,.53.43.95.95.95s.95-.43.95-.95v-9.52c0-.53-.43-.95-.95-.95s-.95.43-.95.95v9.52ZM4.76,19.03c-.53,0-.95-.43-.95-.95v-7.61c0-.53.43-.95.95-.95s.95.43.95.95v7.61c0,.53-.43.95-.95.95ZM11.42,18.08c0,.53.43.95.95.95s.95-.43.95-.95V4.76c0-.53-.43-.95-.95-.95s-.95.43-.95.95v13.32Z" />
+    </Glyph>
+  );
+}
+
+/** Settings — Assestz/SVG/Settings icon.svg */
+export function SettingsIcon(props: IconProps) {
+  return (
+    <Glyph viewBox="0 0 20.37 20.37" {...props}>
+      <path d="M8.82,0c-.62,0-1.15.45-1.25,1.06l-.27,1.57c-.14.05-.28.11-.42.17l-1.29-.92c-.57-.39-1.24-.25-1.63.14l-1.93,1.93c-.44.44-.5,1.13-.14,1.63l.91,1.3c-.06.14-.12.28-.17.42l-1.57.27c-.61.11-1.06.64-1.06,1.26v2.73c0,.62.45,1.15,1.06,1.25l1.57.27c.05.14.11.28.17.42l-.92,1.29c-.36.51-.3,1.2.14,1.63l1.93,1.93c.5.49,1.2.45,1.63.14l1.3-.91c.14.06.28.12.42.17l.27,1.57c.11.61.64,1.06,1.26,1.06h2.73c.62,0,1.15-.45,1.25-1.06l.27-1.57c.14-.05.28-.11.42-.17l1.29.92c.38.28,1.11.38,1.63-.14l1.93-1.93c.44-.44.5-1.13.14-1.63l-.91-1.3c.06-.14.12-.28.17-.42l1.57-.27c.61-.11,1.06-.64,1.06-1.26v-2.73c0-.62-.45-1.15-1.06-1.25l-1.57-.27c-.05-.14-.11-.28-.17-.42l.92-1.29c.36-.51.3-1.2-.14-1.63l-1.93-1.93c-.49-.48-1.17-.47-1.63-.14l-1.3.91c-.14-.06-.28-.12-.42-.17l-.27-1.57c-.11-.61-.64-1.06-1.26-1.06h-2.73ZM9.36,1.85h1.65s.05.02.06.05l.36,2.08c.82.29,1.58.6,2.27.94l1.72-1.21s.06-.01.08,0l1.17,1.17s.02.05,0,.07l-1.22,1.72c.35.74.67,1.5.94,2.27l2.08.36s.05.03.05.06v1.65s-.02.05-.05.06l-2.08.36c-.27.77-.58,1.53-.94,2.27l1.22,1.72s.01.05,0,.07l-1.17,1.17s-.05.02-.08,0l-1.72-1.21c-.76.36-1.52.67-2.27.94l-.36,2.08s-.03.05-.06.05h-1.65s-.05-.02-.06-.05l-.36-2.08c-.74-.26-1.5-.57-2.27-.94l-1.72,1.22s-.05.01-.07,0l-1.17-1.17s-.02-.05,0-.08l1.21-1.72c-.36-.77-.67-1.53-.94-2.27l-2.08-.36s-.05-.03-.05-.06v-1.65s.02-.05.05-.06l2.08-.36c.27-.76.58-1.51.94-2.27l-1.22-1.72s-.01-.05,0-.07l1.17-1.17s.05-.02.08,0l1.72,1.21c.72-.34,1.48-.66,2.27-.94l.36-2.08s.03-.05.06-.05ZM10.19,6.02c-2.3,0-4.17,1.87-4.17,4.17s1.87,4.17,4.17,4.17,4.17-1.87,4.17-4.17-1.87-4.17-4.17-4.17ZM10.19,7.87c1.28,0,2.31,1.04,2.31,2.31s-1.04,2.31-2.31,2.31-2.31-1.04-2.31-2.31,1.04-2.31,2.31-2.31Z" />
+    </Glyph>
+  );
+}

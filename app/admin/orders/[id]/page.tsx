@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { PageCrumb } from "@/components/admin/page-crumb";
 import { db } from "@/lib/data/shop";
 import { formatPKR, cn } from "@/lib/utils";
 import { orderStatusStyle, paymentStatusStyle } from "@/lib/order-status-style";
@@ -21,8 +22,8 @@ export default async function AdminOrderDetailPage(props: PageProps<"/admin/orde
     <div>
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-serif text-3xl font-semibold">Order Detail</h1>
-          <p className="mt-1 font-mono text-sm text-ink-soft">{order.id}</p>
+          <PageCrumb label={`Order ${order.id}`} />
+          <p className="font-mono text-sm text-ink-soft">{order.id}</p>
         </div>
         <DeleteOrderButton id={order.id} />
       </div>

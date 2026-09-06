@@ -76,8 +76,6 @@ export const SHOP_ID_HEADER = "x-shp-shop";
 export const SHOP_HOST_HEADER = "x-shp-host";
 /** The path being requested, so a server component can build a redirect to it. */
 export const SHOP_PATH_HEADER = "x-shp-path";
-/** The region asked for in the URL, forwarded by proxy.ts. */
-export const REGION_HEADER = "x-shp-region";
 
 /**
  * Subdomains that are the platform itself, not a merchant.

@@ -1,31 +1,22 @@
 /**
- * Checks the admin chrome adapts across widths — run with `npm run check:responsive`.
+ * Checks the admin chrome holds together at every width — run with
+ * `npm run check:responsive`.
  *
- * Two failures live here, and both are the kind nobody notices in review
- * because the page looks correct at the one width the author had open.
- *
- * The first is a layout that steps once. The admin was written against `sm:`
- * and `lg:` only: below 1024px a drawer, above it a 15rem sidebar, and nothing
- * after that. A 1080px window and a 2560px one got identical treatment. The
- * width a laptop actually lands at once a browser sidebar is open is right in
- * the middle of that dead zone, so opening Safari's sidebar squeezed the page
- * instead of letting it reflow.
- *
- * The second is two things pinned to the top of the same viewport. The sidebar
- * carried its own fixed bar holding the only control that opened the
- * navigation drawer; the topbar was sticky at the same offset and a layer
- * above, and painted straight over it. The button rendered, passed every type
- * and lint check, and could not be reached on a phone.
+ * The panel's shell is two levels now: a sidebar that names six destinations
+ * and never changes, and a navigation bar that changes completely with it. The
+ * failures worth guarding are the ones that only show up on a real window —
+ * a drawer that cannot be opened on a phone, two things pinned to the top of
+ * the viewport fighting over the same 56 pixels, a tab row that wraps and
+ * pushes the page down as you move between sections.
  *
  * Dependency-free; exits non-zero on failure.
  */
 import { readFileSync } from "fs";
 import { join } from "path";
 
-const root = process.cwd();
-const read = (...p: string[]) => readFileSync(join(root, ...p), "utf8");
+const read = (...p: string[]) => readFileSync(join(process.cwd(), ...p), "utf8");
 
-/** Source with comments stripped, so prose about a rule never satisfies it. */
+/** Source with comments stripped, so a comment quoting a class is not a match. */
 function sourceOf(...p: string[]): string {
   return read(...p)
     .replace(/^\s*\/\/.*$/gm, "")
@@ -40,52 +31,62 @@ const check = (name: string, ok: boolean, detail = "") => {
 
 const sidebar = sourceOf("components", "admin", "admin-sidebar.tsx");
 const topbar = sourceOf("components", "admin", "admin-topbar.tsx");
+const navbar = sourceOf("components", "admin", "admin-navbar.tsx");
 const layout = sourceOf("app", "admin", "layout.tsx");
 const css = sourceOf("app", "globals.css");
 const store = sourceOf("lib", "admin-nav-store.ts");
 
-console.log("\nTHE SIDEBAR SHOWS ITS LABELS UNLESS ASKED NOT TO");
+console.log("\nTHE SIDEBAR IS A DRAWER ON A PHONE AND A COLUMN ON A DESKTOP");
 check("a drawer below lg", /-translate-x-full/.test(sidebar));
-check("the labelled sidebar is the default width", /lg:w-60/.test(sidebar));
-check("a rail width exists for when it is collapsed", /lg:w-\[4\.5rem\]/.test(sidebar));
-// The rail was briefly automatic, between lg and xl. A laptop window sits in
-// that band most of the time, so the labels disappeared during ordinary work
-// with no control to bring them back. Width must not decide this.
-check("no breakpoint hides the labels by itself", !/xl:not-sr-only/.test(sidebar));
-check("the width comes from the stored choice", /collapsed \? "lg:w-\[4\.5rem\]" : "lg:w-60"/.test(sidebar));
-check("the store starts expanded", /collapsed: false/.test(store));
-check(
-  "a collapsed label is still announced, not removed",
-  // sr-only keeps the text for a screen reader; `hidden` would strip the only
-  // name an icon-only link has.
-  /lg:sr-only/.test(sidebar) && !/railed\("lg:hidden"\)\}>\{item\.label\}/.test(sidebar)
-);
-check("icons centre themselves once collapsed", /lg:justify-center/.test(sidebar));
-check("group headings give way to a rule once collapsed", /lg:border-t/.test(sidebar));
-
-console.log("\nCOLLAPSING IS A CHOICE, AND IT IS REMEMBERED");
-check("there is a control", /aria-label=\{collapsed \? "Expand navigation" : "Collapse navigation"\}/.test(sidebar));
-check("the control is desktop-only", /lg:flex/.test(sidebar));
-check("the choice is written down", /localStorage\.setItem/.test(store));
-check("and read back after mount, not during render", /useEffect\(\(\) => \{\s*setCollapsed\(readCollapsedPreference\(\)\)/.test(sidebar));
-// Private browsing and blocked site data both throw on localStorage. Losing a
-// preference is acceptable; failing to render the admin is not.
-check("storage failures cannot break the panel", /try \{[\s\S]{0,200}localStorage[\s\S]{0,200}\} catch/.test(store));
+check("a column from lg", /lg:sticky/.test(sidebar) && /lg:translate-x-0/.test(sidebar));
+check("the drawer is named so the toggle can point at it", /id="admin-nav"/.test(sidebar));
+// The icon rail is gone with the nesting that made it necessary. Six flat items
+// fit at 15rem on any laptop, and a control that hides the words on a
+// navigation this short costs more than it saves.
+check("there is no icon rail left behind", !/4\.5rem/.test(sidebar), "the rail width");
+check("and no stored preference for one", !/collapsed/i.test(store) && !/collapsed/i.test(sidebar));
 
 console.log("\nONLY ONE THING IS PINNED TO THE TOP OF THE VIEWPORT");
-// The topbar is the one bar. Anything else fixed at top-0 in the admin chrome
-// is either hidden underneath it or hiding it.
+// Anything else fixed at top-0 in the admin chrome is either hidden underneath
+// the top bar or hiding it.
 const sidebarTopBars = (sidebar.match(/fixed[^"]*top-0/g) ?? []).length;
 check("the sidebar declares no bar of its own", sidebarTopBars === 0, `found ${sidebarTopBars}`);
 check("the topbar is the sticky one", /sticky top-0/.test(topbar));
+// The mark is centred on the window rather than on the content column, which
+// is only possible with fixed positioning — and only safe because the bar it
+// appears to belong to is always at the top of the viewport.
+check("the centred mark is fixed to the window", /fixed inset-x-0 top-0/.test(topbar));
+check("and cannot swallow clicks meant for the page", /pointer-events-none/.test(topbar));
 
 console.log("\nTHE NAVIGATION CAN BE OPENED ON A PHONE");
 check("the topbar owns the toggle", /aria-controls="admin-nav"/.test(topbar));
 check("the toggle is hidden once the sidebar is visible", /lg:hidden/.test(topbar));
-check("the drawer is what it points at", /id="admin-nav"/.test(sidebar));
+check("both read the same state", /useAdminNav/.test(topbar) && /useAdminNav/.test(sidebar));
+
+console.log("\nTHE TAB ROW SCROLLS RATHER THAN WRAPPING");
+// A wrapped tab row changes height as you move between sections, and
+// everything below it jumps by a line.
+check("the navigation bar scrolls sideways", /overflow-x-auto/.test(navbar));
+check("its tabs do not break mid-label", /whitespace-nowrap/.test(navbar));
+check("and it draws nothing for a section of one", /tabs\.length === 0/.test(navbar));
+
+console.log("\nBOTH LEVELS COME FROM ONE PLACE");
+check("the sidebar reads the navigation model", /@\/lib\/admin-nav"/.test(sidebar));
+check("so does the navigation bar", /@\/lib\/admin-nav"/.test(navbar));
+check("so does the heading bar", /@\/lib\/admin-nav"/.test(topbar));
+// A hardcoded href here is how the sidebar and the bar came to disagree about
+// where a section starts.
+check("no screen hardcodes an admin address", !/href="\/admin\//.test(sidebar) && !/href="\/admin\//.test(navbar));
+
+console.log("\nTHE PANEL'S GREYS ARE DEFINED ONCE");
+check("the shell tokens exist", /\.admin-shell\s*\{[\s\S]*?--color-panel/.test(css));
+check("and the panel opts into them", /admin-shell/.test(layout));
+// One palette, whatever the trade. Colour in this panel means "selected"; a
+// permanently coloured bar was competing with the one thing that needed to
+// say it.
 check(
-  "both read the same state",
-  /useAdminNav/.test(topbar) && /useAdminNav/.test(sidebar)
+  "no per-business-type palette survives",
+  !/\[data-business-type="restaurant"\]\s*\{[\s\S]{0,80}--color-brand/.test(css)
 );
 
 console.log("\nSPACING AND TYPE SCALE WITH THE WINDOW");
@@ -93,6 +94,7 @@ check("a fluid gutter is defined", /\.gutter-fluid\s*\{[^}]*clamp\(/.test(css));
 check("a fluid page title is defined", /\.text-page-title\s*\{[^}]*clamp\(/.test(css));
 check("the page body uses the fluid gutter", /gutter-fluid/.test(layout));
 check("the topbar uses the same gutter, so they line up", /gutter-fluid/.test(topbar));
+check("the heading bar uses the fluid title", /text-page-title/.test(topbar));
 check(
   "the body no longer steps its padding at one width",
   !/px-4[^"]*lg:px-8/.test(layout)

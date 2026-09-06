@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { REGION_PARAM } from "@/lib/region";
 import { PREVIEW_PARAM } from "@/lib/preview-mode";
 import {
-  REGION_HEADER,
   SHOP_HOST_HEADER,
   SHOP_PATH_HEADER,
   classifyHost,
@@ -63,14 +61,6 @@ export default auth((req) => {
     const headers = new Headers(req.headers);
     headers.set(SHOP_HOST_HEADER, host);
     headers.set(SHOP_PATH_HEADER, `${pathname}${req.nextUrl.search}`);
-
-    // A layout gets no searchParams, so the requested region has to arrive as a
-    // header. Deleted first, unconditionally: these headers are copied from the
-    // incoming request, so without that a client could simply send the header
-    // itself and skip the one place that decides what it is allowed to be.
-    headers.delete(REGION_HEADER);
-    const requested = req.nextUrl.searchParams.get(REGION_PARAM);
-    if (requested) headers.set(REGION_HEADER, requested.slice(0, 64));
 
     return headers;
   };

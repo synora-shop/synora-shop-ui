@@ -96,11 +96,20 @@ export function Card({
 }
 
 /**
- * A page's title block.
+ * A page's introduction: what this screen is for, and what you can do to it.
  *
- * Every admin page had its own arrangement of heading, description and
- * actions. One component means the eye lands in the same place on every page,
- * which is most of what makes a panel feel finished.
+ * It used to print the page's name in a large heading. It no longer does, and
+ * that is the change: the chrome names the page now. The heading bar carries
+ * the section — "Your App" — and the navigation bar under it carries the
+ * screen — "Themes" — so a third copy of the same word in the body was the
+ * page telling the merchant something they had just read twice.
+ *
+ * `title` is still accepted, and still required, because it remains the honest
+ * name of the screen and because the day this needs a heading again it should
+ * not have to be reintroduced at ninety call sites. It is simply not drawn.
+ *
+ * With no description and no actions there is nothing left to draw, so nothing
+ * is — rather than an empty row holding a gap open.
  */
 export function PageHeader({
   title,
@@ -108,20 +117,20 @@ export function PageHeader({
   actions,
   className,
 }: {
+  /** The screen's name. Not rendered — see above. */
   title: React.ReactNode;
   description?: React.ReactNode;
   actions?: React.ReactNode;
   className?: string;
 }) {
+  void title;
+  if (!description && !actions) return null;
   return (
     <div className={cn("flex flex-wrap items-start justify-between gap-3", className)}>
-      <div className="min-w-0">
-        <h1 className="text-page-title font-semibold tracking-tight text-balance">{title}</h1>
-        {description && (
-          <p className="mt-1 max-w-2xl text-sm leading-snug text-ink-soft">{description}</p>
-        )}
-      </div>
-      {actions && <div className="flex flex-shrink-0 flex-wrap items-center gap-2">{actions}</div>}
+      {description && (
+        <p className="min-w-0 max-w-2xl text-sm leading-snug text-ink-soft">{description}</p>
+      )}
+      {actions && <div className="ml-auto flex flex-shrink-0 flex-wrap items-center gap-2">{actions}</div>}
     </div>
   );
 }

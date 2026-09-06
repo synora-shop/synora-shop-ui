@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/auth-guard";
 import { db, currentShopId } from "@/lib/data/shop";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
+import { looksAutomated } from "@/lib/spam";
+import { getStoreSettings } from "@/lib/data/settings";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { isValidEmail, isValidPakistaniPhone } from "@/lib/validation";
@@ -24,6 +26,8 @@ export type EnquiryInput = {
   message: string;
   /** Answers to a made-to-order product's custom fields, keyed by field id. */
   details?: Record<string, string>;
+  /** The honeypot — see lib/spam.ts. A person always leaves this empty. */
+  website?: string;
 };
 
 export type EnquiryResult = { ok: true; id: string } | { ok: false; error: string };
@@ -46,6 +50,15 @@ export async function submitEnquiry(input: EnquiryInput): Promise<EnquiryResult>
   const ip = await clientIp();
   const limited = await rateLimit("enquiry", `${await currentShopId()}:${ip}`);
   if (!limited.ok) return { ok: false, error: limited.message };
+
+  // Answered as a success and stored nowhere. The bot is told what it expects
+  // to hear, so nobody learns which field gave them away. Off is a real choice
+  // a merchant can make on Preferences — it is the only way to diagnose a
+  // genuine enquiry that never arrived.
+  const settings = await getStoreSettings();
+  if (settings.spamProtection && looksAutomated(input.website)) {
+    return { ok: true, id: "" };
+  }
 
   const name = input.name?.trim() ?? "";
   const email = input.email?.trim().toLowerCase() ?? "";

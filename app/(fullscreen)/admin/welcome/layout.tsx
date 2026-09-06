@@ -31,7 +31,7 @@ export default function WelcomeLayout({ children }: { children: React.ReactNode 
       <div className="relative flex min-h-full flex-col">
         <header className="flex items-center justify-between px-6 py-5 sm:px-10">
           <span className="text-sm font-medium tracking-wide text-white/70">
-            Shop by Synora Digitals
+            APP by Synora Digitals
           </span>
 
           {/* The only way out, and always available. There was a second one in

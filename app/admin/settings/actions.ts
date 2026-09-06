@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cleanBlockedList } from "@/lib/geo-block";
 import { db, currentShopId } from "@/lib/data/shop";
 import { invalidateShop } from "@/lib/data/cached";
 import { requireRole } from "@/lib/auth-guard";
@@ -85,7 +86,6 @@ export async function updateGlobalEdits(formData: FormData) {
     announcementText: str("announcementText", GLOBAL_EDITS_DEFAULTS.announcementText),
     announcementBgColor: str("announcementBgColor", GLOBAL_EDITS_DEFAULTS.announcementBgColor),
     whatsappOrderButton: bool("whatsappOrderButton"),
-    maintenanceMode: bool("maintenanceMode"),
     shopFilterBar: bool("shopFilterBar"),
   };
 

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { AlertTriangle } from "lucide-react";
 import { updateGlobalEdits } from "@/app/admin/settings/actions";
 import { SaveButton, type SaveState } from "@/components/ui/save-button";
+import { BlockedCountriesField } from "@/components/admin/blocked-countries-field";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { SHOP_SORT_LABELS, type GlobalEdits } from "@/lib/global-edits";
 
@@ -238,19 +239,6 @@ export function GlobalEditsForm({ settings }: { settings: GlobalEdits }) {
           checked={fields.whatsappOrderButton}
           onChange={(v) => set("whatsappOrderButton", v)}
         />
-        <div className="rounded-lg border border-amber bg-amber-bg p-3">
-          <ToggleSwitch
-            label="Maintenance mode"
-            description="Storefront shows a holding page to everyone but admins. Admin panel always stays reachable."
-            checked={fields.maintenanceMode}
-            onChange={(v) => set("maintenanceMode", v)}
-          />
-          {fields.maintenanceMode && (
-            <p className="mt-2 flex items-center gap-1.5 text-xs font-medium text-amber">
-              <AlertTriangle className="h-3.5 w-3.5" /> The storefront will be down for customers until you save with this off again.
-            </p>
-          )}
-        </div>
       </Card>
 
       <SaveButton

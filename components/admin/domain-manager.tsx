@@ -17,7 +17,7 @@ import {
   connectDomain,
   disconnectDomain,
   makePrimary,
-} from "@/app/admin/domains/actions";
+} from "@/app/admin/domain-actions";
 import { domainProblem, type DnsRecord } from "@/lib/domains";
 import { Badge, Button, Card } from "@/components/ui/primitives";
 import { useConfirm } from "@/components/ui/confirm-dialog";
