@@ -258,6 +258,41 @@ check(
   marooned.map((f) => relative(ROOT, f)).join(", ")
 );
 
+// The catalogue is shown in four places. A product that looks like a different
+// object in each is four things to learn instead of one, so the thumbnail, the
+// stock mark and the status mark are one set of components.
+const elements = readFileSync(join(ROOT, "components/admin/product-elements.tsx"), "utf8");
+check("the product thumbnail is shared", /export function Thumb/.test(elements));
+check("so is the stock mark", /export function StockMark/.test(elements));
+check("so is the status mark", /export function StatusMark/.test(elements));
+// Out of stock and low stock are the two rows a merchant has to act on, and
+// they were the same grey sentence as every other row.
+check("out of stock is called out", /Out of stock/.test(elements) && /text-rose/.test(elements));
+check("low stock is called out", /\{stock\} left/.test(elements) && /text-amber/.test(elements));
+// Status colour never travels alone.
+check(
+  "the status mark carries a word, not just a colour",
+  /Draft" : "Published/.test(elements)
+);
+const rolledThumb = files.filter((f) => {
+  if (!/(components|app)\/admin\//.test(f)) return false;
+  if (/product-elements\.tsx$/.test(f)) return false;
+  // The category picture is its own control — a bordered button you click to
+  // edit — so it is not this. This is the product thumbnail's own tinted box.
+  return /w-11[^"]*overflow-hidden[^"]*bg-brand-50/.test(readFileSync(f, "utf8"));
+});
+check(
+  "no list draws its own product thumbnail",
+  rolledThumb.length === 0,
+  rolledThumb.map((f) => relative(ROOT, f)).join(", ")
+);
+
+// An empty list is a sentence in a box on some screens and a proper empty
+// state on others; the Bin was the last one telling the story in a grey line.
+for (const f of ["components/admin/bin-product-list.tsx", "components/admin/bin-order-list.tsx"]) {
+  check(`${f.split("/").pop()} has a real empty state`, /<EmptyState/.test(readFileSync(join(ROOT, f), "utf8")));
+}
+
 // The panel is sans-serif. The serif face belongs to the storefront and to a
 // full-screen message (an error, a locked door) — never to a heading inside a
 // screen, where it read as a different product bolted on. Sections are named by

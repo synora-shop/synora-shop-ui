@@ -10,6 +10,7 @@ import { SwipeRow } from "@/components/ui/swipe-row";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast";
 import { formatRelativeTime } from "@/lib/format-relative-time";
+import { EmptyState } from "@/components/ui/primitives";
 
 type BinOrderRow = {
   id: string;
@@ -69,7 +70,14 @@ export function BinOrderList({ orders }: { orders: BinOrderRow[] }) {
   return (
     <>
       {dialog}
-      <div className="mt-6 divide-y divide-border rounded-lg border border-border bg-white">
+      {rows.length === 0 ? (
+        <EmptyState
+          icon={Trash2}
+          title="The orders bin is empty"
+          description="Orders you delete land here first, and can be restored for as long as they sit in it."
+        />
+      ) : (
+      <div className="mt-6 divide-y divide-border rounded-xl border border-border bg-surface">
         {rows.map((o) => (
           <SwipeRow
             key={o.id}
@@ -105,10 +113,8 @@ export function BinOrderList({ orders }: { orders: BinOrderRow[] }) {
             </div>
           </SwipeRow>
         ))}
-        {rows.length === 0 && (
-          <p className="px-5 py-4 text-sm text-ink-soft">The orders bin is empty.</p>
-        )}
       </div>
+      )}
     </>
   );
 }

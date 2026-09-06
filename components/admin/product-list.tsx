@@ -2,10 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { Package, Trash2 } from "lucide-react";
 import { ButtonLink } from "@/components/ui/primitives";
 import { ListEmpty } from "@/components/admin/list-empty";
+import { StatusMark, StockMark, Thumb } from "@/components/admin/product-elements";
 import { formatPKR, cn } from "@/lib/utils";
 import { useServerRows } from "@/components/ui/use-server-rows";
 import { effectivePrice, unitProfit, profitMargin } from "@/lib/product-pricing";
@@ -27,6 +27,7 @@ type ProductRow = {
   variants: { stock: number }[];
 };
 
+
 /**
  * The catalogue, as rows or as tiles.
  *
@@ -39,11 +40,14 @@ export function ProductList({
   products,
   view = "list",
   filtered = false,
+  lowStock,
 }: {
   products: ProductRow[];
   view?: "list" | "grid";
   /** Whether a search or filter is what emptied this — see ListEmpty. */
   filtered?: boolean;
+  /** The store's own low-stock threshold, so "3 left" means what Settings says. */
+  lowStock: number;
 }) {
   const router = useRouter();
   const [rows, setRows] = useServerRows(products);
@@ -101,23 +105,39 @@ export function ProductList({
           {rows.map((p) => {
             const stock = p.variants.reduce((sum, v) => sum + v.stock, 0);
             return (
-              <li key={p.id} className="overflow-hidden rounded-xl border border-border bg-surface">
-                <Link href={`/admin/products/${p.id}`} className="block transition-colors hover:bg-subtle">
-                  <div className="relative aspect-square bg-brand-50">
-                    {p.images[0] && (
-                      <Image src={p.images[0]} alt="" fill sizes="(max-width:640px) 50vw, 20vw" className="object-cover" />
-                    )}
-                    {p.status === "DRAFT" && (
-                      <span className="absolute left-2 top-2 rounded-full bg-amber-bg px-2 py-0.5 text-[10px] font-medium uppercase text-amber">
-                        Draft
+              <li
+                key={p.id}
+                // A column so every tile's Bin bar lands on the same line,
+                // whatever the text above it happens to be.
+                className="group/tile flex h-full flex-col overflow-hidden rounded-xl border border-border bg-surface transition-shadow hover:shadow-sm"
+              >
+                <Link href={`/admin/products/${p.id}`} className="flex flex-1 flex-col">
+                  <div className="relative">
+                    <Thumb src={p.images[0]} size="tile" />
+                    {/* On a picture, the state goes on the picture — a merchant
+                        scanning a wall of tiles never reaches the text. */}
+                    <span className="absolute left-2 top-2">
+                      <StatusMark status={p.status} />
+                    </span>
+                    {!p.isActive && (
+                      <span className="absolute right-2 top-2 rounded-full bg-ink/75 px-2 py-0.5 text-[11px] font-medium text-white">
+                        Hidden
                       </span>
                     )}
                   </div>
-                  <div className="space-y-0.5 p-2.5">
-                    <p className="line-clamp-2 text-xs font-medium">{p.title}</p>
-                    <p className="text-[11px] text-ink-soft">
-                      {formatPKR(effectivePrice(p))} · {stock} in stock
-                    </p>
+                  <div className="flex flex-1 flex-col gap-1 p-2.5">
+                    <p className="line-clamp-2 text-xs font-medium text-ink">{p.title}</p>
+                    <div className="flex items-baseline justify-between gap-2">
+                      <span className="text-xs font-medium tabular-nums text-ink">
+                        {formatPKR(effectivePrice(p))}
+                      </span>
+                      {p.salePrice != null && p.salePrice < p.basePrice && (
+                        <span className="text-[11px] tabular-nums text-ink-faint line-through">
+                          {formatPKR(p.basePrice)}
+                        </span>
+                      )}
+                    </div>
+                    <StockMark stock={stock} low={lowStock} className="block" />
                   </div>
                 </Link>
                 {/* No swipe in the grid — a tile has no long edge to swipe
@@ -152,36 +172,52 @@ export function ProductList({
             >
               <Link
                 href={`/admin/products/${p.id}`}
-                className="no-tap-scale flex items-center gap-4 px-5 py-3 transition-colors hover:bg-subtle active:bg-subtle"
+                className="no-tap-scale grid grid-cols-[2.75rem_minmax(0,1fr)] items-center gap-3 px-4 py-2.5 transition-colors hover:bg-subtle active:bg-subtle lg:grid-cols-[2.75rem_minmax(0,1fr)_7.5rem_9rem_7rem] lg:gap-4"
               >
-                <div className="relative h-14 w-11 flex-shrink-0 overflow-hidden rounded bg-brand-50">
-                  {p.images[0] && (
-                    <Image src={p.images[0]} alt="" fill sizes="44px" className="object-cover" />
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                    <p className="line-clamp-2 min-w-0 flex-1 text-sm font-medium">{p.title}</p>
-                    <span
-                      className={cn(
-                        "flex-shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium uppercase",
-                        p.status === "DRAFT" ? "bg-amber-bg text-amber" : "bg-green-bg text-green"
-                      )}
-                    >
-                      {p.status === "DRAFT" ? "Draft" : "Published"}
-                    </span>
-                  </div>
-                  <p className="text-xs text-ink-soft">
-                    {p.categories.map((c) => c.name).join(", ") || "Uncategorized"} ·{" "}
-                    {formatPKR(effectivePrice(p))} · {stock} in stock
+                <Thumb src={p.images[0]} size="row" />
+
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-ink">{p.title}</p>
+                  <p className="truncate text-xs text-ink-faint">
+                    {p.categories.map((c) => c.name).join(", ") || "Uncategorised"}
                     {!p.isActive && " · Hidden"}
                   </p>
-                  <p className="text-xs text-ink-soft">
-                    Cost {formatPKR(p.costPrice)} · Profit{" "}
-                    <span className={unitProfit(p) < 0 ? "font-medium text-rose" : "font-medium text-brand-600"}>
-                      {formatPKR(unitProfit(p))}/unit ({profitMargin(p)?.toFixed(0) ?? 0}%)
+                  {/* Narrow screens have no columns to put these in, so they
+                      fold under the name rather than disappearing. */}
+                  <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 lg:hidden">
+                    <span className="text-xs font-medium tabular-nums text-ink">
+                      {formatPKR(effectivePrice(p))}
                     </span>
+                    <StockMark stock={stock} low={lowStock} />
+                    <StatusMark status={p.status} />
+                  </div>
+                </div>
+
+                <div className="hidden lg:block">
+                  <StockMark stock={stock} low={lowStock} />
+                </div>
+
+                {/* Figures right-aligned and tabular, so the column reads down
+                    as a column of money instead of ragged sentences. */}
+                <div className="hidden text-right lg:block">
+                  <p className="text-sm font-medium tabular-nums text-ink">
+                    {formatPKR(effectivePrice(p))}
+                    {p.salePrice != null && p.salePrice < p.basePrice && (
+                      <span className="ml-1.5 text-[11px] font-normal tabular-nums text-ink-faint line-through">
+                        {formatPKR(p.basePrice)}
+                      </span>
+                    )}
                   </p>
+                  <p className="text-[11px] tabular-nums text-ink-faint">
+                    <span className={unitProfit(p) < 0 ? "font-medium text-rose" : undefined}>
+                      {formatPKR(unitProfit(p))}
+                    </span>{" "}
+                    profit · {profitMargin(p)?.toFixed(0) ?? 0}%
+                  </p>
+                </div>
+
+                <div className="hidden justify-end lg:flex">
+                  <StatusMark status={p.status} />
                 </div>
               </Link>
             </SwipeRow>

@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { RotateCcw, Trash2 } from "lucide-react";
 import { formatPKR } from "@/lib/utils";
 import { useServerRows } from "@/components/ui/use-server-rows";
@@ -11,6 +10,8 @@ import { SwipeRow } from "@/components/ui/swipe-row";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast";
 import { formatRelativeTime } from "@/lib/format-relative-time";
+import { Thumb } from "@/components/admin/product-elements";
+import { EmptyState } from "@/components/ui/primitives";
 
 type BinProductRow = {
   id: string;
@@ -71,7 +72,14 @@ export function BinProductList({ products }: { products: BinProductRow[] }) {
   return (
     <>
       {dialog}
-      <div className="mt-6 divide-y divide-border rounded-lg border border-border bg-white">
+      {rows.length === 0 ? (
+        <EmptyState
+          icon={Trash2}
+          title="The product bin is empty"
+          description="Products you delete land here first, and can be restored for as long as they sit in it."
+        />
+      ) : (
+      <div className="mt-6 divide-y divide-border rounded-xl border border-border bg-surface">
         {rows.map((p) => (
           <SwipeRow
             key={p.id}
@@ -86,27 +94,30 @@ export function BinProductList({ products }: { products: BinProductRow[] }) {
               },
             ]}
           >
-            <div className="flex items-center gap-4 px-5 py-3">
-              <div className="relative h-14 w-11 flex-shrink-0 overflow-hidden rounded bg-brand-50">
-                {p.images[0] && (
-                  <Image src={p.images[0]} alt="" fill sizes="44px" className="object-cover opacity-60" />
-                )}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="line-clamp-2 text-sm font-medium">{p.title}</p>
-                <p className="text-xs text-ink-soft">
-                  {p.categories.map((c) => c.name).join(", ") || "Uncategorized"} ·{" "}
-                  {formatPKR(effectivePrice(p))}
+            {/* The same row as the catalogue's, dimmed: a binned product should
+                be recognisably the thing it was, not a different object. */}
+            <div className="grid grid-cols-[2.75rem_minmax(0,1fr)] items-center gap-3 px-4 py-2.5 opacity-75 lg:grid-cols-[2.75rem_minmax(0,1fr)_9rem_9rem] lg:gap-4">
+              <Thumb src={p.images[0]} size="row" />
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium text-ink">{p.title}</p>
+                <p className="truncate text-xs text-ink-faint">
+                  {p.categories.map((c) => c.name).join(", ") || "Uncategorised"}
                 </p>
-                <p className="text-xs text-ink-soft">Deleted {formatRelativeTime(p.deletedAt)}</p>
+                <p className="mt-1 text-xs text-ink-faint lg:hidden">
+                  {formatPKR(effectivePrice(p))} · deleted {formatRelativeTime(p.deletedAt)}
+                </p>
               </div>
+              <p className="hidden text-xs text-ink-faint lg:block">
+                Deleted {formatRelativeTime(p.deletedAt)}
+              </p>
+              <p className="hidden text-right text-sm font-medium tabular-nums text-ink lg:block">
+                {formatPKR(effectivePrice(p))}
+              </p>
             </div>
           </SwipeRow>
         ))}
-        {rows.length === 0 && (
-          <p className="px-5 py-4 text-sm text-ink-soft">The product bin is empty.</p>
-        )}
       </div>
+      )}
     </>
   );
 }

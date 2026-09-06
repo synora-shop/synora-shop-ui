@@ -56,8 +56,20 @@ arrangement. `APP.ai` remains the authority on layout and on the four greys.
 - Settings itself is divided rather than merely spaced: *Customers* and *Global
   edits* are named rules, not gaps.
 
+- The **product row and tile** are settled, and they are now one vocabulary in
+  `components/admin/product-elements.tsx` — thumbnail, stock mark, status mark
+  — used by the catalogue, the tiles and the Bin alike. The row reads as a
+  table: name and collection on the left, then stock, then price and profit
+  right-aligned in tabular figures, then state. Out of stock and low stock
+  carry a colour *and* a word, so the one row that needs doing something about
+  is the one that stands out; before, "0 in stock" and "148 in stock" were the
+  same grey sentence. A product with no picture shows a glyph rather than a
+  blank tinted box, which used to be indistinguishable from a failed image.
+- The **Bin** shows the same row, dimmed, instead of a different-looking one,
+  and both bins have a real empty state rather than a grey sentence in a box.
+
 Still to decide: the theme card and its live preview, the media tile, the
-product tile, and the bulk-select bar.
+bulk-select bar, and the order row.
 
 **One mismatch with APP.ai to fix in this pass**
 

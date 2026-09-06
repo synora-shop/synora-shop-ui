@@ -1,5 +1,7 @@
 import { Download, Plus } from "lucide-react";
 import { db } from "@/lib/data/shop";
+import { getStoreSettings } from "@/lib/data/settings";
+import { toGlobalEdits } from "@/lib/global-edits";
 import { ProductList } from "@/components/admin/product-list";
 import { FilterBar, type FilterGroup } from "@/components/admin/filter-bar";
 import { FilterDisclosure } from "@/components/admin/filter-disclosure";
@@ -66,6 +68,10 @@ export default async function AdminProductsPage(props: PageProps<"/admin/product
         }
       : {}),
   };
+
+  // The low-stock threshold is a setting, so "3 left" means what Settings says
+  // it means rather than a number picked in the list component.
+  const globals = toGlobalEdits(await getStoreSettings());
 
   const total = await (await db()).product.count({ where });
   const { skip, take } = readPaging(sp, total);
@@ -134,6 +140,7 @@ export default async function AdminProductsPage(props: PageProps<"/admin/product
         // Whether the list is empty because there is nothing, or because the
         // merchant is looking at a slice of it — two different answers.
         filtered={q.length > 0 || activeCount(filters) > 0}
+        lowStock={globals.lowStockThreshold}
       />
 
       <PaginationBar basePath="/admin/products" searchParams={sp} total={total} />
