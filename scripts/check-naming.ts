@@ -393,6 +393,26 @@ for (const f of ["components/admin/bin-product-list.tsx", "components/admin/bin-
   check(`${f.split("/").pop()} has a real empty state`, /<EmptyState/.test(readFileSync(join(ROOT, f), "utf8")));
 }
 
+// "What have I started and not finished" was answerable only by someone who
+// knew the Products list had a status filter.
+const navList = readFileSync(join(ROOT, "lib/admin-nav.ts"), "utf8");
+check("Drafts is a screen of its own", /href: "\/admin\/drafts"/.test(navList));
+// Beside Products, because it is products — not beside Bin, which is what a
+// product leaves by.
+check(
+  "and stands beside Products, not beside Bin",
+  /\/admin\/products"[\s\S]{0,400}\/admin\/drafts"[\s\S]{0,200}\/admin\/categories"/.test(navList)
+);
+const drafts = readFileSync(join(ROOT, "app/admin/drafts/page.tsx"), "utf8");
+check('it is drafts, and cannot be filtered into something else', /status: "DRAFT" as const/.test(drafts));
+// A column whose every cell reads "Draft", on a screen called Drafts.
+check("and does not repeat the word on every row", /showStatus={false}/.test(drafts));
+// Everything else is the catalogue's own, so this is a place to stand rather
+// than a second thing to learn.
+for (const control of ["ListSearch", "SortMenu", "ViewToggle", "PaginationBar", "ProductList"]) {
+  check(`it reuses ${control}`, new RegExp(`<${control}`).test(drafts));
+}
+
 // The three pages every shop is eventually asked for. Offered, not created:
 // a blank privacy policy on a live storefront reads as a promise nobody made.
 const policies = readFileSync(join(ROOT, "lib/policy-pages.ts"), "utf8");

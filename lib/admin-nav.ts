@@ -80,6 +80,10 @@ export const NAV_SECTIONS: readonly NavSection[] = [
     // Everything about selling: the catalogue, and what happens to it.
     tabs: [
       { href: "/admin/products", label: "Products" },
+      // Beside Products because it is products: everything started and not yet
+      // put out. It sits before Categories rather than beside Bin — a draft is
+      // on its way in, not on its way out.
+      { href: "/admin/drafts", label: "Drafts" },
       { href: "/admin/categories", label: "Categories" },
       { href: "/admin/orders", label: "Orders" },
       { href: "/admin/customers", label: "Customers" },

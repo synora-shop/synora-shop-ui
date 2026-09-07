@@ -43,6 +43,7 @@ export function ProductList({
   view = "list",
   filtered = false,
   lowStock,
+  showStatus = true,
 }: {
   products: ProductRow[];
   view?: "list" | "grid";
@@ -50,6 +51,14 @@ export function ProductList({
   filtered?: boolean;
   /** The store's own low-stock threshold, so "3 left" means what Settings says. */
   lowStock: number;
+  /**
+   * Whether to draw the Draft/Published mark.
+   *
+   * Off on a screen where every row is the same state. A column whose every
+   * cell reads "Draft", on a screen called Drafts, is a column that says
+   * nothing and takes the width of one that could.
+   */
+  showStatus?: boolean;
 }) {
   const router = useRouter();
   const [rows, setRows] = useServerRows(products);
@@ -220,9 +229,11 @@ export function ProductList({
                     </span>
                     {/* On a picture, the state goes on the picture — a merchant
                         scanning a wall of tiles never reaches the text. */}
-                    <span className="absolute bottom-2 left-2">
-                      <StatusMark status={p.status} />
-                    </span>
+                    {showStatus && (
+                      <span className="absolute bottom-2 left-2">
+                        <StatusMark status={p.status} />
+                      </span>
+                    )}
                     {!p.isActive && (
                       <span className="absolute right-2 top-2 rounded-full bg-ink/75 px-2 py-0.5 text-[11px] font-medium text-white">
                         Hidden
@@ -278,7 +289,10 @@ export function ProductList({
               <Link
                 href={`/admin/products/${p.id}`}
                 className={cn(
-                  "no-tap-scale grid grid-cols-[1.25rem_2.75rem_minmax(0,1fr)] items-center gap-3 px-4 py-2.5 transition-colors hover:bg-subtle active:bg-subtle lg:grid-cols-[1.25rem_2.75rem_minmax(0,1fr)_7.5rem_9rem_7rem] lg:gap-4",
+                  "no-tap-scale grid grid-cols-[1.25rem_2.75rem_minmax(0,1fr)] items-center gap-3 px-4 py-2.5 transition-colors hover:bg-subtle active:bg-subtle lg:gap-4",
+                  showStatus
+                    ? "lg:grid-cols-[1.25rem_2.75rem_minmax(0,1fr)_7.5rem_9rem_7rem]"
+                    : "lg:grid-cols-[1.25rem_2.75rem_minmax(0,1fr)_7.5rem_9rem]",
                   picked.has(p.id) && "bg-brand-50"
                 )}
               >
@@ -298,7 +312,7 @@ export function ProductList({
                       {formatPKR(effectivePrice(p))}
                     </span>
                     <StockMark stock={stock} low={lowStock} />
-                    <StatusMark status={p.status} />
+                    {showStatus && <StatusMark status={p.status} />}
                   </div>
                 </div>
 
@@ -325,9 +339,11 @@ export function ProductList({
                   </p>
                 </div>
 
-                <div className="hidden justify-end lg:flex">
-                  <StatusMark status={p.status} />
-                </div>
+                {showStatus && (
+                  <div className="hidden justify-end lg:flex">
+                    <StatusMark status={p.status} />
+                  </div>
+                )}
               </Link>
             </SwipeRow>
           );
