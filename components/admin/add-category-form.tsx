@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { buttonClass } from "@/components/ui/primitives";
+import { FieldError, buttonClass } from "@/components/ui/primitives";
 import { useRouter } from "next/navigation";
 import { createCategory } from "@/app/admin/categories/actions";
 import { useConfirm } from "@/components/ui/confirm-dialog";
@@ -59,7 +59,7 @@ export function AddCategoryForm() {
         label="Picture (optional)"
         hint="You can add or change it later, along with the description and SEO text."
       />
-      {error && <p className="text-sm text-rose">{error}</p>}
+      {error && <FieldError>{error}</FieldError>}
       <button
         type="submit"
         disabled={submitting}

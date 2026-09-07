@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { buttonClass } from "@/components/ui/primitives";
+import { FieldError, buttonClass } from "@/components/ui/primitives";
 import { useRouter } from "next/navigation";
 import { Check, ChevronDown, ChevronRight, Plus, Trash2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -103,7 +103,7 @@ export function MenuManager({
   return (
     <div className="space-y-8">
       {dialog}
-      {error && <p className="text-sm text-rose">{error}</p>}
+      {error && <FieldError>{error}</FieldError>}
 
       <section>
         <h3 className="text-[13px] font-semibold text-ink">Where menus appear</h3>

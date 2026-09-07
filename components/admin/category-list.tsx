@@ -9,6 +9,7 @@ import { SwipeRow } from "@/components/ui/swipe-row";
 import { CollectionDetailsForm } from "@/components/admin/collection-details-form";
 import type { CollectionDetails } from "@/app/admin/categories/actions";
 import { useConfirm, type ConfirmOptions } from "@/components/ui/confirm-dialog";
+import { FieldError } from "@/components/ui/primitives";
 
 type CategoryRow = {
   id: string;
@@ -176,7 +177,7 @@ export function CategoryList({ categories }: { categories: CategoryRow[] }) {
   return (
     <div>
       {dialog}
-      {error && <p className="mb-2 text-sm text-rose">{error}</p>}
+      {error && <FieldError className="mb-2">{error}</FieldError>}
       <div className="divide-y divide-border rounded-lg border border-border bg-white">
         {rows.map((cat) => (
           <Row

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { buttonClass } from "@/components/ui/primitives";
+import { FieldError, buttonClass } from "@/components/ui/primitives";
 import { Bell, BellOff } from "lucide-react";
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
@@ -132,7 +132,7 @@ export function PushNotificationsToggle() {
             ? "Disable order notifications on this device"
             : "Enable order notifications on this device"}
       </button>
-      {error && <p className="mt-2 text-sm text-rose">{error}</p>}
+      {error && <FieldError className="mt-2">{error}</FieldError>}
     </div>
   );
 }

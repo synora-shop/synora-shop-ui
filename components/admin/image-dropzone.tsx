@@ -5,6 +5,7 @@ import { GripVertical, UploadCloud, X } from "lucide-react";
 import { uploadImage } from "@/lib/actions/media";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { FieldLabel } from "@/components/merchant/form-shell";
+import { FieldError } from "@/components/ui/primitives";
 
 // Reusable multi-image field: drag files in from the desktop, click to
 // browse (multi-select supported), reorder by dragging thumbnails, or paste
@@ -224,7 +225,7 @@ export function ImageDropzone({
         </button>
       </div>
 
-      {error && <p className="mt-1 text-xs text-rose">{error}</p>}
+      {error && <FieldError size="xs" className="mt-1">{error}</FieldError>}
     </div>
   );
 }

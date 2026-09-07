@@ -13,6 +13,7 @@ import { validateUrl } from "@/lib/url-validation";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { cn } from "@/lib/utils";
+import { FieldError } from "@/components/ui/primitives";
 import {
   STICKY_KINDS,
   STICKY_SCOPES,
@@ -120,7 +121,7 @@ function IconPicker({
         )}
       </div>
       <p className="mt-1 text-[11px] text-ink-soft">SVG or PNG, up to 512 KB. SVGs are cleaned of any script before being stored.</p>
-      {error && <p className="mt-1 text-xs text-rose">{error}</p>}
+      {error && <FieldError size="xs" className="mt-1">{error}</FieldError>}
     </div>
   );
 }

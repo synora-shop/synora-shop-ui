@@ -6,6 +6,7 @@ import { resetPassword } from "@/app/merchant/actions";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Field, FormMessage, SubmitButton } from "./form-shell";
 import { useCountdownRedirect } from "./use-countdown-redirect";
+import { startNavProgress } from "@/components/ui/nav-progress";
 
 /** Long enough to read that it worked, short enough not to be a wait. */
 const REDIRECT_SECONDS = 6;
@@ -49,7 +50,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
         <FormMessage tone="success">{done}</FormMessage>
         <button
           type="button"
-          onClick={() => router.push("/merchant/login")}
+          onClick={() => { startNavProgress(); router.push("/merchant/login"); }}
           className="w-full rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-700"
         >
           Sign in

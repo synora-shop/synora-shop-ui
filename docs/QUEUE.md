@@ -332,3 +332,43 @@ Three faults, all three fixed the same day:
 Untested, because it needs a domain whose DNS can be changed: whether Vercel
 accepts a CNAME to `cname.shop.synoradigitals.com`, issues the certificate, and
 flips the domain from VERIFIED to ACTIVE.
+
+## Motion, 7 September — step 1 of three
+
+Asked for: animation across the whole panel — buttons, every interactive item,
+errors, redirections — restrained rather than expressive. Steps two and three
+are the maintenance page and the guided store-type switch.
+
+What was already right: every button, link and `[role="button"]` has scaled on
+`:active` from one base rule for a long time, with `.no-tap-scale` as the
+opt-out for full-bleed rows, and the top-of-page progress bar has acknowledged
+every link click since it was written. The gaps were the things that appeared
+and vanished with no motion at all, and one of them was an accessibility fault
+rather than a cosmetic one.
+
+- **Errors were silent as well as sudden.** Nineteen screens across the admin,
+  the customizer and the storefront had each written their own rose paragraph,
+  and most carried no `role` — so a screen reader announced nothing, and a
+  merchant who could not see the message watched the save do nothing, twice,
+  forever. They all go through `FieldError` now: `role="alert"`, and
+  `.notice-in`, which opens its own height so the form below slides rather than
+  being shoved.
+- **Dialogs and toasts appeared and vanished.** `.scrim-in` / `.dialog-in` for
+  a dialog opening; `.toast-in` / `.toast-out` for a message, which is now
+  marked leaving, plays its exit and is removed when it finishes — the removal
+  timer and the CSS duration are asserted equal, because a short timer blinks
+  it out and a long one holds its neighbours down.
+- **A navigation this app started itself showed nothing.** The progress bar
+  listened for anchor clicks only, so every `router.push` — signing in, saving
+  a product, jumping from search, switching page in the customizer — left the
+  screen looking dead. `startNavProgress()` covers those. The one deliberate
+  omission is the list filter, which replaces the URL on every keystroke.
+- **`.attention`** is new and unused until step three: the five-second grow,
+  shrink and ring played on the single control a merchant has been sent to
+  find. Nothing else in the product may use it — an attention animation that
+  appears twice has stopped answering "where?" and started decorating.
+
+`check:motion` holds all of it: every animation class is switched off under
+`prefers-reduced-motion`, everything that starts hidden is restored to visible
+there, no screen hand-writes an error line, and the toast's two durations
+agree. 297 assertions, and it found eight files the first sweep missed.

@@ -158,9 +158,53 @@ see the README.
 
 ## 7. Motion and state
 
-**Reduced motion is honoured.** Every animation is off under
-`prefers-reduced-motion`, and anything that animates *in* from invisible must
-end up visible when it is off — `.rise` and `.bulk-rise` both do.
+**Motion reports; it does not decorate.** Something that appears out of nowhere
+has to be found. Something that arrives has already said where to look. That is
+the whole budget, and it is why nothing in the panel animates for its own sake.
+
+**Nothing routine lasts longer than 220ms.** A merchant editing their fortieth
+product this morning meets each of these forty times, and the difference
+between "responsive" and "slow" is about a tenth of a second. The exceptions
+are deliberate and rare: the welcome flow, where there is nothing to do but
+look, and `.attention`, which is answering the question "where?".
+
+**One vocabulary, in `app/globals.css`.** `.scrim-in` and `.dialog-in` for a
+dialog opening, `.toast-in` / `.toast-out` for a message arriving and leaving,
+`.notice-in` for an error that has just appeared, `.shake` for a refusal,
+`.lift` for a card being chosen between, `.attention` for the single control a
+merchant has been sent to find. Nothing invents its own. *Check:
+`check:motion`.*
+
+**Press feedback is a transition, not an animation, and it stays.** Every
+button, link and `[role="button"]` scales to 0.96 on `:active` from one rule in
+`@layer base`, so a press is acknowledged before anything else has happened.
+Full-bleed rows opt out with `.no-tap-scale` — scaling a row from its centre
+inside a list reads as a glitch, not a press — and answer with their own
+background instead. This is the one movement that survives
+`prefers-reduced-motion`: it is 4% over 120ms in direct response to the user's
+own finger, which is feedback, and removing it makes every control in the panel
+feel dead.
+
+**An error is a `FieldError`, never a rose paragraph.** Seventeen screens had
+written their own, most with no `role`, so a screen reader announced nothing at
+all — the save appeared to do nothing, twice, forever. The primitive carries
+`role="alert"` and `.notice-in`, which opens its own height so the form below
+slides rather than being shoved. *Check: `check:motion`, "uses FieldError
+rather than its own error line".*
+
+**Something that leaves has to actually go.** A toast is marked leaving, plays
+its exit, and is removed when it finishes — the removal timer and the CSS
+duration are the same number, asserted, because a short timer blinks it out and
+a long one holds its neighbours down. *Check: `check:motion`, "the toast's
+removal timer matches its exit animation".*
+
+**Reduced motion is honoured, and never hides anything.** Every animation is
+off under `prefers-reduced-motion`, and anything that animates *in* from
+invisible or from zero height must end up visible and open when it is off.
+Turning the animation off without restoring the resting state does not calm the
+interface down — it deletes the error, the dialog and the toast outright, for
+exactly the people least able to work out what happened. *Check: `check:motion`,
+"is still visible with motion off".*
 
 **A loading state is the shape of what is coming.** A list skeleton over a page
 of tiles is the wrong shape and the page jumps when the real thing lands.

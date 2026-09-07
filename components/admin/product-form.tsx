@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { buttonClass } from "@/components/ui/primitives";
+import { FieldError, buttonClass } from "@/components/ui/primitives";
 import { useRouter } from "next/navigation";
 import { Plus, RotateCcw, Trash2 } from "lucide-react";
 import { saveProduct, type ProductInput, type VariantInput } from "@/app/admin/products/actions";
@@ -17,6 +17,7 @@ import {
 } from "@/lib/product-kind";
 import { cn } from "@/lib/utils";
 import { Field } from "@/components/merchant/form-shell";
+import { startNavProgress } from "@/components/ui/nav-progress";
 
 type Category = { id: string; name: string; slug: string };
 
@@ -148,6 +149,7 @@ export function ProductForm({
       router.refresh();
       return;
     }
+    startNavProgress();
     router.push("/admin/products");
     router.refresh();
   }
@@ -385,7 +387,7 @@ export function ProductForm({
         </div>
       </div>
 
-      {error && <p className="text-sm text-rose">{error}</p>}
+      {error && <FieldError>{error}</FieldError>}
 
       <div className="flex gap-3">
         <button

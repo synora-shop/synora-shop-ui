@@ -257,6 +257,52 @@ export function Badge({
 }
 
 // ---------------------------------------------------------------------------
+// FieldError
+// ---------------------------------------------------------------------------
+
+/**
+ * A message that has just appeared because of something the merchant did.
+ *
+ * Seventeen screens had written this by hand, and each had written it slightly
+ * differently: some `text-sm`, some `text-xs`, most with no `role`. The last
+ * one is the reason this exists rather than a convention — an error rendered
+ * as a plain paragraph is silent to a screen reader, so a merchant who cannot
+ * see it is simply told nothing and left wondering why the save did nothing.
+ *
+ * `role="alert"` announces it. `notice-in` makes it arrive: it opens its own
+ * height as well as fading, so the form below slides down rather than being
+ * shoved, which is how someone loses their place on a long page.
+ *
+ * Render it conditionally — `{error && <FieldError>{error}</FieldError>}`. The
+ * animation is on mount, so a message that changes from one error to another
+ * while staying mounted does not replay it; that is correct, because nothing
+ * moved and nothing needs finding.
+ */
+export function FieldError({
+  size = "sm",
+  className,
+  children,
+}: {
+  /** `sm` under a form, `xs` inside a dense row. */
+  size?: "sm" | "xs";
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <p
+      role="alert"
+      className={cn(
+        "notice-in leading-snug text-rose",
+        size === "xs" ? "text-xs" : "text-sm",
+        className
+      )}
+    >
+      {children}
+    </p>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Stat
 // ---------------------------------------------------------------------------
 

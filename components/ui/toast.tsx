@@ -1,6 +1,14 @@
 "use client";
 
-import { createContext, useCallback, useContext, useMemo, useState, useSyncExternalStore } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { createPortal } from "react-dom";
 import { AlertTriangle, CheckCircle2, Info, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -21,7 +29,26 @@ type Toast = {
   message: string;
   /** Stays on screen until dismissed — for errors the user has to act on. */
   blocking?: boolean;
+  /**
+   * On its way out.
+   *
+   * A toast that is simply deleted from the list vanishes, and the ones below
+   * it jump up into the gap. So dismissing marks it instead, the exit
+   * animation plays, and the row is removed when that is done — which is also
+   * what collapses its height, so its neighbours slide rather than jump.
+   */
+  leaving?: boolean;
 };
+
+/**
+ * How long the exit animation runs. Must match `.toast-out` in globals.css.
+ *
+ * If this is shorter the toast is deleted mid-animation and blinks out; if it
+ * is longer the toast sits invisible, holding its neighbours down. Both are
+ * only visible in motion, which is exactly why the number is written down once
+ * with a note rather than twice by accident.
+ */
+const LEAVE_MS = 160;
 
 type ShowOptions = { blocking?: boolean };
 
@@ -63,8 +90,32 @@ let nextId = 0;
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
+  /**
+   * Which toasts are already on their way out.
+   *
+   * A ref rather than a read inside the state updater. Dismissing the same
+   * toast twice is ordinary — the auto-dismiss timer and the close button
+   * landing together — and a second removal would restart the animation on a
+   * toast that is half gone. Deciding that inside `setToasts` looked simpler
+   * and was wrong: React invokes updaters twice in development, so the second
+   * invocation would see the first one's result, conclude the toast was
+   * already leaving, and never schedule the removal at all. The toast would
+   * then sit there faded forever.
+   */
+  const leaving = useRef(new Set<number>());
+
   const dismiss = useCallback((id: number) => {
-    setToasts((list) => list.filter((t) => t.id !== id));
+    if (leaving.current.has(id)) return;
+    leaving.current.add(id);
+
+    // Two steps: mark it so the exit animation plays, then remove it once that
+    // has finished. Removing straight away would make it vanish and the toasts
+    // below it jump up into the gap.
+    setToasts((list) => list.map((t) => (t.id === id ? { ...t, leaving: true } : t)));
+    setTimeout(() => {
+      setToasts((list) => list.filter((t) => t.id !== id));
+      leaving.current.delete(id);
+    }, LEAVE_MS);
   }, []);
 
   const show = useCallback(
@@ -72,7 +123,9 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       const id = ++nextId;
       const toast: Toast = { id, tone, message, blocking: options?.blocking };
       setToasts((list) => {
-        // Repeating the same message shouldn't stack — refresh the existing one.
+        // Repeating the same message shouldn't stack — refresh the existing
+        // one. A copy already on its way out is dropped immediately rather
+        // than left to finish leaving underneath its own replacement.
         const withoutDuplicate = list.filter((t) => t.message !== message);
         return [...withoutDuplicate, toast].slice(-4);
       });
@@ -88,7 +141,13 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       info: (message, options) => show("info", message, options),
       success: (message, options) => show("success", message, options),
       error: (message, options) => show("error", message, options),
-      dismissAll: () => setToasts([]),
+      // Immediate, with no exit: dismissAll is called when a screen is leaving
+      // or a problem has been fixed, and animating four toasts out of a page
+      // that is already gone is motion nobody sees.
+      dismissAll: () => {
+        leaving.current.clear();
+        setToasts([]);
+      },
     }),
     [show]
   );
@@ -105,6 +164,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               role={toast.tone === "error" ? "alert" : "status"}
               className={cn(
                 "pointer-events-auto flex w-full max-w-sm items-start gap-2.5 rounded-lg border px-4 py-3 text-sm shadow-lg",
+                toast.leaving ? "toast-out" : "toast-in",
                 TONE_STYLES[toast.tone]
               )}
             >

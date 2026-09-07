@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { PasswordInput } from "@/components/ui/password-input";
+import { FieldError } from "@/components/ui/primitives";
 
 export function LoginForm({
   submitLabel = "Sign In",
@@ -57,7 +58,7 @@ export function LoginForm({
         required
         placeholder="Password"
       />
-      {error && <p className="text-sm text-rose">{error}</p>}
+      {error && <FieldError>{error}</FieldError>}
       <button
         type="submit"
         disabled={submitting}

@@ -126,7 +126,7 @@ export function BusinessTypeDialog({
 
         <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
           {error && (
-            <p className="mb-3 rounded-lg bg-rose-bg px-3 py-2 text-sm text-rose" role="alert">
+            <p className="notice-in mb-3 rounded-lg bg-rose-bg px-3 py-2 text-sm text-rose" role="alert">
               {error}
             </p>
           )}

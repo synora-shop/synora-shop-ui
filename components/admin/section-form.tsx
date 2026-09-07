@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { buttonClass } from "@/components/ui/primitives";
+import { FieldError, buttonClass } from "@/components/ui/primitives";
 import { Plus, Trash2 } from "lucide-react";
 import { updateSectionData } from "@/app/admin/pages/actions";
 import { ImageDropzone } from "@/components/admin/image-dropzone";
@@ -361,7 +361,7 @@ export function SectionForm({
           {saving ? "Saving…" : "Save Section"}
         </button>
         {saved && !saving && <span className="text-xs text-ink-soft">Saved.</span>}
-        {error && <span className="text-xs text-rose">{error}</span>}
+        {error && <FieldError size="xs">{error}</FieldError>}
       </div>
     </div>
   );

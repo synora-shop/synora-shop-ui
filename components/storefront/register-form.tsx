@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { PasswordInput } from "@/components/ui/password-input";
+import { FieldError } from "@/components/ui/primitives";
 
 export function RegisterForm({
   submitLabel = "Create Account",
@@ -64,7 +65,7 @@ export function RegisterForm({
         minLength={8}
         placeholder="Password (min. 8 characters)"
       />
-      {error && <p className="text-sm text-rose">{error}</p>}
+      {error && <FieldError>{error}</FieldError>}
       <button
         type="submit"
         disabled={submitting}

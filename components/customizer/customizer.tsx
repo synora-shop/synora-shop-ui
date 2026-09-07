@@ -54,6 +54,7 @@ import {
 } from "@/lib/customizer-protocol";
 import { previewUrl } from "@/lib/preview-mode";
 import type { RenderableSection } from "@/components/storefront/sections/render";
+import { startNavProgress } from "@/components/ui/nav-progress";
 
 export type CustomizerPage = { id: string; slug: string; title: string; previewPath: string };
 
@@ -234,6 +235,7 @@ export function Customizer({
       // These live in another panel entirely, so this is a navigation, and the
       // unsaved-changes guard applies exactly as it would to a manual click.
       if (msg.type === PREVIEW_EDIT_REGION) {
+        startNavProgress();
         router.push(msg.href);
       }
     }
@@ -325,6 +327,7 @@ export function Customizer({
       toast.error(result.error, { blocking: true });
       return;
     }
+    startNavProgress();
     router.push(`/admin/customize?page=${result.id}`);
   }
 
@@ -335,6 +338,7 @@ export function Customizer({
       toast.error(result.error, { blocking: true });
       return;
     }
+    startNavProgress();
     router.push(`/admin/customize?page=${result.id}`);
   }
 
@@ -407,6 +411,7 @@ export function Customizer({
       setRefused((n) => n + 1);
       if (!(await confirmLeave())) return;
     }
+    startNavProgress();
     router.push(`/admin/customize?page=${target.id}`);
   }
 

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { CornerDownLeft, Search } from "lucide-react";
 import { searchSettings, type SettingEntry } from "@/lib/settings-index";
 import { cn } from "@/lib/utils";
+import { startNavProgress } from "@/components/ui/nav-progress";
 
 /**
  * Find anything in the admin.
@@ -60,6 +61,7 @@ export function AdminSearch({ open, onClose }: { open: boolean; onClose: () => v
   function go(entry: SettingEntry | undefined) {
     if (!entry) return;
     onClose();
+    startNavProgress();
     router.push(entry.href);
   }
 

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Field, FormMessage, SubmitButton } from "./form-shell";
+import { startNavProgress } from "@/components/ui/nav-progress";
 
 /**
  * Merchant sign-in.
@@ -46,6 +47,7 @@ export function MerchantLoginForm() {
       ? requested
       : "/merchant/stores";
 
+    startNavProgress();
     router.push(destination);
     router.refresh();
   }

@@ -9,6 +9,7 @@ import { CITIES } from "@/lib/cities";
 import { isValidEmail, isValidPakistaniPhone } from "@/lib/validation";
 import { ENABLED_PAYMENT_METHODS as PAYMENT_METHODS } from "@/lib/payment-methods";
 import { useMoney } from "@/components/ui/currency";
+import { FieldError } from "@/components/ui/primitives";
 
 type Settings = {
   shippingFee: number;
@@ -377,11 +378,11 @@ export function CheckoutForm({
                 {checkingCode ? applyingLabel : applyLabel}
               </button>
             </div>
-            {codeError && <p className="mt-1.5 text-xs text-rose">{codeError}</p>}
+            {codeError && <FieldError size="xs" className="mt-1.5">{codeError}</FieldError>}
           </div>
         )}
 
-        {error && <p className="mt-4 text-sm text-rose">{error}</p>}
+        {error && <FieldError className="mt-4">{error}</FieldError>}
 
         <button
           type="submit"

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ChevronRight, Search, X } from "lucide-react";
 import { searchSettings, type SettingEntry } from "@/lib/settings-index";
 import { cn } from "@/lib/utils";
+import { startNavProgress } from "@/components/ui/nav-progress";
 
 /**
  * Find-anything search across the admin.
@@ -62,6 +63,7 @@ export function SettingsSearch({
     setOpen(false);
     setQuery("");
     inputRef.current?.blur();
+    startNavProgress();
     router.push(entry.href);
   }
 

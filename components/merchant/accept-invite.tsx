@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { acceptInvite } from "@/app/admin/staff-actions";
 import { FormMessage } from "./form-shell";
+import { startNavProgress } from "@/components/ui/nav-progress";
 
 export function AcceptInvite({ token, shopName }: { token: string; shopName: string }) {
   const router = useRouter();
@@ -35,6 +36,7 @@ export function AcceptInvite({ token, shopName }: { token: string; shopName: str
         <button
           type="button"
           onClick={() => {
+            startNavProgress();
             router.push("/admin");
             router.refresh();
           }}

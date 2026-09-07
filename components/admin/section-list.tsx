@@ -16,6 +16,7 @@ import type { SectionType } from "@/lib/generated/prisma/client";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { SwipeRow } from "@/components/ui/swipe-row";
 import { ReorderButtons } from "@/components/ui/reorder-buttons";
+import { FieldError } from "@/components/ui/primitives";
 
 type SectionRow = { id: string; type: SectionType; isVisible: boolean; data: unknown };
 
@@ -128,7 +129,7 @@ export function SectionList({ pageId, sections: initial }: { pageId: string; sec
   return (
     <div className="space-y-3">
       {dialog}
-      {error && <p className="text-sm text-rose">{error}</p>}
+      {error && <FieldError>{error}</FieldError>}
       {sections.map((section, i) => (
         <div
           key={section.id}

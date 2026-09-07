@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { buttonClass } from "@/components/ui/primitives";
+import { FieldError, buttonClass } from "@/components/ui/primitives";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
+import { startNavProgress } from "@/components/ui/nav-progress";
 
 const RESEND_COOLDOWN_SECONDS = 60;
 
@@ -73,6 +74,7 @@ export function AdminLoginForm() {
       return;
     }
 
+    startNavProgress();
     router.push(searchParams.get("callbackUrl") || "/admin");
     router.refresh();
   }
@@ -106,7 +108,7 @@ export function AdminLoginForm() {
           className="input tracking-[0.5em]"
           autoFocus
         />
-        {error && <p className="text-sm text-rose">{error}</p>}
+        {error && <FieldError>{error}</FieldError>}
         <button
           type="submit"
           disabled={submitting}
@@ -144,7 +146,7 @@ export function AdminLoginForm() {
         placeholder="Password"
         className="input"
       />
-      {error && <p className="text-sm text-rose">{error}</p>}
+      {error && <FieldError>{error}</FieldError>}
       <button
         type="submit"
         disabled={submitting}

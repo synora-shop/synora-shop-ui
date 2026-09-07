@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { buttonClass } from "@/components/ui/primitives";
+import { FieldError, buttonClass } from "@/components/ui/primitives";
 import { useRouter } from "next/navigation";
 import { updateCollectionDetails, type CollectionDetails } from "@/app/admin/categories/actions";
 import { SingleImageField } from "@/components/admin/single-image-field";
@@ -99,7 +99,7 @@ export function CollectionDetailsForm({
           />
       </Field>
 
-      {error && <p className="text-sm text-rose">{error}</p>}
+      {error && <FieldError>{error}</FieldError>}
 
       <div className="flex items-center gap-2">
         <button

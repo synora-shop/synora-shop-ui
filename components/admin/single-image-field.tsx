@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { buttonClass } from "@/components/ui/primitives";
+import { FieldError, buttonClass } from "@/components/ui/primitives";
 import { ImagePlus, Loader2, RefreshCw, X } from "lucide-react";
 import { uploadImage } from "@/lib/actions/media";
 import { FieldLabel } from "@/components/merchant/form-shell";
@@ -176,7 +176,7 @@ export function SingleImageField({
       </div>
 
       {hint && !error && <p className="mt-1 text-xs text-ink-faint">{hint}</p>}
-      {error && <p className="mt-1 text-xs text-rose">{error}</p>}
+      {error && <FieldError size="xs" className="mt-1">{error}</FieldError>}
     </div>
   );
 }

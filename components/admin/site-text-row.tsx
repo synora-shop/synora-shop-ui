@@ -4,6 +4,7 @@ import { useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import { updateSiteText, resetSiteText } from "@/app/admin/site-text/actions";
 import { SaveButton, type SaveState } from "@/components/ui/save-button";
+import { FieldError } from "@/components/ui/primitives";
 
 export function SiteTextRow({
   itemKey,
@@ -85,7 +86,7 @@ export function SiteTextRow({
           Reset to default
         </button>
       )}
-      {error && <span className="text-xs text-rose">{error}</span>}
+      {error && <FieldError size="xs">{error}</FieldError>}
     </div>
   );
 }

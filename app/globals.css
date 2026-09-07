@@ -604,6 +604,185 @@ body {
   transition-duration: 90ms;
 }
 
+/* -------------------------------------------------------------------------- */
+/* Arriving and leaving                                                        */
+/* -------------------------------------------------------------------------- */
+
+/*
+ * Everything in this block exists to answer one question a person has already
+ * asked by clicking: did that work?
+ *
+ * The rule the whole panel is held to is that motion reports, it does not
+ * decorate. Something that appears out of nowhere has to be found; something
+ * that arrives has already told you where to look. That is the entire budget.
+ * None of these last longer than 220ms, because a merchant editing their
+ * fortieth product this morning meets each of them forty times, and the
+ * difference between "responsive" and "slow" is about a tenth of a second.
+ *
+ * Every class here has a reduced-motion answer at the bottom of the file, and
+ * anything that starts at opacity 0 ends visible there. A person who has asked
+ * their system for less movement must still be able to read the error.
+ */
+
+/* The grey behind a dialog. Fades rather than snaps, so the page behind is
+   understood to still be there rather than replaced. */
+@keyframes shp-scrim-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.scrim-in {
+  animation: shp-scrim-in 140ms var(--ease-out) both;
+}
+
+/* The dialog itself, arriving under the cursor that summoned it. Slightly
+   under full size at the start rather than above it: growing into place reads
+   as opening, overshooting reads as a notification demanding attention, and a
+   confirmation is not an alarm. */
+@keyframes shp-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.dialog-in {
+  animation: shp-dialog-in 180ms var(--ease-out) both;
+}
+
+/* A toast, sliding in from the edge it is anchored to.
+   Horizontal on a wide screen where toasts sit bottom-right, vertical on a
+   phone where they sit along the bottom edge and there is no side to come
+   from. */
+@keyframes shp-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes shp-toast-in-side {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.toast-in {
+  animation: shp-toast-in 200ms var(--ease-out) both;
+}
+@media (min-width: 640px) {
+  .toast-in {
+    animation-name: shp-toast-in-side;
+  }
+}
+
+/* A toast leaving. Faster than it arrived, and it collapses its own height so
+   the toasts below it move up rather than jumping. */
+@keyframes shp-toast-out {
+  from {
+    opacity: 1;
+    transform: none;
+    max-height: 8rem;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+    max-height: 0;
+    margin-bottom: -0.5rem;
+  }
+}
+.toast-out {
+  animation: shp-toast-out 160ms var(--ease-out) both;
+  pointer-events: none;
+}
+
+/*
+ * A message that was not there a moment ago: a validation error under a field,
+ * a warning that appeared because of what was just typed, a notice explaining
+ * why something is refused.
+ *
+ * It opens its own height as well as fading, so the content below it slides
+ * down rather than being shoved. Being shoved is how a merchant loses their
+ * place on a long form.
+ */
+@keyframes shp-notice-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+    max-height: 0;
+  }
+  /* Past the message's own height well before the end, so the last 60% of the
+     animation moves nothing. */
+  40% {
+    max-height: 12rem;
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    /* Far beyond any message this product produces. The animation fills
+       forwards, so this is also the resting max-height — a smaller number here
+       would silently clip a long error for as long as it was on screen, which
+       is the one thing an error must never do. */
+    max-height: 60rem;
+  }
+}
+.notice-in {
+  animation: shp-notice-in 180ms var(--ease-out) both;
+  overflow: hidden;
+}
+
+/*
+ * Look here.
+ *
+ * Played on the one control that is standing between a merchant and what they
+ * were trying to do, when they have followed a link that exists to show them
+ * where it is. Nothing else in the product may use it: an attention animation
+ * that appears twice has stopped being an answer to "where?" and started being
+ * decoration.
+ *
+ * Five seconds, which is long by every other standard here and correct for
+ * this one — the merchant has just changed page and has to find the thing
+ * after their eyes have settled. Three cycles of grow, shrink and a ring, then
+ * it stops of its own accord rather than waiting to be dismissed.
+ */
+@keyframes shp-attention {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgb(47 41 201 / 0);
+  }
+  8% {
+    transform: scale(1.08);
+    box-shadow: 0 0 0 6px rgb(47 41 201 / 0.30);
+  }
+  16% {
+    transform: scale(0.98);
+    box-shadow: 0 0 0 2px rgb(47 41 201 / 0.14);
+  }
+  24% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 8px rgb(47 41 201 / 0.22);
+  }
+  33% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgb(47 41 201 / 0);
+  }
+}
+.attention {
+  animation: shp-attention 1666ms var(--ease-spring) 3;
+  /* Above neighbouring rows, or the ring is clipped by whatever sits next. */
+  position: relative;
+  z-index: 1;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .shake,
   .pulse-brand,
@@ -611,9 +790,42 @@ body {
   .bulk-rise,
   .drift,
   .drift-slow,
-  .drift-slower {
+  .drift-slower,
+  .scrim-in,
+  .dialog-in,
+  .toast-in,
+  .toast-out,
+  .notice-in,
+  .attention {
     animation: none;
   }
+
+  /* Nothing above may hide its content when its animation is off. Each of
+     these starts at opacity 0 or zero height, and without this a merchant who
+     asked for less movement would simply never see the error, the dialog, or
+     the toast. This is the rule that makes the whole block safe. */
+  .scrim-in,
+  .dialog-in,
+  .toast-in,
+  .notice-in {
+    opacity: 1;
+    transform: none;
+    max-height: none;
+  }
+
+  /* The leaving animation carried the removal. With it off the element has to
+     go, not sit there faded. */
+  .toast-out {
+    display: none;
+  }
+
+  /* "Look here" still has to answer the question. A ring that does not move
+     is the honest translation of one that pulses. */
+  .attention {
+    box-shadow: 0 0 0 4px rgb(47 41 201 / 0.35);
+    transform: none;
+  }
+
 
   /* Not merely stopped: a panel that animated in from invisible has to end up
      visible, or reduced motion would hide the whole flow. */

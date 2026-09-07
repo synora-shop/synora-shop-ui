@@ -43,14 +43,17 @@ export function useConfirm() {
     <div
       role="presentation"
       onClick={() => close(false)}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+      className="scrim-in fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
     >
+      {/* dialog-in: arrives rather than appears. A question that materialises
+          over the page has to be found; one that grows out of it has already
+          said where to look. See "Arriving and leaving" in globals.css. */}
       <div
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="confirm-dialog-title"
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-sm rounded-lg bg-white p-6 shadow-xl"
+        className="dialog-in w-full max-w-sm rounded-lg bg-white p-6 shadow-xl"
       >
         <div className="flex items-start gap-3">
           {pending.danger && (

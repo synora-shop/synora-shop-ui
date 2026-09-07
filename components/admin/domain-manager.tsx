@@ -19,7 +19,7 @@ import {
   makePrimary,
 } from "@/app/admin/domain-actions";
 import { domainProblem, type DnsRecord } from "@/lib/domains";
-import { Badge, Button, Card } from "@/components/ui/primitives";
+import { Badge, Button, Card, FieldError } from "@/components/ui/primitives";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast";
 
@@ -128,7 +128,7 @@ export function DomainManager({
               />
             </label>
             {draftProblem ? (
-              <p className="text-xs text-rose">{draftProblem}</p>
+              <FieldError size="xs">{draftProblem}</FieldError>
             ) : (
               <p className="text-xs leading-snug text-ink-soft">
                 Enter it without <span className="font-mono">https://</span>. You&rsquo;ll get two
@@ -196,7 +196,7 @@ export function DomainManager({
                     </Badge>
                   </p>
                   {domain.lastError && (
-                    <p className="mt-1 text-xs leading-snug text-rose">{domain.lastError}</p>
+                    <FieldError size="xs" className="mt-1">{domain.lastError}</FieldError>
                   )}
                 </div>
 

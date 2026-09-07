@@ -17,6 +17,7 @@ import { SwipeRow } from "@/components/ui/swipe-row";
 import { NestableList } from "@/components/ui/nestable-list";
 import { reparent } from "@/lib/drag-nesting";
 import { SaveButton, type SaveState } from "@/components/ui/save-button";
+import { FieldError } from "@/components/ui/primitives";
 
 export type PageOption = {
   id: string;
@@ -317,7 +318,7 @@ export function MenuEditor({
   return (
     <div className="rounded-xl border border-border bg-surface">
       {dialog}
-      {error && <p className="px-3 pt-3 text-sm text-rose">{error}</p>}
+      {error && <FieldError className="px-3 pt-3">{error}</FieldError>}
       <div className="p-2">
         <NestableList
           items={items.map((item) => ({

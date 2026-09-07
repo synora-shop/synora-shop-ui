@@ -19,6 +19,7 @@ import {
 import { AUTO } from "@/lib/theme-tokens";
 import { cn } from "@/lib/utils";
 import type { SettingField } from "@/lib/section-schema";
+import { FieldError } from "@/components/ui/primitives";
 
 /**
  * Renders one setting from its schema entry.
@@ -112,7 +113,7 @@ export function SettingFieldInput({
             onBlur={(e) => commitUrl(e.target.value)}
             className={cn("input mt-1", urlError && "border-rose")}
           />
-          {urlError && <p className="mt-1 text-[11px] leading-snug text-rose">{urlError}</p>}
+          {urlError && <FieldError size="xs" className="mt-1 text-[11px]">{urlError}</FieldError>}
           {help}
         </div>
       );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 
 /**
@@ -14,7 +14,34 @@ import { usePathname, useSearchParams } from "next/navigation";
  * change that follows a completed navigation finishes it. A safety timeout
  * clears it if a click doesn't end up navigating (e.g. the target had its own
  * onClick that cancelled/redirected the action).
+ *
+ * A click on an anchor is not the only way this app changes page, though, and
+ * the other way had no acknowledgement at all: a button that calls
+ * `router.push`, or a server action that ends in `redirect`, left the screen
+ * looking dead for as long as the next page took. `startNavProgress()` is for
+ * those — call it immediately before navigating and the bar behaves exactly as
+ * it would have for a link.
+ *
+ * It is a module-level subscription rather than a context because the callers
+ * are ordinary event handlers scattered across the panel, and threading a hook
+ * through every one of them to reach a bar mounted once in the root layout
+ * would be a great deal of plumbing for one line.
  */
+
+/** Set while a NavProgress is mounted. Null on the server and in tests. */
+let begin: (() => void) | null = null;
+
+/**
+ * Start the bar for a navigation this app is about to make itself.
+ *
+ * Safe to call when no bar is mounted, and safe to call twice — the second
+ * call restarts the trickle rather than stacking a second timer. If the
+ * navigation never happens the same six-second safety timeout clears it, so a
+ * cancelled redirect cannot leave the bar stuck across the top of the screen.
+ */
+export function startNavProgress() {
+  begin?.();
+}
 export function NavProgress() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -49,6 +76,31 @@ export function NavProgress() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- finish() is stable enough for this purpose; only path/search identity matters
   }, [pathname, searchParams]);
 
+  /** Everything that starts the bar, however the navigation was triggered. */
+  const start = useCallback(() => {
+    loadingRef.current = true;
+    clearTimers();
+    setVisible(true);
+    setProgress(20);
+    trickleRef.current = setInterval(() => {
+      setProgress((p) => (p < 85 ? p + (85 - p) * 0.15 : p));
+    }, 200);
+    // If the navigation never completes (interrupted, cancelled elsewhere),
+    // don't leave the bar stuck forever.
+    safetyRef.current = setTimeout(() => finish(), 6000);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refs and stable setters only
+  }, []);
+
+  // Let code that navigates without a link click reach the bar. Registered on
+  // mount and cleared on unmount, so startNavProgress() outside a mounted app
+  // is a no-op rather than a crash.
+  useEffect(() => {
+    begin = start;
+    return () => {
+      begin = null;
+    };
+  }, [start]);
+
   useEffect(() => {
     function onClick(e: MouseEvent) {
       if (e.defaultPrevented || e.button !== 0) return;
@@ -69,16 +121,7 @@ export function NavProgress() {
       if (url.origin !== window.location.origin) return;
       if (url.pathname === window.location.pathname && url.search === window.location.search) return;
 
-      loadingRef.current = true;
-      clearTimers();
-      setVisible(true);
-      setProgress(20);
-      trickleRef.current = setInterval(() => {
-        setProgress((p) => (p < 85 ? p + (85 - p) * 0.15 : p));
-      }, 200);
-      // If the navigation never completes (interrupted, cancelled elsewhere), don't
-      // leave the bar stuck forever.
-      safetyRef.current = setTimeout(() => finish(), 6000);
+      start();
     }
     document.addEventListener("click", onClick, true);
     return () => {
@@ -86,7 +129,7 @@ export function NavProgress() {
       clearTimers();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- finish/clearTimers close over refs only
-  }, []);
+  }, [start]);
 
   return (
     <div
