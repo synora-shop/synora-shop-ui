@@ -3,9 +3,11 @@ import { currentCustomer } from "@/lib/data/customer";
 import Link from "next/link";
 import { db } from "@/lib/data/shop";
 import { Container } from "@/components/ui/container";
-import { formatPKR } from "@/lib/utils";
+
 import { getSiteText, text, type SiteTextKey } from "@/lib/site-text";
 import type { OrderStatus } from "@/lib/generated/prisma/client";
+import { formatMoney } from "@/lib/money";
+import { getCurrency } from "@/lib/data/settings";
 
 const STATUS_KEY: Record<OrderStatus, SiteTextKey> = {
   PENDING: "orderStatus.pending",
@@ -17,6 +19,10 @@ const STATUS_KEY: Record<OrderStatus, SiteTextKey> = {
 };
 
 export default async function OrderHistoryPage() {
+  // Prices in the store's own currency rather than in rupees, which every
+  // screen printed regardless of what Settings said.
+  const currency = await getCurrency();
+  const money = (n: number) => formatMoney(n, currency);
   const me = await currentCustomer();
   if (!me) redirect("/account/login?callbackUrl=/account/orders");
 
@@ -64,7 +70,7 @@ export default async function OrderHistoryPage() {
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-medium text-ink">{formatPKR(order.total)}</p>
+                  <p className="text-sm font-medium text-ink">{money(order.total)}</p>
                   <p className="text-xs text-brand-600">
                     {text(siteText, STATUS_KEY[order.orderStatus])}
                   </p>

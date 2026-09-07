@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/lib/data/shop";
-import { getStoreSettings } from "@/lib/data/settings";
+import { getCurrency, getStoreSettings } from "@/lib/data/settings";
 import { quoteDiscount } from "@/lib/data/discounts";
 import { effectivePrice } from "@/lib/data/products";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
@@ -80,6 +80,6 @@ export async function previewDiscount(
     ok: true,
     code: quote.code,
     saving: quote.outcome.totalSaving,
-    description: discount ? describeDiscount(discount.type, discount.value) : "Discount",
+    description: discount ? describeDiscount(discount.type, discount.value, await getCurrency()) : "Discount",
   };
 }

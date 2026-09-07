@@ -393,6 +393,47 @@ for (const f of ["components/admin/bin-product-list.tsx", "components/admin/bin-
   check(`${f.split("/").pop()} has a real empty state`, /<EmptyState/.test(readFileSync(join(ROOT, f), "utf8")));
 }
 
+// Settings offered nine currencies and every price on every screen was printed
+// by a function called formatPKR. The setting was real; nothing read it.
+const hardCodedMoney = files.filter((f) => {
+  if (!/(components|app|lib)\//.test(f)) return false;
+  if (/(store-defaults|money|currency|check-)/.test(f)) return false;
+  const src = readFileSync(f, "utf8");
+  // A rupee symbol inside a string or template that is not a comment.
+  return /(["'`])[^"'`\n]*\bRs\b[^"'`\n]*\1/.test(
+    src.split("\n").filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l)).join("\n")
+  );
+});
+check(
+  "no screen prints a currency it was not told",
+  hardCodedMoney.length === 0,
+  hardCodedMoney.map((f) => relative(ROOT, f)).join(", ")
+);
+check(
+  "the hard-coded formatter is gone",
+  // Not this file: it names the thing it is looking for.
+  !files
+    .filter((f) => !/\/scripts\//.test(f))
+    .some((f) => /export function formatPKR/.test(readFileSync(f, "utf8")))
+);
+const moneyLib = readFileSync(join(ROOT, "lib/money.ts"), "utf8");
+check("money takes the store's currency", /formatMoney\(amount: number, currency: string\)/.test(moneyLib));
+// Grouping is not universal: 1,00,000 in India is 100,000 elsewhere.
+check("and groups it the way its readers group it", /LOCALES/.test(moneyLib));
+const currencyCtx = readFileSync(join(ROOT, "components/ui/currency.tsx"), "utf8");
+check("client components read it from one place", /useMoney/.test(currencyCtx));
+for (const layout of ["app/admin/layout.tsx", "app/(storefront)/layout.tsx"]) {
+  check(
+    `${layout} provides it`,
+    /<CurrencyProvider currency=/.test(readFileSync(join(ROOT, layout), "utf8"))
+  );
+}
+// The half a customer sees: an order confirmation quoting the wrong currency.
+check(
+  "so do the emails",
+  /getCurrency\(\)/.test(readFileSync(join(ROOT, "lib/email.ts"), "utf8"))
+);
+
 // "What have I started and not finished" was answerable only by someone who
 // knew the Products list had a status filter.
 const navList = readFileSync(join(ROOT, "lib/admin-nav.ts"), "utf8");

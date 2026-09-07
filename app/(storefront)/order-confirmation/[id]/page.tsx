@@ -3,7 +3,9 @@ import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { db } from "@/lib/data/shop";
-import { formatPKR } from "@/lib/utils";
+import { formatMoney } from "@/lib/money";
+import { getCurrency } from "@/lib/data/settings";
+
 
 /**
  * The page a customer lands on straight after checking out.
@@ -24,6 +26,10 @@ import { formatPKR } from "@/lib/utils";
  * than to this page.
  */
 export default async function OrderConfirmationPage(props: PageProps<"/order-confirmation/[id]">) {
+  // Prices in the store's own currency rather than in rupees, which every
+  // screen printed regardless of what Settings said.
+  const currency = await getCurrency();
+  const money = (n: number) => formatMoney(n, currency);
   const { id } = await props.params;
   const order = await (await db()).order.findFirst({ where: { id }, include: { items: true } });
   if (!order) notFound();
@@ -51,22 +57,22 @@ export default async function OrderConfirmationPage(props: PageProps<"/order-con
               <span>
                 {item.title} ({item.size}/{item.color}) x{item.quantity}
               </span>
-              <span>{formatPKR(item.price * item.quantity)}</span>
+              <span>{money(item.price * item.quantity)}</span>
             </div>
           ))}
         </div>
         <div className="mt-4 space-y-1 border-t border-border pt-4 text-sm">
           <div className="flex justify-between text-ink-soft">
             <span>Subtotal</span>
-            <span>{formatPKR(order.subtotal)}</span>
+            <span>{money(order.subtotal)}</span>
           </div>
           <div className="flex justify-between text-ink-soft">
             <span>Shipping</span>
-            <span>{order.shippingFee === 0 ? "Free" : formatPKR(order.shippingFee)}</span>
+            <span>{order.shippingFee === 0 ? "Free" : money(order.shippingFee)}</span>
           </div>
           <div className="flex justify-between font-medium text-ink">
             <span>Total</span>
-            <span>{formatPKR(order.total)}</span>
+            <span>{money(order.total)}</span>
           </div>
         </div>
       </div>

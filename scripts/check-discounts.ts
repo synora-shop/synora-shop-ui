@@ -165,9 +165,9 @@ check("an end before the start is refused",
   }) !== null);
 
 console.log("\nHOW A DISCOUNT READS");
-check("a percentage reads as one", describeDiscount("PERCENTAGE", 10) === "10% off");
-check("free delivery says so", describeDiscount("FREE_SHIPPING", 0) === "Free delivery");
-check("an amount carries its currency", describeDiscount("FIXED_AMOUNT", 500).includes("500"));
+check("a percentage reads as one", describeDiscount("PERCENTAGE", 10, "PKR") === "10% off");
+check("free delivery says so", describeDiscount("FREE_SHIPPING", 0, "PKR") === "Free delivery");
+check("an amount carries its currency", describeDiscount("FIXED_AMOUNT", 500, "PKR").includes("500"));
 
 console.log("\nSTATE AT A GLANCE");
 const s = (over: Partial<DiscountRules>) => discountState(base(over), NOW);

@@ -164,6 +164,14 @@ that both write `businessType` is two rules waiting to disagree.
 
 ## Done on 7 September
 
+- **The Currency setting is read.** Every price on every screen was printed by
+  `formatPKR`, which hard-coded rupees, in a product whose Settings offered
+  nine currencies. Now: one `formatMoney(amount, currency)`, a context both
+  layouts provide so client components need no prop threading, and
+  `getCurrency()` for the server ones — including the order emails and the push
+  notification, which is the half a customer would have seen.
+
+
 - **The admin search showed nothing.** It was rendered inside a 288px dropdown
   with `overflow: hidden`, so twelve results were found, rendered, and clipped
   out of sight. It is its own overlay now, opened by the button, by "/" or ⌘K.
@@ -215,14 +223,12 @@ that both write `businessType` is two rules waiting to disagree.
   assertions covering every kind's reader, its invalidator, and every server
   action that writes a cached model.
 
-- **The panel offers a Currency setting it then ignores.** Settings has a
-  currency picker and it saves, but every price anywhere — the product list,
-  orders, the storefront, the cart, checkout — is printed by `formatPKR()` in
-  `lib/utils.ts`, which hard-codes "Rs." Twenty files call it. A store set to
-  dollars would type dollars into Settings and see rupees everywhere else. The
-  fix is one currency-aware formatter fed by the store's own setting, and it
-  touches all twenty. Until then the labels beside a price box are honest (they
-  read the setting) and the printed amounts are not.
+- **Prices are whole units of the currency.** `basePrice: 5500` means 5,500
+  rupees, not 55.00. That fits PKR, which has no minor unit in practice, and
+  does not fit dollars: a merchant cannot price something at 19.99 today. The
+  fix is to store minor units everywhere and migrate every existing row, which
+  is a decision of its own rather than something to slip into a formatter.
+  Until then the currency is right and the precision is not.
 - **The store type can be changed with one click, ungated.** Settings → What you
   sell switches a live store instantly. Queue item 2 says it must require the
   store to be paused first; that gate is not built yet, so the loophole is open

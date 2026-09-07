@@ -6,6 +6,8 @@ import { AccentTheme } from "@/components/storefront/accent-theme";
 import { ThemeStyle } from "@/components/storefront/theme-style";
 import { AnnouncementBar } from "@/components/storefront/announcement-bar";
 import { getStoreSettings } from "@/lib/data/settings";
+import { CurrencyProvider } from "@/components/ui/currency";
+import { resolveStoreDefaults } from "@/lib/store-defaults";
 import { getThemeTokens } from "@/lib/data/theme";
 import { getFontAssets } from "@/lib/data/fonts";
 import { getStickyButtons } from "@/lib/data/sticky-buttons";
@@ -120,6 +122,9 @@ export default async function StorefrontLayout({ children }: LayoutProps<"/">) {
   const announcementBgColor = edits.announcementBgColor;
 
   return (
+    // Prices on the storefront read in the shop's own currency, which is the
+    // half of this bug a customer would have seen.
+    <CurrencyProvider currency={resolveStoreDefaults(settings).currency}>
     <div data-heading-style={edits.headingStyle} className="contents">
       <AccentTheme accentColor={edits.accentColor} />
       <ThemeStyle tokens={tokens} fonts={fonts} />
@@ -149,5 +154,6 @@ export default async function StorefrontLayout({ children }: LayoutProps<"/">) {
         <WhatsAppButton number={settings.whatsappNumber} />
       )}
     </div>
+    </CurrencyProvider>
   );
 }

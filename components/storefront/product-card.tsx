@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { formatPKR } from "@/lib/utils";
+
 import { ImagePlaceholder } from "@/components/storefront/image-placeholder";
 import {
   isEnquiryOnly,
@@ -12,6 +12,7 @@ import {
 // component stays usable from the customizer's client-side live preview.
 import { effectivePrice } from "@/lib/product-pricing";
 import { GLOBAL_EDITS_DEFAULTS, isNewArrival, totalStock, type GlobalEdits } from "@/lib/global-edits";
+import { formatMoney } from "@/lib/money";
 
 export type ProductCardProduct = {
   slug: string;
@@ -34,14 +35,19 @@ type ProductCardEdits = Pick<
 >;
 
 export function ProductCard({
+  currency,
   product,
   saleBadgeLabel = "Sale",
   edits,
 }: {
+  /** The store's own currency code. Passed in rather than looked up: a page
+   *  renders thirty of these and already knows it. */
+  currency: string;
   product: ProductCardProduct;
   saleBadgeLabel?: string;
   edits?: Partial<ProductCardEdits>;
 }) {
+  const money = (n: number) => formatMoney(n, currency);
   const e = { ...GLOBAL_EDITS_DEFAULTS, ...edits };
   const price = effectivePrice(product);
   const enquiryOnly = isEnquiryOnly(product.kind);
@@ -105,19 +111,19 @@ export function ProductCard({
         <div className="flex items-center gap-2 text-sm">
           {display.mode === "price" && (
             <>
-              <span className="font-medium text-brand-600">{formatPKR(price)}</span>
+              <span className="font-medium text-brand-600">{money(price)}</span>
               {onSale && (
-                <span className="text-ink-soft line-through">{formatPKR(product.basePrice)}</span>
+                <span className="text-ink-soft line-through">{money(product.basePrice)}</span>
               )}
             </>
           )}
           {display.mode === "range" && (
             <span className="font-medium text-brand-600">
-              {formatPKR(display.min)}, {formatPKR(display.max)}
+              {money(display.min)}, {money(display.max)}
             </span>
           )}
           {display.mode === "from" && (
-            <span className="font-medium text-brand-600">From {formatPKR(display.unitPrice)}</span>
+            <span className="font-medium text-brand-600">From {money(display.unitPrice)}</span>
           )}
           {display.mode === "onRequest" && (
             <span className="font-medium text-ink-soft">{display.label}</span>

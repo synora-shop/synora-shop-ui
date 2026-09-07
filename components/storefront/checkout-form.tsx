@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/lib/cart-store";
-import { cn, formatPKR } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { previewDiscount } from "@/app/(storefront)/checkout/actions";
 import { CITIES } from "@/lib/cities";
 import { isValidEmail, isValidPakistaniPhone } from "@/lib/validation";
 import { ENABLED_PAYMENT_METHODS as PAYMENT_METHODS } from "@/lib/payment-methods";
+import { useMoney } from "@/components/ui/currency";
 
 type Settings = {
   shippingFee: number;
@@ -60,6 +61,7 @@ export function CheckoutForm({
   placingOrderLabel?: string;
   labels?: Labels;
 }) {
+  const money = useMoney();
   const {
     contactShippingLegend = "Contact & Shipping",
     paymentMethodLegend = "Payment Method",
@@ -310,7 +312,7 @@ export function CheckoutForm({
         <div className="mt-4 space-y-2 text-sm">
           <div className="flex justify-between text-ink-soft">
             <span>{subtotalLabel}</span>
-            <span>{formatPKR(subtotal)}</span>
+            <span>{money(subtotal)}</span>
           </div>
           {discount && (
             <div className="flex justify-between text-green">
@@ -326,16 +328,16 @@ export function CheckoutForm({
                   remove
                 </button>
               </span>
-              <span>&minus;{formatPKR(discount.saving)}</span>
+              <span>&minus;{money(discount.saving)}</span>
             </div>
           )}
           <div className="flex justify-between text-ink-soft">
             <span>{shippingLabel}</span>
-            <span>{shippingFee === 0 ? freeShipping : formatPKR(shippingFee)}</span>
+            <span>{shippingFee === 0 ? freeShipping : money(shippingFee)}</span>
           </div>
           <div className="flex justify-between border-t border-border pt-2 font-medium text-ink">
             <span>{totalLabel}</span>
-            <span>{formatPKR(total)}</span>
+            <span>{money(total)}</span>
           </div>
         </div>
 

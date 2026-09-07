@@ -10,6 +10,7 @@ import { guardStorefront } from "@/lib/maintenance";
 import { toGlobalEdits, totalStock, SHOP_GRID_LG_COLS_CLASS } from "@/lib/global-edits";
 import { readFilter } from "@/lib/filters";
 import { cn } from "@/lib/utils";
+import { getCurrency } from "@/lib/data/settings";
 
 export const metadata: Metadata = { title: "Shop All" };
 
@@ -30,6 +31,7 @@ export default async function ShopPage(props: PageProps<"/shop">) {
   await guardStorefront();
   const sp = await props.searchParams;
   const settings = await getStoreSettings();
+  const currency = await getCurrency();
   const edits = toGlobalEdits(settings);
   const filters = parseFilters(sp);
   filters.sort = filters.sort ?? edits.defaultShopSort;
@@ -79,7 +81,7 @@ export default async function ShopPage(props: PageProps<"/shop">) {
           )}
         >
           {products.map((p) => (
-            <ProductCard key={p.id} product={p} saleBadgeLabel={saleBadgeLabel} edits={edits} />
+            <ProductCard key={p.id} currency={currency} product={p} saleBadgeLabel={saleBadgeLabel} edits={edits} />
           ))}
         </div>
       )}

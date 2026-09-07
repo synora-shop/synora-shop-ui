@@ -6,7 +6,8 @@ import { Minus, Plus, Trash2 } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { SwipeRow } from "@/components/ui/swipe-row";
 import { useCartStore } from "@/lib/cart-store";
-import { formatPKR } from "@/lib/utils";
+import { useMoney } from "@/components/ui/currency";
+
 
 type Labels = {
   emptyHeading: string;
@@ -19,6 +20,7 @@ type Labels = {
 };
 
 export function CartPageClient({ labels }: { labels: Labels }) {
+  const money = useMoney();
   const items = useCartStore((s) => s.items);
   const setQuantity = useCartStore((s) => s.setQuantity);
   const removeItem = useCartStore((s) => s.removeItem);
@@ -92,7 +94,7 @@ export function CartPageClient({ labels }: { labels: Labels }) {
                       </button>
                     </div>
                     <p className="text-sm font-medium text-brand-600">
-                      {formatPKR(item.price * item.quantity)}
+                      {money(item.price * item.quantity)}
                     </p>
                   </div>
                 </div>
@@ -105,7 +107,7 @@ export function CartPageClient({ labels }: { labels: Labels }) {
           <h2 className="font-serif text-lg font-semibold text-ink">{labels.orderSummary}</h2>
           <div className="mt-4 flex justify-between text-sm text-ink-soft">
             <span>{labels.subtotal}</span>
-            <span>{formatPKR(subtotal)}</span>
+            <span>{money(subtotal)}</span>
           </div>
           <p className="mt-1 text-xs text-ink-soft">{labels.shippingNote}</p>
           <Link

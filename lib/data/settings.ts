@@ -3,7 +3,7 @@ import { currentShop } from "@/lib/data/shop";
 import { cachedForShop } from "@/lib/data/cached";
 import { GLOBAL_EDITS_DEFAULTS } from "@/lib/global-edits";
 import { VISIBILITY_DEFAULTS } from "@/lib/visibility";
-import { STORE_DEFAULTS } from "@/lib/store-defaults";
+import { STORE_DEFAULTS, resolveStoreDefaults } from "@/lib/store-defaults";
 
 const DEFAULTS = {
   id: "settings",
@@ -36,3 +36,15 @@ export const getStoreSettings = cache(async () => {
   );
   return settings ?? DEFAULTS;
 });
+
+/**
+ * The currency this store trades in.
+ *
+ * Its own function because almost everything that needs it needs nothing else
+ * from settings, and because `getStoreSettings` is request-cached — calling
+ * this thirty times while rendering thirty product cards is thirty map lookups
+ * and one query.
+ */
+export async function getCurrency(): Promise<string> {
+  return resolveStoreDefaults(await getStoreSettings()).currency;
+}

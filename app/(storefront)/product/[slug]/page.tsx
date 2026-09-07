@@ -11,6 +11,7 @@ import { getStoreSettings } from "@/lib/data/settings";
 import { getSiteText, text } from "@/lib/site-text";
 import { guardStorefront } from "@/lib/maintenance";
 import { toGlobalEdits } from "@/lib/global-edits";
+import { getCurrency } from "@/lib/data/settings";
 
 export async function generateMetadata(props: PageProps<"/product/[slug]">): Promise<Metadata> {
   const { slug } = await props.params;
@@ -20,6 +21,7 @@ export async function generateMetadata(props: PageProps<"/product/[slug]">): Pro
 
 export default async function ProductPage(props: PageProps<"/product/[slug]">) {
   await guardStorefront();
+  const currency = await getCurrency();
   const { slug } = await props.params;
 
   const product = await getProductBySlug(slug);
@@ -46,7 +48,7 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
 
           <div className="mt-6">
             {isEnquiryOnly(product.kind) ? (
-              <EnquiryPanel product={product} />
+              <EnquiryPanel currency={currency} product={product} />
             ) : (
             <ProductPurchasePanel
               productId={product.id}
@@ -88,7 +90,7 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
           <h2 className="font-serif text-2xl font-semibold text-ink">You may also like</h2>
           <div className="mt-6 grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-4">
             {related.map((p) => (
-              <ProductCard key={p.id} product={p} saleBadgeLabel={text(siteText, "product.saleBadge")} edits={edits} />
+              <ProductCard key={p.id} currency={currency} product={p} saleBadgeLabel={text(siteText, "product.saleBadge")} edits={edits} />
             ))}
           </div>
         </section>

@@ -9,6 +9,8 @@
 //
 // Money is whole PKR throughout, matching the rest of the app.
 
+import { formatMoney } from "@/lib/money";
+
 export type DiscountType = "PERCENTAGE" | "FIXED_AMOUNT" | "FREE_SHIPPING";
 
 export type DiscountRules = {
@@ -173,11 +175,17 @@ export function applyDiscount(
   return { ok: true, amountOffSubtotal, amountOffShipping: 0, totalSaving: amountOffSubtotal };
 }
 
-/** How a discount reads in a list, e.g. "10% off" or "Rs 500 off". */
-export function describeDiscount(type: DiscountType, value: number): string {
+/**
+ * How a discount reads in a list, e.g. "10% off" or "Rs 500 off".
+ *
+ * The currency is passed in rather than assumed. This runs on a checkout line
+ * as well as in the admin list, so a shop trading in dollars was telling its
+ * customers they had saved rupees.
+ */
+export function describeDiscount(type: DiscountType, value: number, currency: string): string {
   if (type === "FREE_SHIPPING") return "Free delivery";
   if (type === "PERCENTAGE") return `${value}% off`;
-  return `Rs ${value.toLocaleString("en-PK")} off`;
+  return `${formatMoney(value, currency)} off`;
 }
 
 /** Whether a discount is usable right now, ignoring any particular cart. */

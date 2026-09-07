@@ -8,13 +8,14 @@ import { Button, ButtonLink } from "@/components/ui/primitives";
 import { BulkBar } from "@/components/admin/bulk-bar";
 import { ListEmpty } from "@/components/admin/list-empty";
 import { StatusMark, StockMark, Thumb } from "@/components/admin/product-elements";
-import { formatPKR, cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { useServerRows } from "@/components/ui/use-server-rows";
 import { effectivePrice, unitProfit, profitMargin } from "@/lib/product-pricing";
 import { bulkProducts, moveProductToBin, type BulkAction } from "@/app/admin/products/actions";
 import { SwipeRow } from "@/components/ui/swipe-row";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast";
+import { useMoney } from "@/components/ui/currency";
 
 type ProductRow = {
   id: string;
@@ -61,6 +62,7 @@ export function ProductList({
   showStatus?: boolean;
 }) {
   const router = useRouter();
+  const money = useMoney();
   const [rows, setRows] = useServerRows(products);
   const { confirm, dialog } = useConfirm();
   const toast = useToast();
@@ -244,11 +246,11 @@ export function ProductList({
                     <p className="line-clamp-2 text-xs font-medium text-ink">{p.title}</p>
                     <div className="flex items-baseline justify-between gap-2">
                       <span className="text-xs font-medium tabular-nums text-ink">
-                        {formatPKR(effectivePrice(p))}
+                        {money(effectivePrice(p))}
                       </span>
                       {p.salePrice != null && p.salePrice < p.basePrice && (
                         <span className="text-[11px] tabular-nums text-ink-faint line-through">
-                          {formatPKR(p.basePrice)}
+                          {money(p.basePrice)}
                         </span>
                       )}
                     </div>
@@ -309,7 +311,7 @@ export function ProductList({
                       fold under the name rather than disappearing. */}
                   <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 lg:hidden">
                     <span className="text-xs font-medium tabular-nums text-ink">
-                      {formatPKR(effectivePrice(p))}
+                      {money(effectivePrice(p))}
                     </span>
                     <StockMark stock={stock} low={lowStock} />
                     {showStatus && <StatusMark status={p.status} />}
@@ -324,16 +326,16 @@ export function ProductList({
                     as a column of money instead of ragged sentences. */}
                 <div className="hidden text-right lg:block">
                   <p className="text-sm font-medium tabular-nums text-ink">
-                    {formatPKR(effectivePrice(p))}
+                    {money(effectivePrice(p))}
                     {p.salePrice != null && p.salePrice < p.basePrice && (
                       <span className="ml-1.5 text-[11px] font-normal tabular-nums text-ink-faint line-through">
-                        {formatPKR(p.basePrice)}
+                        {money(p.basePrice)}
                       </span>
                     )}
                   </p>
                   <p className="text-[11px] tabular-nums text-ink-faint">
                     <span className={unitProfit(p) < 0 ? "font-medium text-rose" : undefined}>
-                      {formatPKR(unitProfit(p))}
+                      {money(unitProfit(p))}
                     </span>{" "}
                     profit · {profitMargin(p)?.toFixed(0) ?? 0}%
                   </p>

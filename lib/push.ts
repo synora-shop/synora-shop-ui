@@ -1,6 +1,7 @@
 import webPush from "web-push";
 import { prisma } from "@/lib/prisma";
-import { formatPKR } from "@/lib/utils";
+import { formatMoney } from "@/lib/money";
+import { getCurrency } from "@/lib/data/settings";
 
 const PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 const PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY;
@@ -35,7 +36,7 @@ export async function sendOrderPushNotifications(order: OrderPushData) {
   if (subscriptions.length === 0) return;
 
   const payload = JSON.stringify({
-    title: `New order, ${formatPKR(order.total)}`,
+    title: `New order, ${formatMoney(order.total, await getCurrency())}`,
     body: `${order.customerName} just placed an order.`,
     url: `/admin/orders/${order.id}`,
   });

@@ -1,5 +1,5 @@
 import { ExternalLink, Package, Ruler } from "lucide-react";
-import { formatPKR } from "@/lib/utils";
+
 import { safeAssetUrl } from "@/lib/icon-validation";
 import { validateUrl } from "@/lib/url-validation";
 import {
@@ -10,6 +10,7 @@ import {
   type ProductKind,
 } from "@/lib/product-kind";
 import { EnquiryForm } from "./enquiry-form";
+import { formatMoney } from "@/lib/money";
 
 /**
  * What a bulk or made-to-order product shows where the buy button would be.
@@ -19,8 +20,11 @@ import { EnquiryForm } from "./enquiry-form";
  * enquiry pages lose people who would have bought.
  */
 export function EnquiryPanel({
+  currency,
   product,
 }: {
+  /** The store's own currency code. */
+  currency: string;
   product: {
     id: string;
     title: string;
@@ -34,6 +38,7 @@ export function EnquiryPanel({
     enquiryUrl: string | null;
   };
 }) {
+  const money = (n: number) => formatMoney(n, currency);
   const kind = (product.kind as ProductKind) ?? "BULK";
   const meta = PRODUCT_KIND_META[kind] ?? PRODUCT_KIND_META.BULK;
   const tiers = parseTiers(product.bulkTiers);
@@ -63,7 +68,7 @@ export function EnquiryPanel({
           {display.mode === "range" && (
             <>
               <p className="font-mono text-2xl font-medium tabular-nums">
-                {formatPKR(display.min)}, {formatPKR(display.max)}
+                {money(display.min)}, {money(display.max)}
               </p>
               <p className="mt-0.5 text-xs text-ink-soft">per unit, depending on quantity and spec</p>
             </>
@@ -71,7 +76,7 @@ export function EnquiryPanel({
           {display.mode === "from" && (
             <>
               <p className="font-mono text-2xl font-medium tabular-nums">
-                From {formatPKR(display.unitPrice)}
+                From {money(display.unitPrice)}
               </p>
               <p className="mt-0.5 text-xs text-ink-soft">
                 per unit at {display.minQty}+ units
@@ -112,7 +117,7 @@ export function EnquiryPanel({
                       : `${tier.minQty},${tiers[i + 1].minQty - 1} units`}
                   </td>
                   <td className="py-1.5 text-right font-mono tabular-nums">
-                    {formatPKR(tier.unitPrice)}
+                    {money(tier.unitPrice)}
                   </td>
                 </tr>
               ))}

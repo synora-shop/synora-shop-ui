@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { RotateCcw, Trash2 } from "lucide-react";
-import { formatPKR, cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { useServerRows } from "@/components/ui/use-server-rows";
 import { orderStatusStyle } from "@/lib/order-status-style";
 import { restoreOrder, permanentlyDeleteOrder } from "@/app/admin/orders/actions";
@@ -11,6 +11,7 @@ import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast";
 import { formatRelativeTime } from "@/lib/format-relative-time";
 import { EmptyState } from "@/components/ui/primitives";
+import { useMoney } from "@/components/ui/currency";
 
 type BinOrderRow = {
   id: string;
@@ -22,6 +23,7 @@ type BinOrderRow = {
 };
 
 export function BinOrderList({ orders }: { orders: BinOrderRow[] }) {
+  const money = useMoney();
   const router = useRouter();
   const [rows, setRows] = useServerRows(orders);
   const { confirm, dialog } = useConfirm();
@@ -109,7 +111,7 @@ export function BinOrderList({ orders }: { orders: BinOrderRow[] }) {
                   <span>· Deleted {formatRelativeTime(o.deletedAt)}</span>
                 </div>
               </div>
-              <p className="flex-shrink-0 text-sm font-medium">{formatPKR(o.total)}</p>
+              <p className="flex-shrink-0 text-sm font-medium">{money(o.total)}</p>
             </div>
           </SwipeRow>
         ))}

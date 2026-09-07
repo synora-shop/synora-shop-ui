@@ -9,11 +9,12 @@ import {
   type DiscountInput,
 } from "@/app/admin/discounts/actions";
 import { codeProblem, describeDiscount, type DiscountType } from "@/lib/discounts";
-import { formatPKR } from "@/lib/utils";
+
 import { Badge, Button, Card, EmptyState } from "@/components/ui/primitives";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
+import { useCurrency, useCurrencySymbol, useMoney } from "@/components/ui/currency";
 
 export type DiscountRow = {
   id: string;
@@ -45,6 +46,9 @@ const TYPES: { value: DiscountType; label: string; hint: string }[] = [
 ];
 
 export function DiscountManager({ discounts }: { discounts: DiscountRow[] }) {
+  const money = useMoney();
+  const currency = useCurrency();
+  const symbol = useCurrencySymbol();
   const toast = useToast();
   const { confirm, dialog } = useConfirm();
   const [pending, startTransition] = useTransition();
@@ -149,7 +153,7 @@ export function DiscountManager({ discounts }: { discounts: DiscountRow[] }) {
             {type !== "FREE_SHIPPING" && (
               <label className="block max-w-xs">
                 <span className="mb-1.5 block text-sm font-medium text-ink">
-                  {type === "PERCENTAGE" ? "Percentage off" : "Amount off (Rs)"}
+                  {type === "PERCENTAGE" ? "Percentage off" : `Amount off (${symbol})`}
                 </span>
                 <input
                   name="value"
@@ -237,12 +241,12 @@ export function DiscountManager({ discounts }: { discounts: DiscountRow[] }) {
                 <div className="min-w-0 flex-1">
                   <p className="flex flex-wrap items-center gap-2 text-sm font-medium">
                     <span className="font-mono text-ink">{discount.code}</span>
-                    <Badge tone="brand">{describeDiscount(discount.type, discount.value)}</Badge>
+                    <Badge tone="brand">{describeDiscount(discount.type, discount.value, currency)}</Badge>
                     <Badge tone={state.tone}>{state.text}</Badge>
                   </p>
                   <p className="mt-0.5 text-xs text-ink-soft">
                     {discount.minSubtotal !== null &&
-                      `Orders over ${formatPKR(discount.minSubtotal)} · `}
+                      `Orders over ${money(discount.minSubtotal)} · `}
                     used {discount.usageCount}
                     {discount.usageLimit !== null ? ` of ${discount.usageLimit}` : " times"}
                     {discount.perCustomerLimit !== null &&

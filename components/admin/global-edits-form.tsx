@@ -9,6 +9,7 @@ import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { Fieldset } from "@/components/ui/primitives";
 import { Field } from "@/components/merchant/form-shell";
 import { SHOP_SORT_LABELS, type GlobalEdits } from "@/lib/global-edits";
+import { useCurrencySymbol } from "@/components/ui/currency";
 
 /** A colour, twice: the swatch you pick from and the hex you can paste into. */
 function ColorField({
@@ -43,6 +44,7 @@ function Pair({ children }: { children: React.ReactNode }) {
 
 export function GlobalEditsForm({ settings }: { settings: GlobalEdits }) {
   const router = useRouter();
+  const symbol = useCurrencySymbol();
   const [fields, setFields] = useState<GlobalEdits>(settings);
   const [saved, setSaved] = useState<GlobalEdits>(settings);
   const [saveState, setSaveState] = useState<SaveState>("idle");
@@ -241,7 +243,7 @@ export function GlobalEditsForm({ settings }: { settings: GlobalEdits }) {
           <input
             value={fields.announcementText}
             onChange={(e) => set("announcementText", e.target.value)}
-            placeholder="e.g. Free shipping on orders over Rs 5,000"
+            placeholder={`e.g. Free shipping on orders over ${symbol} 5,000`}
             className="input"
           />
         </Field>

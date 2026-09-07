@@ -6,7 +6,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-/** Format a price in PKR, e.g. formatPKR(4500) -> "Rs. 4,500" */
-export function formatPKR(amount: number) {
-  return `Rs. ${Math.round(amount).toLocaleString("en-PK")}`;
-}
+// formatPKR lived here and hard-coded rupees on every screen of a product
+// whose Settings offered nine currencies. It is lib/money.ts now, and it takes
+// the store's own currency — see the comment at the top of that file.

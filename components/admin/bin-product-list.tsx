@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { RotateCcw, Trash2 } from "lucide-react";
-import { formatPKR } from "@/lib/utils";
+
 import { useServerRows } from "@/components/ui/use-server-rows";
 import { effectivePrice } from "@/lib/product-pricing";
 import { restoreProduct, permanentlyDeleteProduct } from "@/app/admin/products/actions";
@@ -12,6 +12,7 @@ import { useToast } from "@/components/ui/toast";
 import { formatRelativeTime } from "@/lib/format-relative-time";
 import { Thumb } from "@/components/admin/product-elements";
 import { EmptyState } from "@/components/ui/primitives";
+import { useMoney } from "@/components/ui/currency";
 
 type BinProductRow = {
   id: string;
@@ -24,6 +25,7 @@ type BinProductRow = {
 };
 
 export function BinProductList({ products }: { products: BinProductRow[] }) {
+  const money = useMoney();
   const router = useRouter();
   const [rows, setRows] = useServerRows(products);
   const { confirm, dialog } = useConfirm();
@@ -104,14 +106,14 @@ export function BinProductList({ products }: { products: BinProductRow[] }) {
                   {p.categories.map((c) => c.name).join(", ") || "Uncategorised"}
                 </p>
                 <p className="mt-1 text-xs text-ink-faint lg:hidden">
-                  {formatPKR(effectivePrice(p))} · deleted {formatRelativeTime(p.deletedAt)}
+                  {money(effectivePrice(p))} · deleted {formatRelativeTime(p.deletedAt)}
                 </p>
               </div>
               <p className="hidden text-xs text-ink-faint lg:block">
                 Deleted {formatRelativeTime(p.deletedAt)}
               </p>
               <p className="hidden text-right text-sm font-medium tabular-nums text-ink lg:block">
-                {formatPKR(effectivePrice(p))}
+                {money(effectivePrice(p))}
               </p>
             </div>
           </SwipeRow>

@@ -6,7 +6,7 @@ import { PageCrumb } from "@/components/admin/page-crumb";
 import { Thumb } from "@/components/admin/product-elements";
 import { db } from "@/lib/data/shop";
 import { getStoreSettings } from "@/lib/data/settings";
-import { formatPKR } from "@/lib/utils";
+
 import {
   orderStatusTone,
   paymentLabel,
@@ -15,6 +15,8 @@ import {
 } from "@/lib/order-status-style";
 import { updateOrderStatus, updatePaymentStatus } from "../actions";
 import { DeleteOrderButton } from "@/components/admin/delete-order-button";
+import { formatMoney } from "@/lib/money";
+import { getCurrency } from "@/lib/data/settings";
 
 export const dynamic = "force-dynamic";
 
@@ -63,6 +65,10 @@ function Detail({
 }
 
 export default async function AdminOrderDetailPage(props: PageProps<"/admin/orders/[id]">) {
+  // Prices in the store's own currency rather than in rupees, which every
+  // screen printed regardless of what Settings said.
+  const currency = await getCurrency();
+  const money = (n: number) => formatMoney(n, currency);
   const { id } = await props.params;
   const [order, { timeZone }] = await Promise.all([
     (await db()).order.findUnique({
@@ -125,26 +131,26 @@ export default async function AdminOrderDetailPage(props: PageProps<"/admin/orde
                     <p className="truncate text-xs text-ink-faint">
                       {[item.size, item.color].filter(Boolean).join(" · ") || "No options"}
                       {" · "}
-                      {formatPKR(item.price)} each
+                      {money(item.price)} each
                     </p>
                   </div>
                   <span className="flex-shrink-0 text-xs tabular-nums text-ink-soft">
                     &times;{item.quantity}
                   </span>
                   <span className="w-24 flex-shrink-0 text-right text-sm font-medium tabular-nums text-ink">
-                    {formatPKR(item.price * item.quantity)}
+                    {money(item.price * item.quantity)}
                   </span>
                 </div>
               ))}
             </div>
 
             <div className="mt-2.5 space-y-1 border-t border-border pt-2.5">
-              <Total label="Subtotal" value={formatPKR(order.subtotal)} />
+              <Total label="Subtotal" value={money(order.subtotal)} />
               <Total
                 label="Shipping"
-                value={order.shippingFee === 0 ? "Free" : formatPKR(order.shippingFee)}
+                value={order.shippingFee === 0 ? "Free" : money(order.shippingFee)}
               />
-              <Total label="Total" value={formatPKR(order.total)} strong />
+              <Total label="Total" value={money(order.total)} strong />
             </div>
           </div>
 
@@ -153,7 +159,7 @@ export default async function AdminOrderDetailPage(props: PageProps<"/admin/orde
             description="Cost and profit are taken from what each product cost when the order was placed, so they stay right even if you change a price later."
           />
           <div className="rounded-xl border border-border bg-surface p-4">
-            <Total label="Profit on this order" value={formatPKR(orderProfit)} strong />
+            <Total label="Profit on this order" value={money(orderProfit)} strong />
             <Total
               label="Margin"
               value={order.total > 0 ? `${((orderProfit / order.total) * 100).toFixed(0)}%` : "—"}

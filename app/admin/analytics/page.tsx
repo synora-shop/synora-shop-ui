@@ -1,11 +1,13 @@
 import { analytics } from "@/lib/analytics/queries";
 import { funnel, percentChange, readRange, type SearchParams } from "@/lib/analytics";
 import { getStoreSettings } from "@/lib/data/settings";
-import { formatPKR } from "@/lib/utils";
+
 import { statusLabel } from "@/lib/order-status-style";
 import { AnalyticsBar } from "@/components/admin/analytics-bar";
 import { MetricTile, RankedBars, StageBar, TrendChart } from "@/components/admin/charts";
 import { Card, PageHeader, SectionDivider } from "@/components/ui/primitives";
+import { formatMoney } from "@/lib/money";
+import { getCurrency } from "@/lib/data/settings";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +24,10 @@ export const dynamic = "force-dynamic";
  * relationship between them that the data does not contain.
  */
 export default async function AnalyticsPage(props: PageProps<"/admin/analytics">) {
+  // Prices in the store's own currency rather than in rupees, which every
+  // screen printed regardless of what Settings said.
+  const currency = await getCurrency();
+  const money = (n: number) => formatMoney(n, currency);
   const sp = (await props.searchParams) as SearchParams;
   const range = readRange(sp);
   const comparing = sp.compare === "1";
@@ -52,12 +58,12 @@ export default async function AnalyticsPage(props: PageProps<"/admin/analytics">
 
       <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <MetricTile
-          label="Revenue" value={formatPKR(current.revenue)}
+          label="Revenue" value={money(current.revenue)}
           change={change(current.revenue, previous.revenue)}
           spark={data.revenueSeries}
         />
         <MetricTile
-          label="Profit" value={formatPKR(current.profit)}
+          label="Profit" value={money(current.profit)}
           change={change(current.profit, previous.profit)}
           hint="Never shown to customers"
         />
@@ -68,7 +74,7 @@ export default async function AnalyticsPage(props: PageProps<"/admin/analytics">
           href="/admin/orders"
         />
         <MetricTile
-          label="Avg order" value={formatPKR(current.averageOrder)}
+          label="Avg order" value={money(current.averageOrder)}
           change={change(current.averageOrder, previous.averageOrder)}
         />
         <MetricTile
@@ -104,7 +110,7 @@ export default async function AnalyticsPage(props: PageProps<"/admin/analytics">
       <div className="grid gap-2.5 lg:grid-cols-2">
         <Card className="p-4">
           <h2 className="text-xs font-semibold uppercase tracking-[0.06em] text-ink-faint">Revenue</h2>
-          <p className="mb-2 font-mono text-lg font-semibold tabular-nums">{formatPKR(current.revenue)}</p>
+          <p className="mb-2 font-mono text-lg font-semibold tabular-nums">{money(current.revenue)}</p>
           <TrendChart points={data.revenueSeries} label="Revenue per day" format="currency" />
         </Card>
         <Card className="p-4">

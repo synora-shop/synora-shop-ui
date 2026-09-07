@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ShoppingBag, Trash2 } from "lucide-react";
 import { ListEmpty } from "@/components/admin/list-empty";
-import { formatPKR, cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { useServerRows } from "@/components/ui/use-server-rows";
 import { orderStatusDotStyle, orderStatusStyle, paymentLabel, statusLabel } from "@/lib/order-status-style";
 import { moveOrderToBin } from "@/app/admin/orders/actions";
@@ -12,6 +12,7 @@ import { SwipeRow } from "@/components/ui/swipe-row";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast";
 import { isNavigationError } from "@/lib/is-redirect";
+import { useMoney } from "@/components/ui/currency";
 
 type OrderRow = {
   id: string;
@@ -35,6 +36,7 @@ type OrderRow = {
 };
 
 export function OrderList({ orders, filtered = false }: { orders: OrderRow[]; filtered?: boolean }) {
+  const money = useMoney();
   const router = useRouter();
   const [rows, setRows] = useServerRows(orders);
   const { confirm, dialog } = useConfirm();
@@ -143,10 +145,10 @@ export function OrderList({ orders, filtered = false }: { orders: OrderRow[]; fi
 
                   <span className="w-28 flex-shrink-0 text-right">
                     <span className="block font-mono text-[13px] font-medium tabular-nums text-ink">
-                      {formatPKR(o.total)}
+                      {money(o.total)}
                     </span>
                     <span className="block font-mono text-[10px] tabular-nums text-ink-faint">
-                      {formatPKR(profit)} profit
+                      {money(profit)} profit
                     </span>
                   </span>
                 </Link>

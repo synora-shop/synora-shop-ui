@@ -9,6 +9,8 @@ import { RefreshButton } from "@/components/admin/refresh-button";
 import { getStoreSettings } from "@/lib/data/settings";
 import { canonicalUrl, currentShop, db } from "@/lib/data/shop";
 import { registryBusinessType } from "@/lib/themes/business-type";
+import { CurrencyProvider } from "@/components/ui/currency";
+import { resolveStoreDefaults } from "@/lib/store-defaults";
 import type { BusinessType } from "@/lib/admin-nav";
 
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
@@ -41,6 +43,9 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
     // data-business-type no longer repaints anything — the panel is one palette
     // now, whatever the trade. It stays because screens read it to choose their
     // words: a restaurant's products are dishes.
+    // Every client component that draws money reads the currency from here
+    // rather than being handed it through six unrelated props.
+    <CurrencyProvider currency={resolveStoreDefaults(settings).currency}>
     <div
       data-business-type={type}
       className="admin-shell min-h-screen bg-shell font-sans text-ink"
@@ -78,6 +83,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
       </div>
       <RefreshButton />
     </div>
+    </CurrencyProvider>
   );
 }
 

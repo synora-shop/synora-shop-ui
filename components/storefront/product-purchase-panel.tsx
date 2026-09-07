@@ -3,10 +3,11 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check } from "lucide-react";
-import { cn, formatPKR } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { useCartStore } from "@/lib/cart-store";
 import { buildWhatsAppLink, productInquiryMessage } from "@/lib/whatsapp";
 import { stockDisplay } from "@/lib/global-edits";
+import { useMoney } from "@/components/ui/currency";
 
 type Variant = {
   id: string;
@@ -49,6 +50,7 @@ export function ProductPurchasePanel({
   buyNowLabel?: string;
   orderViaWhatsAppLabel?: string;
 }) {
+  const money = useMoney();
   const router = useRouter();
   const addItem = useCartStore((s) => s.addItem);
 
@@ -89,7 +91,7 @@ export function ProductPurchasePanel({
 
   return (
     <div className="space-y-6">
-      <p className="text-2xl font-medium text-brand-600">{formatPKR(price)}</p>
+      <p className="text-2xl font-medium text-brand-600">{money(price)}</p>
 
       <div>
         <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-soft">

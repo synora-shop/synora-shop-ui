@@ -3,15 +3,21 @@ import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, Mail, MapPin, Phone } from "lucide-react";
 import { shopSession } from "@/lib/auth-guard";
 import { getCustomer } from "@/lib/data/customers";
-import { formatPKR } from "@/lib/utils";
+
 import { formatRelativeTime } from "@/lib/format-relative-time";
 import { orderStatusStyle } from "@/lib/order-status-style";
 import { Badge, Card, PageHeader, Stat } from "@/components/ui/primitives";
 import { cn } from "@/lib/utils";
+import { formatMoney } from "@/lib/money";
+import { getCurrency } from "@/lib/data/settings";
 
 export const dynamic = "force-dynamic";
 
 export default async function CustomerPage(props: PageProps<"/admin/customers/[id]">) {
+  // Prices in the store's own currency rather than in rupees, which every
+  // screen printed regardless of what Settings said.
+  const currency = await getCurrency();
+  const money = (n: number) => formatMoney(n, currency);
   const me = await shopSession();
   if (!me) redirect("/merchant/login?callbackUrl=/admin/customers");
 
@@ -45,10 +51,10 @@ export default async function CustomerPage(props: PageProps<"/admin/customers/[i
 
       <div className="grid gap-3 sm:grid-cols-3">
         <Stat label="Orders" value={counted.length} />
-        <Stat label="Spent" value={formatPKR(totalSpent)} />
+        <Stat label="Spent" value={money(totalSpent)} />
         <Stat
           label="Average order"
-          value={counted.length > 0 ? formatPKR(Math.round(totalSpent / counted.length)) : ","}
+          value={counted.length > 0 ? money(Math.round(totalSpent / counted.length)) : ","}
         />
       </div>
 
@@ -141,7 +147,7 @@ export default async function CustomerPage(props: PageProps<"/admin/customers/[i
                   </div>
                   <div className="text-right">
                     <p className="font-mono text-sm tabular-nums text-ink">
-                      {formatPKR(order.total)}
+                      {money(order.total)}
                     </p>
                     <p className="text-[11px] text-ink-faint">
                       {formatRelativeTime(order.createdAt)}

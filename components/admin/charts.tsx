@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useCurrencySymbol } from "@/components/ui/currency";
 import { niceCeiling, type Point } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 
@@ -42,8 +43,22 @@ function shortDay(key: string): string {
  */
 export type Format = "number" | "currency";
 
-export function render(n: number, as: Format = "number"): string {
-  return as === "currency" ? `Rs ${compact(n)}` : compact(n);
+export function render(n: number, as: Format, symbol: string): string {
+  return as === "currency" ? `${symbol} ${compact(n)}` : compact(n);
+}
+
+/**
+ * The same, bound to the store's own currency.
+ *
+ * A hook rather than a parameter threaded through four chart components: the
+ * symbol is one value that never changes while anybody is looking at a chart,
+ * and the axis, the tooltip, the ranked list and the tile all need it.
+ */
+export function useRender(): (n: number, as?: Format) => string {
+  const symbol = useCurrencySymbol();
+  // The symbol is required rather than defaulted: a default is a currency
+  // nobody chose, printed on somebody's money.
+  return (n, as = "number") => render(n, as, symbol);
 }
 
 /** Thousands separated, and big money shortened so a tick is not 9 characters. */
@@ -87,6 +102,7 @@ export function TrendChart({
   /** What the line is, for a screen reader and for the tooltip. */
   label: string;
 }) {
+  const draw = useRender();
   const [hover, setHover] = useState<number | null>(null);
 
   const W = width;
@@ -112,14 +128,14 @@ export function TrendChart({
         viewBox={`0 0 ${W} ${height}`}
         className="w-full"
         role="img"
-        aria-label={`${label}. ${points.length} days, ending at ${render(last?.value ?? 0, format)}.`}
+        aria-label={`${label}. ${points.length} days, ending at ${draw(last?.value ?? 0, format)}.`}
         onMouseLeave={() => setHover(null)}
       >
         {ticks.map((t) => (
           <g key={t}>
             <line x1={padL} x2={W - padR} y1={y(t)} y2={y(t)} stroke={AXIS} strokeWidth="1" />
             <text x={padL - 8} y={y(t) + 3.5} textAnchor="end" className="fill-ink-faint text-[9px]">
-              {render(t, format)}
+              {draw(t, format)}
             </text>
           </g>
         ))}
@@ -178,7 +194,7 @@ export function TrendChart({
           className="pointer-events-none absolute -top-1 rounded-lg border border-control-line bg-control px-2 py-1 text-[11px] shadow-sm"
           style={{ left: `${(x(hover!) / W) * 100}%`, transform: "translateX(-50%)" }}
         >
-          <span className="font-medium">{render(active.value, format)}</span>
+          <span className="font-medium">{draw(active.value, format)}</span>
           <span className="ml-1.5 text-ink-faint">{shortDay(active.day)}</span>
         </div>
       )}
@@ -206,6 +222,7 @@ export function RankedBars({
   format?: Format;
   empty?: string;
 }) {
+  const draw = useRender();
   if (rows.length === 0) {
     return <p className="py-6 text-center text-xs text-ink-soft">{empty}</p>;
   }
@@ -216,7 +233,7 @@ export function RankedBars({
         <li key={row.label}>
           <div className="flex items-baseline justify-between gap-3">
             <span className="min-w-0 flex-1 truncate text-xs text-ink" title={row.label}>{row.label}</span>
-            <span className="flex-shrink-0 font-mono text-xs tabular-nums text-ink-soft">{render(row.value, format)}</span>
+            <span className="flex-shrink-0 font-mono text-xs tabular-nums text-ink-soft">{draw(row.value, format)}</span>
           </div>
           {/* A track one step off the surface, so a small value still reads as
               a small share rather than as nothing at all. */}
@@ -300,8 +317,9 @@ export function StageBar({
 /**
  * One headline figure, with what it was before.
  *
- * The change is the part that makes the number mean something — "Rs 1.2m" says
- * nothing until you know last month was Rs 900k. When there is no previous
+ * The change is the part that makes the number mean something — a revenue of
+ * 1.2m says
+ * nothing until you know last month was 900k. When there is no previous
  * period to compare against, it says so rather than printing a percentage
  * invented from a division by zero.
  *

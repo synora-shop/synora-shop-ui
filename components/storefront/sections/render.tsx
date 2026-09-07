@@ -28,6 +28,8 @@ export type SectionContext = {
   categories: CategoryTile[];
   featuredProducts: ProductCardProduct[];
   saleBadgeLabel: string;
+  /** The store's own currency code, so every price in every section is in it. */
+  currency: string;
   edits: Partial<GlobalEdits>;
   /**
    * Blog and restaurant data, empty for a shop that is neither.
@@ -124,6 +126,7 @@ function body(type: string, d: Record<string, unknown>, ctx: SectionContext) {
           columns={d.columns as number}
           products={ctx.featuredProducts}
           saleBadgeLabel={ctx.saleBadgeLabel}
+          currency={ctx.currency}
           edits={ctx.edits}
         />
       );

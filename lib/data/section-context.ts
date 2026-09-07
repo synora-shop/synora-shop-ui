@@ -4,7 +4,8 @@ import { getFeaturedProducts } from "@/lib/data/products";
 import { getStoreSettings } from "@/lib/data/settings";
 import { getSiteText, text } from "@/lib/site-text";
 import { toGlobalEdits } from "@/lib/global-edits";
-import { formatPKR } from "@/lib/utils";
+import { formatMoney } from "@/lib/money";
+import { resolveStoreDefaults } from "@/lib/store-defaults";
 import type { SectionContext } from "@/components/storefront/sections/render";
 
 /**
@@ -92,10 +93,14 @@ export const getSectionContext = cache(async (): Promise<SectionContext> => {
       : [],
   ]);
 
+  // Settings is already loaded above, so this is a lookup rather than a query.
+  const { currency } = resolveStoreDefaults(settings);
+
   return {
     categories,
     featuredProducts,
     saleBadgeLabel: text(siteText, "product.saleBadge"),
+    currency,
     edits: toGlobalEdits(settings),
     // Dates are serialised, because this snapshot is handed to the client-side
     // preview and a Date does not survive that crossing.
@@ -123,7 +128,7 @@ export const getSectionContext = cache(async (): Promise<SectionContext> => {
           id: dish.id,
           title: dish.title,
           description: dish.description,
-          price: formatPKR(dish.salePrice ?? dish.basePrice),
+          price: formatMoney(dish.salePrice ?? dish.basePrice, currency),
           image: dish.images[0] ?? null,
           dietary: dish.dietary as string[],
         })),

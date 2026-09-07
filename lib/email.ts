@@ -1,5 +1,6 @@
 import { Resend } from "resend";
-import { formatPKR } from "@/lib/utils";
+import { formatMoney } from "@/lib/money";
+import { getCurrency } from "@/lib/data/settings";
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
@@ -39,9 +40,12 @@ type OrderEmailData = {
   notifyEmail: string | null;
 };
 
-function itemsList(items: OrderEmailItem[]) {
+function itemsList(items: OrderEmailItem[], currency: string) {
   return items
-    .map((i) => `${i.title} (${i.size}/${i.color}) x${i.quantity}, ${formatPKR(i.price * i.quantity)}`)
+    .map(
+      (i) =>
+        `${i.title} (${i.size}/${i.color}) x${i.quantity}, ${formatMoney(i.price * i.quantity, currency)}`
+    )
     .join("\n");
 }
 
@@ -52,7 +56,12 @@ export async function sendOrderEmails(order: OrderEmailData) {
     return;
   }
 
-  const summary = `Order #${order.id}\n\n${itemsList(order.items)}\n\nSubtotal: ${formatPKR(order.subtotal)}\nShipping: ${formatPKR(order.shippingFee)}\nTotal: ${formatPKR(order.total)}\nPayment: ${order.paymentMethod}`;
+  // The shop's own currency. An order confirmation quoting rupees to somebody
+  // who paid in dollars is the version of this bug a customer sees.
+  const currency = await getCurrency();
+  const money = (n: number) => formatMoney(n, currency);
+
+  const summary = `Order #${order.id}\n\n${itemsList(order.items, currency)}\n\nSubtotal: ${money(order.subtotal)}\nShipping: ${money(order.shippingFee)}\nTotal: ${money(order.total)}\nPayment: ${order.paymentMethod}`;
 
   try {
     await resend.emails.send({

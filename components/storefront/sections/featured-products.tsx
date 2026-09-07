@@ -17,6 +17,7 @@ export function FeaturedProductsView({
   columns = 4,
   products,
   saleBadgeLabel,
+  currency,
   edits,
 }: {
   heading?: string;
@@ -24,6 +25,7 @@ export function FeaturedProductsView({
   columns?: number;
   products: ProductCardProduct[];
   saleBadgeLabel: string;
+  currency: string;
   edits: Partial<GlobalEdits>;
 }) {
   if (products.length === 0) return null;
@@ -34,7 +36,13 @@ export function FeaturedProductsView({
       <h2 className="text-center font-serif text-3xl font-semibold">{heading || "Best Sellers"}</h2>
       <div className={cn("mt-10 grid grid-cols-2 gap-x-4 gap-y-10", COLUMN_CLASS[columns] ?? COLUMN_CLASS[4])}>
         {shown.map((p) => (
-          <ProductCard key={p.slug} product={p} saleBadgeLabel={saleBadgeLabel} edits={edits} />
+          <ProductCard
+            key={p.slug}
+            product={p}
+            saleBadgeLabel={saleBadgeLabel}
+            currency={currency}
+            edits={edits}
+          />
         ))}
       </div>
     </>

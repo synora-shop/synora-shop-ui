@@ -12,6 +12,7 @@ import { findRedirect } from "@/lib/data/redirects";
 import { toGlobalEdits, totalStock, SHOP_GRID_LG_COLS_CLASS } from "@/lib/global-edits";
 import { cn } from "@/lib/utils";
 import { readFilter } from "@/lib/filters";
+import { getCurrency } from "@/lib/data/settings";
 
 function parseFilters(sp: Record<string, string | string[] | undefined>, category: string): Filters {
   const get = (k: string) => (Array.isArray(sp[k]) ? sp[k]?.[0] : sp[k]);
@@ -39,6 +40,7 @@ export async function generateMetadata(props: PageProps<"/collections/[slug]">):
 
 export default async function CollectionPage(props: PageProps<"/collections/[slug]">) {
   await guardStorefront();
+  const currency = await getCurrency();
   const { slug } = await props.params;
 
   const sp = await props.searchParams;
@@ -108,7 +110,7 @@ export default async function CollectionPage(props: PageProps<"/collections/[slu
           )}
         >
           {products.map((p) => (
-            <ProductCard key={p.id} product={p} saleBadgeLabel={text(siteText, "product.saleBadge")} edits={edits} />
+            <ProductCard key={p.id} currency={currency} product={p} saleBadgeLabel={text(siteText, "product.saleBadge")} edits={edits} />
           ))}
         </div>
       )}
