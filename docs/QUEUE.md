@@ -95,7 +95,16 @@ arrangement. `APP.ai` remains the authority on layout and on the four greys.
   reports what actually changed rather than what was asked for, so "2 products
   published" when two of the four were already published is the truth.
 
-Still to decide: the order row.
+- The **order screen** is done. It printed the database's spelling at the
+  merchant — BANK_TRANSFER, AWAITING_VERIFICATION — while the list beside it
+  had had human labels for months; it showed everything about an order except
+  when it happened; its lines had no pictures; the address was four unlabelled
+  grey lines with no way to email or ring the person; and the profit sat in
+  brand blue as though it were a link. All fixed, and the delete is the shared
+  danger button reading "Move to Bin", which is where it actually goes.
+
+The element pass is finished. What each section's row, tile, figure and state
+look like is decided and written down in code that a check keeps honest.
 
 **One mismatch with APP.ai to fix in this pass**
 

@@ -293,6 +293,27 @@ check(
   rolledThumb.map((f) => relative(ROOT, f)).join(", ")
 );
 
+// The order screen printed the database's spelling at the merchant —
+// BANK_TRANSFER, AWAITING_VERIFICATION — while the list beside it had had
+// human labels for months.
+const orderScreen = readFileSync(join(ROOT, "app/admin/orders/[id]/page.tsx"), "utf8");
+check("the order screen names a status in words", /statusLabel\(/.test(orderScreen));
+check("and a payment method in words", /paymentLabel\(/.test(orderScreen));
+// It showed everything about an order except when it happened.
+check("and says when the order was placed", /Placed \{placed}/.test(orderScreen));
+// A date formatted in the browser disagrees with the server that rendered it.
+check(
+  "with the date formatted on the server",
+  /Intl\.DateTimeFormat[\s\S]{0,160}timeZone/.test(orderScreen)
+);
+check("the order lines carry a picture", /<Thumb src={item\.product\?\.images\[0\]}/.test(orderScreen));
+// Every other destructive action in the panel is the shared danger button.
+const deleteOrder = readFileSync(join(ROOT, "components/admin/delete-order-button.tsx"), "utf8");
+check(
+  "moving an order to the Bin uses the shared button",
+  /<Button variant="danger"/.test(deleteOrder)
+);
+
 // Ticking twelve products and doing one thing to them was twelve trips into a
 // product and back. The bar that appears when rows are ticked is one component,
 // and the rules it has to keep are these.

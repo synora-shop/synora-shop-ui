@@ -5,6 +5,7 @@ import { Trash2 } from "lucide-react";
 import { moveOrderToBin } from "@/app/admin/orders/actions";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast";
+import { Button } from "@/components/ui/primitives";
 import { isNavigationError } from "@/lib/is-redirect";
 
 export function DeleteOrderButton({ id }: { id: string }) {
@@ -40,15 +41,13 @@ export function DeleteOrderButton({ id }: { id: string }) {
   return (
     <>
       {dialog}
-      <button
-        type="button"
-        onClick={handleClick}
-        disabled={pending}
-        className="flex items-center gap-1.5 rounded px-2 py-1 text-sm text-rose transition-colors hover:bg-rose/10 active:bg-rose/20 disabled:cursor-not-allowed disabled:opacity-50"
-      >
+      {/* The shared button, not a red link that happened to look like one. The
+          label is sentence case like every other action in the panel, and it
+          says where the order goes rather than implying it is gone. */}
+      <Button variant="danger" size="sm" onClick={handleClick} disabled={pending}>
         <Trash2 className="h-4 w-4" />
-        {pending ? "Moving…" : "Delete Order"}
-      </button>
+        {pending ? "Moving…" : "Move to Bin"}
+      </Button>
     </>
   );
 }
