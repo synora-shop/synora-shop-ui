@@ -6,6 +6,8 @@ import {
 } from "@/lib/data/pages";
 import { createPage } from "@/app/admin/pages/actions";
 import { PageList } from "@/components/admin/page-list";
+import { PolicyPages } from "@/components/admin/policy-pages";
+import { POLICY_PAGES } from "@/lib/policy-pages";
 import { Fieldset, SectionDivider, buttonClass } from "@/components/ui/primitives";
 import { Field } from "@/components/merchant/form-shell";
 
@@ -32,6 +34,19 @@ export default async function AdminPagesPage() {
       </p>
 
       <PageList pages={pages.map((p) => ({ ...p, sections: p._count.sections }))} />
+
+      <SectionDivider
+        title="The pages customers ask for"
+        description="Returns, privacy and terms. Each one is added as a draft written in plain words, with every decision you have to make left in square brackets — read it through, make it yours, then publish it. Add them to your footer from Menus."
+      />
+
+      <PolicyPages
+        existing={Object.fromEntries(
+          pages
+            .filter((p) => p.systemKey && POLICY_PAGES.some((policy) => policy.key === p.systemKey))
+            .map((p) => [p.systemKey as string, { id: p.id, isPublished: p.isPublished }])
+        )}
+      />
 
       <SectionDivider
         title="Add a page"

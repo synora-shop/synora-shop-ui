@@ -393,6 +393,20 @@ for (const f of ["components/admin/bin-product-list.tsx", "components/admin/bin-
   check(`${f.split("/").pop()} has a real empty state`, /<EmptyState/.test(readFileSync(join(ROOT, f), "utf8")));
 }
 
+// The three pages every shop is eventually asked for. Offered, not created:
+// a blank privacy policy on a live storefront reads as a promise nobody made.
+const policies = readFileSync(join(ROOT, "lib/policy-pages.ts"), "utf8");
+check("returns, privacy and terms have starting drafts", /"returns"/.test(policies) && /"privacy"/.test(policies) && /"terms"/.test(policies));
+// Written to be edited, not to look finished. A policy that reads as though a
+// lawyer wrote it, when none did, is the dangerous kind of placeholder.
+check("each one says it is a starting point", /not a finished policy/.test(policies));
+check("and leaves every decision in brackets", /\[square brackets\]/.test(policies));
+const policyAction = readFileSync(join(ROOT, "app/admin/pages/actions.ts"), "utf8");
+check("a policy page arrives unpublished", /isPublished: false/.test(policyAction));
+check("and cannot be added twice", /systemKey: policy\.key/.test(policyAction));
+// A merchant may already have a page at /p/returns.
+check("and does not take an address that is in use", /\$\{policy\.slug\}-policy/.test(policyAction));
+
 // Switching what a shop sells changes what the merchant is asked to fill in.
 // Letting someone switch while the store is open invites them to spend an
 // evening on a catalogue the storefront is not selling — with customers

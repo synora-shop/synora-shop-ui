@@ -7,6 +7,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_SECTION_DATA } from "@/lib/section-types";
 import { addressProblem, toSlug } from "@/lib/page-address";
+import { policyPage } from "@/lib/policy-pages";
 import type { SectionType } from "@/lib/generated/prisma/client";
 
 async function requireAdmin() {
@@ -50,6 +51,53 @@ export async function createPage(formData: FormData) {
 
   revalidatePath("/admin/pages");
   revalidatePath("/admin/pages");
+}
+
+/**
+ * Adds one of the three policy pages, from a draft the merchant then edits.
+ *
+ * Unpublished on purpose. A blank privacy policy on a live storefront is worse
+ * than no page at all — it reads as a promise nobody made — so it sits as a
+ * draft until somebody has been through it and pressed Published.
+ */
+export async function addPolicyPage(key: string): Promise<{ ok: true } | { error: string }> {
+  await requireAdmin();
+
+  const policy = policyPage(key);
+  if (!policy) return { error: "That is not a policy page this platform knows." };
+
+  const client = await db();
+  const sid = await currentShopId();
+
+  const already = await client.page.findFirst({ where: { systemKey: policy.key }, select: { id: true } });
+  if (already) return { error: `You already have a ${policy.title.toLowerCase()} page.` };
+
+  // Its address may be taken by a page the merchant made themselves.
+  const taken = await client.page.findFirst({ where: { slug: policy.slug }, select: { id: true } });
+  const slug = taken ? `${policy.slug}-policy` : policy.slug;
+
+  await client.page.create({
+    data: {
+      shopId: sid,
+      slug,
+      title: policy.title,
+      systemKey: policy.key,
+      isPublished: false,
+      sections: {
+        create: [
+          {
+            shopId: sid,
+            type: "TEXT_BLOCK",
+            order: 0,
+            data: { heading: policy.heading, body: policy.body },
+          },
+        ],
+      },
+    },
+  });
+
+  revalidatePath("/admin/pages");
+  return { ok: true };
 }
 
 export async function deletePage(formData: FormData) {
