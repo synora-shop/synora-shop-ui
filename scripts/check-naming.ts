@@ -205,10 +205,17 @@ check(
 const strayLabels = files.filter((f) => {
   if (!/(components|app)\/admin\//.test(f)) return false;
   const src = readFileSync(f, "utf8");
+  // Any <label> wearing uppercase, and any local `label`/`labelClass` string.
+  // The first version banned two exact class strings and a fourth idiom walked
+  // straight past it — the Home screen was still shouting STORE NAME at people
+  // while the check said the panel had one label style.
+  const uppercaseLabel = (src.match(/<label[^>]*className="[^"]*"/g) ?? []).some((tag) =>
+    /uppercase/.test(tag)
+  );
   return (
-    /text-xs font-semibold uppercase text-ink-soft/.test(src) ||
-    /className="flex items-center gap-1\.5 text-xs font-medium text-ink"/.test(src) ||
-    /const label = "[^"]*text-ink"/.test(src)
+    uppercaseLabel ||
+    /const label(Class)? = "[^"]*(uppercase|text-ink)[^"]*"/.test(src) ||
+    /className="flex items-center gap-1\.5 text-xs font-medium text-ink"/.test(src)
   );
 });
 check(
@@ -385,6 +392,47 @@ check(
 for (const f of ["components/admin/bin-product-list.tsx", "components/admin/bin-order-list.tsx"]) {
   check(`${f.split("/").pop()} has a real empty state`, /<EmptyState/.test(readFileSync(join(ROOT, f), "utf8")));
 }
+
+// The panel could write a Shopify CSV and not read one, which meant a merchant
+// could leave with their catalogue and not arrive with it.
+const importDialog = readFileSync(join(ROOT, "components/admin/import-dialog.tsx"), "utf8");
+const productsPage = readFileSync(join(ROOT, "app/admin/products/page.tsx"), "utf8");
+check(
+  "importing is offered beside exporting",
+  /<ImportDialog/.test(productsPage) && /Export CSV/.test(productsPage)
+);
+// Reading a file and writing it are two clicks, because there is no undo for
+// "the whole catalogue, slightly wrong".
+check("the file is read before anything is written", /planProductImport/.test(importDialog));
+check("and writing is a second, separate press", /applyProductImport/.test(importDialog));
+check("the plan says what would be overwritten", /to overwrite/.test(importDialog));
+const importActions = readFileSync(join(ROOT, "app/admin/products/import/actions.ts"), "utf8");
+check("the plan writes nothing", !/planProductImport[\s\S]{0,1400}\.(create|update|createMany|deleteMany)\(/.test(importActions));
+check("an import is capped", /MAX_PRODUCTS/.test(importActions) && /MAX_BYTES/.test(importActions));
+check("and is scoped to this shop", /shopId,/.test(importActions));
+
+// The search was the same field rendered inside the notifications dropdown —
+// 288px wide with overflow:hidden, which clipped the results away entirely.
+// Twelve results were found and rendered and not one was visible.
+const search = readFileSync(join(ROOT, "components/admin/admin-search.tsx"), "utf8");
+check("search is its own overlay", /role="dialog"/.test(search));
+check("and nothing above it can clip it", !/overflow-hidden[\s\S]{0,400}<ul/.test(search));
+check("and it takes the cursor when it opens", /inputRef\.current\?\.focus\(\)/.test(search));
+const topbar = readFileSync(join(ROOT, "components/admin/admin-topbar.tsx"), "utf8");
+check("the search button opens it", /setSearching\(true\)/.test(topbar));
+check("so does a keyboard", /metaKey \|\| event\.ctrlKey/.test(topbar));
+
+// overflow-x: hidden on html or body makes them a scroll container, and a
+// scroll container breaks position: sticky for everything inside it — the top
+// bar was declared sticky, computed sticky, and scrolled away regardless.
+const pageCss = readFileSync(join(ROOT, "app/globals.css"), "utf8");
+check(
+  "the page clips sideways without becoming a scrollport",
+  !/overflow-x:\s*hidden/.test(pageCss) && /overflow-x:\s*clip/.test(pageCss)
+);
+// And the mark belongs to the bar, not to the window: fixed left it floating
+// over whatever happened to be underneath once the bar had scrolled.
+check("the product mark sits inside the bar", !/fixed inset-x-0 top-0[^"]*z-50/.test(topbar));
 
 // The panel is sans-serif. The serif face belongs to the storefront and to a
 // full-screen message (an error, a locked door) — never to a heading inside a

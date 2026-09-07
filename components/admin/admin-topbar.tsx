@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
@@ -14,7 +14,7 @@ import {
   Store,
   X,
 } from "lucide-react";
-import { SettingsSearch } from "@/components/customizer/settings-search";
+import { AdminSearch } from "@/components/admin/admin-search";
 import { ExternalLinkIcon, InfoIcon, SynoraAppMark } from "@/components/ui/synora-marks";
 import { BusinessTypeDialog } from "@/components/admin/business-type-dialog";
 import { resolveNav } from "@/lib/admin-nav";
@@ -58,7 +58,8 @@ export function AdminTopbar({
   /** Things waiting on the merchant. Empty means nothing needs them. */
   alerts?: Alert[];
 }) {
-  const [menu, setMenu] = useState<"account" | "bell" | "search" | null>(null);
+  const [menu, setMenu] = useState<"account" | "bell" | null>(null);
+  const [searching, setSearching] = useState(false);
   const [dialog, setDialog] = useState<"info" | "switch" | null>(null);
   const navOpen = useAdminNav((s) => s.open);
   const toggleNav = useAdminNav((s) => s.toggle);
@@ -70,14 +71,39 @@ export function AdminTopbar({
 
   const close = () => setMenu(null);
 
+  // "/" is the near-universal search shortcut and ⌘K is the other one. Both
+  // only when the merchant is not already typing somewhere.
+  useEffect(() => {
+    function onKey(event: KeyboardEvent) {
+      const target = event.target as HTMLElement | null;
+      const typing =
+        target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || target?.isContentEditable;
+      const palette = (event.key === "k" || event.key === "K") && (event.metaKey || event.ctrlKey);
+      if (palette || (event.key === "/" && !typing)) {
+        event.preventDefault();
+        setMenu(null);
+        setSearching(true);
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   return (
     <header className="sticky top-0 z-40 bg-shell">
       {/* Centred on the window, not on this column, which is where APP.ai puts
-          it. Fixed rather than absolute so it cannot drift when the column
-          under it changes width.
+          it. This column starts after the 13rem sidebar, so its own centre is
+          half a sidebar to the right of the window's — hence the offset.
+
+          Absolute inside the bar, not fixed. Fixed took it out of the header
+          altogether: it stayed at the top of the *window* while the bar itself
+          scrolled away, so the mark ended up floating over whatever happened
+          to be under it, and at z-50 it covered things it had no business
+          covering.
+
           From xl only: below that the window's centre falls inside the page
           title, and the mark would sit on top of the word it is beside. */}
-      <span className="pointer-events-none fixed inset-x-0 top-0 z-50 hidden h-[76px] items-center justify-center xl:flex">
+      <span className="pointer-events-none absolute left-1/2 top-0 z-10 hidden h-[76px] -translate-x-[calc(50%+6.5rem)] items-center xl:flex">
         <Link href="/admin" className="pointer-events-auto">
           <SynoraAppMark />
         </Link>
@@ -149,8 +175,11 @@ export function AdminTopbar({
         <div className="relative flex flex-shrink-0 items-center gap-1 rounded-pill bg-panel px-1.5 py-1.5">
           <IconButton
             label="Search the admin"
-            active={menu === "search"}
-            onClick={() => setMenu((m) => (m === "search" ? null : "search"))}
+            active={searching}
+            onClick={() => {
+              setMenu(null);
+              setSearching(true);
+            }}
           >
             <Search className="h-[18px] w-[18px]" />
           </IconButton>
@@ -196,12 +225,6 @@ export function AdminTopbar({
                 className="fixed inset-0 z-40 cursor-default"
               />
               <div className="absolute right-0 top-full z-50 mt-2 w-72 overflow-hidden rounded-xl border border-control-line bg-control text-ink shadow-lg">
-                {menu === "search" && (
-                  <div className="p-2">
-                    <SettingsSearch />
-                  </div>
-                )}
-
                 {menu === "bell" && (
                   <div className="py-1">
                     <p className="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-control-soft">
@@ -289,6 +312,8 @@ export function AdminTopbar({
           )}
         </div>
       </div>
+
+      <AdminSearch open={searching} onClose={() => setSearching(false)} />
 
       {dialog && (
         <BusinessTypeDialog

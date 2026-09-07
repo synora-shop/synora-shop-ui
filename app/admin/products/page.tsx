@@ -6,6 +6,7 @@ import { ProductList } from "@/components/admin/product-list";
 import { FilterBar, type FilterGroup } from "@/components/admin/filter-bar";
 import { FilterDisclosure } from "@/components/admin/filter-disclosure";
 import { ActionBar } from "@/components/admin/action-bar";
+import { ImportDialog } from "@/components/admin/import-dialog";
 import { ListSearch } from "@/components/admin/list-search";
 import { PerPageSelect } from "@/components/admin/per-page-select";
 import { PaginationBar } from "@/components/admin/pagination-bar";
@@ -120,6 +121,10 @@ export default async function AdminProductsPage(props: PageProps<"/admin/product
           <PerPageSelect basePath="/admin/products" searchParams={sp} total={total} />
           {/* A plain link, not a form: the answer is a file, and the browser
               already knows how to receive one. */}
+          {/* A file goes out and a file comes back. The panel could do the
+              first and not the second, which meant a merchant could leave with
+              their catalogue and not arrive with it. */}
+          <ImportDialog />
           <a
             href="/admin/products/export"
             className={buttonClass("secondary", "sm")}

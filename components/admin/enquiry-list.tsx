@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useId, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronDown, Mail, Phone, Trash2 } from "lucide-react";
@@ -15,6 +15,7 @@ import { useToast } from "@/components/ui/toast";
 import { formatRelativeTime } from "@/lib/format-relative-time";
 import type { CustomField } from "@/lib/product-kind";
 import { cn } from "@/lib/utils";
+import { FieldLabel } from "@/components/merchant/form-shell";
 
 export type EnquiryRow = {
   id: string;
@@ -219,12 +220,13 @@ function NotesBox({ id, initial }: { id: string; initial: string }) {
     }
   }
 
+  const notesId = useId();
+
   return (
     <div className="mt-4">
-      <label className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
-        Private notes
-      </label>
+      <FieldLabel htmlFor={notesId}>Private notes</FieldLabel>
       <textarea
+        id={notesId}
         rows={2}
         value={notes}
         onChange={(e) => setNotes(e.target.value)}

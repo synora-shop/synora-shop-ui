@@ -54,8 +54,8 @@ const TOOLS: SettingEntry[] = [
   { id: "tool-home", label: "Home", info: "Your store's name, logo, address and phone number.", path: ["Home"], href: "/admin", keywords: ["store name", "logo", "address", "phone", "identity", "contact"] },
   { id: "tool-analytics", label: "Analytics", info: "Revenue, orders and where your visitors come from.", path: ["Analytics"], href: "/admin/analytics", keywords: ["revenue", "sales", "visits", "traffic", "dashboard", "figures", "reports"] },
 
-  { id: "tool-products", label: "Products", info: "Your catalog: prices, images, stock and descriptions.", path: ["Products", "Products"], href: "/admin/products", keywords: ["catalog", "items", "stock", "price", "inventory", "dishes", "menu"] },
-  { id: "tool-categories", label: "Categories", info: "Collections that group your products.", path: ["Products", "Categories"], href: "/admin/categories", keywords: ["collections", "groups", "taxonomy", "courses"] },
+  { id: "tool-products", label: "Products", info: "Your catalog: prices, images, stock and descriptions.", path: ["Products", "Products"], href: "/admin/products", keywords: ["catalog", "catalogue", "items", "stock", "price", "inventory", "sku"] },
+  { id: "tool-categories", label: "Categories", info: "Collections that group your products.", path: ["Products", "Categories"], href: "/admin/categories", keywords: ["collections", "groups", "taxonomy"] },
   { id: "tool-orders", label: "Orders", info: "Customer orders and their status.", path: ["Products", "Orders"], href: "/admin/orders", keywords: ["sales", "purchases", "fulfilment", "shipping"] },
   { id: "tool-customers", label: "Customers", info: "Everyone who has bought from you, and what they're worth.", path: ["Products", "Customers"], href: "/admin/customers", keywords: ["buyers", "people", "accounts", "repeat", "lifetime"] },
   { id: "tool-enquiries", label: "Enquiries", info: "Questions about bulk and made-to-order products.", path: ["Products", "Enquiries"], href: "/admin/enquiries", keywords: ["leads", "questions", "quotes", "inbox", "contact"] },

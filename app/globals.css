@@ -219,8 +219,15 @@
 html {
   /* Defensive backstop — a single overflowing child anywhere on the page (an
      unwrapped row, a too-wide table, etc.) should never be able to make the
-     whole page horizontally scrollable/clipped on mobile. */
-  overflow-x: hidden;
+     whole page horizontally scrollable on mobile.
+
+     `clip`, not `hidden`. `hidden` makes this a scroll container, and a scroll
+     container breaks `position: sticky` for everything inside it: the admin's
+     top bar was declared sticky, computed as sticky, and scrolled away anyway,
+     which left the product mark — the one part of the bar that was `fixed` —
+     floating alone over the page. `clip` cuts the same overflow off without
+     becoming a scrollport. */
+  overflow-x: clip;
 }
 
 /* Universal tap/click acknowledgment. Every button, link, and custom
@@ -277,7 +284,8 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  overflow-x: hidden;
+  /* Same reason as html above: clip cuts, hidden scrolls. */
+  overflow-x: clip;
 }
 
 /* Emphasis underline, used sparingly on marketing headings. */

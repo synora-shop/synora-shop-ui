@@ -52,10 +52,18 @@ console.log("\nONLY ONE THING IS PINNED TO THE TOP OF THE VIEWPORT");
 const sidebarTopBars = (sidebar.match(/fixed[^"]*top-0/g) ?? []).length;
 check("the sidebar declares no bar of its own", sidebarTopBars === 0, `found ${sidebarTopBars}`);
 check("the topbar is the sticky one", /sticky top-0/.test(topbar));
-// The mark is centred on the window rather than on the content column, which
-// is only possible with fixed positioning — and only safe because the bar it
-// appears to belong to is always at the top of the viewport.
-check("the centred mark is fixed to the window", /fixed inset-x-0 top-0/.test(topbar));
+// The mark is centred on the window rather than on the content column. It used
+// to do that with `fixed`, and the sentence that stood here said it was "only
+// safe because the bar it appears to belong to is always at the top of the
+// viewport" — which was the assumption that broke. `overflow-x: hidden` on the
+// page made the bar's sticky positioning a no-op, so the bar scrolled away and
+// the mark stayed, floating over the page on its own. It is absolute inside
+// the bar now, pulled left by half a sidebar to land on the window's centre.
+check("the centred mark belongs to the bar", /absolute left-1\/2 top-0/.test(topbar));
+check(
+  "and is offset by half the sidebar to reach the window's centre",
+  /-translate-x-\[calc\(50%\+6\.5rem\)\]/.test(topbar)
+);
 check("and cannot swallow clicks meant for the page", /pointer-events-none/.test(topbar));
 
 console.log("\nTHE NAVIGATION CAN BE OPENED ON A PHONE");

@@ -9,6 +9,7 @@ import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useServerRows } from "@/components/ui/use-server-rows";
 import { MenuEditor, type MenuItemRow, type PageOption } from "@/components/admin/menu-editor";
 import { assignMenu, createMenu, deleteMenu, renameMenu } from "@/app/admin/menus/actions";
+import { FieldLabel } from "@/components/merchant/form-shell";
 
 export type MenuRow = {
   id: string;
@@ -113,17 +114,12 @@ export function MenuManager({
         <div className="mt-2.5 grid gap-2.5 sm:grid-cols-2">
           {slots.map((slot) => (
             <div key={slot.slot} className="rounded-xl border border-border bg-surface p-3">
-              <label
-                htmlFor={`slot-${slot.slot}`}
-                className="text-xs font-semibold uppercase tracking-wide text-ink-soft"
-              >
-                {slot.label}
-              </label>
+              <FieldLabel htmlFor={`slot-${slot.slot}`}>{slot.label}</FieldLabel>
               <select
                 id={`slot-${slot.slot}`}
                 value={slot.menuId ?? ""}
                 onChange={(e) => handleAssign(slot.slot, e.target.value || null)}
-                className="input mt-1"
+                className="input"
               >
                 <option value="">Not set — use my first menu</option>
                 {menus.map((menu) => (
