@@ -86,7 +86,16 @@ arrangement. `APP.ai` remains the authority on layout and on the four greys.
   fills the width it is given instead of sitting in the left half of it — the
   scale is measured rather than fixed at 0.42.
 
-Still to decide: the bulk-select bar and the order row.
+- The **bulk-select bar** exists. There was no way to do one thing to several
+  products: publishing twelve was twelve trips into a product and back. Rows
+  and tiles now carry a tick, and a bar rises from the bottom saying how many
+  are selected, what can be done to them, and how to clear the selection. The
+  work is one query rather than a loop of updates — a loop is one round trip
+  per row to a database in another continent, and it can half-succeed — and it
+  reports what actually changed rather than what was asked for, so "2 products
+  published" when two of the four were already published is the truth.
+
+Still to decide: the order row.
 
 **One mismatch with APP.ai to fix in this pass**
 

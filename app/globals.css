@@ -538,6 +538,28 @@ body {
   animation: shp-rise 700ms var(--ease-out) both;
 }
 
+/*
+ * The bar that appears when rows are ticked, coming up from the bottom edge.
+ *
+ * Much shorter than .rise, and no blur: .rise introduces a whole panel on
+ * arrival and can afford 700ms, while this answers a click and has to feel
+ * like the click caused it.
+ */
+@keyframes shp-bulk-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.bulk-rise {
+  animation: shp-bulk-rise 160ms var(--ease-out) both;
+}
+
 /* Staggered so the eye is led down the panel instead of meeting all of it. */
 .rise-1 { animation-delay: 80ms; }
 .rise-2 { animation-delay: 180ms; }
@@ -578,6 +600,7 @@ body {
   .shake,
   .pulse-brand,
   .rise,
+  .bulk-rise,
   .drift,
   .drift-slow,
   .drift-slower {
@@ -586,7 +609,8 @@ body {
 
   /* Not merely stopped: a panel that animated in from invisible has to end up
      visible, or reduced motion would hide the whole flow. */
-  .rise {
+  .rise,
+  .bulk-rise {
     opacity: 1;
     transform: none;
     filter: none;

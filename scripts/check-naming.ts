@@ -165,7 +165,13 @@ check("the sidebar is narrower than 15rem", /lg:w-\[13rem\]/.test(side));
 const rolledButtons = files.filter((f) => {
   if (!/(components|app)\/admin\//.test(f)) return false;
   const src = readFileSync(f, "utf8");
-  return /className="[^"]*rounded-(full|pill)[^"]*(border border-border|bg-brand-500)[^"]*px-\d/.test(src);
+  // Only inside a <button> or <a> tag. It used to test the whole file, which
+  // flagged any pill-shaped *container* — the bulk bar is one — and the fix for
+  // a false positive is to distort the markup, which is worse than no check.
+  const tags = src.match(/<(?:button|a)\s[^>]*>/g) ?? [];
+  return tags.some((tag) =>
+    /className="[^"]*rounded-(full|pill)[^"]*(border border-border|bg-brand-500)[^"]*px-\d/.test(tag)
+  );
 });
 check(
   "no screen builds a button out of utilities",
@@ -286,6 +292,37 @@ check(
   rolledThumb.length === 0,
   rolledThumb.map((f) => relative(ROOT, f)).join(", ")
 );
+
+// Ticking twelve products and doing one thing to them was twelve trips into a
+// product and back. The bar that appears when rows are ticked is one component,
+// and the rules it has to keep are these.
+const bulkBar = readFileSync(join(ROOT, "components/admin/bulk-bar.tsx"), "utf8");
+check("the bulk bar says how many are selected", /{count} {noun}/.test(bulkBar));
+// A selection you cannot clear is a mode you are stuck in.
+check("and carries its own way out", /onClear/.test(bulkBar));
+// It floats: by the fifth tick the top of the list is above the fold.
+check("and does not sit at the top of a list", /fixed inset-x-0 bottom-/.test(bulkBar));
+
+const bulkActions = readFileSync(join(ROOT, "app/admin/products/actions.ts"), "utf8");
+check("bulk work is one query, not a loop", /updateMany\(/.test(bulkActions));
+// db() scopes the write, so an id from another shop matches nothing.
+check("and goes through the tenant client", /await db\(\)\)\.product\.updateMany/.test(bulkActions));
+check("and is capped", /BULK_LIMIT/.test(bulkActions));
+// Postgres counts a no-op UPDATE as a row written, so "4 published" when two
+// were already published is a small lie a merchant can catch.
+check(
+  "and reports what changed, not what was asked for",
+  /status: { not: skip\.status }/.test(bulkActions)
+);
+const list = readFileSync(join(ROOT, "components/admin/product-list.tsx"), "utf8");
+// A tick on a row that has been filtered away would be acted on invisibly.
+check(
+  "the selection is intersected with what is on screen",
+  /rows\.filter\(\(p\) => picked\.has\(p\.id\)\)/.test(list)
+);
+// A circle means "pick one of these" to anybody who has used a form, and this
+// design system's rounded-md is 14px, which on a 20px box is a circle.
+check("the tick is square", /rounded-\[5px\]/.test(list));
 
 // The Themes screen wrote themeKey and nothing read it, so activating a theme
 // changed a database row and not one pixel of the storefront — while the screen

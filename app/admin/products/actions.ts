@@ -220,6 +220,61 @@ export async function restoreProduct(formData: FormData) {
   revalidatePath("/shop");
 }
 
+/**
+ * The same three things, to several products at once.
+ *
+ * One `updateMany` through the tenant client rather than a loop of updates:
+ * the loop is one round trip per row to a database in another continent, and
+ * it can half-succeed, which leaves a merchant looking at a list where some of
+ * what they ticked happened and some did not.
+ *
+ * The ids are not trusted. `db()` scopes every write to this shop, so an id
+ * belonging to somebody else's shop simply matches nothing — and the count
+ * that comes back is what actually changed, not what was asked for, so the
+ * screen can say "12 published" and be telling the truth.
+ */
+const BULK_LIMIT = 500;
+
+export type BulkAction = "publish" | "unpublish" | "bin";
+
+export async function bulkProducts(
+  action: BulkAction,
+  ids: string[]
+): Promise<{ changed: number } | { error: string }> {
+  await requireAdmin();
+
+  // A page can hold a hundred; anything past this is a script, not a merchant.
+  const unique = [...new Set(ids.filter((id) => typeof id === "string" && id.length > 0))];
+  if (unique.length === 0) return { error: "Nothing was selected." };
+  if (unique.length > BULK_LIMIT) return { error: `That is more than ${BULK_LIMIT} products at once.` };
+
+  // Each action excludes the rows it would not change, so the count that comes
+  // back is the number of products that actually moved. Postgres counts a
+  // no-op UPDATE as a row written, and "4 products published" when two of them
+  // were already published is a small lie a merchant can catch.
+  const { data, skip } =
+    action === "publish"
+      ? { data: { status: "PUBLISHED" as const }, skip: { status: "PUBLISHED" as const } }
+      : action === "unpublish"
+        ? { data: { status: "DRAFT" as const }, skip: { status: "DRAFT" as const } }
+        : { data: { deletedAt: new Date() }, skip: undefined };
+
+  // deletedAt: null so a product already in the Bin is never touched.
+  const { count } = await (await db()).product.updateMany({
+    where: {
+      id: { in: unique },
+      deletedAt: null,
+      ...(skip ? { status: { not: skip.status } } : {}),
+    },
+    data,
+  });
+
+  revalidatePath("/admin/products");
+  revalidatePath("/admin/bin");
+  revalidatePath("/shop");
+  return { changed: count };
+}
+
 // Hard delete — only reachable from within the Bin. Frees the DB row; images stored on
 // Vercel Blob are best-effort removed too (local /products/* paths are static files
 // committed to the repo, so those bytes stay until a follow-up commit removes them).

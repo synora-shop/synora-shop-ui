@@ -1,15 +1,17 @@
 "use client";
 
+import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Package, Trash2 } from "lucide-react";
-import { ButtonLink } from "@/components/ui/primitives";
+import { Check, Eye, EyeOff, Package, Trash2 } from "lucide-react";
+import { Button, ButtonLink } from "@/components/ui/primitives";
+import { BulkBar } from "@/components/admin/bulk-bar";
 import { ListEmpty } from "@/components/admin/list-empty";
 import { StatusMark, StockMark, Thumb } from "@/components/admin/product-elements";
 import { formatPKR, cn } from "@/lib/utils";
 import { useServerRows } from "@/components/ui/use-server-rows";
 import { effectivePrice, unitProfit, profitMargin } from "@/lib/product-pricing";
-import { moveProductToBin } from "@/app/admin/products/actions";
+import { bulkProducts, moveProductToBin, type BulkAction } from "@/app/admin/products/actions";
 import { SwipeRow } from "@/components/ui/swipe-row";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast";
@@ -53,6 +55,105 @@ export function ProductList({
   const [rows, setRows] = useServerRows(products);
   const { confirm, dialog } = useConfirm();
   const toast = useToast();
+  const [picked, setPicked] = useState<Set<string>>(new Set());
+  const [running, startBulk] = useTransition();
+
+  // A tick on a row that has since been filtered away, or binned, would be
+  // acted on invisibly. The selection is always intersected with what is on
+  // screen, so what the bar counts is what the merchant can see.
+  const selected = useMemo(
+    () => rows.filter((p) => picked.has(p.id)).map((p) => p.id),
+    [rows, picked]
+  );
+
+  function toggle(id: string) {
+    setPicked((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  async function runBulk(action: BulkAction, verb: string) {
+    if (selected.length === 0) return;
+    if (action === "bin") {
+      const ok = await confirm({
+        title: `Move ${selected.length} product${selected.length === 1 ? "" : "s"} to the Bin?`,
+        description:
+          "They disappear from the store immediately. Restore them anytime from Admin \u2192 Bin.",
+        confirmLabel: "Move to Bin",
+        danger: true,
+      });
+      if (!ok) return;
+    }
+    const ids = selected;
+    startBulk(async () => {
+      const result = await bulkProducts(action, ids);
+      if ("error" in result) {
+        toast.error(result.error, { blocking: true });
+        return;
+      }
+      setPicked(new Set());
+      // The count is what the database actually changed, not what was asked
+      // for \u2014 a product already published is not published again.
+      toast.success(
+        result.changed === 0
+          ? "Nothing needed changing."
+          : `${result.changed} product${result.changed === 1 ? "" : "s"} ${verb}.`
+      );
+      router.refresh();
+    });
+  }
+
+  /** The tick, in the one shape both the row and the tile use. */
+  function Tick({ id, title }: { id: string; title: string }) {
+    const on = picked.has(id);
+    return (
+      <button
+        type="button"
+        role="checkbox"
+        aria-checked={on}
+        aria-label={`Select ${title}`}
+        onClick={(e) => {
+          // The row is a link. Ticking is not following it.
+          e.preventDefault();
+          e.stopPropagation();
+          toggle(id);
+        }}
+        className={cn(
+          // An explicit radius, not rounded-md: this design system sets
+          // --radius-md to 14px, which on a 20px box is a circle, and a circle
+          // means "pick one of these" to everybody who has used a form.
+          "flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-[5px] border transition-colors",
+          on
+            ? "border-brand-500 bg-brand-500 text-white"
+            // A shadow only when empty: on a tile the tick sits on a
+            // photograph, and a white square on a pale sky is invisible.
+            : "border-border bg-control text-transparent shadow-sm hover:border-ink-faint"
+        )}
+      >
+        <Check className="h-3.5 w-3.5" strokeWidth={3} />
+      </button>
+    );
+  }
+
+  const bulkBar = selected.length > 0 && (
+    <BulkBar count={selected.length} noun="product" onClear={() => setPicked(new Set())}>
+      <Button size="sm" variant="secondary" disabled={running} onClick={() => runBulk("publish", "published")}>
+        <Eye className="h-3.5 w-3.5" />
+        Publish
+      </Button>
+      <Button size="sm" variant="secondary" disabled={running} onClick={() => runBulk("unpublish", "moved to drafts")}>
+        <EyeOff className="h-3.5 w-3.5" />
+        Unpublish
+      </Button>
+      <Button size="sm" variant="danger" disabled={running} onClick={() => runBulk("bin", "moved to the Bin")}>
+        <Trash2 className="h-3.5 w-3.5" />
+        Bin
+      </Button>
+    </BulkBar>
+  );
 
   async function handleDelete(id: string, title: string) {
     const ok = await confirm({
@@ -114,9 +215,12 @@ export function ProductList({
                 <Link href={`/admin/products/${p.id}`} className="flex flex-1 flex-col">
                   <div className="relative">
                     <Thumb src={p.images[0]} size="tile" />
+                    <span className="absolute left-2 top-2 z-10">
+                      <Tick id={p.id} title={p.title} />
+                    </span>
                     {/* On a picture, the state goes on the picture — a merchant
                         scanning a wall of tiles never reaches the text. */}
-                    <span className="absolute left-2 top-2">
+                    <span className="absolute bottom-2 left-2">
                       <StatusMark status={p.status} />
                     </span>
                     {!p.isActive && (
@@ -155,6 +259,7 @@ export function ProductList({
             );
           })}
         </ul>
+        {bulkBar}
       </>
     );
   }
@@ -172,8 +277,12 @@ export function ProductList({
             >
               <Link
                 href={`/admin/products/${p.id}`}
-                className="no-tap-scale grid grid-cols-[2.75rem_minmax(0,1fr)] items-center gap-3 px-4 py-2.5 transition-colors hover:bg-subtle active:bg-subtle lg:grid-cols-[2.75rem_minmax(0,1fr)_7.5rem_9rem_7rem] lg:gap-4"
+                className={cn(
+                  "no-tap-scale grid grid-cols-[1.25rem_2.75rem_minmax(0,1fr)] items-center gap-3 px-4 py-2.5 transition-colors hover:bg-subtle active:bg-subtle lg:grid-cols-[1.25rem_2.75rem_minmax(0,1fr)_7.5rem_9rem_7rem] lg:gap-4",
+                  picked.has(p.id) && "bg-brand-50"
+                )}
               >
+                <Tick id={p.id} title={p.title} />
                 <Thumb src={p.images[0]} size="row" />
 
                 <div className="min-w-0">
@@ -224,6 +333,7 @@ export function ProductList({
           );
         })}
       </div>
+      {bulkBar}
     </>
   );
 }
