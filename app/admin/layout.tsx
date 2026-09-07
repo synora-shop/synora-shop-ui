@@ -58,6 +58,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
             userEmail={me.email}
             storeUrl={await canonicalUrl(me.shop.id)}
             registryType={type}
+            storeStatus={me.shop.status}
             hasOtherStores={(session.user.shops?.length ?? 0) > 1}
             alerts={await pendingWork(schemaType)}
           />

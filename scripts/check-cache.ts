@@ -103,7 +103,12 @@ for (const [model, kind] of CACHED_MODELS) {
 
 // Every one of these rows is partitioned by business type, so all of them are
 // the wrong rows the moment it changes.
-const typeSwitch = readFileSync(join(ROOT, "app/admin/settings/business-type-actions.ts"), "utf8");
+// Both doors into the switch are read: Settings delegates to the top bar's
+// action, and the check must follow the write rather than the file it used to
+// be in.
+const typeSwitch =
+  readFileSync(join(ROOT, "app/admin/business-type-actions.ts"), "utf8") +
+  readFileSync(join(ROOT, "app/admin/settings/business-type-actions.ts"), "utf8");
 check(
   "changing the business type drops the whole of that shop's cache",
   /for \(const kind of CACHE_KINDS\) invalidateShop\(/.test(typeSwitch)

@@ -17,6 +17,7 @@ import {
 import { AdminSearch } from "@/components/admin/admin-search";
 import { ExternalLinkIcon, InfoIcon, SynoraAppMark } from "@/components/ui/synora-marks";
 import { BusinessTypeDialog } from "@/components/admin/business-type-dialog";
+import type { ShopStatusName } from "@/lib/store-type-switch";
 import { resolveNav } from "@/lib/admin-nav";
 import { useAdminNav } from "@/lib/admin-nav-store";
 import { cn } from "@/lib/utils";
@@ -44,6 +45,7 @@ export function AdminTopbar({
   userEmail,
   storeUrl,
   registryType,
+  storeStatus,
   hasOtherStores = false,
   alerts = [],
 }: {
@@ -54,6 +56,8 @@ export function AdminTopbar({
   storeUrl: string;
   /** Registry spelling — "ecommerce", not "ECOMMERCE". For the type dialog. */
   registryType: string;
+  /** Whether the store is open. An open store cannot change what it sells. */
+  storeStatus: ShopStatusName;
   hasOtherStores?: boolean;
   /** Things waiting on the merchant. Empty means nothing needs them. */
   alerts?: Alert[];
@@ -319,6 +323,7 @@ export function AdminTopbar({
         <BusinessTypeDialog
           current={registryType}
           mode={dialog}
+          status={storeStatus}
           onClose={() => setDialog(null)}
         />
       )}

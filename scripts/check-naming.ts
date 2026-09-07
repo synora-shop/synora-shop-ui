@@ -393,6 +393,30 @@ for (const f of ["components/admin/bin-product-list.tsx", "components/admin/bin-
   check(`${f.split("/").pop()} has a real empty state`, /<EmptyState/.test(readFileSync(join(ROOT, f), "utf8")));
 }
 
+// Switching what a shop sells changes what the merchant is asked to fill in.
+// Letting someone switch while the store is open invites them to spend an
+// evening on a catalogue the storefront is not selling — with customers
+// browsing it while they do. So the store closes its doors first.
+const gateRule = readFileSync(join(ROOT, "lib/store-type-switch.ts"), "utf8");
+check("only a paused store may change type", /case "PAUSED":\s*\n\s*return { allowed: true }/.test(gateRule));
+// Ours, not theirs: pausing out of a suspension would be a way to clear it.
+check("and a suspension is not something to pause out of", /case "SUSPENDED"/.test(gateRule));
+const headerSwitch = readFileSync(join(ROOT, "app/admin/business-type-actions.ts"), "utf8");
+// A hidden control is not a rule. The rule is where the write happens.
+check("the rule is enforced on the server", /typeSwitchGate\(/.test(headerSwitch));
+check("and refuses before writing", /if \(!gate\.allowed\) return/.test(headerSwitch));
+const settingsSwitch = readFileSync(join(ROOT, "app/admin/settings/business-type-actions.ts"), "utf8");
+// Two actions that both write businessType is two rules waiting to disagree.
+check("there is one door, not two", /switchBusinessType\(value\)/.test(settingsSwitch));
+check(
+  "and the second one writes nothing itself",
+  !/prisma\.shop\.update/.test(settingsSwitch)
+);
+const typeDialog = readFileSync(join(ROOT, "components/admin/business-type-dialog.tsx"), "utf8");
+check("the dialog says why, and offers the one thing that helps", /Pause my store/.test(typeDialog));
+const typeForm = readFileSync(join(ROOT, "components/admin/business-type-form.tsx"), "utf8");
+check("settings says the same thing", /typeSwitchGate\(/.test(typeForm));
+
 // A page's address could not be changed at all, because the address *was* the
 // identity: /about loaded the page whose slug was "about".
 const pagesData = readFileSync(join(ROOT, "lib/data/pages.ts"), "utf8");

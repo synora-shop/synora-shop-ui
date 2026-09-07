@@ -33,7 +33,7 @@ export default async function AdminSettingsPage() {
 
       <StoreDefaultsForm initial={defaults} />
 
-      <BusinessTypeForm current={registryBusinessType(shop.businessType)} />
+      <BusinessTypeForm current={registryBusinessType(shop.businessType)} status={shop.status} />
 
       <SectionDivider
         title="Customers"

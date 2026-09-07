@@ -2,10 +2,12 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
-import { Check, Info, Loader2, X } from "lucide-react";
+import { Check, Info, Loader2, PauseCircle, X } from "lucide-react";
 import { switchBusinessType } from "@/app/admin/business-type-actions";
+import { pauseStore } from "@/app/admin/settings/lifecycle-actions";
+import { typeSwitchGate, type ShopStatusName } from "@/lib/store-type-switch";
 import { TYPE_GUIDE } from "@/lib/themes/type-guide";
-import { Badge } from "@/components/ui/primitives";
+import { Badge, Button } from "@/components/ui/primitives";
 import { cn } from "@/lib/utils";
 
 /**
@@ -26,17 +28,26 @@ import { cn } from "@/lib/utils";
 export function BusinessTypeDialog({
   current,
   mode,
+  status,
   onClose,
 }: {
   /** Registry spelling, e.g. "ecommerce". */
   current: string;
   /** "info" explains and cannot change anything. "switch" can. */
   mode: "info" | "switch";
+  /** Whether the store is open. An open store cannot change what it sells. */
+  status: ShopStatusName;
   onClose: () => void;
 }) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [changing, setChanging] = useState<string | null>(null);
+  const [paused, setPaused] = useState(false);
+
+  // The gate is re-read after pausing rather than reloading the whole panel:
+  // the merchant is mid-decision, and a page reload would drop them out of it.
+  const gate = typeSwitchGate(paused ? "PAUSED" : status);
+  const canSwitch = mode === "switch" && gate.allowed;
 
   // Escape closes it, which is what anyone will try first.
   useEffect(() => {
@@ -47,8 +58,17 @@ export function BusinessTypeDialog({
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose, pending]);
 
+  function pause() {
+    setError(null);
+    startTransition(async () => {
+      const result = await pauseStore();
+      if (result.ok) setPaused(true);
+      else setError(result.error ?? "That did not work. Try again.");
+    });
+  }
+
   function choose(key: string) {
-    if (key === current || pending) return;
+    if (key === current || pending || !canSwitch) return;
     setError(null);
     setChanging(key);
     startTransition(async () => {
@@ -111,11 +131,42 @@ export function BusinessTypeDialog({
             </p>
           )}
 
+          {/* Why the choice below is not offered, and the one thing that would
+              change that. Said before the list rather than after it: a merchant
+              who reads the reason first does not click a row and wonder. */}
+          {mode === "switch" && !gate.allowed && (
+            <div className="mb-3 rounded-xl border border-amber/30 bg-amber-bg px-3.5 py-3">
+              <p className="flex items-start gap-2 text-sm leading-snug text-ink">
+                <PauseCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber" aria-hidden />
+                {gate.reason}
+              </p>
+              {gate.canPause && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="mt-2.5"
+                  disabled={pending}
+                  onClick={pause}
+                >
+                  {pending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                  {pending ? "Pausing…" : "Pause my store"}
+                </Button>
+              )}
+            </div>
+          )}
+
+          {mode === "switch" && paused && (
+            <p className="mb-3 rounded-xl border border-green/30 bg-green-bg px-3.5 py-2.5 text-sm leading-snug text-ink">
+              Your store is paused. Pick a type below — and reopen it from Themes › Opening and
+              closing when you are ready.
+            </p>
+          )}
+
           <ul className="flex flex-col gap-2.5">
             {TYPE_GUIDE.map((t) => {
               const isCurrent = t.key === current;
               const busy = changing === t.key;
-              const Row = mode === "switch" && !isCurrent ? "button" : "div";
+              const Row = canSwitch && !isCurrent ? "button" : "div";
               return (
                 <li key={t.key}>
                   <Row
@@ -126,9 +177,9 @@ export function BusinessTypeDialog({
                       "w-full rounded-xl border p-3.5 text-left transition-colors",
                       isCurrent
                         ? "border-green bg-green-bg"
-                        : mode === "switch"
+                        : canSwitch
                           ? "border-border hover:border-brand-300 hover:bg-subtle disabled:opacity-60"
-                          : "border-border"
+                          : "border-border opacity-60"
                     )}
                   >
                     <span className="flex items-center gap-2">

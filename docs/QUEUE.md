@@ -125,43 +125,21 @@ which touches all 22 screens, so it belongs here rather than in a passing edit.
 - Status colours (green, amber, rose) are reserved for state and always carry a
   word or an icon, never colour alone.
 
-### 2. Switching APP type must go through pausing the store
+### 2. ~~Switching APP type must go through pausing the store~~ — done 7 Sep
 
-**Where:** the top header, where *Change APP type* already sits.
+The rule is `lib/store-type-switch.ts`: a paused store may switch, an open one
+may not, and a suspended one is ours to lift rather than theirs to pause out
+of. It is enforced in the server action, where the write happens — the dialog
+hiding the choice is a courtesy, not the rule. Proven by forcing the disabled
+form to submit from the browser console: the server refused and the type did
+not change.
 
-**The rule:** a store that is open cannot change type. To switch, the merchant
-pauses their store first; only then is the type switch offered.
+The dialog says why the choice is not offered and carries the one button that
+would change that. Pausing from inside it does not reload the panel, because
+the merchant is mid-decision.
 
-**Why:** switching type changes what a merchant is expected to upload — a shop
-fills in products, variants, stock and shipping. Letting someone switch while
-the store is live invites them to fill in a catalogue for a business they are
-about to stop being. Pausing first makes the switch a deliberate act.
-
-**The flow:**
-
-1. Merchant opens *Change APP type* in the top header.
-2. If the store is `ACTIVE`, `TRIAL` or `PAST_DUE`, the dialog does not offer
-   the switch. It explains why, and offers **Pause my store** — the same action
-   as Preferences › Visibility, not a second one.
-3. Once the store is `PAUSED`, the dialog offers the types.
-4. After switching, the merchant reopens the store themselves. It does not
-   reopen on its own: they should see the new panel before customers do.
-
-**Notes for whoever builds it**
-
-- `PAUSED` is the existing status and `pauseStore()` in
-  `app/admin/settings/lifecycle-actions.ts` is the existing action. Do not add
-  a second idea of "inactive".
-- `SUSPENDED` and `CLOSED` are ours and the merchant's endings respectively —
-  neither should offer a type switch at all.
-- The switch itself destroys nothing: storefront rows are partitioned by type,
-  so switching back brings the old one straight back.
-- The control is currently `xl:` only. It needs to be reachable on a laptop.
-
-### 3. ~~AHAD1V is still a RESTAURANT row in the live database~~ — done 6 Sep
-
-Switched. The shop is called **bashinda** in production, not AHAD1V — the name
-changed after an earlier database copy was taken, so older notes say AHAD1V.
+Both doors — the top bar and Settings — now go through one action. Two actions
+that both write `businessType` is two rules waiting to disagree.
 
 ---
 
