@@ -138,7 +138,10 @@ async function checkRouting(
 
   const cnameTarget = normaliseHost(DNS_TARGET.cname);
   const cnameOk = cnames.some((c) => normaliseHost(c) === cnameTarget);
-  const aOk = addresses.includes(DNS_TARGET.a);
+  // Any address the host answers on, not only the one we print. See
+  // DNS_TARGET.accepts: a merchant whose apex already pointed at the host
+  // before they found us has correct DNS and must not be told otherwise.
+  const aOk = addresses.some((address) => DNS_TARGET.accepts.includes(address));
 
   return {
     correct: cnameOk || aOk,

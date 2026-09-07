@@ -1,5 +1,5 @@
 import { headers } from "next/headers";
-import { notFound, redirect } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { canonicalHost, currentShop } from "@/lib/data/shop";
 import { shopSession } from "@/lib/auth-guard";
 import { SHOP_PATH_HEADER, classifyHost, normaliseHost } from "@/lib/shop-context";
@@ -73,5 +73,9 @@ export async function guardCanonicalHost() {
   // including, for a shop that has just switched domains, every link anyone
   // has ever shared.
   const path = h.get(SHOP_PATH_HEADER) ?? "/";
-  redirect(`https://${canonical}${path.startsWith("/") ? path : `/${path}`}`);
+  // Permanent, not temporary. The whole point of this redirect is to tell a
+  // search engine which address is real; a 307 says "keep the old one indexed"
+  // and leaves the ranking split between the free subdomain and the merchant's
+  // own domain — the outcome this exists to prevent.
+  permanentRedirect(`https://${canonical}${path.startsWith("/") ? path : `/${path}`}`);
 }

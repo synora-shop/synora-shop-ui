@@ -286,3 +286,49 @@ for the city and passed for the wrong reason.
   nothing for up to five minutes, and a server restart does not help. Either
   wait, or delete `.next/cache`. Anything writing settings from outside the app
   needs to invalidate the tag the way the server actions do.
+
+## Domains — what a real test found, 7 September
+
+Tested end to end against real DNS and the real screens: added
+`shop.norishba.com` on the dev branch, read the records it asked for, pressed
+Check now, promoted it, made it the main address, served the storefront on it,
+and removed it again. Routing, the primary switch, the redirect and the
+clean-up all do what they claim. Production has `HOSTING_PROVIDER`,
+`VERCEL_API_TOKEN`, `VERCEL_PROJECT_ID` and `VERCEL_TEAM_ID` set, so the call to
+the hosting vendor in `lib/hosting/vercel.ts` is wired to something real.
+
+Three faults, all three fixed the same day:
+
+- ~~**Nothing checks a domain unless a person presses the button.**~~
+  `lib/data/domains.ts` says in three places that "the checker runs on a
+  schedule". There is no schedule: `vercel.json` runs only the nightly prune,
+  and `verifyDomain` has exactly one caller — the Check now button in
+  `components/admin/domain-manager.tsx`. So a merchant who fixes their DNS
+  overnight is not brought live until they come back and press it, and once a
+  domain is live the button disappears entirely, which means a domain that
+  later breaks keeps saying "live" forever. `backoffMs` and
+  `MAX_AUTOMATIC_CHECKS` were written for a caller that does not exist.
+  `sweepDomains` and `/api/cron/domains` are that caller, hourly. Domains still
+  being set up run on the backoff; live ones are re-checked every six hours so
+  one that breaks is noticed. A live domain now survives three consecutive
+  failures before it stops being served — demoting on the first would take a
+  working store off its own domain because one DNS query was unlucky. Check now
+  is offered on live domains too.
+- ~~**The apex A record we hand out is Vercel's old address.**~~ `DNS_TARGET.a` is
+  `76.76.21.21`; Vercel now issues `216.198.79.1`. Both still route — both were
+  tested with a Host-header request — but `checkRouting` in `lib/dns.ts`
+  accepts only the one exact string, so a merchant whose apex is already on
+  Vercel's current address is told their records are wrong and can never get
+  past it. `norishba.com` was exactly that case. `DNS_TARGET.accepts` is now a
+  list — the instructions print the first, the checker takes any of them, and
+  the printed one is always in the list. `norishba.com` now reports correctly
+  that only the TXT record is missing.
+- ~~**The redirect from the free address to the main one is temporary.**~~
+  `guardCanonicalHost` in `lib/canonical.ts` says it redirects "permanently"
+  and emits 307 (measured). A search engine reads 307 as "keep the old address
+  indexed", which is the one thing the redirect exists to prevent. Now
+  `permanentRedirect`, measured at 308.
+
+Untested, because it needs a domain whose DNS can be changed: whether Vercel
+accepts a CNAME to `cname.shop.synoradigitals.com`, issues the certificate, and
+flips the domain from VERIFIED to ACTIVE.

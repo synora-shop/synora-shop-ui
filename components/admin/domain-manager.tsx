@@ -201,7 +201,10 @@ export function DomainManager({
                 </div>
 
                 <div className="flex flex-shrink-0 flex-wrap items-center gap-2">
-                  {!domain.isPlatform && domain.status !== "ACTIVE" && (
+                  {/* Live domains too. A domain that has stopped working shows
+                      its error here, and the merchant who has just fixed it
+                      should not have to wait for the hourly checker. */}
+                  {!domain.isPlatform && (
                     <Button
                       size="sm"
                       disabled={pending}

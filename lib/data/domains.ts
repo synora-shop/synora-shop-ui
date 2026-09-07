@@ -19,6 +19,16 @@ import { PLATFORM_DOMAIN, normaliseHost } from "@/lib/shop-context";
 // Every step is idempotent, because the checker runs on a schedule and the
 // merchant has a "check now" button, and both can happen at once.
 
+/**
+ * How many checks in a row a live domain may fail before it stops being served.
+ *
+ * Not one. See verifyDomain: a single unlucky DNS query would otherwise take a
+ * working store off its own domain. Three, at the sweep's six-hour spacing, is
+ * most of a day of genuinely broken records before anything changes — and the
+ * merchant sees the error on the screen from the first failure.
+ */
+const LIVE_FAILURES_BEFORE_DEMOTION = 3;
+
 /** A domain's verification secret. Random per domain. */
 function newVerificationToken(): string {
   // Base64url of 24 bytes: short enough to paste into a registrar field that
@@ -131,25 +141,47 @@ export async function verifyDomain(
 
   if (!dns.ok) {
     const failedChecks = domain.failedChecks + 1;
+
+    // A domain that is already serving customers is not taken off the air by
+    // one bad answer.
+    //
+    // A resolver blip, a registrar's momentary NXDOMAIN, a nameserver
+    // migration that takes ten minutes — any of these fails a single lookup on
+    // a domain that is perfectly fine. Demoting on the first failure would drop
+    // it out of resolveShopByHost, and the merchant's store would 404 on their
+    // own domain because our DNS query was unlucky. So a live domain keeps
+    // serving until it has failed LIVE_FAILURES_BEFORE_DEMOTION times in a
+    // row, and the error is shown to the merchant throughout.
+    //
+    // The asymmetry is deliberate: refusing to serve a domain that works is a
+    // far worse mistake than serving one whose records have just been removed.
+    const holdsService =
+      domain.status === "ACTIVE" && failedChecks < LIVE_FAILURES_BEFORE_DEMOTION;
+
+    const status = holdsService
+      ? "ACTIVE"
+      : // Only ever FAILED after we have genuinely stopped looking. Until then
+        // it is PENDING, because "we haven't seen it yet" and "this is wrong"
+        // are different things to a merchant halfway through a DNS change.
+        failedChecks >= MAX_AUTOMATIC_CHECKS
+        ? "FAILED"
+        : "PENDING";
+
     await prisma.domain.update({
       where: { id: domain.id },
       data: {
-        // Only ever FAILED after we have genuinely stopped looking. Until then
-        // it is PENDING, because "we haven't seen it yet" and "this is wrong"
-        // are different things to a merchant halfway through a DNS change.
-        status: failedChecks >= MAX_AUTOMATIC_CHECKS ? "FAILED" : "PENDING",
+        status,
         // A domain that used to verify and now does not has genuinely stopped
-        // being proven, and must not keep an old proof.
-        verifiedAt: null,
+        // being proven, and must not keep an old proof — unless it is still
+        // serving, where the proof is what is keeping it up.
+        verifiedAt: holdsService ? domain.verifiedAt : null,
+        activatedAt: holdsService ? domain.activatedAt : null,
         lastError: dns.error,
         lastCheckedAt: new Date(),
         failedChecks,
       },
     });
-    return {
-      status: failedChecks >= MAX_AUTOMATIC_CHECKS ? "FAILED" : "PENDING",
-      message: dns.error,
-    };
+    return { status, message: dns.error };
   }
 
   // DNS is right. Ask the provider to serve it — idempotent, so repeating this
@@ -311,6 +343,100 @@ export async function ensurePlatformDomain(shopId: string) {
       .update({ where: { id: existing.id }, data: { hostname: expected } })
       .catch(() => undefined);
   }
+}
+
+/**
+ * How often a domain that is already live is checked again.
+ *
+ * Less often than one that is still being set up, because nothing is waiting
+ * on it — but not never. A domain whose records are deleted, or whose
+ * registration lapses, stops reaching us and nobody finds out: the screen goes
+ * on saying "live" and the merchant's store is simply gone. Six hours is the
+ * gap between that happening and us saying so.
+ */
+const LIVE_RECHECK_MS = 6 * 60 * 60 * 1000;
+
+export type SweepReport = {
+  checked: number;
+  wentLive: number;
+  brokeDown: number;
+  stillWaiting: number;
+  skipped: number;
+};
+
+/**
+ * Checks every custom domain on the platform that is due one.
+ *
+ * This is the caller `backoffMs` and MAX_AUTOMATIC_CHECKS were written for.
+ * Without it, a merchant who corrects their DNS at two in the morning stays
+ * PENDING until they come back and press a button, and a domain that breaks
+ * after going live is never noticed at all.
+ *
+ * Two populations, and they are due at different times:
+ *
+ *   - Not live yet (PENDING, VERIFIED). Someone is waiting, so these run on
+ *     the backoff — a minute after the first failure, doubling to six hours,
+ *     and stopping after MAX_AUTOMATIC_CHECKS so a domain nobody is fixing
+ *     does not have us querying a registrar forever.
+ *   - Live (ACTIVE). Nobody is waiting, so every six hours is enough. The only
+ *     thing being watched for is a domain that has stopped working.
+ *
+ * FAILED is deliberately excluded: it means we genuinely stopped looking, and
+ * the merchant restarts it with the button. Platform subdomains are excluded
+ * because there is nothing to check — we own the zone.
+ *
+ * Never throws for one bad domain. A vendor timeout on the fortieth domain
+ * must not cost the other thirty-nine their check.
+ */
+export async function sweepDomains(): Promise<SweepReport> {
+  const now = Date.now();
+
+  const candidates = await prisma.domain.findMany({
+    where: { isPlatform: false, status: { in: ["PENDING", "VERIFIED", "ACTIVE"] } },
+    select: { id: true, hostname: true, status: true, lastCheckedAt: true, failedChecks: true },
+    orderBy: { lastCheckedAt: { sort: "asc", nulls: "first" } },
+  });
+
+  const report: SweepReport = {
+    checked: 0,
+    wentLive: 0,
+    brokeDown: 0,
+    stillWaiting: 0,
+    skipped: 0,
+  };
+
+  for (const domain of candidates) {
+    const due =
+      domain.status === "ACTIVE"
+        ? !domain.lastCheckedAt || now - domain.lastCheckedAt.getTime() >= LIVE_RECHECK_MS
+        : !domain.lastCheckedAt ||
+          now - domain.lastCheckedAt.getTime() >= backoffMs(domain.failedChecks);
+
+    if (!due) {
+      report.skipped += 1;
+      continue;
+    }
+
+    try {
+      // respectBackoff is false because the decision was just made above, with
+      // the ACTIVE case folded in; asking twice would skip every live domain.
+      const outcome = await verifyDomain(domain.id, { respectBackoff: false });
+      report.checked += 1;
+
+      if (outcome.status === "ACTIVE") {
+        if (domain.status !== "ACTIVE") report.wentLive += 1;
+      } else if (domain.status === "ACTIVE") {
+        report.brokeDown += 1;
+      } else {
+        report.stillWaiting += 1;
+      }
+    } catch (error) {
+      // One domain's failure is not the sweep's. Logged and stepped over.
+      console.error("[domains] sweep failed for", domain.hostname, error);
+    }
+  }
+
+  return report;
 }
 
 /** Every domain for a shop, canonical first, then live ones, then the rest. */

@@ -15,6 +15,26 @@ import {
 // The actual DNS lookups live in lib/dns.ts and the provider calls in
 // lib/hosting/, both server-only.
 
+/**
+ * Every apex address the host answers on.
+ *
+ * There is more than one because hosts move. Vercel issued `76.76.21.21` for
+ * years and now hands out `216.198.79.1`; both still route, and a merchant may
+ * have arrived at either — from our instructions, from the host's own
+ * dashboard, or from having pointed the domain there before they found us.
+ *
+ * So the checker accepts any of them and the instructions show the first.
+ * Telling a merchant with correct DNS that their DNS is wrong is the worst
+ * failure this screen has: there is nothing they can do about it, and no
+ * message that would help.
+ */
+const APEX_ADDRESSES: readonly string[] = (
+  process.env.DOMAIN_A_RECORDS ?? "216.198.79.1,76.76.21.21"
+)
+  .split(",")
+  .map((a) => a.trim())
+  .filter(Boolean);
+
 /** Where a merchant's records should point. Set per environment. */
 export const DNS_TARGET = {
   /** For a subdomain like `shop.example.com` — a CNAME. */
@@ -23,8 +43,20 @@ export const DNS_TARGET = {
    * For an apex like `example.com`, where CNAME is not allowed by the DNS spec.
    * An A record to a fixed address is the portable answer; registrars that
    * support ALIAS/ANAME can use the CNAME target instead.
+   *
+   * This is the one we ask for. `accepts` is what we will take.
    */
-  a: process.env.DOMAIN_A_RECORD ?? "76.76.21.21",
+  a: process.env.DOMAIN_A_RECORD ?? APEX_ADDRESSES[0],
+  /**
+   * Every apex address that means "this domain reaches us".
+   *
+   * Always contains `a`. An override that was not also in the list would have
+   * us print one address and accept a different set — the exact fault this
+   * replaced, with the two halves swapped.
+   */
+  accepts: [
+    ...new Set([process.env.DOMAIN_A_RECORD ?? APEX_ADDRESSES[0], ...APEX_ADDRESSES]),
+  ] as readonly string[],
 } as const;
 
 /** The TXT record name a verification token is published under. */
