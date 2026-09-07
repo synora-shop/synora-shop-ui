@@ -22,8 +22,10 @@ import type { Visibility } from "@/lib/visibility";
 export async function saveVisibility(input: Visibility): Promise<{ error?: string }> {
   await requireRole("ADMIN");
 
+  // maintenanceMode is deliberately absent: it belongs to Your App →
+  // Maintenance now, and writing it from here would undo that screen every
+  // time somebody saved this one.
   const data = {
-    maintenanceMode: input.maintenanceMode === true,
     blockedCountries: cleanBlockedList(input.blockedCountries ?? []),
     searchIndexing: input.searchIndexing !== false,
     spamProtection: input.spamProtection !== false,

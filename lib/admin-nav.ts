@@ -104,6 +104,11 @@ export const NAV_SECTIONS: readonly NavSection[] = [
       // not yet published, in one place, with a tick beside each one.
       { href: "/admin/pages/drafts", label: "Drafts" },
       { href: "/admin/theme", label: "Themes" },
+      // The one storefront page a merchant cannot reach through the
+      // customizer, because it is only ever shown when the storefront is shut.
+      // Next to Themes rather than at the end: closing the shop and what it
+      // looks like closed are the same thought.
+      { href: "/admin/maintenance", label: "Maintenance" },
       { href: "/admin/data", label: "Data" },
       { href: "/admin/menus", label: "Menus" },
       { href: "/admin/discounts", label: "Discounts" },

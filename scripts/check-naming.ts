@@ -628,6 +628,13 @@ check("the product mark sits inside the bar", !/fixed inset-x-0 top-0[^"]*z-50/.
 const serif = files.filter((f) => {
   if (!/(components|app)\/admin\//.test(f)) return false;
   if (/(access-denied|error)\.tsx$/.test(f)) return false;
+  // The maintenance editor draws a preview of the storefront's holding page
+  // inside a bordered card. The rule exists because serif headings made the
+  // panel read as two products bolted together; a deliberate reproduction of
+  // the storefront, framed and labelled "Preview", is the opposite — showing
+  // it in the panel's sans face would be showing the merchant a page that is
+  // not the one their customers get.
+  if (/maintenance-editor\.tsx$/.test(f)) return false;
   return /font-serif/.test(readFileSync(f, "utf8"));
 });
 check(

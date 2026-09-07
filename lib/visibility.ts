@@ -11,9 +11,16 @@
  * Client-safe: plain values and pure helpers, no Prisma, no next/headers.
  */
 
+/**
+ * Note what is *not* here: maintenanceMode.
+ *
+ * It was the first field on this screen, and it moved to Your App →
+ * Maintenance with the words it puts on the page. Leaving a copy behind would
+ * have been worse than a duplicate control — this form writes every field it
+ * holds on save, so a merchant who turned the holding page on and later saved
+ * a blocked country would have silently turned their store back on with it.
+ */
 export type Visibility = {
-  /** Storefront shows a holding page to everyone but staff. */
-  maintenanceMode: boolean;
   /** ISO 3166-1 alpha-2 codes this shop will not serve. Empty serves everyone. */
   blockedCountries: string[];
   /** Whether robots.txt invites search engines in. */
@@ -24,7 +31,6 @@ export type Visibility = {
 
 /** Mirrors the @default(...) on each column in StoreSettings. */
 export const VISIBILITY_DEFAULTS: Visibility = {
-  maintenanceMode: false,
   blockedCountries: [],
   searchIndexing: true,
   spamProtection: true,
@@ -33,7 +39,6 @@ export const VISIBILITY_DEFAULTS: Visibility = {
 /** Reads a settings row into the shape this screen works in. */
 export function toVisibility(row: Record<string, unknown>): Visibility {
   return {
-    maintenanceMode: row.maintenanceMode === true,
     blockedCountries: Array.isArray(row.blockedCountries)
       ? (row.blockedCountries as string[])
       : [],

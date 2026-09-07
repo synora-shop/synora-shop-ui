@@ -27,7 +27,7 @@ single source of truth for every address in the panel.
 | --- | --- |
 | Home | *(one screen)* |
 | Products | Products · Drafts · Categories · Orders · Customers · Enquiries · Bin |
-| Your App | Pages · Drafts · Themes · Data · Menus · Discounts · Site text |
+| Your App | Pages · Drafts · Themes · Maintenance · Data · Menus · Discounts · Site text |
 | Preferences | Visibility · Fonts · Sticky buttons · Links & redirects · Custom fields |
 | Analytics | *(one screen)* |
 | Settings | General · Domains · Account |
@@ -160,7 +160,7 @@ check:csv  check:actions  check:geo   check:loops   check:nav
 check:paging  check:responsive  check:search  check:accounts
 check:domains  check:platform  check:discounts  check:naming
 check:sorting  check:editor  check:analytics  check:cache
-check:design  check:motion
+check:design  check:motion  check:holding
 ```
 
 Those are static: they read the source. `scripts/sweep/` is the other half — a

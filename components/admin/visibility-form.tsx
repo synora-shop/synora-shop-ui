@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle } from "lucide-react";
 import { saveVisibility } from "@/app/admin/preferences/actions";
 import { BlockedCountriesField } from "@/components/admin/blocked-countries-field";
 import { useEditor } from "@/components/admin/use-editor";
@@ -26,7 +25,6 @@ export function VisibilityForm({ initial }: { initial: Visibility }) {
   const [saving, setSaving] = useState(false);
 
   const dirty =
-    fields.maintenanceMode !== saved.maintenanceMode ||
     fields.searchIndexing !== saved.searchIndexing ||
     fields.spamProtection !== saved.spamProtection ||
     fields.blockedCountries.join(",") !== saved.blockedCountries.join(",");
@@ -54,27 +52,16 @@ export function VisibilityForm({ initial }: { initial: Visibility }) {
 
   return (
     <div className="space-y-2.5">
-      <Fieldset
-        title="Coming soon / maintenance"
-        description="Customers see a holding page instead of your store. You and your staff still get in, so you can keep working on it."
-        className={fields.maintenanceMode ? "border-amber/40 bg-amber-bg" : undefined}
-      >
-        <ToggleSwitch
-          inline
-          label="Hide my store from customers"
-          checked={fields.maintenanceMode}
-          onChange={(v) => set("maintenanceMode", v)}
-        />
-        {fields.maintenanceMode && (
-          <p className="flex items-center gap-1.5 text-xs font-medium text-amber">
-            <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0" />
-            Your store is hidden from customers until you turn this off and save.
-          </p>
-        )}
-      </Fieldset>
+      {/* Coming soon / maintenance used to be the first card here, a toggle on
+          its own. It is now a screen of its own — Your App → Maintenance —
+          because the switch was only half of it: a merchant who took their
+          store offline had no way to see or change what customers were being
+          shown, and no hint that a page existed at all. The switch went with
+          the words rather than the words coming here, so there is one place
+          that answers "what happens when I close?".
 
-      {/* The same decision as maintenance mode, only narrower — who can see the
-          shop — so it sits directly under it. */}
+          What is left on this screen is still the same question — who can see
+          the shop — for the cases where there is nothing to write. */}
       <Fieldset
         title="Hide from certain countries"
         description="Visitors from these countries see a closed-store page instead of your shop. The country comes from their address, so a VPN gets around it — this is hiding, not security."

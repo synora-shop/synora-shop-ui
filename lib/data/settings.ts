@@ -3,6 +3,7 @@ import { currentShop } from "@/lib/data/shop";
 import { cachedForShop } from "@/lib/data/cached";
 import { GLOBAL_EDITS_DEFAULTS } from "@/lib/global-edits";
 import { VISIBILITY_DEFAULTS } from "@/lib/visibility";
+import { HOLDING_PAGE_COLUMN_DEFAULTS } from "@/lib/holding-page";
 import { STORE_DEFAULTS, resolveStoreDefaults } from "@/lib/store-defaults";
 
 const DEFAULTS = {
@@ -19,6 +20,7 @@ const DEFAULTS = {
   freeShippingThreshold: null as number | null,
   ...GLOBAL_EDITS_DEFAULTS,
   ...VISIBILITY_DEFAULTS,
+  ...HOLDING_PAGE_COLUMN_DEFAULTS,
   ...STORE_DEFAULTS,
 };
 

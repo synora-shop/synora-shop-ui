@@ -19,6 +19,10 @@ export type AuditAction =
   | "shop.resume"
   | "shop.close"
   | "shop.settings.update"
+  // Taking a storefront off the internet, and putting it back. Recorded
+  // because it is the kind of thing someone later says they did not do.
+  | "shop.maintenance.on"
+  | "shop.maintenance.off"
   | "domain.add"
   | "domain.remove"
   | "domain.primary"

@@ -69,6 +69,7 @@ export const TENANT_MODELS: ReadonlySet<string> = new Set([
   "Metafield",
   "MediaAsset",
   "Visit",
+  "ReopenSignup",
   "Menu",
   "MenuItem",
   "Enquiry",

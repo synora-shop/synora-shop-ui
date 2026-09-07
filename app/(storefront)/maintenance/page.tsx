@@ -1,7 +1,11 @@
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { Container } from "@/components/ui/container";
-import { storefrontClosure, type ClosedReason } from "@/lib/maintenance";
+import { storefrontClosure } from "@/lib/maintenance";
+import { getStoreSettings } from "@/lib/data/settings";
+import { getThemeTokens } from "@/lib/data/theme";
+import { resolveHolding, toHoldingPage } from "@/lib/holding-page";
+import { ReopenSignupForm } from "@/components/storefront/reopen-signup-form";
 
 export const dynamic = "force-dynamic";
 
@@ -12,48 +16,45 @@ export const metadata: Metadata = {
 };
 
 /**
- * What a visitor is told, per reason.
+ * What a customer sees when the store is not open to them.
  *
- * Each says what happened and what to do next. "We'll be right back" is right
- * for ten minutes of maintenance and wrong for a store that has closed for
- * good — someone waiting on a delivery from a closed store needs to know to
- * get in touch, not to check back later.
+ * The words come from lib/holding-page.ts, which decides per field whether
+ * they are the merchant's or ours. Two of the five reasons are the merchant's
+ * to write; the rest are not, and the page does not hint that they might be.
  */
-const MESSAGES: Record<ClosedReason, { title: string; body: string }> = {
-  maintenance: {
-    title: "We'll be right back",
-    body: "This store is having some quick updates. Please check back shortly, thank you for your patience.",
-  },
-  paused: {
-    title: "We're not taking orders right now",
-    body: "This store has paused sales for a little while. Everything will be here when it reopens.",
-  },
-  closed: {
-    title: "This store has closed",
-    body: "It's no longer taking orders. If you're waiting on an order, contact the store directly and they'll be able to help.",
-  },
-  suspended: {
-    title: "This store is unavailable",
-    body: "It isn't accepting orders at the moment. Please try again later.",
-  },
-  blocked: {
-    title: "Not available here",
-    body: "This store does not currently serve customers in your country.",
-  },
-};
-
 export default async function MaintenancePage() {
   const reason = await storefrontClosure();
   // Nothing holding it shut — send visitors who land here back to a working
   // store rather than showing a notice about a problem that has gone away.
   if (!reason) redirect("/");
 
-  const { title, body } = MESSAGES[reason];
+  const [settings, theme] = await Promise.all([getStoreSettings(), getThemeTokens()]);
+  const page = resolveHolding(reason, toHoldingPage(settings), theme.logoUrl ?? "");
 
   return (
     <Container className="flex min-h-[60vh] flex-col items-center justify-center text-center">
-      <h1 className="font-serif text-3xl font-semibold text-balance text-ink">{title}</h1>
-      <p className="mt-3 max-w-md text-sm leading-relaxed text-ink-soft">{body}</p>
+      {page.logoUrl && (
+        // Fixed height rather than intrinsic size: a merchant's logo can be
+        // any dimensions, and a holding page that reflows when the image
+        // lands is the first thing a customer sees of this shop.
+        //
+        // Plain <img>, not next/image: this page is force-dynamic and shown to
+        // people who are being told to go away, so an optimisation round trip
+        // buys nothing and one more thing can fail.
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={page.logoUrl}
+          alt=""
+          className="mb-8 h-12 w-auto max-w-[220px] object-contain"
+        />
+      )}
+
+      <h1 className="font-serif text-3xl font-semibold text-balance text-ink">{page.heading}</h1>
+      <p className="mt-3 max-w-md text-sm leading-relaxed whitespace-pre-line text-ink-soft">
+        {page.message}
+      </p>
+
+      {page.offerSignup && <ReopenSignupForm />}
     </Container>
   );
 }

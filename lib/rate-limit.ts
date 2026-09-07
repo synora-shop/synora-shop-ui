@@ -57,6 +57,11 @@ export const LIMITS = {
   // that needs no account. Generous enough for a shopper mistyping the code
   // from an email, tight enough that a dictionary run is pointless.
   discountPreview: { max: 20, windowMs: 15 * 60 * 1000, blockMs: 15 * 60 * 1000 },
+  // "Tell me when you reopen" on the holding page. Public, unauthenticated, a
+  // write, and reachable on a store that is otherwise entirely shut — which is
+  // to say the least-watched endpoint in the product. Tight, because there is
+  // no honest reason for one visitor to leave five addresses.
+  reopenSignup: { max: 5, windowMs: 60 * 60 * 1000, blockMs: 60 * 60 * 1000 },
 } as const satisfies Record<string, Limit>;
 
 export type LimitName = keyof typeof LIMITS;
@@ -174,6 +179,7 @@ const MESSAGES: Record<LimitName, (seconds: number) => string> = {
   domainCheck: (s) => `Checked a few times already. DNS is slow, try again in ${humanise(s)}.`,
   customerRegister: (s) => `Too many sign-ups from here. Try again in ${humanise(s)}.`,
   discountPreview: (s) => `Too many codes tried. Try again in ${humanise(s)}.`,
+  reopenSignup: (s) => `That's already been sent. Try again in ${humanise(s)}.`,
 };
 
 export function humanise(seconds: number): string {

@@ -270,6 +270,7 @@ model Shop {
   metafields        Metafield[]
   media             MediaAsset[]
   visits            Visit[]
+  reopenSignups     ReopenSignup[]
   siteTexts         SiteText[]
   settings          StoreSettings[]
   themes            ThemeSettings[]
@@ -861,6 +862,30 @@ model StoreSettings {
   whatsappOrderButton  Boolean @default(true)
   maintenanceMode      Boolean @default(false)
 
+  // --- The holding page ---------------------------------------------------
+  // What customers are shown when the store is not open to them. One page for
+  // two situations: maintenanceMode above, and the shop being PAUSED. They are
+  // different switches but the same moment from a customer's side — the store
+  // is shut and the merchant is working — and asking a merchant to write the
+  // same notice twice is how one of them ends up stale.
+  //
+  // "Closed" and "suspended" keep our wording and are not editable here. A
+  // store that has closed for good is not the merchant's message to write to
+  // someone waiting on an order, and a suspension is ours, not theirs.
+  //
+  // Empty means "use the words we wrote". Stored empty rather than seeded with
+  // the default text so that improving the default reaches every shop that has
+  // not written its own, instead of freezing a copy in every row on the day
+  // this shipped.
+  maintenanceHeading  String  @default("")
+  maintenanceMessage  String  @default("")
+  /// Empty falls back to the theme's own logo, so the page is branded without
+  /// the merchant having to upload anything twice.
+  maintenanceLogoUrl  String  @default("")
+  maintenanceShowLogo Boolean @default(true)
+  /// Whether the page offers to tell visitors when the store reopens.
+  maintenanceSignups  Boolean @default(false)
+
   /// Countries this shop will not serve, as ISO 3166-1 alpha-2 codes.
   ///
   /// A visitor whose country is on this list sees the closed-store page rather
@@ -906,6 +931,35 @@ model StoreSettings {
   shopFilterBar Boolean @default(true)
 
   @@unique([shopId])
+}
+
+/// Someone who asked to be told when a shut store opens again.
+///
+/// Deliberately not a Customer. A Customer has a name, an address book and an
+/// order history, and half of that is required; a visitor who typed an email
+/// into a holding page has given us one field and no permission to treat them
+/// as having shopped here. Writing them into Customer would mean inventing a
+/// name for them, and would put people who have never bought anything into
+/// every count, export and mailing the merchant runs.
+///
+/// So: its own small table, its own screen, its own export, and deletable on
+/// request without touching anything else. The email is the only thing stored.
+model ReopenSignup {
+  id     String @id @default(cuid())
+  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId String
+  email  String
+  /// When they asked. Also the consent record — this is the whole of what they
+  /// agreed to, so the time they agreed is the only other fact worth keeping.
+  createdAt DateTime @default(now())
+  /// Set when the merchant has marked them told, so reopening twice does not
+  /// mean writing to the same people twice.
+  notifiedAt DateTime?
+
+  /// One row per address. A visitor who submits twice has not signed up twice,
+  /// and a holding page is exactly the kind of screen people reload.
+  @@unique([shopId, email])
+  @@index([shopId])
 }
 
 /// One visit to a storefront page.

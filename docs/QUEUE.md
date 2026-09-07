@@ -372,3 +372,55 @@ rather than a cosmetic one.
 `prefers-reduced-motion`, everything that starts hidden is restored to visible
 there, no screen hand-writes an error line, and the toast's two durations
 agree. 297 assertions, and it found eight files the first sweep missed.
+
+## The holding page, 7 September — step 2 of three
+
+Asked for: a maintenance section of its own under Your App, with a way to
+change what the page says, and the toggle out of Preferences.
+
+The thing that was actually wrong was not the toggle's location. **Pausing a
+store and turning maintenance mode on showed customers two different notices**,
+both hard-coded in the storefront's source, and nothing on either screen said
+the other existed. A merchant who paused for the afternoon could not see what
+their customers were being shown, let alone change it.
+
+One page for both now, and the wording is theirs:
+
+- **`/admin/maintenance`**, a tab in Your App between Themes and Data. The
+  switch, the words, the logo, a live preview, and the waiting list, on one
+  screen — because they are one decision.
+- **Per-field fallback.** Empty means "use ours", stored empty rather than
+  seeded with today's copy, so improving the default still reaches every shop
+  that never wrote its own. A merchant who writes a heading and no message
+  keeps their heading.
+- **Closed, suspended and blocked keep our wording and are not editable.** A
+  store that has shut for good must not tell someone waiting on an order to
+  check back later, a suspension is not the merchant's to explain away, and a
+  blocked visitor is not waiting for anything — the store is open, it just will
+  not serve them.
+- **"Tell me when you reopen"**, off by default. Its own table, not Customer:
+  a Customer has a required name, an address book and an order history, and a
+  visitor who typed one field into a holding page has none of that. Writing
+  them into Customer would have meant inventing a name and putting people who
+  never bought anything into every count and export. Gated on the store
+  actually being shut, on the merchant having turned it on, on the honeypot and
+  on a rate limit; never says whether an address was already there; signing up
+  twice does not move the consent timestamp.
+- **The toggle did not stay behind.** maintenanceMode was removed from the
+  Visibility type, its form and its save action outright. A copy left there
+  would have been worse than a duplicate control — that form writes every field
+  it holds, so a merchant who turned the holding page on and later saved a
+  blocked country would have silently reopened their store.
+- **A paused shop is told the truth.** The screen says "your store is paused,
+  so customers are seeing this page already — whatever this switch says", and
+  switching maintenance off while paused no longer claims the store is visible.
+- **ToggleSwitch gained a `disabled` state.** A switch whose change is a server
+  round trip could be clicked twice, and the two writes raced. On a switch that
+  takes a storefront off the internet that is not cosmetic.
+
+`check:holding` — 68 assertions covering whose words are whose, the per-field
+fallback, the schema defaults agreeing with the app's, every gate on the public
+endpoint, and the switch existing in exactly one place.
+
+Still to come, step three: the guided store-type switch — the refusal that
+takes you to the pause button and lights it up.
