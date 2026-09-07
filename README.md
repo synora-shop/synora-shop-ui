@@ -26,8 +26,8 @@ single source of truth for every address in the panel.
 | Sidebar | Tabs |
 | --- | --- |
 | Home | *(one screen)* |
-| Products | Products · Categories · Orders · Customers · Enquiries · Bin |
-| Your App | Pages · Themes · Data · Menus · Discounts · Site text |
+| Products | Products · Drafts · Categories · Orders · Customers · Enquiries · Bin |
+| Your App | Pages · Drafts · Themes · Data · Menus · Discounts · Site text |
 | Preferences | Visibility · Fonts · Sticky buttons · Links & redirects · Custom fields |
 | Analytics | *(one screen)* |
 | Settings | General · Domains · Account |
@@ -46,10 +46,19 @@ The marketing page and merchant sign-up.
 Three exist: `ECOMMERCE`, `RESTAURANT`, `BLOG`. A fourth, Service, is designed
 and not built.
 
-The type changes the words and the number of screens, never the look — a
-restaurant's products are dishes and its categories are courses, resolved once
-in `lib/themes/vocabulary.ts`. `data-business-type` is still set on the admin
-root for that reason, but it no longer paints anything.
+**The panel is designed for e-commerce and nothing else.** There is no
+renaming layer: `lib/themes/vocabulary.ts` was deleted, and so were
+`onlyFor`/`hideFor`/`labels` in `lib/admin-nav.ts`. Calling a product a "dish"
+put restaurant words above a screen still built on SKUs, variants, stock and
+shipping — worse than either doing it properly or not at all.
+
+Restaurant and Blog get their own designs when they are built: different
+sections, different screens, their own words. A screen that seems to need
+per-type behaviour is a screen that needs its own design, not a branch.
+
+Switching type requires the store to be paused first — see
+`lib/store-type-switch.ts`. `data-business-type` is still set on the admin
+root, but it paints nothing.
 
 ---
 
@@ -59,6 +68,40 @@ Six, in `lib/themes/registry.ts`: aurora, meridian, quill, column, hearth,
 service. They are **data, not files** — a theme is a set of options the app
 already understands. Nothing is installed, imported, or made compatible with
 any other platform, and there is no upload path for one.
+
+The storefront resolves three layers, weakest first: the platform's defaults,
+then the chosen theme's tokens, then the merchant's own customizer edits, which
+win. `?__theme=<key>` renders one request in another theme without activating
+it, which is how the Themes screen previews one.
+
+---
+
+## Money
+
+Prices are **whole units of the shop's own currency**: `basePrice: 5500` is
+5,500 rupees, not 55.00. `formatMoney(amount, currency)` in `lib/money.ts` is
+the only formatter; client components read the currency from a context both
+layouts provide, server components call `getCurrency()`. Nothing hard-codes a
+symbol, and a check fails the build if anything starts to.
+
+The whole-units decision does not fit a currency with a minor unit — a
+merchant cannot price something at 19.99 today. Changing it means storing minor
+units everywhere and migrating every row; see `docs/QUEUE.md`.
+
+---
+
+## Leaving and arriving
+
+Products, customers and orders all export and import as Shopify's own CSVs,
+column for column, so a file written here loads into Shopify and one exported
+from Shopify loads here. `lib/csv/` holds the readers and writers, and the
+round trip is a test: what goes out comes back identical, including the columns
+this platform has no meaning for.
+
+Importing is always two steps — the first says what would change and writes
+nothing. Orders are the exception Shopify does not offer at all: an order
+already here is skipped rather than rewritten, nothing is emailed, no stock
+moves, and each keeps the date it happened.
 
 ---
 
@@ -116,7 +159,14 @@ happened here, so read the comment at the top of one before deleting it.
 check:csv  check:actions  check:geo   check:loops   check:nav
 check:paging  check:responsive  check:search  check:accounts
 check:domains  check:platform  check:discounts  check:naming
+check:sorting  check:editor  check:analytics  check:cache
 ```
+
+Those are static: they read the source. `scripts/sweep/` is the other half — a
+hundred probes against a running shop, for the faults reading the source cannot
+find. It found a CSV that could run a formula on the merchant's computer and
+twenty-two controls a screen reader could not name. See
+`scripts/sweep/README.md`.
 
 ---
 
@@ -126,6 +176,15 @@ check:domains  check:platform  check:discounts  check:naming
 the build. Vercel uses **one `DATABASE_URL` for both Preview and Production**, so
 a migration on a preview branch reaches the live database. Write migrations
 additively.
+
+---
+
+## Reading further
+
+- `docs/DESIGN.md` — what a row, a field, a state and a colour mean here, and
+  which checks hold each rule up.
+- `docs/QUEUE.md` — what is agreed and unbuilt, and the problems known about.
+- `scripts/sweep/README.md` — the hundred probes and what they caught.
 
 ---
 

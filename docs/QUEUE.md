@@ -162,6 +162,15 @@ that both write `businessType` is two rules waiting to disagree.
 
 ---
 
+## Where the rules are written down
+
+- `docs/DESIGN.md` — what a row, a field, a state and a colour mean here, and
+  which check holds each rule up. `npm run check:design` asserts the document
+  still describes the code: every check it names must exist and every file it
+  points at must be there.
+- `README.md` — how the thing is put together and how to run it.
+- `scripts/sweep/README.md` — the hundred probes and what they caught.
+
 ## The sweep — 7 September
 
 A hundred probes against a live shop, in ten batches: what a stranger can
