@@ -15,7 +15,7 @@
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 import { SHOPIFY_COLUMN_COUNT, SHOPIFY_PRODUCT_COLUMNS } from "../lib/csv/shopify-columns";
-import { CSV_LINE_END, csvField, csvHeader, exportProductsCsv, pricePair, type ExportableProduct } from "../lib/csv/export";
+import { CSV_LINE_END, csvField, csvHeader, exportProductsCsv, neutralise, pricePair, type ExportableProduct } from "../lib/csv/export";
 import { cellNumber, parseCsv, toRecords } from "../lib/csv/parse";
 import { readShopifyProducts } from "../lib/csv/import";
 import { SHOPIFY_CUSTOMER_COLUMNS } from "../lib/csv/customer-columns";
@@ -522,6 +522,45 @@ check("an empty cell is nothing, not zero", cellNumber("") === null);
 check("a price with a symbol in it is a number", cellNumber("Rs 1,250") === 1250);
 check("a negative is a number", cellNumber("-40") === -40);
 check("a zero is a zero", cellNumber("0") === 0);
+
+console.log("\nA CELL CANNOT RUN WHEN THE FILE IS OPENED");
+
+// The CSV injection class. A customer types their own name and their own
+// delivery note at checkout, and both reach the order export the merchant
+// opens on their own computer — so the dangerous text is a stranger's.
+for (const attack of ["=1+1", "+1+1", "-1+1", "@SUM(A1)", "=cmd|'/c calc'!A0"]) {
+  check(`"${attack}" is defused`, neutralise(attack).startsWith("'"));
+}
+// A number is not an attack, and quoting it would turn a number column to text.
+for (const number of ["-40", "0", "-1.5", "1200"]) {
+  check(`"${number}" is left alone`, neutralise(number) === number);
+}
+check("ordinary text is left alone", neutralise("Faisal Siddiqui") === "Faisal Siddiqui");
+// And the defusal survives the round trip rather than accumulating.
+const attacked = readShopifyProducts(
+  exportProductsCsv([
+    {
+      title: "=cmd|'/c calc'!A0",
+      slug: "attack",
+      description: "",
+      vendor: null,
+      tags: [],
+      status: "PUBLISHED",
+      isActive: true,
+      basePrice: 1,
+      salePrice: null,
+      costPrice: 0,
+      images: [],
+      option1Name: null,
+      option2Name: null,
+      option3Name: null,
+      categories: [],
+      csvExtras: null,
+      variants: [],
+    },
+  ])
+);
+check("and the title comes back exactly as it went out", attacked.products[0]?.title === "=cmd|'/c calc'!A0");
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);

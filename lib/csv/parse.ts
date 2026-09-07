@@ -103,13 +103,22 @@ export function parseCsv(text: string): string[][] {
  */
 export type CsvRow = Record<string, string>;
 
+/**
+ * The apostrophe the exporter puts in front of a cell a spreadsheet would run,
+ * taken off again — see neutralise() in lib/csv/export.ts. Stripping it here
+ * means every reader gets it for free and a round trip is lossless.
+ */
+function defuseBack(value: string): string {
+  return /^'[=+\-@\t\r]/.test(value) ? value.slice(1) : value;
+}
+
 export function toRecords(rows: string[][]): { header: string[]; records: CsvRow[] } {
   if (rows.length === 0) return { header: [], records: [] };
   const header = rows[0].map((h) => h.trim());
   const records = rows.slice(1).map((cells) => {
     const record: CsvRow = {};
     header.forEach((name, i) => {
-      record[name] = cells[i] ?? "";
+      record[name] = defuseBack(cells[i] ?? "");
     });
     return record;
   });

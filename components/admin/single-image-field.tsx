@@ -139,6 +139,9 @@ export function SingleImageField({
         ref={fileInput}
         type="file"
         accept="image/*"
+        // Hidden behind a button that opens it, but still a control: a screen
+        // reader that reaches it should hear what it is for.
+        aria-label={label ? `Choose a file for ${label.toLowerCase()}` : "Choose an image file"}
         onChange={(e) => {
           upload(e.target.files?.[0]);
           e.target.value = "";
@@ -159,6 +162,7 @@ export function SingleImageField({
             }
           }}
           placeholder="or paste an image URL"
+          aria-label="Image address"
           className="input input-sm flex-1"
         />
         <button

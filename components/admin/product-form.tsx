@@ -320,12 +320,14 @@ export function ProductForm({
             >
               <input
                 placeholder="Size"
+                aria-label={`Size for variant ${i + 1}`}
                 value={v.size}
                 onChange={(e) => updateVariant(i, { size: e.target.value })}
                 className="input col-span-1 sm:col-span-2"
               />
               <input
                 placeholder="Color"
+                aria-label={`Colour for variant ${i + 1}`}
                 value={v.color}
                 onChange={(e) => updateVariant(i, { color: e.target.value })}
                 className="input col-span-1 sm:col-span-3"
@@ -334,6 +336,7 @@ export function ProductForm({
                 type="color"
                 value={v.colorHex}
                 onChange={(e) => updateVariant(i, { colorHex: e.target.value })}
+                aria-label={`Colour swatch for variant ${i + 1}`}
                 className="col-span-1 h-9 w-full rounded border border-border sm:col-span-1"
               />
               {/* Generated from the title, size and colour as you type, so the
@@ -364,6 +367,7 @@ export function ProductForm({
                 type="number"
                 min={0}
                 placeholder="Stock"
+                aria-label={`Stock for variant ${i + 1}`}
                 value={v.stock}
                 onChange={(e) => updateVariant(i, { stock: Number(e.target.value) })}
                 className="input col-span-1 sm:col-span-2"

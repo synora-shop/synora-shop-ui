@@ -9,6 +9,7 @@ import { useConfirm } from "@/components/ui/confirm-dialog";
 import { SaveButton, type SaveState } from "@/components/ui/save-button";
 import { ACCEPTED_FONT_EXTENSIONS, FONT_SECURITY_NOTE } from "@/lib/font-validation";
 import { CUSTOM_FONT_PREFIX, FONT_STACKS, type ThemeTokens } from "@/lib/theme-tokens";
+import { FieldLabel } from "@/components/merchant/form-shell";
 
 type FontRow = {
   id: string;
@@ -30,13 +31,16 @@ function FontSelect({
   value,
   fonts,
   onChange,
+  id,
 }: {
   value: string;
   fonts: FontRow[];
   onChange: (value: string) => void;
+  /** So the visible label beside it can actually point at it. */
+  id: string;
 }) {
   return (
-    <select value={value} onChange={(e) => onChange(e.target.value)} className="input">
+    <select id={id} value={value} onChange={(e) => onChange(e.target.value)} className="input">
       <optgroup label="Built in">
         {Object.entries(FONT_STACKS).map(([key, { label }]) => (
           <option key={key} value={key}>
@@ -145,20 +149,17 @@ export function FontsManager({
         </p>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
-              Primary, headings
-            </label>
-            <div className="mt-1">
-              <FontSelect value={headingFont} fonts={fonts} onChange={setHeadingFont} />
-            </div>
+            <FieldLabel htmlFor="heading-font">Primary, headings</FieldLabel>
+            <FontSelect
+              id="heading-font"
+              value={headingFont}
+              fonts={fonts}
+              onChange={setHeadingFont}
+            />
           </div>
           <div>
-            <label className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
-              Secondary, body text
-            </label>
-            <div className="mt-1">
-              <FontSelect value={bodyFont} fonts={fonts} onChange={setBodyFont} />
-            </div>
+            <FieldLabel htmlFor="body-font">Secondary, body text</FieldLabel>
+            <FontSelect id="body-font" value={bodyFont} fonts={fonts} onChange={setBodyFont} />
           </div>
         </div>
         <div className="mt-4">

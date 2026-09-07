@@ -613,6 +613,14 @@ check(
 // over whatever happened to be underneath once the bar had scrolled.
 check("the product mark sits inside the bar", !/fixed inset-x-0 top-0[^"]*z-50/.test(topbar));
 
+// A placeholder is not a label, and twenty-two controls in this panel carried
+// nothing else until the sweep found them. There is deliberately no static
+// check for it here: an accessible name can come from a wrapping <Field>, a
+// <label> three lines above, or an aria-label on the tag, and a regex that
+// only sees the tag reported seven files the browser had already proved clean.
+// The real check drives every screen and reads the computed name —
+// scripts/sweep/README.md.
+
 // The panel is sans-serif. The serif face belongs to the storefront and to a
 // full-screen message (an error, a locked door) — never to a heading inside a
 // screen, where it read as a different product bolted on. Sections are named by

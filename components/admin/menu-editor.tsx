@@ -91,14 +91,22 @@ function TargetSelect({
   onChange,
   pages,
   className,
+  label = "Where this menu item goes",
 }: {
   value: string;
   onChange: (value: string) => void;
   pages: PageOption[];
   className?: string;
+  /** Named for a screen reader: the row it sits in has no visible label. */
+  label?: string;
 }) {
   return (
-    <select value={value} onChange={(e) => onChange(e.target.value)} className={className}>
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      aria-label={label}
+      className={className}
+    >
       <optgroup label="Pages">
         {pages.map((p) => (
           <option key={p.id} value={`page:${p.id}`}>
@@ -211,6 +219,7 @@ function Row({
               setSaveState("idle");
             }}
             placeholder="Column"
+            aria-label={`Column heading for ${labelForTargetValue(target, pages)}`}
             className="input input-sm w-28"
           />
         )}
@@ -346,6 +355,7 @@ export function MenuEditor({
             value={newGroup}
             onChange={(e) => setNewGroup(e.target.value)}
             placeholder="Column (e.g. Shop)"
+            aria-label="Column heading for the new item"
             className="input input-sm w-28"
           />
         )}

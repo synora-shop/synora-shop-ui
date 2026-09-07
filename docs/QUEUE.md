@@ -162,6 +162,32 @@ that both write `businessType` is two rules waiting to disagree.
 
 ---
 
+## The sweep — 7 September
+
+A hundred probes against a live shop, in ten batches: what a stranger can
+reach, whether one shop can touch another, what a customer can see, files that
+lie about what they are, input that is trying it on, a dishonest checkout, the
+arithmetic, the guards and caches, what a screen reader finds, and whether
+each screen's own numbers hold. `scripts/sweep/` runs them again.
+
+**Two real faults, both fixed:**
+
+1. **A cell in an exported CSV could run as a formula.** Excel and Sheets
+   execute a cell starting `=`, and a customer types their own name and
+   delivery note at checkout — so a stranger's text was reaching the
+   merchant's own spreadsheet. Cells are defused on the way out and restored
+   on the way in, so a round trip is still lossless.
+2. **Twenty-two form controls had no name a screen reader could read** — a
+   placeholder only, which vanishes as you type, in a panel whose own code
+   says "placeholders are not labels". All 25 screens are clean now.
+
+**Three of the failures were the probes, not the product** — worth recording
+because they are easy to repeat: a plain `fetch()` of an admin screen gets the
+login page (nine probes were grading login HTML); the analytics screen opens
+on the last thirty days, so an all-time total is a different number; and the
+checkout delivers to ten Punjab cities, so a probe using Karachi was refused
+for the city and passed for the wrong reason.
+
 ## Done on 7 September
 
 - **Import and export for customers and orders.** Products could do both;

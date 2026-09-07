@@ -49,6 +49,7 @@ export function AddCategoryForm() {
         onChange={(e) => setName(e.target.value)}
         required
         placeholder="Name (e.g. Lawn)"
+        aria-label="Collection name"
         className="input"
       />
       <SingleImageField

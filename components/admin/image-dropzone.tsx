@@ -212,6 +212,7 @@ export function ImageDropzone({
             }
           }}
           placeholder="Or paste an image URL…"
+          aria-label="Image address"
           className="input input-sm w-56"
         />
         <button

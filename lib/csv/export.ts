@@ -68,9 +68,40 @@ export type ExportableVariant = {
  */
 export function csvField(value: unknown): string {
   if (value === null || value === undefined) return "";
-  const text = String(value);
+  const text = neutralise(String(value));
   if (!/[",\n\r]/.test(text)) return text;
   return `"${text.replace(/"/g, '""')}"`;
+}
+
+/**
+ * A cell that a spreadsheet would run as a formula, made inert.
+ *
+ * Excel, Google Sheets and Numbers all treat a cell beginning `=`, `+`, `-` or
+ * `@` as a formula, and some of those formulas can reach the network or the
+ * shell. The dangerous part is where the text comes from: a customer types
+ * their own name and their own delivery note at checkout, and both end up in
+ * the order export that a merchant opens on their own computer. That is a
+ * stranger's text executing on the merchant's machine, which is the whole of
+ * the CSV injection class.
+ *
+ * A leading apostrophe is the standard defusal — the spreadsheet shows the
+ * text and runs nothing. It is stripped again on the way back in, so a round
+ * trip still returns exactly what went out.
+ *
+ * A number is left alone. "-40" is a negative forty, not an attack, and
+ * quoting it would turn a number column into a text one.
+ */
+export function neutralise(text: string): string {
+  if (text === "") return text;
+  if (!/^[=+\-@\t\r]/.test(text)) return text;
+  // A plain number, however it is signed or spaced, is not a formula.
+  if (/^-?\d+(\.\d+)?$/.test(text.trim())) return text;
+  return `'${text}`;
+}
+
+/** The apostrophe neutralise() added, taken off again. */
+export function denutralise(text: string): string {
+  return /^'[=+\-@\t\r]/.test(text) ? text.slice(1) : text;
 }
 
 /**
