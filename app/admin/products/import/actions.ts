@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/auth-guard";
 import { currentShopId, db } from "@/lib/data/shop";
 import { readShopifyProducts, type ImportedProduct } from "@/lib/csv/import";
+import type { ImportPlan, ImportResult } from "@/lib/csv/plan";
 import { Prisma } from "@/lib/generated/prisma/client";
 
 /**
@@ -22,22 +23,6 @@ import { Prisma } from "@/lib/generated/prisma/client";
 const MAX_PRODUCTS = 1000;
 /** As much text as one upload may be, before it is even parsed. 8MB. */
 const MAX_BYTES = 8 * 1024 * 1024;
-
-export type ImportPlanRow = {
-  slug: string;
-  title: string;
-  action: "create" | "update";
-  variants: number;
-  images: number;
-};
-
-export type ImportPlan = {
-  rows: ImportPlanRow[];
-  creating: number;
-  updating: number;
-  problems: { line: number; message: string }[];
-  unknownColumns: string[];
-};
 
 function read(csv: string): { error: string } | { reading: ReturnType<typeof readShopifyProducts> } {
   if (csv.length > MAX_BYTES) {
@@ -70,13 +55,15 @@ export async function planProductImport(csv: string): Promise<ImportPlan | { err
   });
   const known = new Set(existing.map((p) => p.slug));
 
-  const rows: ImportPlanRow[] = reading.products.map((p) => ({
-    slug: p.slug,
-    title: p.title,
-    action: known.has(p.slug) ? "update" : "create",
-    variants: p.variants.filter((v) => v.option1 !== "").length,
-    images: p.images.length,
-  }));
+  const rows: ImportPlan["rows"] = reading.products.map((p) => {
+    const variants = p.variants.filter((v) => v.option1 !== "").length;
+    return {
+      key: p.slug,
+      title: p.title,
+      action: known.has(p.slug) ? "update" : "create",
+      detail: `${variants} variant${variants === 1 ? "" : "s"} · ${p.images.length} picture${p.images.length === 1 ? "" : "s"}`,
+    };
+  });
 
   return {
     rows,
@@ -95,11 +82,7 @@ export async function planProductImport(csv: string): Promise<ImportPlan | { err
  * would rather have nine hundred products and a list of what failed than
  * nothing at all and a timeout. Each product is atomic in itself.
  */
-export async function applyProductImport(
-  csv: string
-): Promise<
-  { created: number; updated: number; failed: { slug: string; message: string }[] } | { error: string }
-> {
+export async function applyProductImport(csv: string): Promise<ImportResult | { error: string }> {
   await requireRole("STAFF");
 
   const result = read(csv);
@@ -111,7 +94,7 @@ export async function applyProductImport(
   const shopId = await currentShopId();
   let created = 0;
   let updated = 0;
-  const failed: { slug: string; message: string }[] = [];
+  const failed: ImportResult["failed"] = [];
 
   // Collections are resolved once rather than per product: a hundred products
   // in one collection would otherwise be a hundred identical queries.
@@ -139,7 +122,7 @@ export async function applyProductImport(
       else updated++;
     } catch (error) {
       failed.push({
-        slug: product.slug,
+        key: product.slug,
         message: error instanceof Error ? error.message : "Could not be saved.",
       });
     }

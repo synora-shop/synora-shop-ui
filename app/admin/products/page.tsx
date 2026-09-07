@@ -7,6 +7,7 @@ import { FilterBar, type FilterGroup } from "@/components/admin/filter-bar";
 import { FilterDisclosure } from "@/components/admin/filter-disclosure";
 import { ActionBar } from "@/components/admin/action-bar";
 import { ImportDialog } from "@/components/admin/import-dialog";
+import { applyProductImport, planProductImport } from "@/app/admin/products/import/actions";
 import { ListSearch } from "@/components/admin/list-search";
 import { PerPageSelect } from "@/components/admin/per-page-select";
 import { PaginationBar } from "@/components/admin/pagination-bar";
@@ -124,7 +125,15 @@ export default async function AdminProductsPage(props: PageProps<"/admin/product
           {/* A file goes out and a file comes back. The panel could do the
               first and not the second, which meant a merchant could leave with
               their catalogue and not arrive with it. */}
-          <ImportDialog />
+          <ImportDialog
+            noun="product"
+            plural="products"
+            blurb="A Shopify product CSV, or one exported from here. Products are matched by their URL handle: a handle you already have is updated, one you do not is added."
+            matchedBy="URL handle"
+            overwriteWarning="Overwriting replaces a product's variants with the ones in the file."
+            plan={planProductImport}
+            apply={applyProductImport}
+          />
           <a
             href="/admin/products/export"
             className={buttonClass("secondary", "sm")}

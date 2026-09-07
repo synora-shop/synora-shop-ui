@@ -18,6 +18,8 @@ import { SHOPIFY_COLUMN_COUNT, SHOPIFY_PRODUCT_COLUMNS } from "../lib/csv/shopif
 import { CSV_LINE_END, csvField, csvHeader, exportProductsCsv, pricePair, type ExportableProduct } from "../lib/csv/export";
 import { parseCsv, toRecords } from "../lib/csv/parse";
 import { readShopifyProducts } from "../lib/csv/import";
+import { SHOPIFY_CUSTOMER_COLUMNS } from "../lib/csv/customer-columns";
+import { customerCsvHeader, exportCustomersCsv, joinName, readShopifyCustomers, splitName, type ExportableCustomer } from "../lib/csv/customers";
 
 let pass = 0,
   fail = 0;
@@ -341,6 +343,88 @@ const strange = readShopifyProducts(
 check("an unknown column does not stop the import", strange.products.length === 1);
 check("and is reported so the merchant knows", strange.unknownColumns.includes("Their Own Column"));
 check("and is kept rather than dropped", strange.products[0].csvExtras["Their Own Column"] === "kept");
+
+console.log("\nCUSTOMERS GO OUT AND COME BACK");
+
+check("the customer header is Shopify's", customerCsvHeader() === SHOPIFY_CUSTOMER_COLUMNS.join(","));
+check("a file ends with a terminator", exportCustomersCsv([]).endsWith(CSV_LINE_END));
+
+// The one rule that survives every name badly and predictably: everything
+// before the last space is the first name.
+check("a two-part name splits", splitName("Faisal Siddiqui").last === "Siddiqui");
+check("a three-part name keeps the middle with the first", splitName("Maria del Carmen Ruiz").first === "Maria del Carmen");
+check("a one-part name is all first name", splitName("Prince").last === "");
+check("and joins back", joinName("Faisal", "Siddiqui") === "Faisal Siddiqui");
+check("without a stray space", joinName("Prince", "") === "Prince");
+check("a name survives the round trip", joinName(...Object.values(splitName("Ayesha Noor")) as [string, string]) === "Ayesha Noor");
+
+const people: ExportableCustomer[] = [
+  {
+    name: "Faisal Siddiqui",
+    email: "faisal@example.test",
+    phone: "03001234567",
+    address: {
+      line1: 'House 12, "The Corner"',
+      line2: "Street 24",
+      city: "Karachi",
+      province: "Sindh",
+      postalCode: "75500",
+      phone: "03001234567",
+    },
+    totalSpent: 43223,
+    totalOrders: 3,
+  },
+  {
+    name: "Prince",
+    email: "prince@example.test",
+    phone: null,
+    address: null,
+    totalSpent: 0,
+    totalOrders: 0,
+  },
+];
+
+const readBack = readShopifyCustomers(exportCustomersCsv(people));
+check("it reads without complaint", readBack.problems.length === 0, readBack.problems.map((p) => `line ${p.line}: ${p.message}`).join("; "));
+check("everybody comes back", readBack.customers.length === 2);
+check("and every column is one Shopify defines", readBack.unknownColumns.length === 0);
+const faisal = readBack.customers.find((c) => c.email === "faisal@example.test");
+check("the name survives", faisal?.name === "Faisal Siddiqui");
+check("the phone survives", faisal?.phone === "03001234567");
+check("an address with a quote in it survives", faisal?.address?.line1 === 'House 12, "The Corner"');
+check("the city survives", faisal?.address?.city === "Karachi");
+// Shopify writes empty address columns for everybody; a row of blanks must not
+// become an address the merchant then has to delete.
+const prince = readBack.customers.find((c) => c.email === "prince@example.test");
+check("somebody with no address does not gain a blank one", prince?.address === null);
+check("a one-word name survives", prince?.name === "Prince");
+
+console.log("\nA BROKEN CUSTOMER FILE SAYS WHICH LINE IS BROKEN");
+check(
+  "a file with no email column is refused",
+  readShopifyCustomers("First Name,Last Name\r\nA,B\r\n").customers.length === 0
+);
+check(
+  "a row with no email is reported",
+  readShopifyCustomers("First Name,Email\r\nA,\r\n").problems.some((p) => p.line === 2)
+);
+check(
+  "something that is not an address is reported",
+  readShopifyCustomers("Email\r\nnot-an-email\r\n").problems.some((p) => /not an email/.test(p.message))
+);
+check(
+  "the same person twice is reported",
+  readShopifyCustomers("Email\r\na@b.test\r\na@b.test\r\n").problems.some((p) => p.line === 3)
+);
+// An address is a name in a file: case must not make two people.
+check(
+  "an address is matched however it is capitalised",
+  readShopifyCustomers("Email\r\nA@B.test\r\n").customers[0].email === "a@b.test"
+);
+check(
+  "somebody with no name is not nameless",
+  readShopifyCustomers("Email\r\nsomebody@b.test\r\n").customers[0].name === "somebody"
+);
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);

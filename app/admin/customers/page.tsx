@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Users } from "lucide-react";
+import { Download, Users } from "lucide-react";
 import { shopSession } from "@/lib/auth-guard";
 import { listCustomers } from "@/lib/data/customers";
 
 import { formatRelativeTime } from "@/lib/format-relative-time";
-import { Badge, Card, EmptyState, PageHeader, Stat } from "@/components/ui/primitives";
+import { Badge, Card, EmptyState, PageHeader, Stat, buttonClass } from "@/components/ui/primitives";
 import { ActionBar } from "@/components/admin/action-bar";
 import { ListSearch } from "@/components/admin/list-search";
 import { PerPageSelect } from "@/components/admin/per-page-select";
@@ -15,6 +15,8 @@ import { CUSTOMER_SORTS, compareCustomers, sortHref } from "@/lib/sorting";
 import { SortMenu } from "@/components/admin/sort-menu";
 import { formatMoney } from "@/lib/money";
 import { getCurrency } from "@/lib/data/settings";
+import { ImportDialog } from "@/components/admin/import-dialog";
+import { applyCustomerImport, planCustomerImport } from "@/app/admin/customers/import/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -88,8 +90,23 @@ export default async function CustomersPage(props: PageProps<"/admin/customers">
             href: sortHref("/admin/customers", sp, o.value, CUSTOMER_SORTS),
           }))}
         />
-        <div className="ml-auto">
+        <div className="ml-auto flex flex-wrap items-center gap-2">
           <PerPageSelect basePath="/admin/customers" searchParams={sp} total={all.length} />
+          {/* A list this personal should be a merchant's to take with them, and
+              theirs to bring in. Both, or neither. */}
+          <ImportDialog
+            noun="customer"
+            plural="customers"
+            blurb="A Shopify customer CSV, or one exported from here. People are matched by email address: an address you already have is updated, one you do not is added."
+            matchedBy="email address"
+            overwriteWarning="Overwriting changes a person's name, phone and address. It never touches their password or their orders."
+            plan={planCustomerImport}
+            apply={applyCustomerImport}
+          />
+          <a href="/admin/customers/export" className={buttonClass("secondary", "sm")}>
+            <Download className="h-4 w-4" />
+            Export CSV
+          </a>
         </div>
       </ActionBar>
 

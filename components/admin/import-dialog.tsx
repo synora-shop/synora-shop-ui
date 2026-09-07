@@ -3,27 +3,48 @@
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, Check, FileUp, Upload } from "lucide-react";
-import {
-  applyProductImport,
-  planProductImport,
-  type ImportPlan,
-} from "@/app/admin/products/import/actions";
+import type { ImportPlan, ImportResult } from "@/lib/csv/plan";
 import { Button, buttonClass } from "@/components/ui/primitives";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 
 /**
- * Loading a catalogue from a file.
+ * Loading records from a file.
  *
  * The panel could export a Shopify CSV and not read one back, which meant a
- * merchant could leave with their catalogue and not arrive with it.
+ * merchant could leave with their catalogue and not arrive with it. The same
+ * was true of their customer list.
  *
- * Two steps, always. Choosing a file says what would happen — how many
- * products would be made, how many overwritten, and every line of the file
- * that cannot be read — and writes nothing. Only the second button writes.
- * There is no undo for "the whole catalogue, slightly wrong".
+ * Two steps, always. Choosing a file says what would happen — how many would
+ * be made, how many overwritten, and every line that cannot be read — and
+ * writes nothing. Only the second button writes. There is no undo for "the
+ * whole catalogue, slightly wrong".
+ *
+ * One dialog for both, taking the two server actions and the words. Products
+ * and customers arrive in different files with different columns, and a
+ * merchant is asked exactly the same question about each.
  */
-export function ImportDialog() {
+export function ImportDialog({
+  noun,
+  plural,
+  blurb,
+  matchedBy,
+  overwriteWarning,
+  plan: planFile,
+  apply: applyFile,
+}: {
+  /** Singular, lower case: "product", "customer". */
+  noun: string;
+  plural: string;
+  /** What the file is, said in one sentence under the title. */
+  blurb: string;
+  /** What two records are matched on, for the empty state. */
+  matchedBy: string;
+  /** What overwriting costs, said before the button that does it. */
+  overwriteWarning: string;
+  plan: (csv: string) => Promise<ImportPlan | { error: string }>;
+  apply: (csv: string) => Promise<ImportResult | { error: string }>;
+}) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState<string | null>(null);
   const [csv, setCsv] = useState<string | null>(null);
@@ -51,7 +72,7 @@ export function ImportDialog() {
     try {
       const text = await file.text();
       setCsv(text);
-      const result = await planProductImport(text);
+      const result = await planFile(text);
       if ("error" in result) setError(result.error);
       else setPlan(result);
     } catch {
@@ -64,7 +85,7 @@ export function ImportDialog() {
   function write() {
     if (!csv) return;
     startWriting(async () => {
-      const result = await applyProductImport(csv);
+      const result = await applyFile(csv);
       if ("error" in result) {
         toast.error(result.error, { blocking: true });
         return;
@@ -75,8 +96,8 @@ export function ImportDialog() {
       ].filter(Boolean);
       if (result.failed.length > 0) {
         toast.error(
-          `${result.failed.length} product${result.failed.length === 1 ? "" : "s"} could not be saved: ${result.failed
-            .map((f) => f.slug)
+          `${result.failed.length} ${result.failed.length === 1 ? noun : plural} could not be saved: ${result.failed
+            .map((f) => f.key)
             .join(", ")}`,
           { blocking: true }
         );
@@ -111,15 +132,12 @@ export function ImportDialog() {
           <div
             role="dialog"
             aria-modal="true"
-            aria-label="Import products"
+            aria-label={`Import ${plural}`}
             className="relative flex max-h-full w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-control-line bg-control shadow-lg"
           >
             <div className="border-b border-control-line px-4 py-3">
-              <h2 className="text-sm font-semibold text-ink">Import products</h2>
-              <p className="mt-0.5 text-xs leading-snug text-ink-soft">
-                A Shopify product CSV, or one exported from here. Products are matched by their URL
-                handle: a handle you already have is updated, one you do not is added.
-              </p>
+              <h2 className="text-sm font-semibold text-ink">Import {plural}</h2>
+              <p className="mt-0.5 text-xs leading-snug text-ink-soft">{blurb}</p>
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">
@@ -199,18 +217,17 @@ export function ImportDialog() {
                       <ul className="max-h-64 divide-y divide-border overflow-y-auto">
                         {plan.rows.map((row) => (
                           <li
-                            key={row.slug}
+                            key={row.key}
                             className="flex items-center gap-3 bg-surface px-3 py-2"
                           >
                             <span className="min-w-0 flex-1">
                               <span className="block truncate text-sm text-ink">{row.title}</span>
                               <span className="block truncate font-mono text-[11px] text-ink-faint">
-                                {row.slug}
+                                {row.key}
                               </span>
                             </span>
-                            <span className="flex-shrink-0 text-[11px] tabular-nums text-ink-faint">
-                              {row.variants} variant{row.variants === 1 ? "" : "s"} · {row.images}{" "}
-                              picture{row.images === 1 ? "" : "s"}
+                            <span className="flex-shrink-0 text-[11px] text-ink-faint">
+                              {row.detail}
                             </span>
                             <span
                               className={cn(
@@ -234,8 +251,8 @@ export function ImportDialog() {
             <div className="flex items-center justify-between gap-2 border-t border-control-line px-4 py-3">
               <p className="text-xs text-ink-soft">
                 {plan
-                  ? "Overwriting replaces a product's variants with the ones in the file."
-                  : "Exported files from here import back unchanged."}
+                  ? overwriteWarning
+                  : `Matched by ${matchedBy}. Exported files from here import back unchanged.`}
               </p>
               <div className="flex flex-shrink-0 items-center gap-2">
                 <Button
@@ -257,7 +274,7 @@ export function ImportDialog() {
                   {writing
                     ? "Importing…"
                     : plan
-                      ? `Import ${plan.rows.length} product${plan.rows.length === 1 ? "" : "s"}`
+                      ? `Import ${plan.rows.length} ${plan.rows.length === 1 ? noun : plural}`
                       : "Import"}
                 </Button>
               </div>

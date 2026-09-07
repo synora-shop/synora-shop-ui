@@ -544,9 +544,23 @@ check(
   /<ImportDialog/.test(productsPage) && /Export CSV/.test(productsPage)
 );
 // Reading a file and writing it are two clicks, because there is no undo for
-// "the whole catalogue, slightly wrong".
-check("the file is read before anything is written", /planProductImport/.test(importDialog));
-check("and writing is a second, separate press", /applyProductImport/.test(importDialog));
+// "the whole catalogue, slightly wrong". One dialog serves both imports, so
+// the two actions reach it as props rather than being named inside it.
+check("the file is read before anything is written", /plan: \(csv: string\)/.test(importDialog));
+check("and writing is a second, separate press", /apply: \(csv: string\)/.test(importDialog));
+// Products and customers ask the merchant exactly the same question, so they
+// ask it with the same component rather than two that drift.
+const productsUse = readFileSync(join(ROOT, "app/admin/products/page.tsx"), "utf8");
+const customersUse = readFileSync(join(ROOT, "app/admin/customers/page.tsx"), "utf8");
+check("both lists use it", /<ImportDialog/.test(productsUse) && /<ImportDialog/.test(customersUse));
+// A customer list is the most personal thing here: it should be a merchant's
+// to take with them, and theirs to bring in. Both, or neither.
+check("customers can be exported too", /\/admin\/customers\/export/.test(customersUse));
+const customerImport = readFileSync(join(ROOT, "app/admin/customers/import/actions.ts"), "utf8");
+check("importing never touches a password", /password is never touched/i.test(customerImport));
+// Five thousand people written one at a time is fifteen thousand round trips.
+check("people are written in batches", /createMany/.test(customerImport));
+check("and an unchanged row is not written at all", /was\.name === person\.name/.test(customerImport));
 check("the plan says what would be overwritten", /to overwrite/.test(importDialog));
 const importActions = readFileSync(join(ROOT, "app/admin/products/import/actions.ts"), "utf8");
 check("the plan writes nothing", !/planProductImport[\s\S]{0,1400}\.(create|update|createMany|deleteMany)\(/.test(importActions));
