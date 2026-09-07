@@ -160,7 +160,7 @@ check:csv  check:actions  check:geo   check:loops   check:nav
 check:paging  check:responsive  check:search  check:accounts
 check:domains  check:platform  check:discounts  check:naming
 check:sorting  check:editor  check:analytics  check:cache
-check:design  check:motion  check:holding
+check:design  check:motion  check:holding  check:spotlight
 ```
 
 Those are static: they read the source. `scripts/sweep/` is the other half — a

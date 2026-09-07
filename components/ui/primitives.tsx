@@ -57,13 +57,25 @@ export function buttonClass(
   return cn(BUTTON_BASE, BUTTON_VARIANTS[variant], BUTTON_SIZES[size], className);
 }
 
+/**
+ * Forwards its ref, so a caller can reach the element itself.
+ *
+ * Needed the first time by useSpotlight, which has to scroll one particular
+ * button into view and put a class on it. React 19 passes `ref` through props,
+ * so this is a type on the signature rather than forwardRef.
+ */
 export function Button({
   variant = "secondary",
   size = "md",
   className,
+  ref,
   ...props
-}: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: ButtonVariant; size?: ButtonSize }) {
-  return <button className={buttonClass(variant, size, className)} {...props} />;
+}: React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  ref?: React.Ref<HTMLButtonElement>;
+}) {
+  return <button ref={ref} className={buttonClass(variant, size, className)} {...props} />;
 }
 
 export function ButtonLink({

@@ -434,3 +434,43 @@ endpoint, and the switch existing in exactly one place.
 
 Still to come, step three: the guided store-type switch — the refusal that
 takes you to the pause button and lights it up.
+
+## The guided type switch, 7 September — step 3 of three
+
+The last of the three. `typeSwitchGate` already refused an open store and was
+already enforced at the write, so nothing here is about the rule. It is about
+the twenty seconds after the rule is stated.
+
+"Pause it first" is true and useless on its own: the pause button is on another
+screen, under a heading the merchant has never opened. So:
+
+- **The refusal carries two ways out.** "Pause my store" for someone who
+  already knows what that means, and "Show me where" for someone who does not —
+  and who should come away knowing where the control lives for next time.
+  Telling only the first kind is how a refusal becomes a dead end.
+- **`lib/spotlight.ts`** carries the hint across the navigation as
+  `?show=pause`. The screen that receives it scrolls the control into view,
+  centres it, plays `.attention` for five seconds, and then removes the
+  parameter — left in the URL it would replay on every reload and travel with
+  any copied link.
+- **Pausing offers the page it just put up.** Three answers, not two: Cancel,
+  "Just pause it", and "Pause and edit the page", which pauses and then goes to
+  the holding-page editor from step two. Only on success — a merchant sent
+  there after a pause that failed would be editing a page nobody is seeing.
+  Pausing from inside the type dialog skips that confirmation, so that path got
+  its own line pointing at the same screen.
+- **Closed and suspended get the refusal without the link.** Pausing does not
+  fix either, and pointing at the button would send someone to press a control
+  that changes nothing.
+
+Three faults in my own work, all found by driving it rather than reading it.
+The class was left on the control for the life of the screen; fixing that
+naively then stripped it a frame after it went on, because clearing the
+parameter re-ran the effect and its cleanup; and `.attention` was matched by a
+comment on the analytics screen about a number competing for attention. The
+hook now reads the parameter once on arrival and never again, which is also the
+honest description of what a hint is.
+
+`check:spotlight` — 31 assertions, including that `.attention` still has
+exactly one user. It is the loudest thing in the product and only works while
+it is rare.

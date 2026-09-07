@@ -1,8 +1,11 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { PauseCircle, PlayCircle } from "lucide-react";
 import { closeStore, pauseStore, resumeStore } from "@/app/admin/settings/lifecycle-actions";
+import { useSpotlight } from "@/components/admin/use-spotlight";
+import { startNavProgress } from "@/components/ui/nav-progress";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Badge, Button, Card } from "@/components/ui/primitives";
 import { useConfirm } from "@/components/ui/confirm-dialog";
@@ -25,20 +28,37 @@ export function StoreLifecycle({
   retentionDays: number;
 }) {
   const toast = useToast();
+  const router = useRouter();
   const { confirm, dialog } = useConfirm();
   const [pending, startTransition] = useTransition();
+
+  // Lit for five seconds when a merchant arrives here from the "change what
+  // you sell" refusal, which is the only thing that sends them. See
+  // lib/spotlight.ts.
+  const pauseRef = useSpotlight<HTMLButtonElement>("pause");
   const [closing, setClosing] = useState(false);
   const [closeError, setCloseError] = useState<string | null>(null);
 
   const open = OPEN.includes(status);
 
   const run = (
-    action: () => Promise<{ ok: true; message?: string } | { ok: false; error: string }>
+    action: () => Promise<{ ok: true; message?: string } | { ok: false; error: string }>,
+    /** Where to go afterwards, if it worked. */
+    then?: string
   ) => {
     startTransition(async () => {
       const result = await action();
-      if (result.ok) toast.success(result.message ?? "Done.");
-      else toast.error(result.error, { blocking: true });
+      if (!result.ok) {
+        toast.error(result.error, { blocking: true });
+        return;
+      }
+      toast.success(result.message ?? "Done.");
+      // Only on success. A merchant sent to the holding-page editor after a
+      // pause that failed would be editing a page nobody is being shown.
+      if (then) {
+        startNavProgress();
+        router.push(then);
+      }
     });
   };
 
@@ -75,15 +95,23 @@ export function StoreLifecycle({
           {status !== "SUSPENDED" &&
             (open ? (
               <Button
+                ref={pauseRef}
                 disabled={pending}
                 onClick={async () => {
-                  const ok = await confirm({
+                  // Three answers, not two. Pausing puts a page in front of
+                  // every customer, and the moment a merchant wants to write
+                  // that page is now — asking afterwards would be a second
+                  // dialog about the same decision, and not asking at all is
+                  // how the old holding page went years without being edited.
+                  const choice = await confirm({
                     title: "Pause your store?",
                     description:
-                      "Visitors will see a notice instead of your storefront and won't be able to order. Nothing is deleted, and you can reopen whenever you like.",
-                    confirmLabel: "Pause the store",
+                      "Customers will see your holding page instead of your storefront and won't be able to order. Nothing is deleted, and you can reopen whenever you like. Want to change what that page says while you work behind the curtain?",
+                    confirmLabel: "Just pause it",
+                    also: { label: "Pause and edit the page" },
                   });
-                  if (ok) run(pauseStore);
+                  if (choice === "cancel") return;
+                  run(pauseStore, choice === "also" ? "/admin/maintenance" : undefined);
                 }}
               >
                 <PauseCircle className="h-4 w-4" />

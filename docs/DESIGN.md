@@ -175,6 +175,20 @@ dialog opening, `.toast-in` / `.toast-out` for a message arriving and leaving,
 merchant has been sent to find. Nothing invents its own. *Check:
 `check:motion`.*
 
+**`.attention` has exactly one user, and that is the rule.** It is the loudest
+thing in the product — five seconds of a control growing and pulsing — and it
+works only because it is rare. It answers one question, "where?", asked by a
+merchant who followed a link out of a refusal. A second user turns an answer
+into decoration. It is applied only through `useSpotlight`, and the controls it
+may point at are a closed list in `lib/spotlight.ts`. *Check:
+`check:spotlight`, "does not use .attention directly".*
+
+**A refusal says where the cure is.** Telling someone they must pause their
+store first is true and useless on its own when the pause button is on another
+screen under a heading they have never opened. The refusal carries a link, the
+link lights the control up on arrival, and the control's own confirmation
+offers whatever it has just changed. *Check: `check:spotlight`.*
+
 **Press feedback is a transition, not an animation, and it stays.** Every
 button, link and `[role="button"]` scales to 0.96 on `:active` from one rule in
 `@layer base`, so a press is acknowledged before anything else has happened.
