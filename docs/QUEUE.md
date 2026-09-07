@@ -266,6 +266,16 @@ for the city and passed for the wrong reason.
   assertions covering every kind's reader, its invalidator, and every server
   action that writes a cached model.
 
+- **The domain checker runs daily, and wants to run hourly.** Vercel's Hobby
+  plan allows one cron run per day and refuses a deploy carrying anything
+  finer — the first attempt failed with exactly that. So `/api/cron/domains` is
+  `43 4 * * *` in `vercel.json`. The backoff in `lib/domains.ts` starts at a
+  minute and doubles, which only means something on an hourly schedule; on a
+  daily one the schedule decides, not the backoff. **The day this moves to Pro,
+  change that one line to `43 * * * *`.** Nothing else assumes either, and the
+  comment at the top of the route says the same. What daily costs: a merchant
+  who fixes their DNS at midnight goes live the next morning rather than within
+  the hour, unless they press Check now.
 - **Prices are whole units of the currency.** `basePrice: 5500` means 5,500
   rupees, not 55.00. That fits PKR, which has no minor unit in practice, and
   does not fit dollars: a merchant cannot price something at 19.99 today. The
