@@ -139,7 +139,26 @@ export async function resolveShopByHost(host: string): Promise<CurrentShop | nul
       where: { subdomain },
       select: SHOP_SELECT,
     });
-    return shop ?? null;
+    if (shop) return shop;
+
+    // An address a shop used to have.
+    //
+    // Renaming a store can move its free address, and every link anyone had
+    // already shared points at the old one. When the merchant chooses to keep
+    // it working we leave a Domain row behind, and this is what finds it —
+    // guardCanonicalHost then sends the visitor on to the current address with
+    // a 308, so a bookmark from last year still lands on the shop.
+    //
+    // Only VERIFIED and ACTIVE, the same rule custom domains are held to. A row
+    // in any other state is not a claim on anything.
+    const retired = await prisma.domain.findFirst({
+      where: {
+        hostname: normaliseHost(host),
+        status: { in: ["VERIFIED", "ACTIVE"] },
+      },
+      select: { shop: { select: SHOP_SELECT } },
+    });
+    return retired?.shop ?? null;
   }
 
   // A domain the merchant owns.

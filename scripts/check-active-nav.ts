@@ -120,7 +120,17 @@ for (const href of hrefs) {
 /* -------------------------------------------------------------------------- */
 
 const all = sections();
-check("the sidebar has sections", all.length === 6, `found ${all.length}`);
+
+// A ceiling, not a count. The sidebar exists in this shape because it replaced
+// seven collapsible groups with links nested inside them, where reaching Orders
+// meant finding the right group, opening it, and reading past six siblings. The
+// rule being held up is "flat and short enough to read at a glance", so the
+// check is a limit — and one that has to be raised deliberately, by someone who
+// has thought about whether the new section earns a permanent row.
+//
+// Raised from 6 to 7 on 8 September 2026, when Customers left Products.
+check("the sidebar stays short", all.length <= 7, `found ${all.length}`);
+check("the sidebar has more than one section", all.length > 1);
 
 for (const section of all) {
   // Clicking a sidebar item must land inside that item, or the sidebar would

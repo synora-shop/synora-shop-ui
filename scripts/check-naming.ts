@@ -84,8 +84,34 @@ check(
   "lucide crept back into the sidebar"
 );
 
+// Every sidebar section has a glyph, and every glyph is used by a section.
+// A section drawn with no icon leaves a hole in the row; an icon nothing uses
+// is a shape somebody drew and forgot to wire up.
 const icons = readFileSync(join(ROOT, "components/admin/nav-icons.tsx"), "utf8");
-check("all six glyphs are exported", (icons.match(/^export function/gm) ?? []).length === 6);
+const exported = [...icons.matchAll(/^export function (\w+)\(/gm)].map((m) => m[1]);
+const usedInNav = exported.filter((name) => new RegExp(`\\b${name}\\b`).test(nav));
+
+// `icon: NavIcon` is the type on the field, not a reference to a drawing.
+const named = [...nav.matchAll(/icon: (\w+Icon),/g)].map((m) => m[1]).filter((n) => n !== "NavIcon");
+check(
+  "every glyph the sidebar names is drawn",
+  named.length > 0 && named.every((n) => exported.includes(n)),
+  `missing: ${named.filter((n) => !exported.includes(n)).join(", ")}`
+);
+check(
+  "every glyph drawn is used by a section",
+  exported.length === usedInNav.length,
+  `drawn but unused: ${exported.filter((n) => !usedInNav.includes(n)).join(", ")}`
+);
+
+// Six came from the design file. The seventh did not, because the sidebar had
+// six sections when that file was drawn — it is marked as drawn-to-match in
+// nav-icons.tsx and should be replaced when Assestz gains a real one.
+check(
+  "the borrowed glyph says so",
+  !/CustomersIcon/.test(icons) || /NOT from Assestz/.test(icons),
+  "an icon that is not from the design file must say which one it is"
+);
 // The source files carry their own fills, which would ignore the active pill
 // and leave a dark glyph sitting on the brand colour. Matched on the attribute
 // rather than on the text, so the comment explaining this does not trip it.

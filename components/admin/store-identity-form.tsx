@@ -7,6 +7,9 @@ import { FieldError, Fieldset, SectionDivider } from "@/components/ui/primitives
 import { saveStoreIdentity, type StoreIdentity } from "@/app/admin/identity-actions";
 import { useToast } from "@/components/ui/toast";
 import { FieldHint, FieldLabel } from "@/components/merchant/form-shell";
+import { useConfirm } from "@/components/ui/confirm-dialog";
+import { PLATFORM_DOMAIN, subdomainProblem, suggestSubdomain } from "@/lib/shop-context";
+import { checkAddressAvailable } from "@/app/admin/identity-actions";
 import {
   FAVICON_ACCEPT,
   FAVICON_FORMATS_LABEL,
@@ -30,37 +33,119 @@ import {
  * agree. The explanation now sits beside the control it explains, and a column
  * of these scans as a list of decisions.
  */
-export function StoreIdentityForm({ initial }: { initial: StoreIdentity }) {
+export function StoreIdentityForm({
+  initial,
+  customDomain,
+}: {
+  initial: StoreIdentity;
+  /** A domain of the merchant's own that is already serving, if there is one. */
+  customDomain: { hostname: string; isPrimary: boolean } | null;
+}) {
   const [values, setValues] = useState(initial);
   // What the server last accepted, not what it sent on first render — without
   // this the form stays "dirty" after a successful save until a refresh lands.
   const [saved, setSaved] = useState(initial);
   const [pending, setPending] = useState(false);
+  const [addressTouched, setAddressTouched] = useState(false);
+  const [addressTaken, setAddressTaken] = useState<string | null>(null);
   const toast = useToast();
+  const { confirm, dialog } = useConfirm();
   const dirty = JSON.stringify(values) !== JSON.stringify(saved);
 
   const set = <K extends keyof StoreIdentity>(key: K, value: StoreIdentity[K]) =>
     setValues((v) => ({ ...v, [key]: value }));
 
+  /**
+   * Renaming the store moves the suggested address with it — until the merchant
+   * edits the address themselves, after which it is theirs and stops following.
+   *
+   * Shown before the save rather than sprung in a dialog afterwards: by the
+   * time anyone presses Save they have already watched their public address
+   * change on screen, so the question that follows is only about the old one.
+   */
+  function setName(name: string) {
+    setValues((v) => {
+      if (addressTouched) return { ...v, storeName: name };
+      const suggested = suggestSubdomain(name);
+      return { ...v, storeName: name, subdomain: suggested || v.subdomain };
+    });
+    setAddressTaken(null);
+  }
+
+  function setAddress(next: string) {
+    setAddressTouched(true);
+    setAddressTaken(null);
+    set("subdomain", next.trim().toLowerCase());
+  }
+
   const setMark = <K extends keyof BrandMarks>(key: K, value: string) =>
     setValues((v) => ({ ...v, marks: { ...v.marks, [key]: value } }));
 
   const faviconIssue = faviconProblem(values.marks.faviconUrl);
+  const addressIssue = subdomainProblem(values.subdomain) ?? addressTaken;
+  const addressChanged = values.subdomain !== saved.subdomain;
 
   async function save() {
     if (faviconIssue) {
       toast.error(faviconIssue);
       return;
     }
+    if (addressIssue) {
+      toast.error(addressIssue);
+      return;
+    }
+
+    let keepOldAddress = false;
+
+    if (addressChanged) {
+      // Checked before the question is asked, so nobody answers a dialog about
+      // an address somebody else already holds.
+      const free = await checkAddressAvailable(values.subdomain);
+      if (!free.ok) {
+        setAddressTaken(free.error);
+        toast.error(free.error);
+        return;
+      }
+
+      const from = `${saved.subdomain}.${PLATFORM_DOMAIN}`;
+      const to = `${values.subdomain}.${PLATFORM_DOMAIN}`;
+
+      // Not dismissable, and with no Cancel: there are two answers and both are
+      // answers. Clicking the scrim would be a third, silent one, and "whatever
+      // happens when I click outside" is not a decision anybody made about
+      // their own storefront.
+      const choice = await confirm({
+        title: "What should happen to your old address?",
+        description: customDomain
+          ? `Your store is moving from ${from} to ${to}. ${customDomain.hostname} is your own domain and is not affected — it keeps working exactly as it does now. This is only about the free address.`
+          : `Your store is moving from ${from} to ${to}. Anything already shared — links, bookmarks, search results — points at the old one.`,
+        confirmLabel: "Only the new address",
+        also: { label: "Keep the old one working" },
+        dismissable: false,
+      });
+
+      // `also` is the recommended answer, so it is the one that redirects.
+      keepOldAddress = choice === "also";
+    }
+
     setPending(true);
     try {
-      const result = await saveStoreIdentity(values);
+      const result = await saveStoreIdentity(values, { keepOldAddress });
       if (!result.ok) {
         toast.error(result.error);
         return;
       }
       setSaved(values);
-      toast.success("Saved");
+      setAddressTouched(false);
+      if (result.addressMoved) {
+        toast.success(
+          result.addressMoved.keptOld
+            ? `Your store is at ${result.addressMoved.to}. The old address redirects to it.`
+            : `Your store is at ${result.addressMoved.to}.`
+        );
+      } else {
+        toast.success("Saved");
+      }
     } finally {
       setPending(false);
     }
@@ -95,6 +180,8 @@ export function StoreIdentityForm({ initial }: { initial: StoreIdentity }) {
 
   return (
     <div className="space-y-2.5">
+      {dialog}
+
       <Fieldset
         title="Store name"
         description="Shown in the browser tab, on your storefront, and on every email you send. It is also what customers see in place of a logo if you have not added one."
@@ -105,11 +192,53 @@ export function StoreIdentityForm({ initial }: { initial: StoreIdentity }) {
             id="storeName"
             className="input"
             value={values.storeName}
-            onChange={(e) => set("storeName", e.target.value)}
+            onChange={(e) => setName(e.target.value)}
             placeholder="What customers call your shop"
             maxLength={60}
           />
         </div>
+      </Fieldset>
+
+      <Fieldset
+        title="Store address"
+        description="Where customers find you. It follows your store name until you change it yourself, and changing it moves your storefront's public URL."
+      >
+        <div>
+          <FieldLabel htmlFor="subdomain">Address</FieldLabel>
+          <div className="flex items-center gap-1.5">
+            <input
+              id="subdomain"
+              className="input"
+              value={values.subdomain}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder="your-store"
+              maxLength={40}
+              spellCheck={false}
+              autoCapitalize="off"
+              autoCorrect="off"
+            />
+            <span className="flex-shrink-0 font-mono text-xs text-ink-faint">
+              .{PLATFORM_DOMAIN}
+            </span>
+          </div>
+          {addressIssue ? (
+            <FieldError size="xs" className="mt-1">{addressIssue}</FieldError>
+          ) : (
+            <FieldHint>
+              {addressChanged
+                ? `Saving moves your store to ${values.subdomain}.${PLATFORM_DOMAIN}. You will be asked what happens to the old address.`
+                : "Lowercase letters, numbers and hyphens."}
+            </FieldHint>
+          )}
+        </div>
+
+        {customDomain && (
+          <p className="text-xs leading-snug text-ink-soft">
+            {customDomain.isPrimary
+              ? `Customers reach you at ${customDomain.hostname}, which is your own domain. Changing the address above does not affect it.`
+              : `You also have ${customDomain.hostname} connected. Changing the address above does not affect it.`}
+          </p>
+        )}
       </Fieldset>
 
       <SectionDivider

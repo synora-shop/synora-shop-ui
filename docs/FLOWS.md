@@ -176,6 +176,56 @@ Their own table, their own screen, their own export, deletable on request.
 
 ---
 
+## 3b. Renaming the shop, and moving its address
+
+**Screen:** Home · **Code:** `lib/data/domains.ts` · `moveFreeAddress`
+
+The free address is derived from the store's name, so renaming the shop moves
+the storefront's public URL. Three dangerous things at once.
+
+```
+Rename "My Store" ──▶ "Bashinda"
+        │
+        ▼
+  address field follows: bashinda
+  (until you edit it yourself, after which it is yours)
+        │
+    press Save
+        │
+        ▼
+  is the new address free?  ── no ──▶ said here, nothing written
+        │ yes
+        ▼
+  ┌───────────────────────────────────────────┐
+  │  This dialog cannot be dismissed.         │
+  │  No scrim close. No Escape. No Cancel.    │
+  │                                           │
+  │  "Only the new address"  │  "Keep the     │
+  │                          │   old working" │
+  └───────────────────────────────────────────┘
+        │                            │
+   old 404s,                  old 308s to new,
+   name released              path preserved
+```
+
+**A merchant's own domain is never touched.** If `acme.com` is connected and
+serving, it stays `ACTIVE` and stays primary; the free address moves underneath
+it. The dialog says so by name, because from the merchant's side the question
+means something different when their real address is unaffected.
+
+**Why the dialog cannot be waved away.** There is no sensible default. Keeping
+the old address forever holds names on behalf of shops that did not want them;
+dropping it breaks every link, bookmark and search result silently. So there
+are two answers, both are answers, and clicking outside is not one of them.
+
+**A kept address is a real row**, not a special case: `isPlatform` goes false,
+so `ensurePlatformDomain` cannot mistake it for the current one, the merchant
+can see it in Domains, and they can remove it later to release the name.
+`resolveShopByHost` finds it, `guardCanonicalHost` redirects it, and the path
+survives — `/shop` on the old address lands on `/shop` on the new one.
+
+---
+
 ## 4. Setting the shop's marks
 
 **Screen:** Home · **Code:** `lib/brand-marks.ts`

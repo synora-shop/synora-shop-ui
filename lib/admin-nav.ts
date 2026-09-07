@@ -1,5 +1,6 @@
 import {
   AnalyticsIcon,
+  CustomersIcon,
   HomeIcon,
   PreferencesIcon,
   ProductIcon,
@@ -58,11 +59,16 @@ export type NavSection = {
 };
 
 /**
- * The six, in the order they are drawn.
+ * The seven, in the order they are drawn.
  *
  * Order is not alphabetical and not by importance — it is the order a merchant
  * meets them. Who you are, what you sell, what it looks like, how it behaves,
- * how it is doing, and the account underneath all of it.
+ * who bought from you, how it is doing, and the account underneath all of it.
+ *
+ * Customers sits between Preferences and Analytics rather than under Products,
+ * where it used to live. Filed under the catalogue it read as a property of
+ * what you sell; it is not. It is the people, and it belongs next to the
+ * numbers about them.
  */
 export const NAV_SECTIONS: readonly NavSection[] = [
   {
@@ -86,7 +92,11 @@ export const NAV_SECTIONS: readonly NavSection[] = [
       { href: "/admin/drafts", label: "Drafts" },
       { href: "/admin/categories", label: "Categories" },
       { href: "/admin/orders", label: "Orders" },
-      { href: "/admin/customers", label: "Customers" },
+      // Customers is deliberately not here. It was, and it read as a property
+      // of the catalogue — but a customer is a person who bought, not a thing
+      // you sell, and a merchant looking for one does not think "products
+      // first". It is its own sidebar section now, between Preferences and
+      // Analytics: the people, then the numbers about them.
       { href: "/admin/enquiries", label: "Enquiries" },
       { href: "/admin/bin", label: "Bin" },
     ],
@@ -128,6 +138,16 @@ export const NAV_SECTIONS: readonly NavSection[] = [
       { href: "/admin/redirects", label: "Links & redirects" },
       { href: "/admin/metafields", label: "Custom fields" },
     ],
+  },
+  {
+    key: "customers",
+    label: "Customers",
+    icon: CustomersIcon,
+    // One screen, so no navigation bar is drawn for it — the same shape as
+    // Home and Analytics. The detail page at /admin/customers/[id] resolves
+    // here too, because the active match is the longest href covering the
+    // path.
+    tabs: [{ href: "/admin/customers", label: "Customers" }],
   },
   {
     key: "analytics",

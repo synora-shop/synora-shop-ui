@@ -96,6 +96,10 @@ www.acme.com                   another custom domain
   `VERIFIED` or `ACTIVE`. A `PENDING` row is somebody having typed a name into
   a box; serving from it would let anyone claim any hostname whose DNS happened
   to point here.
+- **A free subdomain that matches no shop falls back to the same table.**
+  Renaming a shop moves its free address, and the merchant may choose to leave
+  the old one resolving — see `docs/FLOWS.md` §3b. That row is what keeps every
+  previously shared link alive, and `guardCanonicalHost` then redirects it.
 - **`canonicalHost`** answers "which one is real" — the primary domain, falling
   back to the free subdomain, which is always present and always ours.
 - **`guardCanonicalHost`** sends every other host to the canonical one with a

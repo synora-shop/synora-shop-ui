@@ -7,9 +7,19 @@ import { invalidateShop } from "@/lib/data/cached";
 import { prisma } from "@/lib/prisma";
 import { safeAssetUrl } from "@/lib/icon-validation";
 import { faviconProblem, type BrandMarks } from "@/lib/brand-marks";
+import { PLATFORM_DOMAIN, parseSubdomain } from "@/lib/shop-context";
+import { moveFreeAddress } from "@/lib/data/domains";
 
 export type StoreIdentity = {
   storeName: string;
+  /**
+   * The shop's free address, without the platform suffix.
+   *
+   * Suggested from the name and editable, because "Bashinda Clothing Co" makes
+   * a long address a merchant may want shortened. Changing it moves the
+   * storefront's public URL, which is why saving one asks a question first.
+   */
+  subdomain: string;
   /** The four logo slots and the favicon — see lib/brand-marks.ts. */
   marks: BrandMarks;
   address: string;
@@ -35,9 +45,22 @@ export type StoreIdentity = {
  * the Locations screen has no row at all, and "the address" is the first thing
  * a new merchant fills in.
  */
+export type SaveOptions = {
+  /**
+   * Whether the previous address keeps resolving and redirecting.
+   *
+   * Not optional in the UI: the dialog that asks cannot be dismissed, because
+   * there is no sensible default. Defaulting to keeping it would leave names
+   * held forever by shops that did not want them; defaulting to dropping it
+   * would break links silently.
+   */
+  keepOldAddress?: boolean;
+};
+
 export async function saveStoreIdentity(
-  values: StoreIdentity
-): Promise<{ ok: true } | { ok: false; error: string }> {
+  values: StoreIdentity,
+  options: SaveOptions = {}
+): Promise<{ ok: true; addressMoved?: { from: string; to: string; keptOld: boolean } } | { ok: false; error: string }> {
   await requireRole("ADMIN");
 
   const shop = await requireShop();
@@ -68,6 +91,23 @@ export async function saveStoreIdentity(
   // another way.
   const badFavicon = faviconProblem(marks.faviconUrl);
   if (badFavicon) return { ok: false, error: badFavicon };
+
+  // The address, before anything else is written. It is the only field here
+  // that can fail for a reason the merchant cannot see coming — somebody else
+  // holding the name — and failing after the rest had been saved would leave
+  // the store renamed with an address that does not match it.
+  let addressMoved: { from: string; to: string; keptOld: boolean } | undefined;
+  const wantedSubdomain = (values.subdomain ?? "").trim().toLowerCase();
+  if (wantedSubdomain && wantedSubdomain !== shop.subdomain) {
+    const parsed = parseSubdomain(wantedSubdomain);
+    if (!parsed.ok) return { ok: false, error: parsed.error };
+
+    const move = await moveFreeAddress(shopId, parsed.value, {
+      keepOld: options.keepOldAddress === true,
+    });
+    if (!move.ok) return { ok: false, error: move.error };
+    addressMoved = { from: move.from, to: move.to, keptOld: move.keptOld };
+  }
 
   await prisma.$transaction(async (tx) => {
     await tx.storeSettings.upsert({
@@ -118,5 +158,42 @@ export async function saveStoreIdentity(
   invalidateShop(shopId, "theme");
   revalidatePath("/admin", "layout");
   revalidatePath("/", "layout");
-  return { ok: true };
+  return { ok: true, addressMoved };
+}
+
+/**
+ * Whether a free address can be taken, asked before the question is put to the
+ * merchant.
+ *
+ * The move itself checks this too — that is the rule, and the unique index
+ * behind it is the real gate. This exists so a merchant is told "that one is
+ * taken" while they are still editing, rather than after answering a dialog
+ * about an address they were never going to get.
+ */
+export async function checkAddressAvailable(
+  raw: string
+): Promise<{ ok: true; address: string } | { ok: false; error: string }> {
+  await requireRole("ADMIN");
+
+  const parsed = parseSubdomain(raw ?? "");
+  if (!parsed.ok) return { ok: false, error: parsed.error };
+
+  const shop = await requireShop();
+  if (parsed.value === shop.subdomain) {
+    return { ok: true, address: `${parsed.value}.${PLATFORM_DOMAIN}` };
+  }
+
+  const hostname = `${parsed.value}.${PLATFORM_DOMAIN}`;
+  const [takenByShop, takenByDomain] = await Promise.all([
+    prisma.shop.findUnique({ where: { subdomain: parsed.value }, select: { id: true } }),
+    prisma.domain.findUnique({ where: { hostname }, select: { shopId: true } }),
+  ]);
+
+  if (
+    (takenByShop && takenByShop.id !== shop.id) ||
+    (takenByDomain && takenByDomain.shopId !== shop.id)
+  ) {
+    return { ok: false, error: "That address is taken. Try another." };
+  }
+  return { ok: true, address: hostname };
 }

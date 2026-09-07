@@ -1,12 +1,18 @@
 import { cn } from "@/lib/utils";
 
 /**
- * The sidebar's six icons, drawn for this product.
+ * The sidebar's icons, drawn for this product.
  *
- * These are the shapes from Assestz/SVG — the same file the rest of the panel
- * was drawn in — not a general-purpose icon set standing in for them. A stock
- * library gets you a house and a gear; it does not get you *these* six, at
- * these weights, sized against each other the way a designer sized them.
+ * Six of these are the shapes from Assestz/SVG — the same file the rest of the
+ * panel was drawn in — not a general-purpose icon set standing in for them. A
+ * stock library gets you a house and a gear; it does not get you *those* six,
+ * at these weights, sized against each other the way a designer sized them.
+ *
+ * CustomersIcon is the exception and is marked as such below: Assestz has no
+ * customers glyph, because the sidebar had six sections when it was drawn. It
+ * is drawn here to match the set — same fill, same optical weight, same
+ * construction — and should be replaced by a real one when the design file
+ * gains it.
  *
  * Each arrives with its own viewBox and its own proportions, which is the point
  * and also the catch: Analytics is tall and narrow, Products is square. They
@@ -90,6 +96,29 @@ export function AnalyticsIcon(props: IconProps) {
   return (
     <Glyph viewBox="0 0 13.32 19.03" {...props}>
       <path d="M7.61,18.08c0,.53.43.95.95.95s.95-.43.95-.95V.95c0-.53-.43-.95-.95-.95s-.95.43-.95.95v17.13ZM0,18.08c0,.53.43.95.95.95s.95-.43.95-.95v-9.52c0-.53-.43-.95-.95-.95s-.95.43-.95.95v9.52ZM4.76,19.03c-.53,0-.95-.43-.95-.95v-7.61c0-.53.43-.95.95-.95s.95.43.95.95v7.61c0,.53-.43.95-.95.95ZM11.42,18.08c0,.53.43.95.95.95s.95-.43.95-.95V4.76c0-.53-.43-.95-.95-.95s-.95.43-.95.95v13.32Z" />
+    </Glyph>
+  );
+}
+
+/**
+ * Customers — NOT from Assestz. Drawn to match the set; see the note at the
+ * top of this file.
+ *
+ * Two figures rather than one, because the section is a list of people and a
+ * single head reads as "your account" — which is a different destination, two
+ * rows down under Settings. The second figure is behind and slightly smaller,
+ * so the pair still reads at 18px instead of turning into a blob.
+ */
+export function CustomersIcon(props: IconProps) {
+  return (
+    <Glyph viewBox="0 0 22 20.37" {...props}>
+      {/* The person in front. */}
+      <path d="M8.55,0C6.11,0,4.13,1.98,4.13,4.42s1.98,4.42,4.42,4.42,4.42-1.98,4.42-4.42S10.99,0,8.55,0ZM8.55,1.85c1.42,0,2.57,1.15,2.57,2.57s-1.15,2.57-2.57,2.57-2.57-1.15-2.57-2.57,1.15-2.57,2.57-2.57Z" />
+      <path d="M8.55,10.37c-3.55,0-6.48,1.72-7.9,4.36-.72,1.34-.83,2.87-.32,4.03.53,1.19,1.62,1.61,2.6,1.61h11.24c.98,0,2.07-.42,2.6-1.61.51-1.16.4-2.69-.32-4.03-1.42-2.64-4.35-4.36-7.9-4.36ZM8.55,12.22c2.9,0,5.16,1.35,6.27,3.39.47.88.5,1.79.31,2.22-.11.25-.26.31-.91.31H2.93c-.65,0-.8-.06-.91-.31-.19-.43-.16-1.34.31-2.22,1.1-2.05,3.36-3.39,6.27-3.39Z" />
+      {/* The one behind: shifted right, drawn smaller, and cut off by the
+          frame the way a second person in a photograph would be. */}
+      <path d="M16.34,2.31c-.5,0-.98.09-1.43.25-.48.17-.73.7-.56,1.18.17.48.7.73,1.18.56.25-.09.52-.14.8-.14,1.32,0,2.39,1.07,2.39,2.39s-1.07,2.39-2.39,2.39c-.28,0-.55-.05-.8-.14-.48-.17-1.01.08-1.18.56-.17.48.08,1.01.56,1.18.45.16.93.25,1.43.25,2.34,0,4.24-1.9,4.24-4.24s-1.9-4.24-4.24-4.24Z" />
+      <path d="M17.72,11.99c-.51,0-.93.41-.93.93s.41.93.93.93c1.79,0,3.17.79,3.83,2.03.28.53.3,1.06.19,1.31-.05.11-.09.14-.35.14-.51,0-.93.41-.93.93s.41.93.93.93c.85,0,1.68-.38,2.05-1.24.42-.97.31-2.19-.25-3.24-1-1.87-3.05-3.7-5.47-3.7Z" />
     </Glyph>
   );
 }

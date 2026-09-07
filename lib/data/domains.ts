@@ -293,6 +293,119 @@ export async function removeDomain(shopId: string, domainId: string): Promise<st
   return null;
 }
 
+export type AddressMove =
+  | { ok: true; from: string; to: string; keptOld: boolean }
+  | { ok: false; error: string };
+
+/**
+ * Moves a shop's free address, because its name changed.
+ *
+ * `<subdomain>.shop.synoradigitals.com` is derived from the shop's name, so
+ * renaming a store leaves the old address pointing at a name nobody uses. This
+ * moves it — and decides what happens to the address people have already
+ * shared.
+ *
+ * Three things it must not do, and each has cost somebody a storefront
+ * somewhere:
+ *
+ *   It must not touch a custom domain. A merchant who has connected their own
+ *   domain has an address that has nothing to do with their store's name, and
+ *   renaming the shop must not take it off the air or move the canonical URL
+ *   off it. The custom domain stays primary if it was primary; the free address
+ *   moves underneath it.
+ *
+ *   It must not silently break shared links. `keepOld` leaves the previous
+ *   hostname behind as a resolvable row, which resolveShopByHost finds and
+ *   guardCanonicalHost then redirects — permanently — to the new address. The
+ *   merchant is asked which they want; there is no sensible default, which is
+ *   why the question is not skippable.
+ *
+ *   It must not take a name somebody else is using. The unique index on
+ *   Domain.hostname is the real gate; this checks first so the merchant gets a
+ *   sentence rather than a constraint violation.
+ */
+export async function moveFreeAddress(
+  shopId: string,
+  nextSubdomain: string,
+  { keepOld }: { keepOld: boolean }
+): Promise<AddressMove> {
+  const shop = await prisma.shop.findUnique({
+    where: { id: shopId },
+    select: { subdomain: true },
+  });
+  if (!shop) return { ok: false, error: "That store is no longer here." };
+
+  const from = `${shop.subdomain}.${PLATFORM_DOMAIN}`;
+  const to = `${nextSubdomain}.${PLATFORM_DOMAIN}`;
+  if (shop.subdomain === nextSubdomain) {
+    return { ok: true, from, to, keptOld: false };
+  }
+
+  // Taken by another shop, either as its own free address or as a row left
+  // behind by one of its own renames.
+  const clashingShop = await prisma.shop.findUnique({
+    where: { subdomain: nextSubdomain },
+    select: { id: true },
+  });
+  if (clashingShop && clashingShop.id !== shopId) {
+    return { ok: false, error: "That address is taken. Try another." };
+  }
+  const clashingDomain = await prisma.domain.findUnique({
+    where: { hostname: to },
+    select: { shopId: true },
+  });
+  if (clashingDomain && clashingDomain.shopId !== shopId) {
+    return { ok: false, error: "That address is taken. Try another." };
+  }
+
+  const old = await prisma.domain.findFirst({
+    where: { shopId, hostname: from },
+    select: { id: true, isPrimary: true },
+  });
+
+  await prisma.$transaction(async (tx) => {
+    await tx.shop.update({ where: { id: shopId }, data: { subdomain: nextSubdomain } });
+
+    if (!old) {
+      // No row to move — ensurePlatformDomain will make one on the next read.
+      return;
+    }
+
+    if (keepOld) {
+      // The old hostname stops being *the* free address and becomes a row that
+      // still resolves. isPlatform goes false deliberately: it is no longer the
+      // address this shop is guaranteed, ensurePlatformDomain must not mistake
+      // it for one, and the merchant is now allowed to remove it — which is
+      // how they release the name when they no longer want the redirect.
+      await tx.domain.update({
+        where: { id: old.id },
+        data: { isPlatform: false, isPrimary: false },
+      });
+      await tx.domain.create({
+        data: {
+          shopId,
+          hostname: to,
+          status: "ACTIVE",
+          isPlatform: true,
+          // Only if the old one was. A shop with a custom domain as its
+          // canonical address keeps that; the free address moves underneath it.
+          isPrimary: old.isPrimary,
+          verificationToken: "",
+          verifiedAt: new Date(),
+          activatedAt: new Date(),
+        },
+      });
+      return;
+    }
+
+    // Not kept: the same row is renamed, so nothing is left resolving and the
+    // old name returns to the pool.
+    await tx.domain.update({ where: { id: old.id }, data: { hostname: to } });
+  });
+
+  return { ok: true, from, to, keptOld: keepOld };
+}
+
 /**
  * Makes sure a shop's free address exists and is spelled correctly.
  *

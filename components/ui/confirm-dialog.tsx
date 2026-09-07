@@ -24,6 +24,18 @@ export type ConfirmOptions = {
    * with their store still open and nothing having happened.
    */
   also?: { label: string };
+  /**
+   * Whether the scrim and Escape close this.
+   *
+   * True everywhere except the few questions that must be answered rather than
+   * waved away — changing a store's public address is the one that made this
+   * option exist. A dialog that can be dismissed has a third, silent answer,
+   * and "whatever happens when I click outside" is not a decision anybody made
+   * about their own storefront.
+   *
+   * When false there is no Cancel either: every button on it is an answer.
+   */
+  dismissable?: boolean;
 };
 
 /** What the person chose. `also` only ever comes back when it was offered. */
@@ -68,7 +80,7 @@ export function useConfirm() {
   const dialog = pending ? (
     <div
       role="presentation"
-      onClick={() => close("cancel")}
+      onClick={() => pending.dismissable === false || close("cancel")}
       className="scrim-in fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
     >
       {/* dialog-in: arrives rather than appears. A question that materialises
@@ -99,13 +111,15 @@ export function useConfirm() {
         {/* Wraps rather than scrolls when a third button makes the row too
             wide for a phone, and the buttons stay right-aligned in both. */}
         <div className="mt-6 flex flex-wrap items-center justify-end gap-2">
-          <button
-            type="button"
-            onClick={() => close("cancel")}
-            className="rounded-full border border-border px-4 py-2 text-sm font-medium text-ink-soft transition-colors hover:bg-subtle active:bg-brand-100"
-          >
-            {pending.cancelLabel ?? "Cancel"}
-          </button>
+          {pending.dismissable !== false && (
+            <button
+              type="button"
+              onClick={() => close("cancel")}
+              className="rounded-full border border-border px-4 py-2 text-sm font-medium text-ink-soft transition-colors hover:bg-subtle active:bg-brand-100"
+            >
+              {pending.cancelLabel ?? "Cancel"}
+            </button>
+          )}
           <button
             type="button"
             onClick={() => close("confirm")}

@@ -20,14 +20,23 @@ import { StoreIdentityForm } from "@/components/admin/store-identity-form";
  * the merchant should not have to know that, and does not.
  */
 export default async function AdminHomePage() {
-  await requireShop();
+  const shop = await requireShop();
   const scoped = await db();
 
-  const [settings, location] = await Promise.all([
+  const [settings, location, liveCustomDomain] = await Promise.all([
     getStoreSettings(),
     scoped.location.findFirst({
       where: { isPrimary: true },
       select: { address: true, city: true, phone: true },
+    }),
+    // Whether this shop has an address of its own that customers use. It
+    // changes what the rename question means: with a custom domain live, moving
+    // the free address is housekeeping; without one, it is the storefront's
+    // public URL.
+    scoped.domain.findFirst({
+      where: { isPlatform: false, status: { in: ["VERIFIED", "ACTIVE"] } },
+      select: { hostname: true, isPrimary: true },
+      orderBy: { isPrimary: "desc" },
     }),
   ]);
 
@@ -38,8 +47,14 @@ export default async function AdminHomePage() {
         description="Your store's name, its logos and where to find you. Logos are set here and nowhere else — every theme reads them from this screen."
       />
       <StoreIdentityForm
+        customDomain={
+          liveCustomDomain
+            ? { hostname: liveCustomDomain.hostname, isPrimary: liveCustomDomain.isPrimary }
+            : null
+        }
         initial={{
           storeName: settings.storeName,
+          subdomain: shop.subdomain,
           marks: toBrandMarks(settings),
           address: location?.address ?? "",
           city: location?.city ?? "",
