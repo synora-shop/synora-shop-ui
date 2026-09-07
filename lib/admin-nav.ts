@@ -100,6 +100,9 @@ export const NAV_SECTIONS: readonly NavSection[] = [
     // text is the sixth because it is the same job — words on the shop.
     tabs: [
       { href: "/admin/pages", label: "Pages" },
+      // The same idea as Products' Drafts, for pages: everything written and
+      // not yet published, in one place, with a tick beside each one.
+      { href: "/admin/pages/drafts", label: "Drafts" },
       { href: "/admin/theme", label: "Themes" },
       { href: "/admin/data", label: "Data" },
       { href: "/admin/menus", label: "Menus" },

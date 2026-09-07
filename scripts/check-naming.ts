@@ -403,6 +403,26 @@ check(
   "and stands beside Products, not beside Bin",
   /\/admin\/products"[\s\S]{0,400}\/admin\/drafts"[\s\S]{0,200}\/admin\/categories"/.test(navList)
 );
+// A page starts hidden too — every new page, and every policy page — so the
+// other half of the storefront gets the same screen.
+check("pages have a Drafts screen as well", /href: "\/admin\/pages\/drafts"/.test(navList));
+const pageDrafts = readFileSync(join(ROOT, "app/admin/pages/drafts/page.tsx"), "utf8");
+check("it is the unpublished ones", /!p\.isPublished/.test(pageDrafts));
+// A collection page belongs to its category and is published with it, so it
+// cannot be acted on here.
+check("and leaves collection pages out", /!p\.categoryId/.test(pageDrafts));
+check("and does not repeat Hidden on every row", /showPublishState={false}/.test(pageDrafts));
+const pageList = readFileSync(join(ROOT, "components/admin/page-list.tsx"), "utf8");
+check("publishing several is one query", /publishPages/.test(pageList));
+const pageActions2 = readFileSync(join(ROOT, "app/admin/pages/actions.ts"), "utf8");
+check("and not a loop", /page\.updateMany/.test(pageActions2));
+// Already-published pages are excluded rather than written to, so the count is
+// what changed rather than what was ticked.
+check(
+  "and reports what changed",
+  /isPublished: false }[\s\S]{0,80}data: { isPublished: true }/.test(pageActions2)
+);
+
 const drafts = readFileSync(join(ROOT, "app/admin/drafts/page.tsx"), "utf8");
 check('it is drafts, and cannot be filtered into something else', /status: "DRAFT" as const/.test(drafts));
 // A column whose every cell reads "Draft", on a screen called Drafts.

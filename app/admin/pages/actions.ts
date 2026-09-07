@@ -100,6 +100,52 @@ export async function addPolicyPage(key: string): Promise<{ ok: true } | { error
   return { ok: true };
 }
 
+/**
+ * Publishes several pages at once.
+ *
+ * The Drafts screen's reason for being. One updateMany rather than a loop:
+ * a loop is a round trip per page to a database in another continent, and it
+ * can half-succeed, which leaves a merchant looking at a list where some of
+ * what they ticked happened and some did not.
+ *
+ * The count that comes back is what actually changed — already-published
+ * pages are excluded rather than written to — so "3 pages published" is true
+ * even when five were ticked.
+ */
+export async function publishPages(
+  ids: string[]
+): Promise<{ published: number } | { error: string }> {
+  await requireAdmin();
+
+  const unique = [...new Set(ids.filter((id) => typeof id === "string" && id.length > 0))];
+  if (unique.length === 0) return { error: "Nothing was selected." };
+  if (unique.length > 200) return { error: "That is more than 200 pages at once." };
+
+  const client = await db();
+  // Read them back before writing: the revalidation below needs their
+  // addresses, and db() scopes the read, so an id from another shop is simply
+  // not found rather than being published.
+  const pages = await client.page.findMany({
+    where: { id: { in: unique }, isPublished: false },
+    select: { id: true, slug: true },
+  });
+  if (pages.length === 0) return { published: 0 };
+
+  const { count } = await client.page.updateMany({
+    where: { id: { in: pages.map((p) => p.id) }, isPublished: false },
+    data: { isPublished: true },
+  });
+
+  revalidatePath("/admin/pages");
+  revalidatePath("/admin/pages/drafts");
+  for (const page of pages) {
+    if (page.slug === "home") revalidatePath("/");
+    else revalidatePath(`/p/${page.slug}`);
+  }
+
+  return { published: count };
+}
+
 export async function deletePage(formData: FormData) {
   await requireAdmin();
   const pageId = String(formData.get("pageId"));
