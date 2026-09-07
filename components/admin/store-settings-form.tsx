@@ -8,14 +8,15 @@ import { useEditor } from "@/components/admin/use-editor";
 import { Fieldset } from "@/components/ui/primitives";
 import { Field } from "@/components/merchant/form-shell";
 
+// The payment fields are deliberately not here. They moved to Settings →
+// Payments, where they sit under the switch that decides whether the method is
+// offered at all — which is the thing that used to be missing. See
+// lib/payment-methods.ts.
 type Settings = {
   whatsappNumber: string;
   contactEmail: string | null;
   shippingFee: number;
   freeShippingThreshold: number | null;
-  bankAccountDetails: string | null;
-  jazzcashAccountDetails: string | null;
-  easypaisaAccountDetails: string | null;
 };
 
 function toFields(s: Settings) {
@@ -24,9 +25,6 @@ function toFields(s: Settings) {
     contactEmail: s.contactEmail ?? "",
     shippingFee: String(s.shippingFee),
     freeShippingThreshold: s.freeShippingThreshold != null ? String(s.freeShippingThreshold) : "",
-    bankAccountDetails: s.bankAccountDetails ?? "",
-    jazzcashAccountDetails: s.jazzcashAccountDetails ?? "",
-    easypaisaAccountDetails: s.easypaisaAccountDetails ?? "",
   };
 }
 
@@ -127,35 +125,6 @@ export function StoreSettingsForm({
         </div>
       </Fieldset>
 
-      <Fieldset
-        title="Payment details"
-        description="Shown at checkout to a customer who picks that method. Leave one blank and it is not offered."
-      >
-        <Field label="Bank transfer">
-          <textarea
-            value={fields.bankAccountDetails}
-            onChange={(e) => set("bankAccountDetails", e.target.value)}
-            rows={3}
-            className="input"
-          />
-        </Field>
-        <Field label="JazzCash">
-          <textarea
-            value={fields.jazzcashAccountDetails}
-            onChange={(e) => set("jazzcashAccountDetails", e.target.value)}
-            rows={2}
-            className="input"
-          />
-        </Field>
-        <Field label="EasyPaisa">
-          <textarea
-            value={fields.easypaisaAccountDetails}
-            onChange={(e) => set("easypaisaAccountDetails", e.target.value)}
-            rows={2}
-            className="input"
-          />
-        </Field>
-      </Fieldset>
     </div>
   );
 }

@@ -87,19 +87,13 @@ export function StoreDefaultsForm({ initial }: { initial: StoreDefaults }) {
   return (
     <Fieldset
         title="Store defaults"
-        description="What your store is called, what it charges in, and where it trades from."
+        description="What your store charges in, where it trades from, and what &ldquo;today&rdquo; means when an order is stamped. Set once, and rarely thought about again."
       >
+        {/* The store's name is deliberately not here. It is the first field on
+            Home, which owns the shop's identity — and it is the same column, so
+            having it in both places meant two screens editing one value with no
+            way to tell which had won. The same fault the logos had. */}
         <div className="grid gap-3 sm:grid-cols-2">
-          <div className="sm:col-span-2">
-            <FieldLabel htmlFor="storeName" info="Shown in the admin, in order emails, and anywhere your store refers to itself by name.">Store name</FieldLabel>
-            <input
-              id="storeName"
-              className="input"
-              value={values.storeName}
-              onChange={(e) => set("storeName", e.target.value)}
-            />
-          </div>
-
           <div>
             <FieldLabel htmlFor="currency" info="How prices are shown to customers. Changing this does not convert your existing prices, a product priced at 2500 stays 2500, in the new currency.">Currency</FieldLabel>
             <select

@@ -11,7 +11,7 @@ import { effectivePrice } from "@/lib/data/products";
 import { provinceForCity } from "@/lib/cities";
 import { isValidEmail, isValidPakistaniPhone } from "@/lib/validation";
 import { generateOrderId } from "@/lib/order-id";
-import { ENABLED_PAYMENT_METHOD_VALUES } from "@/lib/payment-methods";
+import { offeredMethodValues } from "@/lib/payment-methods";
 import { isEnquiryOnly, PRODUCT_KIND_META } from "@/lib/product-kind";
 
 // Full set the DB/type system supports — which of these are actually
@@ -48,7 +48,7 @@ function isValidPayload(body: unknown): body is CheckoutPayload {
     typeof b.shippingLine1 === "string" &&
     typeof b.shippingCity === "string" &&
     provinceForCity(b.shippingCity) !== null &&
-    ENABLED_PAYMENT_METHOD_VALUES.includes(b.paymentMethod as string) &&
+    typeof b.paymentMethod === "string" &&
     Array.isArray(b.items) &&
     b.items.length > 0 &&
     b.items.every(
@@ -88,6 +88,15 @@ export async function POST(request: Request) {
 
   const session = await auth();
   const settings = await getStoreSettings();
+
+  // Which methods are accepted is the shop's setting now, not a constant, so it
+  // is checked here where the shop is known rather than in isValidPayload,
+  // which only sees the request. A stale tab or a direct POST naming a method
+  // this shop does not take is refused, the same as it always was — the list it
+  // is refused against is simply the merchant's own.
+  if (!offeredMethodValues(settings.enabledPaymentMethods, settings).includes(body.paymentMethod)) {
+    return NextResponse.json({ error: "That payment method isn't accepted." }, { status: 400 });
+  }
 
   const sid = await currentShopId();
 

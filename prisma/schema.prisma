@@ -862,6 +862,20 @@ model StoreSettings {
   whatsappOrderButton  Boolean @default(true)
   maintenanceMode      Boolean @default(false)
 
+  /// Which ways a customer may pay, per shop.
+  ///
+  /// This used to be a constant in lib/payment-methods.ts — one list for the
+  /// whole platform, set to COD only "temporarily, per request". Meanwhile
+  /// Settings offered every merchant three boxes for their bank, JazzCash and
+  /// EasyPaisa details under the words "leave one blank and it is not offered",
+  /// which was not true in either direction: filling them in offered nothing,
+  /// and no merchant could turn a method on.
+  ///
+  /// Empty is read as COD, never as "no way to pay" — a checkout with no
+  /// payment method is a shop that cannot take an order, and a migration or a
+  /// bad save must not be able to produce one.
+  enabledPaymentMethods String[] @default(["COD"])
+
   // --- The shop's marks ---------------------------------------------------
   // Its logos and its favicon. Here rather than in ThemeSettings because they
   // belong to the business, not to the storefront it is currently wearing:

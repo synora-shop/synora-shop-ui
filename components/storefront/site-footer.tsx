@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Container } from "@/components/ui/container";
 import { Logo } from "@/components/ui/logo";
-import { ENABLED_PAYMENT_METHODS } from "@/lib/payment-methods";
+
 
 type FooterLink = { id: string; href: string; label: string };
 type FooterColumn = { heading: string; links: FooterLink[] };
@@ -39,6 +39,7 @@ export function SiteFooter({
   logoColor,
   logoSrc,
   storeName,
+  paymentMethods = [],
 }: {
   columns?: FooterColumn[];
   tagline?: string;
@@ -49,6 +50,14 @@ export function SiteFooter({
   logoSrc?: string;
   /** Drawn when the shop has no logo at all. Never the platform's artwork. */
   storeName?: string;
+  /**
+   * The ways this shop takes money, named in the footer.
+   *
+   * Passed in rather than imported: it used to be a platform-wide constant, so
+   * every footer on every store listed the same thing whatever the merchant
+   * accepted. See lib/payment-methods.ts.
+   */
+  paymentMethods?: readonly string[];
 }) {
   const footerColumns = columns && columns.length > 0 ? columns : FALLBACK_COLUMNS;
 
@@ -86,7 +95,7 @@ export function SiteFooter({
       <div className="border-t border-border py-4">
         <Container className="flex flex-col items-center justify-between gap-2 text-xs text-ink-soft sm:flex-row">
           <p>{copyrightText || `© ${new Date().getFullYear()} Your Store. All rights reserved.`}</p>
-          <p>{ENABLED_PAYMENT_METHODS.map((m) => m.label).join(" · ")}</p>
+          <p>{paymentMethods.join(" · ")}</p>
         </Container>
       </div>
     </footer>

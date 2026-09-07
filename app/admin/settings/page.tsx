@@ -1,43 +1,35 @@
 import { PushNotificationsToggle } from "@/components/admin/push-notifications-toggle";
 import { StoreSettingsForm } from "@/components/admin/store-settings-form";
 import { GlobalEditsForm } from "@/components/admin/global-edits-form";
-import { StoreDefaultsForm } from "@/components/admin/store-defaults-form";
 import { Fieldset, PageHeader, SectionDivider } from "@/components/ui/primitives";
 import { resolveStoreDefaults } from "@/lib/store-defaults";
 import { getStoreSettings } from "@/lib/data/settings";
-import { BusinessTypeForm } from "@/components/admin/business-type-form";
-import { requireShop } from "@/lib/data/shop";
-import { registryBusinessType } from "@/lib/themes/business-type";
 import { toGlobalEdits } from "@/lib/global-edits";
 
 export const dynamic = "force-dynamic";
 
 /**
- * Settings, in three passes.
+ * Settings — General.
  *
- * "Your store" is the handful of facts everything else is expressed in — its
- * name, its currency, what it sells. "Getting paid and getting in touch" is
- * what a customer needs from you. "Global edits" is behaviour, and it is last
- * because it is the only part a merchant can safely never open.
+ * What is left after two moves. The facts a business is described by — its
+ * name, its currency, what it sells — went to Home, because they answer "what
+ * is this business" rather than "how does it behave". The payment details went
+ * to Payments, where they sit under the switch that decides whether the method
+ * is offered at all.
+ *
+ * What remains is how a customer reaches you, what shipping costs, how you hear
+ * about an order, and the site-wide behaviour toggles — which are last because
+ * they are the only part a merchant can safely never open.
  */
 export default async function AdminSettingsPage() {
-  const [settings, shop] = await Promise.all([getStoreSettings(), requireShop()]);
+  const settings = await getStoreSettings();
   const defaults = resolveStoreDefaults(settings);
 
   return (
     <div className="space-y-2.5">
       <PageHeader
         title="Settings"
-        description="How your store identifies itself, gets paid, and tells you about orders."
-      />
-
-      <StoreDefaultsForm initial={defaults} />
-
-      <BusinessTypeForm current={registryBusinessType(shop.businessType)} status={shop.status} />
-
-      <SectionDivider
-        title="Customers"
-        description="What a shopper sees when they want to reach you or pay you."
+        description="How customers reach you, what shipping costs, and how your storefront behaves."
       />
 
       <StoreSettingsForm settings={settings} currency={defaults.currency} />

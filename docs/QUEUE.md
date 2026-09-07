@@ -555,3 +555,43 @@ container inside a card, which the probe's nesting filter did not catch.
 Still open, and small: **Enquiries** uses an 8px gap between list rows, and
 **Account** has one 35px gap inside a nested block. Both are inside a card
 rather than between sections, so neither is covered by the rule above.
+
+## Billing, 8 September — on hold, deliberately
+
+Asked for as one of two new Settings tabs. **Not built, and no tab shipped**,
+because the merchant wants full billing with a real payment provider and has
+research to do first. A tab explaining why it is empty is still an empty tab.
+
+What exists to build on: `ShopStatus` already carries `TRIAL`, `ACTIVE`,
+`PAST_DUE` and `SUSPENDED`, added in advance for exactly this, and the schema
+says so at line 29. There is no plan model, no prices, no provider.
+
+What it needs before it can start: which provider, what the plans are called,
+what they cost, what a trial ends into, and what happens on a failed payment —
+`PAST_DUE` exists but nothing moves a shop into or out of it.
+
+Not to be confused with **Payments**, which shipped: that is how a merchant
+takes money from their customers, and it is the other direction.
+
+## Payments and Store defaults moved, 8 September
+
+Two moves asked for, and a fault under one of them.
+
+- **Store defaults left Settings for a tab under Home.** Currency, country,
+  units, weight and time zone answer "what is this business", which is Home's
+  subject, not "how does it behave", which is Settings'. The business type went
+  with them for the same reason.
+- **The store name was on both screens, editing one column.** Home owns it now.
+  `saveStoreDefaults` had been writing it too, so saving a currency would have
+  undone a rename with whatever the page was rendered with — the same trap as
+  the maintenance toggle.
+- **Payments is a new tab, and the methods are a setting now.** They were a
+  constant in `lib/payment-methods.ts` — `["COD"]`, "temporarily, per request" —
+  while every merchant's Settings screen offered three boxes for bank, JazzCash
+  and EasyPaisa details under the words "leave one blank and it is not offered".
+  Filling one in offered nothing, and no merchant could turn a method on at any
+  price. A switch per method now, its details beneath it, a live preview of the
+  checkout, and a warning when a method is on but has nothing behind it.
+- **The general settings save would have wiped the payment details.** It wrote
+  every field it knew about, and the form had just stopped rendering three of
+  them, so the first save of a shipping fee would have set all three to null.

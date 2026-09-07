@@ -15,6 +15,7 @@ import { getMenus, menuForSlot, headerLinks, footerColumns } from "@/lib/data/me
 import { getSiteText, text } from "@/lib/site-text";
 import { toGlobalEdits, footerCopyright } from "@/lib/global-edits";
 import { toBrandMarks, pickLogo, faviconType } from "@/lib/brand-marks";
+import { offeredMethods } from "@/lib/payment-methods";
 import { isDarkBackground } from "@/lib/contrast";
 import { resolveLogoColor } from "@/lib/theme-tokens";
 import { guardCanonicalHost, guardShopHost } from "@/lib/canonical";
@@ -168,6 +169,9 @@ export default async function StorefrontLayout({ children }: LayoutProps<"/">) {
         logoColor={resolveLogoColor(tokens, tokens.footerBackground)}
         logoSrc={pickLogo(marks, { dark: isDarkBackground(tokens.footerBackground) }) || undefined}
         storeName={storeDisplayName}
+        // What this shop actually takes, not what the platform used to list for
+        // everybody. See lib/payment-methods.ts.
+        paymentMethods={offeredMethods(settings.enabledPaymentMethods, settings).map((m) => m.label)}
       />
       {/* Configured buttons replace the original hardcoded WhatsApp bubble.
           With none set up the old button still shows, so an existing store

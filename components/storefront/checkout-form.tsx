@@ -7,12 +7,14 @@ import { cn } from "@/lib/utils";
 import { previewDiscount } from "@/app/(storefront)/checkout/actions";
 import { CITIES } from "@/lib/cities";
 import { isValidEmail, isValidPakistaniPhone } from "@/lib/validation";
-import { ENABLED_PAYMENT_METHODS as PAYMENT_METHODS } from "@/lib/payment-methods";
+import { offeredMethods } from "@/lib/payment-methods";
 import { useMoney } from "@/components/ui/currency";
 import { FieldError } from "@/components/ui/primitives";
 
 type Settings = {
   shippingFee: number;
+  /** What this shop switched on. See lib/payment-methods.ts. */
+  enabledPaymentMethods: string[];
   freeShippingThreshold: number | null;
   bankAccountDetails: string | null;
   jazzcashAccountDetails: string | null;
@@ -86,7 +88,12 @@ export function CheckoutForm({
   const clear = useCartStore((s) => s.clear);
 
   const [paymentMethod, setPaymentMethod] =
-    useState<(typeof PAYMENT_METHODS)[number]["value"]>("COD");
+    useState<string>("COD");
+
+  // What this shop actually accepts: switched on, and answerable. A method with
+  // no account details behind it would show a customer an option that tells
+  // them nothing about where to send the money.
+  const PAYMENT_METHODS = offeredMethods(settings.enabledPaymentMethods, settings);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

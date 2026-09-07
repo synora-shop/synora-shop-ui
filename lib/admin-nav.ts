@@ -75,9 +75,15 @@ export const NAV_SECTIONS: readonly NavSection[] = [
     key: "home",
     label: "Home",
     icon: HomeIcon,
-    // The store's own identity: its name, its logo, its address and its phone
-    // number. One screen, so no navigation bar is drawn for it.
-    tabs: [{ href: "/admin", label: "Home" }],
+    // What this business *is*: its name, its address, its marks — and the
+    // defaults everything else is expressed in. Store defaults moved here from
+    // Settings, because "what currency do I charge in" is the same kind of
+    // question as "what am I called", and not the same kind as "how do I get
+    // paid".
+    tabs: [
+      { href: "/admin", label: "Home" },
+      { href: "/admin/store-defaults", label: "Store defaults" },
+    ],
   },
   {
     key: "products",
@@ -161,6 +167,11 @@ export const NAV_SECTIONS: readonly NavSection[] = [
     icon: SettingsIcon,
     tabs: [
       { href: "/admin/settings", label: "General" },
+      // How the merchant takes money from their customers. Billing — what the
+      // merchant pays us — is the other direction and is not built yet; see
+      // docs/QUEUE.md. It gets its tab when there is something behind it,
+      // rather than a tab that explains why it is empty.
+      { href: "/admin/payments", label: "Payments" },
       { href: "/admin/domains", label: "Domains" },
       { href: "/admin/account", label: "Account" },
     ],

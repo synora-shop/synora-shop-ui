@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { toEnabledMethods } from "@/lib/payment-methods";
 import { cleanBlockedList } from "@/lib/geo-block";
 import { db, currentShopId } from "@/lib/data/shop";
 import { invalidateShop } from "@/lib/data/cached";
@@ -16,27 +17,25 @@ export async function updateSettings(formData: FormData) {
   const shippingFee = Number(formData.get("shippingFee") || 0);
   const freeShippingThresholdRaw = String(formData.get("freeShippingThreshold") || "");
 
+  // The payment details are deliberately absent.
+  //
+  // They moved to Settings → Payments, and this form no longer renders them —
+  // so `formData.get("bankAccountDetails")` is empty here, and writing it would
+  // have set every merchant's account details to null the first time they saved
+  // a shipping fee. The same trap the maintenance toggle and the store name
+  // both had: a form that writes every field it knows about, after one of them
+  // stopped being its to write.
+  const fields = {
+    whatsappNumber: String(formData.get("whatsappNumber") || ""),
+    contactEmail: String(formData.get("contactEmail") || "") || null,
+    shippingFee,
+    freeShippingThreshold: freeShippingThresholdRaw ? Number(freeShippingThresholdRaw) : null,
+  };
+
   await prisma.storeSettings.upsert({
     where: { shopId: await currentShopId() },
-    update: {
-      whatsappNumber: String(formData.get("whatsappNumber") || ""),
-      contactEmail: String(formData.get("contactEmail") || "") || null,
-      bankAccountDetails: String(formData.get("bankAccountDetails") || "") || null,
-      jazzcashAccountDetails: String(formData.get("jazzcashAccountDetails") || "") || null,
-      easypaisaAccountDetails: String(formData.get("easypaisaAccountDetails") || "") || null,
-      shippingFee,
-      freeShippingThreshold: freeShippingThresholdRaw ? Number(freeShippingThresholdRaw) : null,
-    },
-    create: {
-      shopId: await currentShopId(),
-      whatsappNumber: String(formData.get("whatsappNumber") || ""),
-      contactEmail: String(formData.get("contactEmail") || "") || null,
-      bankAccountDetails: String(formData.get("bankAccountDetails") || "") || null,
-      jazzcashAccountDetails: String(formData.get("jazzcashAccountDetails") || "") || null,
-      easypaisaAccountDetails: String(formData.get("easypaisaAccountDetails") || "") || null,
-      shippingFee,
-      freeShippingThreshold: freeShippingThresholdRaw ? Number(freeShippingThresholdRaw) : null,
-    },
+    update: fields,
+    create: { shopId: await currentShopId(), ...fields },
   });
 
   invalidateShop(await currentShopId(), "settings");
@@ -113,15 +112,61 @@ export async function saveStoreDefaults(input: StoreDefaults): Promise<{ error?:
 
   const clean = resolveStoreDefaults(input);
 
+  // The store's name is Home's, and this screen no longer offers it. Writing it
+  // anyway would undo a rename every time somebody saved a currency — the form
+  // still carries the value it was rendered with, so "unchanged" here means
+  // "whatever it was when this page loaded", which is not the same thing as
+  // what it is now.
+  const { storeName: _ownedByHome, ...defaults } = clean;
+
   const sid = await currentShopId();
   await (await db()).storeSettings.upsert({
     where: { shopId: sid },
-    update: clean,
-    create: { shopId: sid, ...clean },
+    update: defaults,
+    create: { shopId: sid, ...defaults },
   });
 
   invalidateShop(await currentShopId(), "settings");
-  revalidatePath("/admin/settings");
+  revalidatePath("/admin/store-defaults");
+  revalidatePath("/admin", "layout");
+  revalidatePath("/", "layout");
+  return {};
+}
+
+/**
+ * How this shop takes money: which methods, and what each one tells a customer.
+ *
+ * The list is cleaned rather than trusted — it reaches a checkout, and a value
+ * this platform does not know would be an option nobody could complete. It is
+ * also never allowed to be empty: a shop with no payment method cannot take an
+ * order, and neither a hand-made request nor a form bug may produce one.
+ */
+export async function savePaymentMethods(input: {
+  enabledPaymentMethods: string[];
+  bankAccountDetails: string;
+  jazzcashAccountDetails: string;
+  easypaisaAccountDetails: string;
+}): Promise<{ error?: string }> {
+  await requireRole("ADMIN");
+
+  const enabledPaymentMethods = toEnabledMethods(input.enabledPaymentMethods);
+  const data = {
+    enabledPaymentMethods,
+    bankAccountDetails: input.bankAccountDetails.trim() || null,
+    jazzcashAccountDetails: input.jazzcashAccountDetails.trim() || null,
+    easypaisaAccountDetails: input.easypaisaAccountDetails.trim() || null,
+  };
+
+  const sid = await currentShopId();
+  await (await db()).storeSettings.upsert({
+    where: { shopId: sid },
+    update: data,
+    create: { shopId: sid, ...data },
+  });
+
+  invalidateShop(sid, "settings");
+  revalidatePath("/admin/payments");
+  // The checkout and the footer both read this, so the whole public tree goes.
   revalidatePath("/", "layout");
   return {};
 }

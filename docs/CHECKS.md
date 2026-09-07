@@ -1,6 +1,6 @@
 # The guards
 
-Twenty-three scripts, **2,227 assertions as of 8 September 2026**, all of them
+Twenty-four scripts, **2,280 assertions as of 8 September 2026**, all of them
 dependency-free, all exiting non-zero on failure. `npm run check` runs the lot.
 
 The per-script counts below are a snapshot and will drift as assertions are
@@ -39,6 +39,7 @@ shop with a hundred probes, for the faults that reading source cannot find.
 | `check:paging` **37** | Page counts, bounds, the last page | — |
 | `check:spotlight` **31** | The refusal points at the cure; `.attention` has exactly one user | "Pause it first" named a cure without saying where it was kept |
 | `check:address` **33** | Renaming a shop moves its address without touching a custom domain, breaking shared links, or taking a name somebody holds | A store's public URL is derived from its name, so a rename is three dangerous things at once |
+| `check:payments` **31** | A merchant chooses how they get paid; a method with no details is not offered; the server refuses one the shop does not take | Which methods existed was a constant in source, while Settings offered account details for methods no customer could pick |
 | `check:editor` **29** | Discard and Save exist wherever there is unsaved work | — |
 | `check:responsive` **29** | No screen scrolls sideways | — |
 | `check:cache` **25** | Every cached kind is dropped by whoever writes it | A merchant edited a screen that would not change. Twice. `lib/cache-tags.ts` claimed this script existed for months before it did |
