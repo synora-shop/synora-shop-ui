@@ -164,29 +164,67 @@ check:design  check:motion  check:holding  check:spotlight
 check:brand
 ```
 
-Those are static: they read the source. `scripts/sweep/` is the other half — a
-hundred probes against a running shop, for the faults reading the source cannot
-find. It found a CSV that could run a formula on the merchant's computer and
-twenty-two controls a screen reader could not name. See
-`scripts/sweep/README.md`.
+Twenty-two scripts, **2,186 assertions** at the last count. Those are static: they read the
+source. `scripts/sweep/` is the other half — a hundred probes against a running
+shop, for the faults reading the source cannot find. It found a CSV that could
+run a formula on the merchant's computer and twenty-two controls a screen
+reader could not name.
+
+`docs/CHECKS.md` lists what each guard holds up and the bug it exists because
+of. `scripts/sweep/README.md` covers the probes.
 
 ---
 
 ## Deploying
 
-`main` deploys to production on push and runs `prisma migrate deploy` as part of
-the build. Vercel uses **one `DATABASE_URL` for both Preview and Production**, so
-a migration on a preview branch reaches the live database. Write migrations
-additively.
+**A push to GitHub does not deploy this project.** No build fires and there are
+no GitHub Actions; every production deployment is made with `vercel --prod`
+from a machine. **Deploying is what runs migrations** — `npm run build` begins
+with `node scripts/migrate-deploy.mjs` — so the thing to check before doing is
+the deploy, not the push.
+
+To ship a specific commit without carrying unfinished local work: clone to a
+scratch directory, check out that commit, copy `.vercel/` across, and deploy
+from there.
+
+The hosting plan allows **one cron run per day**; a `vercel.json` carrying
+anything finer is refused outright at deploy time.
+
+See `docs/ARCHITECTURE.md` §10.
+
+**One database for both Preview and Production.** Vercel is configured with a
+single `DATABASE_URL`, so a migration on a preview branch reaches the live
+database. **Write migrations additively** — add columns with defaults, add
+tables, backfill; do not drop or rewrite. A deployment that rolls back to the
+previous build must still find its data where it left it.
+
+*(This section used to say `main` deploys on push. It does not, and has not for
+as long as anyone checked — corrected 7 September 2026.)*
 
 ---
 
 ## Reading further
 
+This README says what exists. These say how it holds together and why.
+
+- `docs/ARCHITECTURE.md` — the five questions every request answers, tenancy,
+  caching, canonical hosts, the domain state machine, and the line between
+  identity and presentation.
+- `docs/FLOWS.md` — the journeys a merchant actually walks: connecting a
+  domain, changing what the store sells, closing the shop, setting its marks,
+  importing a catalogue.
 - `docs/DESIGN.md` — what a row, a field, a state and a colour mean here, and
   which checks hold each rule up.
+- `docs/CHECKS.md` — all twenty-two guards, and the bug each one exists
+  because of.
 - `docs/QUEUE.md` — what is agreed and unbuilt, and the problems known about.
 - `scripts/sweep/README.md` — the hundred probes and what they caught.
+
+**Day records** — kept because the reasons are the expensive part, not the
+diff:
+
+- `docs/SESSION-2026-09-07.md` — domains, motion, the holding page, the guided
+  type switch, the shop's marks, and an alignment audit of all 29 screens.
 
 ---
 

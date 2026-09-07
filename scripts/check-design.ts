@@ -165,5 +165,89 @@ check("there is still no renaming layer", !existsSync(join(ROOT, "lib/themes/voc
   }
 }
 
+/* -------------------------------------------------------------------------- */
+/* The documents point at things that exist                                   */
+/* -------------------------------------------------------------------------- */
+
+// Every path a document names in backticks, checked. Documentation that names
+// a file which has moved is worse than none: it sends the next person to the
+// wrong place with confidence. Deliberate references to *deleted* files are
+// exempt by name — the renaming layer is described as gone, and check 103
+// asserts it stays gone.
+{
+  const DELETED_ON_PURPOSE = new Set(["lib/themes/vocabulary.ts"]);
+  const DOCS = [
+    "README.md",
+    "docs/DESIGN.md",
+    "docs/ARCHITECTURE.md",
+    "docs/FLOWS.md",
+    "docs/CHECKS.md",
+    "docs/QUEUE.md",
+    "docs/SESSION-2026-09-07.md",
+    "scripts/sweep/README.md",
+  ];
+
+  const REF = /`((?:docs|scripts|lib|components|app|prisma)\/[\w./()\[\]-]+\.(?:ts|tsx|mjs|md|sql|prisma))`/g;
+
+  for (const rel of DOCS) {
+    const full = join(ROOT, rel);
+    check(`${rel} exists`, existsSync(full));
+    if (!existsSync(full)) continue;
+
+    const text = readFileSync(full, "utf8");
+    const missing = [...text.matchAll(REF)]
+      .map((m) => m[1])
+      .filter((path) => !DELETED_ON_PURPOSE.has(path) && !existsSync(join(ROOT, path)));
+
+    check(
+      `${rel} only points at files that exist`,
+      missing.length === 0,
+      [...new Set(missing)].join(", ")
+    );
+  }
+
+  // Every guard is listed, and every listing is a guard.
+  //
+  // The assertion *counts* in that document are a snapshot and will drift —
+  // saying so is honest, and asserting them would fail the build every time
+  // somebody added a check. The list is what must not drift: a guard added and
+  // never written down is one nobody knows exists, and a guard named in the
+  // document but deleted from package.json sends the next person looking for
+  // something that is not there.
+  {
+    const pkg = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8"));
+    const scripts: string[] = Object.keys(pkg.scripts ?? {})
+      .filter((k) => k.startsWith("check:"))
+      .sort();
+    const checksDoc = readFileSync(join(ROOT, "docs/CHECKS.md"), "utf8");
+
+    for (const name of scripts) {
+      check(
+        `docs/CHECKS.md lists ${name}`,
+        checksDoc.includes(`\`${name}\``),
+        "a guard nobody has written down is one nobody knows exists"
+      );
+    }
+
+    const listed = [...checksDoc.matchAll(/`(check:[\w-]+)`/g)].map((m) => m[1]);
+    for (const name of [...new Set(listed)]) {
+      check(
+        `${name} is a script that exists`,
+        scripts.includes(name),
+        "docs/CHECKS.md names a guard package.json does not have"
+      );
+    }
+  }
+
+  // The day records are the reasons behind the diff. Losing one loses the why.
+  const records = readdirSync(join(ROOT, "docs")).filter((f) => /^SESSION-/.test(f));
+  check("at least one day record is kept", records.length >= 1);
+  check(
+    "the README points at every day record",
+    records.every((f) => readFileSync(join(ROOT, "README.md"), "utf8").includes(f)),
+    records.filter((f) => !readFileSync(join(ROOT, "README.md"), "utf8").includes(f)).join(", ")
+  );
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);
