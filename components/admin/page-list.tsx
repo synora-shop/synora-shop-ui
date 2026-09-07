@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ChevronRight, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/primitives";
+import { pageAddress } from "@/lib/page-address";
 import { deletePage } from "@/app/admin/pages/actions";
 import { useServerRows } from "@/components/ui/use-server-rows";
 import { SwipeRow } from "@/components/ui/swipe-row";
@@ -16,6 +17,7 @@ type PageRow = {
   slug: string;
   isPublished: boolean;
   isSystem: boolean;
+  systemKey: string | null;
   /** How many blocks it is built from — an empty page should look empty. */
   sections: number;
 };
@@ -86,7 +88,7 @@ export function PageList({ pages }: { pages: PageRow[] }) {
                 {!page.isPublished && <Badge tone="warn">Hidden</Badge>}
               </p>
               <p className="truncate font-mono text-[11px] text-ink-faint">
-                {page.slug === "home" ? "/" : `/p/${page.slug}`}
+                {pageAddress(page.slug, page.systemKey)}
               </p>
             </div>
 

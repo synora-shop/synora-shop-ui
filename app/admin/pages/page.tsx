@@ -1,7 +1,13 @@
-import { getAllPages } from "@/lib/data/pages";
-import { buttonClass } from "@/components/ui/primitives";
+import {
+  getAllPages,
+  getOrCreateAboutPage,
+  getOrCreateFaqPage,
+  getOrCreateHomePage,
+} from "@/lib/data/pages";
 import { createPage } from "@/app/admin/pages/actions";
 import { PageList } from "@/components/admin/page-list";
+import { Fieldset, SectionDivider, buttonClass } from "@/components/ui/primitives";
+import { Field } from "@/components/merchant/form-shell";
 
 export const dynamic = "force-dynamic";
 
@@ -9,31 +15,50 @@ export default async function AdminPagesPage() {
   // Collection pages (auto-created per Category) live here too, but they have no Sections
   // to edit and are deleted only by deleting their Category — manage them from Categories,
   // not this list.
+  // The three that come with the store are made on first sight rather than at
+  // signup, and until now the first sight of the FAQ page was a customer
+  // visiting /faq. This screen promises three, so it makes three.
+  await Promise.all([getOrCreateHomePage(), getOrCreateAboutPage(), getOrCreateFaqPage()]);
+
   const pages = (await getAllPages()).filter((p) => !p.categoryId);
 
   return (
-    <div>
+    <div className="space-y-2.5">
       <p className="text-sm text-ink-soft">
-        Add, hide, and reorder the sections that make up each page, like the homepage layout.
-        Collection pages are managed from Categories instead.
+        Every page on your storefront, and the blocks each one is built from. Three come with
+        the store — your homepage, your story and your FAQs — and cannot be deleted, though
+        they can be renamed, moved to a different address, or hidden. Collection pages are
+        managed from Categories.
       </p>
 
-      <div className="mt-4 grid items-start gap-4 lg:grid-cols-2">
-        <PageList pages={pages.map((p) => ({ ...p, sections: p._count.sections }))} />
+      <PageList pages={pages.map((p) => ({ ...p, sections: p._count.sections }))} />
 
-        <form action={createPage} className="h-fit space-y-3 rounded-xl border border-border bg-surface p-4">
-          <h2 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-faint">Add a page</h2>
-          <input name="title" required placeholder="Title (e.g. Shipping Policy)" className="input" />
-          <input name="slug" placeholder="URL slug (auto-generated if left blank)" className="input" />
-          <p className="text-xs text-ink-soft">Add it to the header or footer menu from the Menus page.</p>
-          <button
-            type="submit"
-            className={buttonClass("primary", "md")}
-          >
-            Add Page
-          </button>
-        </form>
-      </div>
+      <SectionDivider
+        title="Add a page"
+        description="A blank page with one block of text on it, ready to build. Add it to your header or footer from Menus once it says what you want."
+      />
+
+      <form action={createPage}>
+        <Fieldset
+          title="New page"
+          description="The address is made from the name unless you write your own, and can be changed later without breaking anyone's links."
+        >
+          <Field label="Name">
+            <input name="title" required placeholder="e.g. Shipping and returns" className="input" />
+          </Field>
+          <Field label="Address" hint="Optional — left blank, it is made from the name.">
+            <div className="flex items-center gap-2">
+              <span className="flex-shrink-0 font-mono text-sm text-ink-faint">/p/</span>
+              <input name="slug" placeholder="shipping-and-returns" className="input font-mono" />
+            </div>
+          </Field>
+          <div>
+            <button type="submit" className={buttonClass("primary", "sm")}>
+              Add page
+            </button>
+          </div>
+        </Fieldset>
+      </form>
     </div>
   );
 }

@@ -178,13 +178,30 @@ changed after an earlier database copy was taken, so older notes say AHAD1V.
 - **Security & privacy** as its own Settings tab: login locations, an
   authenticator app, a recovery phone number.
 - **Theme versions** (1.4.2) and an update-to-latest button.
-- **Editable page addresses** for permanent pages, with the old one forwarding.
 - **Default policy pages** — returns, privacy, terms.
 - **"Direct me to the cause"** on every error that blocks an action.
 - **The Data library as the picker** wherever a picture can be changed,
   including inside the live customizer.
 
 ---
+
+## Done on 7 September
+
+- **The admin search showed nothing.** It was rendered inside a 288px dropdown
+  with `overflow: hidden`, so twelve results were found, rendered, and clipped
+  out of sight. It is its own overlay now, opened by the button, by "/" or ⌘K.
+- **The top bar was not sticky and the mark was.** `overflow-x: hidden` on the
+  page made it a scroll container, which silently disables `position: sticky`
+  for everything inside it. Both rules are `overflow-x: clip` now, and the
+  product mark lives in the bar rather than floating over the page.
+- **Import.** The panel could write a Shopify product CSV and not read one.
+  There is a reader now, exactly inverse to the writer and proven by a
+  round-trip test; two steps, so nothing is written before a merchant has seen
+  what would change.
+- **Editable page addresses**, with forwarding, menus following the move, and
+  the address suggested live from the page's name. Needed a migration: a
+  system page was identified by its slug, so its address could not be changed
+  without hiding it from the route that renders it. It has a `systemKey` now.
 
 ## Known problems
 

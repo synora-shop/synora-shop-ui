@@ -6,6 +6,7 @@ import { db, currentShopId } from "@/lib/data/shop";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_SECTION_DATA } from "@/lib/section-types";
+import { addressProblem, toSlug } from "@/lib/page-address";
 import type { SectionType } from "@/lib/generated/prisma/client";
 
 async function requireAdmin() {
@@ -23,15 +24,6 @@ async function revalidatePageRoutes(pageId: string) {
   else revalidatePath(`/p/${page.slug}`);
 }
 
-function slugify(text: string) {
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-}
-
-const RESERVED_SLUGS = new Set(["home", "about", "faq", "shop", "cart", "checkout", "contact", "account"]);
 
 export async function createPage(formData: FormData) {
   await requireAdmin();
@@ -39,8 +31,8 @@ export async function createPage(formData: FormData) {
   if (!title) return;
 
   const rawSlug = String(formData.get("slug") ?? "").trim();
-  const slug = slugify(rawSlug || title);
-  if (!slug || RESERVED_SLUGS.has(slug)) return;
+  const slug = toSlug(rawSlug || title);
+  if (addressProblem(slug)) return;
 
   const sid = await currentShopId();
   await (await db()).page
@@ -91,19 +83,111 @@ export async function deletePage(formData: FormData) {
   revalidatePath("/admin/redirects");
 }
 
-export async function updatePageMeta(formData: FormData) {
+/**
+ * A page's name, its address, and what a search engine is told about it.
+ *
+ * The address was not editable at all, and the documentation has listed
+ * editable addresses as agreed-and-unbuilt since it was written. Three things
+ * had to be true before it could work:
+ *
+ *   1. A system page is found by its key now, not by its slug, so moving it
+ *      does not hide it from the route that renders it.
+ *   2. The old address forwards to the new one. `/p/[slug]` already looks for
+ *      a redirect when it finds no page, so writing one is the whole job.
+ *   3. Every menu that links to the page follows it. A menu item carries both
+ *      the page and a written-out href, and only the first of those moves on
+ *      its own.
+ *
+ * The home page is the exception, and not by policy: its address is the site's
+ * own front door, so there is no part after the slash to change.
+ */
+export async function updatePageMeta(
+  formData: FormData
+): Promise<{ ok: true; slug: string } | { error: string }> {
   await requireAdmin();
   const pageId = String(formData.get("pageId"));
-  await (await db()).page.update({
+  const client = await db();
+
+  const page = await client.page.findUnique({
+    where: { id: pageId },
+    select: { id: true, slug: true, title: true, systemKey: true, businessType: true },
+  });
+  if (!page) return { error: "That page no longer exists." };
+
+  const title = String(formData.get("title") ?? "").trim();
+  if (!title) return { error: "A page needs a name." };
+
+  const asked = String(formData.get("slug") ?? "").trim();
+  // The home page has no address to change, so anything typed is ignored
+  // rather than refused — there is no field for it on screen either.
+  const wanted = page.systemKey === "home" ? page.slug : toSlug(asked || title);
+
+  if (page.systemKey !== "home") {
+    const problem = addressProblem(wanted);
+    if (problem) return { error: problem };
+
+    if (wanted !== page.slug) {
+      const clash = await client.page.findFirst({
+        where: { slug: wanted, businessType: page.businessType, id: { not: page.id } },
+        select: { title: true },
+      });
+      if (clash) return { error: `“${clash.title}” is already at that address.` };
+    }
+  }
+
+  const moved = wanted !== page.slug;
+
+  await client.page.update({
     where: { id: pageId },
     data: {
-      title: String(formData.get("title") ?? ""),
+      title,
+      slug: wanted,
       seoTitle: String(formData.get("seoTitle") ?? "") || null,
       seoDescription: String(formData.get("seoDescription") ?? "") || null,
       isPublished: formData.get("isPublished") === "on",
     },
   });
+
+  if (moved) {
+    const from = `/p/${page.slug}`;
+    const to = `/p/${wanted}`;
+
+    // Every link anyone has to the old address — a bookmark, another site, a
+    // search result — keeps working. Listed under Links & redirects, where it
+    // can be re-pointed or removed.
+    await client.redirect
+      .upsert({
+        where: { shopId_fromPath: { shopId: await currentShopId(), fromPath: from } },
+        update: { toPath: to, isActive: true },
+        create: {
+          shopId: await currentShopId(),
+          fromPath: from,
+          toPath: to,
+          note: `"${page.title}" moved to ${to}`,
+        },
+      })
+      .catch(() => {});
+
+    // A redirect pointing *at* the address we just moved off would now send
+    // visitors to a page that is not there. Re-point it at the new one.
+    await client.redirect
+      .updateMany({ where: { toPath: from }, data: { toPath: to } })
+      .catch(() => {});
+
+    // The menu carries a written-out address beside the page it links to, and
+    // only the link moves on its own.
+    await client.menuItem
+      .updateMany({ where: { pageId: page.id }, data: { href: to } })
+      .catch(() => {});
+
+    revalidatePath(from);
+    revalidatePath(to);
+    revalidatePath("/admin/redirects");
+    revalidatePath("/admin/menus");
+  }
+
   await revalidatePageRoutes(pageId);
+  return { ok: true, slug: wanted };
 }
 
 export async function addSection(pageId: string, type: SectionType) {

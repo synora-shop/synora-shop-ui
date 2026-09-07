@@ -5,6 +5,7 @@ import { SectionList } from "@/components/admin/section-list";
 import { PageSettingsForm } from "@/components/admin/page-settings-form";
 import { SectionDivider } from "@/components/ui/primitives";
 import { ExternalLinkIcon } from "@/components/ui/synora-marks";
+import { pageAddress } from "@/lib/page-address";
 
 export const dynamic = "force-dynamic";
 
@@ -22,12 +23,12 @@ export default async function EditPagePage(props: PageProps<"/admin/pages/[id]">
       <PageCrumb label={page.title} />
       {/* A bare "/" told nobody anything. This is the page's address, and it opens it. */}
       <a
-        href={page.slug === "home" ? "/" : `/p/${page.slug}`}
+        href={pageAddress(page.slug, page.systemKey)}
         target="_blank"
         rel="noreferrer"
         className="mb-2.5 inline-flex items-center gap-1.5 text-xs text-ink-soft underline-offset-2 hover:text-ink hover:underline"
       >
-        <span className="font-mono">{page.slug === "home" ? "/" : `/p/${page.slug}`}</span>
+        <span className="font-mono">{pageAddress(page.slug, page.systemKey)}</span>
         <ExternalLinkIcon className="h-3 w-3" />
       </a>
 

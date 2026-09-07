@@ -92,11 +92,41 @@ const pageWithSections = {
 
 export type PageWithSections = Prisma.PageGetPayload<typeof pageWithSections>;
 
+/**
+ * A page the platform puts there itself, found by its key rather than by its
+ * address.
+ *
+ * The address used to be the identity: /about loaded the page whose slug was
+ * "about". That is why the address could not be edited — renaming the page
+ * moved the very thing the route looked it up by, and this function would have
+ * quietly created a second, empty About page underneath the merchant.
+ */
+async function getOrCreateSystemPage(
+  systemKey: string,
+  slug: string,
+  title: string,
+  defaultSections: Omit<Prisma.SectionCreateWithoutPageInput, "shop">[]
+): Promise<PageWithSections> {
+  const client = await db();
+  const existing =
+    (await client.page.findFirst({ where: { systemKey }, ...pageWithSections })) ??
+    // Written before the key existed, or by a path that did not set one.
+    (await client.page.findFirst({ where: { slug, isSystem: true }, ...pageWithSections }));
+  if (existing) {
+    if (existing.systemKey === null) {
+      await client.page.update({ where: { id: existing.id }, data: { systemKey } });
+    }
+    return existing;
+  }
+  return getOrCreatePage(slug, title, defaultSections, true, systemKey);
+}
+
 async function getOrCreatePage(
   slug: string,
   title: string,
   defaultSections: Omit<Prisma.SectionCreateWithoutPageInput, "shop">[],
-  isSystem: boolean
+  isSystem: boolean,
+  systemKey: string | null = null
 ): Promise<PageWithSections> {
   const existing = await (await db()).page.findFirst({ where: { slug }, ...pageWithSections });
   if (existing) return existing;
@@ -112,6 +142,7 @@ async function getOrCreatePage(
         slug,
         title,
         isSystem,
+        systemKey,
         sections: { create: defaultSections.map((x) => ({ ...x, shopId: sid })) },
       },
       ...pageWithSections,
@@ -125,15 +156,15 @@ async function getOrCreatePage(
 }
 
 export async function getOrCreateHomePage(): Promise<PageWithSections> {
-  return getOrCreatePage("home", "Homepage", DEFAULT_HOME_SECTIONS, true);
+  return getOrCreateSystemPage("home", "home", "Homepage", DEFAULT_HOME_SECTIONS);
 }
 
 export async function getOrCreateAboutPage(): Promise<PageWithSections> {
-  return getOrCreatePage("about", "Our Story", DEFAULT_ABOUT_SECTIONS, true);
+  return getOrCreateSystemPage("about", "about", "Our Story", DEFAULT_ABOUT_SECTIONS);
 }
 
 export async function getOrCreateFaqPage(): Promise<PageWithSections> {
-  return getOrCreatePage("faq", "FAQs", DEFAULT_FAQ_SECTIONS, true);
+  return getOrCreateSystemPage("faq", "faq", "FAQs", DEFAULT_FAQ_SECTIONS);
 }
 
 export async function getPageBySlug(slug: string): Promise<PageWithSections | null> {

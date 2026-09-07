@@ -393,6 +393,29 @@ for (const f of ["components/admin/bin-product-list.tsx", "components/admin/bin-
   check(`${f.split("/").pop()} has a real empty state`, /<EmptyState/.test(readFileSync(join(ROOT, f), "utf8")));
 }
 
+// A page's address could not be changed at all, because the address *was* the
+// identity: /about loaded the page whose slug was "about".
+const pagesData = readFileSync(join(ROOT, "lib/data/pages.ts"), "utf8");
+check("a default page is found by its key, not its address", /systemKey/.test(pagesData));
+const pageActions = readFileSync(join(ROOT, "app/admin/pages/actions.ts"), "utf8");
+check("the address can be edited", /slug: wanted/.test(pageActions));
+// Every link anyone already has must keep working.
+check("and the old address forwards", /redirect\s*\n?\s*\.upsert/.test(pageActions));
+// A menu item carries a written-out href beside the page it links to, and only
+// the link follows a move on its own.
+check("and every menu that links to it follows", /menuItem\s*\n?\s*\.updateMany/.test(pageActions));
+// A redirect that pointed at the old address would now send visitors nowhere.
+check("and redirects pointing at it are re-pointed", /toPath: from/.test(pageActions));
+const addressRules = readFileSync(join(ROOT, "lib/page-address.ts"), "utf8");
+check("one slug rule, shared by the form and the action", /export function toSlug/.test(addressRules));
+const pageForm = readFileSync(join(ROOT, "components/admin/page-settings-form.tsx"), "utf8");
+check("the address follows the name as it is typed", /if \(!slugTouched && !isHome\) setSlug\(toSlug\(next\)\)/.test(pageForm));
+// Once a merchant has written their own address, a typo in the title must not
+// move a link they have already shared.
+check("and stops the moment it is written by hand", /setSlugTouched\(true\)/.test(pageForm));
+// The homepage is the site's front door: there is no part after the slash.
+check("the homepage says why it has no address to edit", /front door/.test(pageForm));
+
 // The panel could write a Shopify CSV and not read one, which meant a merchant
 // could leave with their catalogue and not arrive with it.
 const importDialog = readFileSync(join(ROOT, "components/admin/import-dialog.tsx"), "utf8");

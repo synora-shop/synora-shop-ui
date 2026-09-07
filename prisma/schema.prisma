@@ -1121,7 +1121,12 @@ model Page {
   shopId         String
   slug           String
   title          String
-  isSystem       Boolean    @default(false) // true for Home/About/FAQ — slug locked, can't delete
+  isSystem       Boolean    @default(false) // true for Home/About/FAQ — cannot be deleted
+  /// A stable name for a page the platform itself puts there: "home", "about",
+  /// "faq". The slug used to serve this purpose, which is why the address could
+  /// not be edited — renaming a page moved the thing every route looked it up
+  /// by. NULL on every page a merchant made.
+  systemKey      String?
   isPublished    Boolean    @default(true)
   seoTitle       String?
   seoDescription String?
@@ -1139,6 +1144,7 @@ model Page {
   businessType BusinessType @default(ECOMMERCE)
 
   @@unique([shopId, businessType, slug])
+  @@unique([shopId, businessType, systemKey])
   @@unique([shopId, categoryId])
   @@index([shopId])
 }
