@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Check, ExternalLink, Loader2, Sparkles } from "lucide-react";
 import { chooseTheme } from "@/app/admin/theme/actions-theme-choice";
 import { useToast } from "@/components/ui/toast";
-import { Badge, Button, ButtonLink, SectionDivider, buttonClass } from "@/components/ui/primitives";
+import { Badge, Button, ButtonLink, CardTitle, SectionDivider, buttonClass } from "@/components/ui/primitives";
 import { StorefrontStill } from "@/components/admin/storefront-still";
 import { cn } from "@/lib/utils";
 
@@ -49,12 +49,12 @@ export function ThemeGallery({
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-2.5">
       {/* 1. The store as it stands. */}
       <section className="overflow-hidden rounded-xl border border-border bg-surface">
         <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-2.5">
           <div className="min-w-0">
-            <h2 className="text-sm font-semibold">Your store right now</h2>
+            <CardTitle>Your store right now</CardTitle>
             <p className="truncate text-xs text-ink-soft">{storeUrl}</p>
           </div>
           <div className="flex flex-shrink-0 items-center gap-2">
@@ -104,7 +104,7 @@ export function ThemeGallery({
                 <div className="flex flex-1 flex-col p-3.5">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-ink">{theme.name}</p>
+                      <CardTitle as="h3">{theme.name}</CardTitle>
                       <p className="mt-0.5 text-xs text-ink-soft">{theme.description}</p>
                     </div>
                     {active && (

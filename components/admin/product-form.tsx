@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FieldError, buttonClass } from "@/components/ui/primitives";
+import { CardTitle, FieldError, buttonClass } from "@/components/ui/primitives";
 import { useRouter } from "next/navigation";
 import { Plus, RotateCcw, Trash2 } from "lucide-react";
 import { saveProduct, type ProductInput, type VariantInput } from "@/app/admin/products/actions";
@@ -304,7 +304,7 @@ export function ProductForm({
           than shown empty and unexplained. */}
       <div className={enquiryOnly ? "hidden" : undefined}>
         <div className="flex items-center justify-between">
-          <h3 className="text-[13px] font-semibold text-ink">Variants (size / color / stock)</h3>
+          <CardTitle as="h3">Variants (size / color / stock)</CardTitle>
           <button
             type="button"
             onClick={() => setVariants((prev) => [...prev, { ...emptyVariant }])}

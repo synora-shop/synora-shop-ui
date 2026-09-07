@@ -5,7 +5,7 @@ import { getStoreSettings } from "@/lib/data/settings";
 import { statusLabel } from "@/lib/order-status-style";
 import { AnalyticsBar } from "@/components/admin/analytics-bar";
 import { MetricTile, RankedBars, StageBar, TrendChart } from "@/components/admin/charts";
-import { Card, PageHeader, SectionDivider } from "@/components/ui/primitives";
+import { Card, GroupLabel, PageHeader, SectionDivider } from "@/components/ui/primitives";
 import { formatMoney } from "@/lib/money";
 import { getCurrency } from "@/lib/data/settings";
 
@@ -46,7 +46,7 @@ export default async function AnalyticsPage(props: PageProps<"/admin/analytics">
   }));
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2.5">
       <PageHeader
         title="Analytics"
         description={`${range.label.toLowerCase()}, in ${data.timeZone.replace("_", " ")}.`}
@@ -109,12 +109,12 @@ export default async function AnalyticsPage(props: PageProps<"/admin/analytics">
 
       <div className="grid gap-2.5 lg:grid-cols-2">
         <Card className="p-4">
-          <h2 className="text-xs font-semibold uppercase tracking-[0.06em] text-ink-faint">Revenue</h2>
+          <GroupLabel>Revenue</GroupLabel>
           <p className="mb-2 font-mono text-lg font-semibold tabular-nums">{money(current.revenue)}</p>
           <TrendChart points={data.revenueSeries} label="Revenue per day" format="currency" />
         </Card>
         <Card className="p-4">
-          <h2 className="text-xs font-semibold uppercase tracking-[0.06em] text-ink-faint">Orders</h2>
+          <GroupLabel>Orders</GroupLabel>
           <p className="mb-2 font-mono text-lg font-semibold tabular-nums">{current.orders}</p>
           <TrendChart points={data.orderSeries} label="Orders per day" />
         </Card>
@@ -122,7 +122,7 @@ export default async function AnalyticsPage(props: PageProps<"/admin/analytics">
 
       <Card className="p-4">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h2 className="text-xs font-semibold uppercase tracking-[0.06em] text-ink-faint">Visitors</h2>
+          <GroupLabel>Visitors</GroupLabel>
           <p className="text-xs text-ink-soft">
             <span className="font-mono font-semibold tabular-nums text-ink">{data.totalPeople.toLocaleString("en-PK")}</span> people
             {" · "}
@@ -136,15 +136,15 @@ export default async function AnalyticsPage(props: PageProps<"/admin/analytics">
 
       <div className="grid gap-2.5 lg:grid-cols-3">
         <Card className="p-4">
-          <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.06em] text-ink-faint">Best sellers</h2>
+          <GroupLabel className="mb-3">Best sellers</GroupLabel>
           <RankedBars rows={data.topProducts} format="currency" empty="No sales in this period." />
         </Card>
         <Card className="p-4">
-          <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.06em] text-ink-faint">Most visited</h2>
+          <GroupLabel className="mb-3">Most visited</GroupLabel>
           <RankedBars rows={data.topPages} empty="No visits in this period." />
         </Card>
         <Card className="p-4">
-          <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.06em] text-ink-faint">Arriving from</h2>
+          <GroupLabel className="mb-3">Arriving from</GroupLabel>
           <RankedBars rows={data.topReferrers} empty="No visits in this period." />
         </Card>
       </div>

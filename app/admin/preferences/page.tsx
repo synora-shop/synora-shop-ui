@@ -17,7 +17,7 @@ export default async function PreferencesPage() {
   const settings = await getStoreSettings();
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2.5">
       <PageHeader
         title="Visibility"
         description="Who can see your store, who can find it, and who can write to you."

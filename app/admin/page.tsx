@@ -32,7 +32,7 @@ export default async function AdminHomePage() {
   ]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2.5">
       <PageHeader
         title="Home"
         description="Your store's name, its logos and where to find you. Logos are set here and nowhere else — every theme reads them from this screen."

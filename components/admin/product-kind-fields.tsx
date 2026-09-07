@@ -14,7 +14,7 @@ import {
   type CustomFieldKind,
   type ProductKind,
 } from "@/lib/product-kind";
-import { Button } from "@/components/ui/primitives";
+import { Button, GroupLabel } from "@/components/ui/primitives";
 import { cn } from "@/lib/utils";
 import { FieldLabel } from "@/components/merchant/form-shell";
 
@@ -74,9 +74,7 @@ export function ProductKindFields({
   return (
     <div className="space-y-5 rounded-xl border border-border bg-surface p-5">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-wide text-ink-faint">
-          How this is sold
-        </p>
+        <GroupLabel>How this is sold</GroupLabel>
         <div className="mt-2 grid gap-2 sm:grid-cols-3">
           {PRODUCT_KINDS.map((k) => {
             const meta = PRODUCT_KIND_META[k];

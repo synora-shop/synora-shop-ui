@@ -518,3 +518,40 @@ a mark.
 a two-column grid, each stretched across a 1500px panel around a form a third
 that wide, ending at different heights because nothing made them agree. It is
 Fieldset now, like the other eight.
+
+## The alignment audit, 7 September
+
+Every screen measured in a browser and cross-checked against the source. What
+was already right, and worth recording because it was measured rather than
+assumed: **every screen's sections start and end at exactly the same place**
+(262px and 1458px in a 1512px window), and **no screen has ragged card
+bottoms** — the fault Home had.
+
+Two of my own first measurements were artefacts and were thrown away: an
+apparent 16px width difference on Analytics was a probe stopping at different
+depths on different screens, and a section-finder anchored on `.bg-panel`,
+which also matches sidebar buttons, found nothing on 25 of 26 screens.
+
+Fixed:
+
+- **Four styles were naming the same thing.** 14px medium, 14px semibold, 12px
+  semibold uppercase, 12px medium uppercase — and on Your App → Themes, two of
+  them a few hundred pixels apart. Five more headings were written as `<p>`, so
+  nothing in the page outline knew they named anything. `CardTitle` and
+  `GroupLabel` are primitives now, and `check:design` stops the four returning.
+- **The gap between sections was six different values.** Standardised on
+  `space-y-2.5` across thirty-three screens and five screen-level components.
+  Analytics was the only one where it showed (12px against everyone else's 10);
+  the rest was latent, waiting for a second section to be added.
+- **Site text rows read as cut off.** The value box stopped 290px short of the
+  rule beneath it. The cap is right — a field the width of a window is harder
+  to read — but it is 4xl now rather than 2xl, so the remaining gap is
+  ordinary padding and is where the save button appears.
+
+Investigated and cleared, not faults: **Custom fields** (262/538) is a
+deliberate master–detail layout, and **Menus** (262/279) is an inner row
+container inside a card, which the probe's nesting filter did not catch.
+
+Still open, and small: **Enquiries** uses an 8px gap between list rows, and
+**Account** has one 35px gap inside a nested block. Both are inside a card
+rather than between sections, so neither is covered by the rule above.

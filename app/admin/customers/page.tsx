@@ -58,7 +58,7 @@ export default async function CustomersPage(props: PageProps<"/admin/customers">
   );
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2.5">
       <PageHeader
         title="Customers"
         description="Everyone who has bought from you or created an account, and what they're worth."

@@ -105,7 +105,7 @@ export default async function AdminDraftsPage(props: PageProps<"/admin/drafts">)
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2.5">
       <p className="text-sm text-ink-soft">
         {total === 1 ? "One product is" : `${total} products are`} started and not yet published.
         Tick any of them and press Publish to put them out together.

@@ -100,7 +100,7 @@ export default async function AdminProductsPage(props: PageProps<"/admin/product
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2.5">
       {/* Everything you can do to this list, in the one place every list keeps
           it: search, filters, how many rows, and the buttons that make or take
           away rows. */}

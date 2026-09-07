@@ -6,7 +6,7 @@ import { getCustomer } from "@/lib/data/customers";
 
 import { formatRelativeTime } from "@/lib/format-relative-time";
 import { orderStatusStyle } from "@/lib/order-status-style";
-import { Badge, Card, PageHeader, Stat } from "@/components/ui/primitives";
+import { Badge, Card, GroupLabel, PageHeader, Stat } from "@/components/ui/primitives";
 import { cn } from "@/lib/utils";
 import { formatMoney } from "@/lib/money";
 import { getCurrency } from "@/lib/data/settings";
@@ -31,7 +31,7 @@ export default async function CustomerPage(props: PageProps<"/admin/customers/[i
   const totalSpent = counted.reduce((sum, o) => sum + o.total, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-2.5">
       <Link
         href="/admin/customers"
         className="inline-flex items-center gap-1.5 text-sm text-ink-soft transition-colors hover:text-ink"
@@ -61,9 +61,7 @@ export default async function CustomerPage(props: PageProps<"/admin/customers/[i
       <div className="grid gap-6 lg:grid-cols-[20rem_1fr]">
         <div className="space-y-6">
           <Card className="p-4">
-            <h2 className="text-xs font-medium uppercase tracking-wide text-ink-faint">
-              Contact
-            </h2>
+            <GroupLabel>Contact</GroupLabel>
             <dl className="mt-3 space-y-2 text-sm">
               <div className="flex items-start gap-2">
                 <Mail className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-ink-faint" />
@@ -93,9 +91,7 @@ export default async function CustomerPage(props: PageProps<"/admin/customers/[i
 
           {customer.addresses.length > 0 && (
             <Card className="p-4">
-              <h2 className="text-xs font-medium uppercase tracking-wide text-ink-faint">
-                Saved addresses
-              </h2>
+              <GroupLabel>Saved addresses</GroupLabel>
               <ul className="mt-3 space-y-3 text-sm">
                 {customer.addresses.map((address) => (
                   <li key={address.id} className="flex items-start gap-2">
@@ -114,9 +110,7 @@ export default async function CustomerPage(props: PageProps<"/admin/customers/[i
         </div>
 
         <div>
-          <h2 className="mb-2 text-xs font-medium uppercase tracking-wide text-ink-faint">
-            Order history ({customer.orders.length})
-          </h2>
+          <GroupLabel className="mb-2">Order history ({customer.orders.length})</GroupLabel>
           {customer.orders.length === 0 ? (
             <Card className="p-6 text-center text-sm text-ink-soft">
               They have an account but haven&rsquo;t ordered yet.

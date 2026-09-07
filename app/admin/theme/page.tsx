@@ -38,7 +38,7 @@ export default async function ThemePage() {
   const canOpenAndClose = me ? roleAtLeast(me.role, "ADMIN") : false;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-2.5">
       {/* Whether customers can see the shop, pinned to the top of the page that
           is about how the shop looks. Sticky because it is the one fact that
           changes what everything below means: a theme you are admiring is not

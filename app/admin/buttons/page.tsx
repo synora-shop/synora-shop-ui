@@ -23,7 +23,7 @@ export default async function ButtonsPage() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-2.5">
       <PageHeader
         title="Sticky buttons"
         description="Floating contact buttons that follow the customer down the page. Each one can appear on the home page only, on shopping pages, or everywhere."

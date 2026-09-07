@@ -33,7 +33,7 @@ export default async function AdminMenusPage() {
     .map((p) => ({ id: p.id, title: p.title, category: p.category ? { name: p.category.name } : null }));
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-2.5">
       <div>
         <p className="text-sm text-ink-soft">
           Build as many menus as you like, then choose which one shows in the header and the

@@ -16,7 +16,7 @@ import {
   type MemberRole,
 } from "@/lib/roles";
 import { canChangeRole, canGrant, canRemove } from "@/lib/staff-rules";
-import { Badge, Button, Card } from "@/components/ui/primitives";
+import { Badge, Button, Card, CardTitle, GroupLabel } from "@/components/ui/primitives";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast";
 
@@ -105,7 +105,7 @@ export function StaffManager({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-2.5">
       {dialog}
 
       {/* ------------------------------------------------------------ invite */}
@@ -145,7 +145,7 @@ export function StaffManager({
         ) : (
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-sm font-medium text-ink">Add someone to this store</p>
+              <CardTitle as="h3">Add someone to this store</CardTitle>
               <p className="mt-0.5 text-xs text-ink-soft">
                 They keep their own sign-in. You choose what they can reach.
               </p>
@@ -160,9 +160,7 @@ export function StaffManager({
 
       {/* ----------------------------------------------------------- members */}
       <div>
-        <h2 className="mb-2 text-xs font-medium uppercase tracking-wide text-ink-faint">
-          People ({members.length})
-        </h2>
+        <GroupLabel className="mb-2">People ({members.length})</GroupLabel>
         <Card className="divide-y divide-border">
           {members.map((member) => {
             const isMe = member.userId === me.userId;
@@ -261,9 +259,7 @@ export function StaffManager({
       {/* ----------------------------------------------------------- invites */}
       {invites.length > 0 && (
         <div>
-          <h2 className="mb-2 text-xs font-medium uppercase tracking-wide text-ink-faint">
-            Waiting to join ({invites.length})
-          </h2>
+          <GroupLabel className="mb-2">Waiting to join ({invites.length})</GroupLabel>
           <Card className="divide-y divide-border">
             {invites.map((invite) => (
               <div key={invite.id} className="flex flex-wrap items-center gap-3 p-4">
@@ -304,9 +300,7 @@ export function StaffManager({
 
       {/* ------------------------------------------------------------- roles */}
       <Card className="p-4">
-        <h2 className="text-xs font-medium uppercase tracking-wide text-ink-faint">
-          What each level means
-        </h2>
+        <GroupLabel>What each level means</GroupLabel>
         <dl className="mt-3 space-y-2">
           {(["OWNER", ...ASSIGNABLE_ROLES] as MemberRole[]).map((role) => (
             <div key={role} className="flex gap-3 text-xs">

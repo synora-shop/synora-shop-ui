@@ -156,6 +156,27 @@ see the README.
 
 ---
 
+**A section is named by `SectionDivider`, a card by `CardTitle`, a group of
+rows inside a card by `GroupLabel`.** Three jobs, three primitives, and no
+screen writes its own. That rule existed before the primitives did and only
+Fieldset followed it: an audit of every screen found four styles doing the
+card-title job — 14px medium, 14px semibold, 12px semibold uppercase and 12px
+medium uppercase — two of them a few hundred pixels apart on the same screen,
+plus five headings written as `<p>`, which name nothing as far as the page
+outline or a screen reader is concerned. *Check: `check:design`, "does not
+hand-write a card title".*
+
+**One gap between sections: `space-y-2.5`.** Every screen's outermost container
+used a different value — 2.5, 3, 4, 5, 6 and 8 across thirty-three screens,
+depending on when each was built. Most of it was invisible, because most
+screens have one section; the cost was that the next section added to any of
+them landed at a distance nobody had chosen. Inner groupings still set their
+own rhythm — a smaller gap under a divider, a larger one before the next — and
+that is deliberate. *Check: `check:design`, "uses the standard gap between
+sections".*
+
+---
+
 ## 7. Motion and state
 
 **Motion reports; it does not decorate.** Something that appears out of nowhere

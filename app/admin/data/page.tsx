@@ -50,7 +50,7 @@ export default async function DataPage(props: PageProps<"/admin/data">) {
   });
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2.5">
       <PageHeader
         title="Data"
         description="Every picture you have uploaded, in one place. Use one again without uploading it twice."

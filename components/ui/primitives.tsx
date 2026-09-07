@@ -269,6 +269,68 @@ export function Badge({
 }
 
 // ---------------------------------------------------------------------------
+// CardTitle and GroupLabel
+// ---------------------------------------------------------------------------
+
+/**
+ * The name of one card.
+ *
+ * Sections are named by SectionDivider and cards by a 13px semibold line —
+ * that has been the rule for a while, and Fieldset has followed it since it
+ * was written. Nothing else did. An audit of every screen found four styles
+ * doing this one job: 14px medium, 14px semibold, 12px semibold uppercase
+ * faint, and 12px medium uppercase faint, spread across the theme gallery, the
+ * lifecycle card, analytics, staff and the customer page. Two of them sat a few
+ * hundred pixels apart on the same screen.
+ *
+ * A primitive rather than a convention, because a convention is what produced
+ * the four.
+ */
+export function CardTitle({
+  className,
+  children,
+  as: Tag = "h2",
+}: {
+  className?: string;
+  children: React.ReactNode;
+  /** The right level for where this sits. Defaults to h2. */
+  as?: "h2" | "h3";
+}) {
+  return <Tag className={cn("text-[13px] font-semibold text-ink", className)}>{children}</Tag>;
+}
+
+/**
+ * A label over a group of rows inside a card.
+ *
+ * Smaller and quieter than a card's own name, and the same treatment
+ * SectionDivider uses for a section — because it is doing the same thing one
+ * level down. Without it, screens invented their own: `text-xs font-medium
+ * uppercase tracking-wide` in two places and `text-xs font-semibold uppercase
+ * tracking-[0.06em]` in six, which is the same idea at two sizes, two weights
+ * and two letter-spacings.
+ */
+export function GroupLabel({
+  className,
+  children,
+  as: Tag = "h3",
+}: {
+  className?: string;
+  children: React.ReactNode;
+  as?: "h2" | "h3" | "p";
+}) {
+  return (
+    <Tag
+      className={cn(
+        "text-[11px] font-semibold tracking-[0.08em] text-ink-faint uppercase",
+        className
+      )}
+    >
+      {children}
+    </Tag>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // FieldError
 // ---------------------------------------------------------------------------
 

@@ -66,7 +66,7 @@ export default async function AccountPage() {
     .sort((a, b) => ROLE_RANK[b.role] - ROLE_RANK[a.role] || a.email.localeCompare(b.email));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-2.5">
       <PageHeader
         title="Account"
         description={`Signed in as ${user.email}. These settings follow you across every store you work on.`}

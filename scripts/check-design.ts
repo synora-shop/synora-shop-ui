@@ -11,8 +11,8 @@
  *
  * Dependency-free; exits non-zero on failure.
  */
-import { existsSync, readFileSync } from "fs";
-import { join } from "path";
+import { existsSync, readFileSync, readdirSync, statSync } from "fs";
+import { join, relative } from "path";
 
 let pass = 0, fail = 0;
 const check = (name: string, ok: boolean, detail = "") => {
@@ -24,6 +24,17 @@ const check = (name: string, ok: boolean, detail = "") => {
 };
 
 const ROOT = process.cwd();
+
+const SKIP = new Set(["node_modules", ".git", ".next", ".claude", "generated", "migrations"]);
+function walk(dir: string, out: string[] = []): string[] {
+  for (const entry of readdirSync(dir)) {
+    if (SKIP.has(entry)) continue;
+    const full = join(dir, entry);
+    if (statSync(full).isDirectory()) walk(full, out);
+    else if (/\.tsx?$/.test(full)) out.push(full);
+  }
+  return out;
+}
 const doc = join(ROOT, "docs/DESIGN.md");
 check("the design standards exist", existsSync(doc));
 if (!existsSync(doc)) {
@@ -90,6 +101,69 @@ check(
 /* The deleted vocabulary layer must stay deleted: the document says the panel
    is e-commerce only, and this is the file that would make that untrue. */
 check("there is still no renaming layer", !existsSync(join(ROOT, "lib/themes/vocabulary.ts")));
+
+/* -------------------------------------------------------------------------- */
+/* One way to name a thing                                                    */
+/* -------------------------------------------------------------------------- */
+
+// A section is named by SectionDivider, a card by a 13px semibold line and a
+// group of rows inside a card by an 11px uppercase label. That was the rule
+// before this check existed and only Fieldset followed it. An audit of every
+// screen found four styles doing the job — 14px medium, 14px semibold, 12px
+// semibold uppercase and 12px medium uppercase — two of them a few hundred
+// pixels apart on the same screen, and five more headings written as <p> so
+// nothing in the page outline knew they named anything.
+//
+// The primitives are CardTitle and GroupLabel. This stops the four coming back.
+{
+  const screens = [...walk(join(ROOT, "components/admin")), ...walk(join(ROOT, "app/admin"))];
+
+  for (const file of screens) {
+    const rel = relative(ROOT, file);
+    // A dialog's own title is not a card title; it sits in a different frame.
+    if (/dialog\.tsx$/.test(rel)) continue;
+    const src = readFileSync(file, "utf8");
+
+    check(
+      `${rel} does not hand-write a card title`,
+      !/className="[^"]*text-\[13px\] font-semibold text-ink[^"]*"/.test(src),
+      "use <CardTitle>"
+    );
+    check(
+      `${rel} does not hand-write a group label`,
+      !/className="[^"]*text-xs[^"]*uppercase[^"]*text-ink-faint[^"]*"/.test(src),
+      "use <GroupLabel>"
+    );
+    check(
+      `${rel} does not use a paragraph as a heading`,
+      !/<p className="text-sm font-(medium|semibold) text-ink">/.test(src),
+      "a heading written as <p> is invisible to the page outline — use <CardTitle>"
+    );
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* One gap between sections                                                   */
+/* -------------------------------------------------------------------------- */
+
+// Every screen's outermost container used a different value — 2.5, 3, 4, 5, 6
+// and 8 across thirty-three screens, depending on when each was built. Mostly
+// invisible, because most screens have one section; the cost was that the next
+// section added to any of them landed at a distance nobody chose.
+{
+  const pages = walk(join(ROOT, "app/admin")).filter((f) => /page\.tsx$/.test(f));
+  for (const file of pages) {
+    const rel = relative(ROOT, file);
+    const src = readFileSync(file, "utf8");
+    const root = /<div className="(space-y-[\d.]+)"/.exec(src)?.[1];
+    if (!root) continue; // A screen with a single block needs no rhythm.
+    check(
+      `${rel} uses the standard gap between sections`,
+      root === "space-y-2.5",
+      `it uses ${root}`
+    );
+  }
+}
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Mail, Phone, User } from "lucide-react";
-import { Badge, SectionDivider, buttonClass } from "@/components/ui/primitives";
+import { Badge, CardTitle, SectionDivider, buttonClass } from "@/components/ui/primitives";
 import { PageCrumb } from "@/components/admin/page-crumb";
 import { Thumb } from "@/components/admin/product-elements";
 import { db } from "@/lib/data/shop";
@@ -112,7 +112,7 @@ export default async function AdminOrderDetailPage(props: PageProps<"/admin/orde
       <div className="grid gap-2.5 lg:grid-cols-3">
         <div className="space-y-2.5 lg:col-span-2">
           <div className="rounded-xl border border-border bg-surface p-4">
-            <h3 className="text-[13px] font-semibold text-ink">What was ordered</h3>
+            <CardTitle as="h3">What was ordered</CardTitle>
             <div className="mt-2.5 divide-y divide-border">
               {order.items.map((item) => (
                 <div key={item.id} className="flex items-center gap-3 py-2">
@@ -169,7 +169,7 @@ export default async function AdminOrderDetailPage(props: PageProps<"/admin/orde
 
         <div className="space-y-2.5">
           <div className="rounded-xl border border-border bg-surface p-4">
-            <h3 className="text-[13px] font-semibold text-ink">Where it is going</h3>
+            <CardTitle as="h3">Where it is going</CardTitle>
             <div className="mt-2.5 space-y-2.5">
               <Detail label="Customer">
                 {order.customerId ? (
@@ -219,7 +219,7 @@ export default async function AdminOrderDetailPage(props: PageProps<"/admin/orde
           </div>
 
           <div className="rounded-xl border border-border bg-surface p-4">
-            <h3 className="text-[13px] font-semibold text-ink">Progress</h3>
+            <CardTitle as="h3">Progress</CardTitle>
             <form action={updateOrderStatus} className="mt-2.5 space-y-2">
               <input type="hidden" name="id" value={order.id} />
               <label className="block">
@@ -240,7 +240,7 @@ export default async function AdminOrderDetailPage(props: PageProps<"/admin/orde
 
           <div className="rounded-xl border border-border bg-surface p-4">
             <div className="flex items-center justify-between gap-2">
-              <h3 className="text-[13px] font-semibold text-ink">Payment</h3>
+              <CardTitle as="h3">Payment</CardTitle>
               <span
                 className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${paymentStatusStyle(order.paymentStatus)}`}
               >

@@ -65,7 +65,7 @@ export default async function MetafieldsPage(props: PageProps<"/admin/metafields
   const rows = owner ? await listMetafields(ownerType, owner.id) : [];
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-2.5">
       <PageHeader
         title="Custom fields"
         description="Extra information on your products, categories and pages, which your theme can read and show. Shopify calls these metafields. A theme written for Shopify looks for them by the same name."

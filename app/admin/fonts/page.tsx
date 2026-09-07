@@ -25,7 +25,7 @@ export default async function FontsPage() {
   ]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-2.5">
       <PageHeader
         title="Fonts"
         description="Upload your own typefaces and choose which one headings and body text use across the whole store."

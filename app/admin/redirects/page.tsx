@@ -22,7 +22,7 @@ export default async function RedirectsPage() {
   ]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-2.5">
       <PageHeader
         title="Links & redirects"
         description="Keep old addresses working, so a link someone bookmarked or Google indexed never turns into a dead end."

@@ -75,7 +75,7 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2.5">
       <ActionBar>
         <ListSearch placeholder="Search by order number, name, email or phone" />
         <FilterDisclosure activeCount={activeCount({ status })}>

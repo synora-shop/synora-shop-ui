@@ -103,7 +103,7 @@ export default async function EnquiriesPage(props: PageProps<"/admin/enquiries">
   }));
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2.5">
       <PageHeader
         title="Enquiries"
         description="Questions about bulk and made-to-order products. These aren't orders, nothing has been paid for yet."

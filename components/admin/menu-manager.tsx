@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FieldError, buttonClass } from "@/components/ui/primitives";
+import { CardTitle, FieldError, buttonClass } from "@/components/ui/primitives";
 import { useRouter } from "next/navigation";
 import { Check, ChevronDown, ChevronRight, Plus, Trash2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -101,12 +101,12 @@ export function MenuManager({
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-2.5">
       {dialog}
       {error && <FieldError>{error}</FieldError>}
 
       <section>
-        <h3 className="text-[13px] font-semibold text-ink">Where menus appear</h3>
+        <CardTitle as="h3">Where menus appear</CardTitle>
         <p className="mt-1 text-sm text-ink-soft">
           Pick which menu fills each part of your storefront. One menu can fill both.
         </p>
@@ -136,7 +136,7 @@ export function MenuManager({
 
       <section>
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="text-[13px] font-semibold text-ink">Your menus</h3>
+          <CardTitle as="h3">Your menus</CardTitle>
           {!creating && (
             <button
               type="button"

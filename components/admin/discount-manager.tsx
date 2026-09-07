@@ -10,7 +10,7 @@ import {
 } from "@/app/admin/discounts/actions";
 import { codeProblem, describeDiscount, type DiscountType } from "@/lib/discounts";
 
-import { Badge, Button, Card, EmptyState } from "@/components/ui/primitives";
+import { Badge, Button, Card, CardTitle, EmptyState } from "@/components/ui/primitives";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
@@ -104,7 +104,7 @@ export function DiscountManager({ discounts }: { discounts: DiscountRow[] }) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-2.5">
       {dialog}
 
       <Card className="p-4">
@@ -213,7 +213,7 @@ export function DiscountManager({ discounts }: { discounts: DiscountRow[] }) {
         ) : (
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-sm font-medium text-ink">Create a discount code</p>
+              <CardTitle as="h3">Create a discount code</CardTitle>
               <p className="mt-0.5 text-xs text-ink-soft">
                 A percentage, an amount, or free delivery, with limits and dates if you want them.
               </p>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FieldError, buttonClass } from "@/components/ui/primitives";
+import { CardTitle, FieldError, buttonClass } from "@/components/ui/primitives";
 import { useRouter } from "next/navigation";
 import { createCategory } from "@/app/admin/categories/actions";
 import { useConfirm } from "@/components/ui/confirm-dialog";
@@ -43,7 +43,7 @@ export function AddCategoryForm() {
   return (
     <form onSubmit={handleSubmit} className="h-fit space-y-3 rounded-lg border border-border bg-white p-5">
       {dialog}
-      <h3 className="text-[13px] font-semibold text-ink">Add Category</h3>
+      <CardTitle as="h3">Add Category</CardTitle>
       <input
         value={name}
         onChange={(e) => setName(e.target.value)}

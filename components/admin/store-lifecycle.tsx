@@ -7,7 +7,7 @@ import { closeStore, pauseStore, resumeStore } from "@/app/admin/settings/lifecy
 import { useSpotlight } from "@/components/admin/use-spotlight";
 import { startNavProgress } from "@/components/ui/nav-progress";
 import { PasswordInput } from "@/components/ui/password-input";
-import { Badge, Button, Card } from "@/components/ui/primitives";
+import { Badge, Button, Card, CardTitle } from "@/components/ui/primitives";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast";
 import { Field, FormMessage } from "@/components/merchant/form-shell";
@@ -129,7 +129,7 @@ export function StoreLifecycle({
       {/* Closing is owner-only and deliberately the last thing on the page. */}
       {isOwner && status !== "CLOSED" && status !== "SUSPENDED" && (
         <Card className="border-rose/30 p-4">
-          <h2 className="text-sm font-medium text-ink">Close this store</h2>
+          <CardTitle>Close this store</CardTitle>
           <p className="mt-1 max-w-prose text-xs leading-snug text-ink-soft">
             Your storefront goes dark and stops taking orders. Everything, products, orders,
             customers, is kept for {retentionDays} days, so you can reopen if you change your

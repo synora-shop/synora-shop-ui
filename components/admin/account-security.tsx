@@ -5,7 +5,7 @@ import { signOut } from "next-auth/react";
 import { LogOut, ShieldCheck } from "lucide-react";
 import { changePassword, resendVerification, revokeAllSessions } from "@/app/merchant/actions";
 import { PasswordInput } from "@/components/ui/password-input";
-import { Button, Card, Fieldset } from "@/components/ui/primitives";
+import { Button, Card, CardTitle, Fieldset } from "@/components/ui/primitives";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast";
 import { Field, FormMessage } from "@/components/merchant/form-shell";
@@ -53,7 +53,7 @@ export function AccountSecurity({
       {!emailVerified && (
         <Card className="flex flex-wrap items-center justify-between gap-3 border-amber/30 bg-amber-bg p-4">
           <div className="min-w-0">
-            <p className="text-sm font-medium text-ink">Confirm your email address</p>
+            <CardTitle as="h3">Confirm your email address</CardTitle>
             <p className="mt-0.5 text-xs leading-snug text-ink-soft">
               Until {email} is confirmed you can&rsquo;t be given ownership of a store, and we
               can&rsquo;t help you recover this account.

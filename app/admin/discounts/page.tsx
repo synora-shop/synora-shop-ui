@@ -23,7 +23,7 @@ export default async function DiscountsPage() {
   const now = new Date();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-2.5">
       <PageHeader
         title="Discounts"
         description="Codes customers can enter at checkout. Every one is priced on the server, so a code can't be talked into giving away more than it should."

@@ -19,7 +19,7 @@ import {
   makePrimary,
 } from "@/app/admin/domain-actions";
 import { domainProblem, type DnsRecord } from "@/lib/domains";
-import { Badge, Button, Card, FieldError } from "@/components/ui/primitives";
+import { Badge, Button, Card, CardTitle, FieldError } from "@/components/ui/primitives";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast";
 
@@ -84,12 +84,12 @@ export function DomainManager({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-2.5">
       {dialog}
 
       {!canIssueCertificates && (
         <Card className="border-amber/30 bg-amber-bg p-4">
-          <p className="text-sm font-medium text-ink">Custom domains aren&rsquo;t fully set up yet</p>
+          <CardTitle as="h3">Custom domains aren&rsquo;t fully set up yet</CardTitle>
           <p className="mt-1 text-xs leading-snug text-ink-soft">
             Domains here will verify, but no certificate will be issued, so they won&rsquo;t serve
             traffic. This is a platform setting, not something you can fix from your store.
@@ -147,7 +147,7 @@ export function DomainManager({
         ) : (
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-sm font-medium text-ink">Use your own domain</p>
+              <CardTitle as="h3">Use your own domain</CardTitle>
               <p className="mt-0.5 text-xs text-ink-soft">
                 Already own one? Point it here and your store will answer on it.
               </p>

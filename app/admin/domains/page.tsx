@@ -26,7 +26,7 @@ export default async function DomainsPage() {
   const domains = canManage && me ? await domainsForShop(me.shop.id) : [];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2.5">
       <PageHeader
         title="Domains"
         description="Your free address always works. Add your own to use it instead."
