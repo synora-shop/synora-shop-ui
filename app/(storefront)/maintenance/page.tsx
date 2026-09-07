@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import { Container } from "@/components/ui/container";
 import { storefrontClosure } from "@/lib/maintenance";
 import { getStoreSettings } from "@/lib/data/settings";
-import { getThemeTokens } from "@/lib/data/theme";
 import { resolveHolding, toHoldingPage } from "@/lib/holding-page";
+import { toBrandMarks, pickLogo } from "@/lib/brand-marks";
 import { ReopenSignupForm } from "@/components/storefront/reopen-signup-form";
 
 export const dynamic = "force-dynamic";
@@ -28,8 +28,10 @@ export default async function MaintenancePage() {
   // store rather than showing a notice about a problem that has gone away.
   if (!reason) redirect("/");
 
-  const [settings, theme] = await Promise.all([getStoreSettings(), getThemeTokens()]);
-  const page = resolveHolding(reason, toHoldingPage(settings), theme.logoUrl ?? "");
+  const settings = await getStoreSettings();
+  // The shop's own mark stands in when the merchant has not given this page one
+  // of its own. Marks live on the shop now, not the theme — lib/brand-marks.ts.
+  const page = resolveHolding(reason, toHoldingPage(settings), pickLogo(toBrandMarks(settings)));
 
   return (
     <Container className="flex min-h-[60vh] flex-col items-center justify-center text-center">

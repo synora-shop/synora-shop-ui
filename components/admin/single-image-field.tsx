@@ -19,6 +19,33 @@ import { FieldLabel } from "@/components/merchant/form-shell";
  * has a picture and the merchant wants a different one. So the current image is
  * the control — click it to swap, with remove kept separate and explicit.
  */
+/**
+ * An `accept` list said out loud, for the message shown when a file is refused.
+ *
+ * Derived rather than passed in beside it, so the rule and the sentence about
+ * the rule cannot drift — the failure mode there is a field that refuses PNGs
+ * while telling you PNGs are fine.
+ */
+function acceptLabel(accept: string): string {
+  const names = accept
+    .split(",")
+    .map((rule) => rule.trim().toLowerCase())
+    .map((rule) => {
+      if (rule.startsWith(".")) return rule.slice(1).toUpperCase();
+      const subtype = rule.split("/")[1] ?? "";
+      if (subtype === "svg+xml") return "SVG";
+      if (subtype.includes("icon")) return "ICO";
+      if (!subtype || subtype === "*") return "";
+      return subtype.toUpperCase();
+    })
+    .filter(Boolean);
+
+  const unique = [...new Set(names)];
+  if (unique.length === 0) return "an image";
+  if (unique.length === 1) return `a ${unique[0]} file`;
+  return `${unique.slice(0, -1).join(", ")} or ${unique[unique.length - 1]}`;
+}
+
 export function SingleImageField({
   value,
   onChange,
@@ -26,6 +53,7 @@ export function SingleImageField({
   label,
   hint,
   aspect = "aspect-[4/3]",
+  accept = "image/*",
 }: {
   value: string;
   onChange: (url: string) => void;
@@ -35,6 +63,16 @@ export function SingleImageField({
   hint?: string;
   /** Tailwind aspect class — match the shape the image renders at on the site. */
   aspect?: string;
+  /**
+   * Narrows what may be chosen, for a field whose destination accepts less
+   * than a page does. The favicon is the case: a browser tab draws far fewer
+   * formats than an <img>, and WebP is the trap — it previews perfectly here
+   * and renders as a blank square on the tab.
+   *
+   * Enforced on drop as well as in the picker. `accept` on a file input is a
+   * filter, not a rule; dragging a file in bypasses it entirely.
+   */
+  accept?: string;
 }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,8 +80,28 @@ export function SingleImageField({
   const [draggingOver, setDraggingOver] = useState(false);
   const fileInput = useRef<HTMLInputElement | null>(null);
 
+  /** Whether a file matches `accept`, which is a list of types and extensions. */
+  function allowed(file: File): boolean {
+    if (accept === "image/*") return file.type.startsWith("image/");
+    const name = file.name.toLowerCase();
+    return accept.split(",").some((rule) => {
+      const want = rule.trim().toLowerCase();
+      if (!want) return false;
+      if (want.startsWith(".")) return name.endsWith(want);
+      if (want.endsWith("/*")) return file.type.startsWith(want.slice(0, -1));
+      return file.type === want;
+    });
+  }
+
   async function upload(file: File | undefined) {
-    if (!file || !file.type.startsWith("image/")) return;
+    if (!file) return;
+    if (!file.type.startsWith("image/")) return;
+    // Said rather than ignored. A drop that silently does nothing reads as the
+    // upload being broken, and the merchant tries the same file again.
+    if (!allowed(file)) {
+      setError(`That format can't be used here. Choose ${acceptLabel(accept)}.`);
+      return;
+    }
     setError(null);
     setUploading(true);
     const formData = new FormData();
@@ -138,7 +196,7 @@ export function SingleImageField({
       <input
         ref={fileInput}
         type="file"
-        accept="image/*"
+        accept={accept}
         // Hidden behind a button that opens it, but still a control: a screen
         // reader that reaches it should hear what it is for.
         aria-label={label ? `Choose a file for ${label.toLowerCase()}` : "Choose an image file"}

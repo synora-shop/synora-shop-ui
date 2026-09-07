@@ -862,6 +862,29 @@ model StoreSettings {
   whatsappOrderButton  Boolean @default(true)
   maintenanceMode      Boolean @default(false)
 
+  // --- The shop's marks ---------------------------------------------------
+  // Its logos and its favicon. Here rather than in ThemeSettings because they
+  // belong to the business, not to the storefront it is currently wearing:
+  // theme tokens are stored per business type, so a merchant who switched from
+  // a shop to a restaurant and back lost their logo twice over. Same company,
+  // same mark.
+  //
+  // Four slots on two axes — wide or compact, light or dark background — and
+  // only the first is ever needed. lib/brand-marks.ts holds the fallback order
+  // a theme walks when it asks for a combination the merchant has not filled
+  // in, so a theme is never handed nothing.
+  //
+  // Set on Home and nowhere else. That is the rule the whole arrangement is
+  // for: one place to change a logo.
+  logoUrl            String @default("")
+  logoDarkUrl        String @default("")
+  logoCompactUrl     String @default("")
+  logoCompactDarkUrl String @default("")
+  /// The browser tab icon. SVG, PNG or ICO — see FAVICON_FORMATS. Other
+  /// formats upload happily and then do not render on a tab, which is a fault
+  /// nobody can diagnose from inside the panel.
+  faviconUrl         String @default("")
+
   // --- The holding page ---------------------------------------------------
   // What customers are shown when the store is not open to them. One page for
   // two situations: maintenanceMode above, and the shop being PAUSED. They are

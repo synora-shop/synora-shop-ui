@@ -107,6 +107,18 @@ export function autoTextColor(background: string): string {
 }
 
 /**
+ * Whether a colour is dark enough that light artwork belongs on it.
+ *
+ * Answered by asking what text would go on it rather than by a lightness
+ * threshold of its own, so this and `autoTextColor` can never disagree — a
+ * background that gets white text but a dark logo is the exact mismatch this
+ * is here to prevent.
+ */
+export function isDarkBackground(background: string): boolean {
+  return autoTextColor(background) === "#ffffff";
+}
+
+/**
  * Nudges a colour's lightness until it clears `minRatio` against `against`.
  *
  * This is what makes the admin re-skin safe to actually work inside: the brand

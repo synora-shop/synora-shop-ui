@@ -1,7 +1,7 @@
 import { PageHeader } from "@/components/ui/primitives";
 import { getStoreSettings } from "@/lib/data/settings";
-import { getThemeTokens } from "@/lib/data/theme";
 import { toHoldingPage } from "@/lib/holding-page";
+import { toBrandMarks, pickLogo } from "@/lib/brand-marks";
 import { currentShop, db } from "@/lib/data/shop";
 import { MaintenanceEditor } from "@/components/admin/maintenance-editor";
 
@@ -22,9 +22,8 @@ export const dynamic = "force-dynamic";
  */
 export default async function MaintenancePage() {
   const shop = await currentShop();
-  const [settings, theme, signups] = await Promise.all([
+  const [settings, signups] = await Promise.all([
     getStoreSettings(),
-    getThemeTokens(),
     // Newest first: a merchant opening this after reopening wants to see who
     // has been waiting longest at the bottom, not to page to them.
     (await db()).reopenSignup.findMany({
@@ -47,7 +46,7 @@ export default async function MaintenancePage() {
         maintenanceMode={settings.maintenanceMode === true}
         storePaused={shop?.status === "PAUSED"}
         storeName={settings.storeName}
-        themeLogoUrl={theme.logoUrl ?? ""}
+        themeLogoUrl={pickLogo(toBrandMarks(settings))}
         signups={signups.map((s) => ({
           id: s.id,
           email: s.email,

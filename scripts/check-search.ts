@@ -95,8 +95,15 @@ check("'logo' finds the logo controls", labelsFor("logo").some((l) => /logo/i.te
 check("'logo colour' puts logo colour first", topFor("logo colour") === "Logo colour", topFor("logo colour"));
 check("'logo color' works with US spelling too",
   labelsFor("logo color").some((l) => /logo/i.test(l)), topFor("logo color"));
-check("'upload logo' finds the logo image field",
-  labelsFor("upload logo").some((l) => /logo image/i.test(l)), topFor("upload logo"));
+// Logo *images* live on Home now, not in the theme — lib/brand-marks.ts. The
+// theme still owns how tall one is drawn and whether it is re-tinted, which is
+// why the two checks above still look for controls rather than a screen.
+check("'upload logo' leads to Home, where logos are set",
+  labelsFor("upload logo").includes("Home"), topFor("upload logo"));
+check("'favicon' leads to Home too",
+  labelsFor("favicon").includes("Home"), topFor("favicon"));
+check("'dark logo' leads to Home",
+  labelsFor("dark logo").includes("Home"), topFor("dark logo"));
 check("'whatsapp' finds sticky buttons",
   labelsFor("whatsapp").includes("Sticky buttons"), topFor("whatsapp"));
 check("'font' finds the font tools", labelsFor("font").some((l) => /font/i.test(l)), topFor("font"));

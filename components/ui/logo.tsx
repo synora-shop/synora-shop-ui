@@ -26,8 +26,9 @@ export function Logo({
   color,
   className,
   height = 24,
-  src = BUILTIN_LOGO,
+  src,
   alt = "Store logo",
+  fallbackText,
 }: {
   /** null or omitted renders the original artwork untouched. */
   color?: string | null;
@@ -35,11 +36,46 @@ export function Logo({
   height?: number;
   src?: string;
   alt?: string;
+  /**
+   * Drawn as a wordmark when there is no image — the shop's own name.
+   *
+   * Without this the empty case fell through to BUILTIN_LOGO, which is *this
+   * platform's* artwork, so every storefront that had never uploaded a logo
+   * wore our mark in its header. The Home screen had been telling merchants
+   * the opposite for as long as it existed: "leave this empty and your store
+   * name is used as the header instead."
+   *
+   * Omitted only by the platform's own site, which really does want its own
+   * artwork.
+   */
+  fallbackText?: string;
 }) {
   // Re-checked at the point of use, not only where it was stored: this value
-  // reaches both an <img src> and a CSS url(), and a bad one falls back to the
-  // built-in mark rather than rendering something unverified.
-  const safeSrc = safeAssetUrl(src) ?? BUILTIN_LOGO;
+  // reaches both an <img src> and a CSS url(), and a bad one is treated as no
+  // image at all rather than rendered unverified.
+  const safeSrc = src ? safeAssetUrl(src) : null;
+
+  if (!safeSrc) {
+    // A shop with no mark gets its name, set in the storefront's heading face.
+    // Only the platform's own site, which passes no fallbackText, still gets
+    // the built-in artwork.
+    if (fallbackText) {
+      return (
+        <span
+          className={cn("font-serif leading-none font-semibold whitespace-nowrap", className)}
+          // Matched to the height the image would have taken, so switching a
+          // logo on or off does not change the height of the header.
+          style={{ fontSize: Math.round(height * 0.75), color: color ?? undefined }}
+        >
+          {fallbackText}
+        </span>
+      );
+    }
+    return (
+      // eslint-disable-next-line @next/next/no-img-element -- SVG logo, skip the image optimizer
+      <img src={BUILTIN_LOGO} alt={alt} className={cn("w-auto", className)} style={{ height }} />
+    );
+  }
 
   if (!color) {
     // eslint-disable-next-line @next/next/no-img-element -- SVG logo, skip the image optimizer

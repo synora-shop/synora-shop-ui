@@ -474,3 +474,47 @@ honest description of what a hint is.
 `check:spotlight` — 31 assertions, including that `.attention` still has
 exactly one user. It is the loudest thing in the product and only works while
 it is rare.
+
+## The shop's marks, 7 September
+
+Asked for: a favicon on Home in the formats that actually work, logos for dark
+and light and for phone and desktop, themes that read this screen and choose
+between them, and logos changeable nowhere else.
+
+The reason it had to move, which was not the reason asked for: **logos were
+theme tokens, and theme tokens are stored per business type.** A merchant who
+switched from a shop to a restaurant lost their logo, and lost it again
+switching back. The same company, the same artwork, two storefronts each
+holding half of it. A logo is identity, not style.
+
+- **`lib/brand-marks.ts`** — four slots on two axes (wide or compact, light or
+  dark background) plus the favicon, on `StoreSettings`. `pickLogo` walks a
+  chosen fallback order so a theme may ask for any combination and is never
+  handed nothing. Shape beats colour at the one ambiguous step: a wordmark that
+  does not fit is illegible, one in the wrong tone is merely wrong.
+- **The migration carries every existing logo across**, and its first draft did
+  not. It preferred the live business type before it preferred a row that
+  actually had a logo, which silently lost the artwork of every merchant who
+  uploaded it under a type they had since switched away from. Logo and favicon
+  are picked independently now, presence before type. Five cases, tested
+  against the database.
+- **A shop with no logo showed *this platform's* artwork in its header** —
+  `/logo.svg`, on every storefront that had never uploaded one — while Home
+  told the merchant their store name would be used instead. It is the store
+  name now, set in the storefront's own heading face.
+- **The favicon is restricted to SVG, PNG and ICO.** WebP is the trap: it
+  previews perfectly in the panel and draws a blank square on a tab. The rule
+  is on the picker, on drop (an `accept` attribute is a filter, not a rule),
+  and in the action.
+- **The theme panel's logo and favicon uploads are gone**, and the settings
+  search no longer sends someone typing "upload logo" to the one screen that no
+  longer has it. What the theme keeps is how tall a mark is drawn and whether
+  it is re-tinted — presentation, which is its job.
+
+`check:brand` — 182 assertions, including that no screen other than Home writes
+a mark.
+
+**Home was also the last screen on the layout Fieldset replaced.** Two cards in
+a two-column grid, each stretched across a 1500px panel around a form a third
+that wide, ending at different heights because nothing made them agree. It is
+Fieldset now, like the other eight.

@@ -79,15 +79,12 @@ export const THEME_GROUPS: ThemeGroup[] = [
     ],
   },
   {
-    title: "Logo & favicon",
+    title: "Logo",
+    // The images themselves are not here. A logo and a favicon are the shop's
+    // identity and are set on Home, once, for every theme — see
+    // lib/brand-marks.ts. What a theme decides is how the mark it is handed is
+    // presented: how tall, and whether it is re-tinted.
     fields: [
-      {
-        key: "logoUrl",
-        kind: "logo",
-        label: "Logo image",
-        info: "Upload your own logo as an SVG or PNG file, up to 2 MB. SVG stays crisp at any size and is what re-tinting works best with. Leave it empty to use the logo the store shipped with.",
-        default: THEME_TOKEN_DEFAULTS.logoUrl,
-      },
       {
         key: "logoHeight",
         kind: "range",
@@ -110,13 +107,6 @@ export const THEME_GROUPS: ThemeGroup[] = [
           { value: "brand", label: "Match accent colour" },
           { value: "auto", label: "Automatic (light or dark)" },
         ],
-      },
-      {
-        key: "faviconUrl",
-        kind: "favicon",
-        label: "Favicon",
-        info: "The small icon on the browser tab and in a bookmark. A square SVG or PNG, up to 2 MB. It is drawn at about 16 pixels, so use the part of your mark that still reads at that size rather than a full wordmark. Leave it empty and the tab shows the platform's icon.",
-        default: THEME_TOKEN_DEFAULTS.faviconUrl,
       },
     ],
   },

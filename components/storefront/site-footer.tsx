@@ -38,13 +38,17 @@ export function SiteFooter({
   copyrightText,
   logoColor,
   logoSrc,
+  storeName,
 }: {
   columns?: FooterColumn[];
   tagline?: string;
   copyrightText?: string;
   /** Resolved against the footer background, which differs from the header's. */
   logoColor?: string | null;
+  /** Resolved for the footer's own background, which may differ from the header's. */
   logoSrc?: string;
+  /** Drawn when the shop has no logo at all. Never the platform's artwork. */
+  storeName?: string;
 }) {
   const footerColumns = columns && columns.length > 0 ? columns : FALLBACK_COLUMNS;
 
@@ -59,7 +63,7 @@ export function SiteFooter({
     >
       <Container className="grid grid-cols-2 gap-8 py-12 sm:grid-cols-4">
         <div className="col-span-2 sm:col-span-1">
-          <Logo color={logoColor} height={24} src={logoSrc} />
+          <Logo color={logoColor} height={24} src={logoSrc} fallbackText={storeName} />
           <p className="mt-3 max-w-xs text-sm text-ink-soft">{tagline || FALLBACK_TAGLINE}</p>
         </div>
 

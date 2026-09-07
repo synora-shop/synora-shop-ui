@@ -51,7 +51,11 @@ const TOOLS: SettingEntry[] = [
   // The breadcrumb is the sidebar section and then the tab, which is what the
   // heading bar shows once you arrive. A result that teaches you where a screen
   // lives is worth more than one that only takes you there.
-  { id: "tool-home", label: "Home", info: "Your store's name, logo, address and phone number.", path: ["Home"], href: "/admin", keywords: ["store name", "logo", "address", "phone", "identity", "contact"] },
+  // Logos and the favicon are searched for here and nowhere else. They used to
+  // be in the theme, and the theme entry below still said so after they moved —
+  // which is the worst kind of stale index entry, because it takes someone to
+  // the one screen that no longer has what they typed.
+  { id: "tool-home", label: "Home", info: "Your store's name, its logos, favicon, address and phone number.", path: ["Home"], href: "/admin", keywords: ["store name", "logo", "logo image", "upload logo", "dark logo", "mobile logo", "compact logo", "favicon", "icon", "tab icon", "brand mark", "wordmark", "branding", "address", "phone", "identity", "contact"] },
   { id: "tool-analytics", label: "Analytics", info: "Revenue, orders and where your visitors come from.", path: ["Analytics"], href: "/admin/analytics", keywords: ["revenue", "sales", "visits", "traffic", "dashboard", "figures", "reports"] },
 
   { id: "tool-products", label: "Products", info: "Your catalog: prices, images, stock and descriptions.", path: ["Products", "Products"], href: "/admin/products", keywords: ["catalog", "catalogue", "items", "stock", "price", "inventory", "sku"] },
@@ -79,7 +83,7 @@ const TOOLS: SettingEntry[] = [
   { id: "tool-account", label: "Account", info: "Your login, your staff, and the security of both.", path: ["Settings", "Account"], href: "/admin/account", keywords: ["login", "password", "staff", "team", "security", "sessions", "email"] },
 
   { id: "tool-customizer", label: "Customize", info: "Lay out pages section by section with a live preview.", path: ["Your App", "Themes"], href: "/admin/customize", keywords: ["sections", "layout", "homepage", "pages", "drag"] },
-  { id: "tool-theme", label: "Colours & type", info: "Colours, typography, logo, favicon and shape for the whole store.", path: ["Your App", "Themes"], href: "/admin/customize/theme", keywords: ["design", "style", "branding", "look", "colour", "color", "font"] },
+  { id: "tool-theme", label: "Colours & type", info: "Colours, typography, and how tall your logo is drawn. The logo images themselves are on Home.", path: ["Your App", "Themes"], href: "/admin/customize/theme", keywords: ["design", "style", "look", "colour", "color", "font", "logo height", "logo colour"] },
 ];
 
 function themeEntries(): SettingEntry[] {

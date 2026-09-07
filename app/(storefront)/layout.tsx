@@ -14,6 +14,8 @@ import { getStickyButtons } from "@/lib/data/sticky-buttons";
 import { getMenus, menuForSlot, headerLinks, footerColumns } from "@/lib/data/menus";
 import { getSiteText, text } from "@/lib/site-text";
 import { toGlobalEdits, footerCopyright } from "@/lib/global-edits";
+import { toBrandMarks, pickLogo, faviconType } from "@/lib/brand-marks";
+import { isDarkBackground } from "@/lib/contrast";
 import { resolveLogoColor } from "@/lib/theme-tokens";
 import { guardCanonicalHost, guardShopHost } from "@/lib/canonical";
 import { headers } from "next/headers";
@@ -56,7 +58,11 @@ export async function generateMetadata(): Promise<Metadata> {
   const edited = settings.storeName?.trim();
   const name = edited && edited !== STORE_DEFAULTS.storeName ? edited : shop.name;
   const description = text(siteText, "footer.tagline");
-  const favicon = tokens.faviconUrl || tokens.logoUrl || null;
+  // The shop's own marks, not the theme's — see lib/brand-marks.ts. The logo
+  // stands in when no favicon is set, because a merchant who has uploaded a
+  // logo has already answered this question without being asked.
+  const marks = toBrandMarks(settings);
+  const favicon = marks.faviconUrl || pickLogo(marks) || null;
 
   return {
     // Relative URLs in metadata resolve against the shop's own address rather
@@ -77,7 +83,9 @@ export async function generateMetadata(): Promise<Metadata> {
     //
     // The logo stands in when no favicon is set, because a merchant who has
     // uploaded a logo has already answered this question without being asked.
-    ...(favicon ? { icons: { icon: favicon } } : {}),
+    ...(favicon
+      ? { icons: { icon: { url: favicon, type: faviconType(favicon) } } }
+      : {}),
   };
 }
 
@@ -116,6 +124,15 @@ export default async function StorefrontLayout({ children }: LayoutProps<"/">) {
     getStickyButtons(),
   ]);
   const edits = toGlobalEdits(settings);
+
+  // The shop's marks, and the two facts a theme needs to choose between them.
+  const marks = toBrandMarks(settings);
+  const headerIsDark = isDarkBackground(tokens.headerBackground);
+  // Falls back to the shop's own name, so a store with no logo shows its name
+  // rather than this platform's artwork — which is what it used to do, on
+  // every storefront that had never uploaded one.
+  const storeDisplayName = resolveStoreDefaults(settings).storeName;
+
   const headerMenu = menuForSlot(menus, settings.headerMenuId, "header");
   const footerMenu = menuForSlot(menus, settings.footerMenuId, "footer");
   const announcementText = edits.announcementText;
@@ -129,11 +146,17 @@ export default async function StorefrontLayout({ children }: LayoutProps<"/">) {
       <AccentTheme accentColor={edits.accentColor} />
       <ThemeStyle tokens={tokens} fonts={fonts} />
       <AnnouncementBar text={announcementText} bgColor={announcementBgColor} />
+      {/* The theme asks brand-marks for a mark that suits this header — its
+          own darkness, and a compact one for narrow widths — and gets the
+          nearest thing the merchant has actually uploaded. It never has to
+          know which of the four slots were filled in. */}
       <SiteHeader
         links={headerLinks(headerMenu?.items ?? [])}
         logoColor={resolveLogoColor(tokens, tokens.headerBackground)}
-        logoSrc={tokens.logoUrl || undefined}
+        logoSrc={pickLogo(marks, { dark: headerIsDark }) || undefined}
+        logoSrcCompact={pickLogo(marks, { dark: headerIsDark, compact: true }) || undefined}
         logoHeight={tokens.logoHeight}
+        storeName={storeDisplayName}
       />
       <main className="flex-1">{children}</main>
       <SiteFooter
@@ -143,7 +166,8 @@ export default async function StorefrontLayout({ children }: LayoutProps<"/">) {
         // Resolved against the footer's own background: a header and footer
         // of different darknesses need different logo treatments.
         logoColor={resolveLogoColor(tokens, tokens.footerBackground)}
-        logoSrc={tokens.logoUrl || undefined}
+        logoSrc={pickLogo(marks, { dark: isDarkBackground(tokens.footerBackground) }) || undefined}
+        storeName={storeDisplayName}
       />
       {/* Configured buttons replace the original hardcoded WhatsApp bubble.
           With none set up the old button still shows, so an existing store

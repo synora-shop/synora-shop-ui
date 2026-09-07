@@ -42,17 +42,16 @@ export type ThemeTokens = {
   footerText: string;
   // "brand" | "auto" | "original" | a hex value — see resolveLogoColor().
   logoColor: string;
-  /** Uploaded logo, or "" to use the built-in artwork at /logo.svg. */
-  logoUrl: string;
   /** Rendered logo height in the header, in pixels. */
   logoHeight: number;
-  /**
-   * The little icon a browser shows on the tab and in a bookmark, or "" for
-   * none. Every other visible mark of a shop's identity was settable and this
-   * one was not, so every storefront on the platform wore the platform's icon
-   * — a merchant's own customers saw our mark on their tab.
-   */
-  faviconUrl: string;
+  //
+  // The logo images and the favicon are deliberately NOT here. They are the
+  // shop's, not the theme's — see lib/brand-marks.ts. Tokens are stored per
+  // business type, so keeping a logo among them meant a merchant who switched
+  // from a shop to a restaurant lost their mark, and lost it again switching
+  // back. What stays is how the theme *presents* a mark it is given: how tall
+  // it is drawn and whether it is re-tinted.
+  //
   /** Whether the admin panel re-skins from this theme. */
   adminSkin: boolean;
   // Typography
@@ -81,9 +80,7 @@ export const THEME_TOKEN_DEFAULTS: ThemeTokens = {
   footerBackground: "#f0e6db",
   footerText: AUTO,
   logoColor: "original",
-  logoUrl: "",
   logoHeight: 28,
-  faviconUrl: "",
   adminSkin: true,
   headingFont: "cormorant",
   bodyFont: "inter",
@@ -176,19 +173,9 @@ export function resolveThemeTokens(stored: unknown): ThemeTokens {
       continue;
     }
 
-    // An uploaded logo ends up in both an <img src> and a CSS url(), so it is
-    // held to the same standard as a colour: recognisably safe, or dropped.
-    if (key === "logoUrl") {
-      out.logoUrl = safeAssetUrl(value) ?? "";
-      continue;
-    }
-
-    // Held to the logo's standard for the same reason: it is interpolated into
-    // a <link href>, so anything not recognisably an asset URL is dropped.
-    if (key === "faviconUrl") {
-      out.faviconUrl = safeAssetUrl(value) ?? "";
-      continue;
-    }
+    // logoUrl and faviconUrl used to be read here. They are the shop's now,
+    // not the theme's — lib/brand-marks.ts — and a stored token by either name
+    // is simply ignored rather than deleted, so a rollback finds it intact.
 
     if (key === "headingFont" || key === "bodyFont") {
       if (typeof value === "string" && FONT_TOKEN.test(value)) out[key] = value;

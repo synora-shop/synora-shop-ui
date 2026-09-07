@@ -27,12 +27,30 @@ export function SiteHeader({
   links,
   logoColor,
   logoSrc,
+  logoSrcCompact,
   logoHeight = 24,
+  storeName,
 }: {
   links?: NavLink[];
   logoColor?: string | null;
+  /** The wide mark, resolved for this header's background. */
   logoSrc?: string;
+  /**
+   * The compact mark, for widths where a wordmark cannot be read.
+   *
+   * Both are rendered and CSS chooses, rather than a media query in
+   * JavaScript. A hook that measures the window has nothing to measure on the
+   * server, so the header would ship one mark, hydrate, and swap — a visible
+   * flicker on the first thing anyone sees of the shop.
+   *
+   * Only differs from logoSrc when the merchant has actually uploaded a
+   * compact mark; lib/brand-marks.ts falls back to the wide one otherwise, and
+   * this renders a single image when the two are the same.
+   */
+  logoSrcCompact?: string;
   logoHeight?: number;
+  /** Drawn when the shop has no logo at all. Never the platform's artwork. */
+  storeName?: string;
 }) {
   const NAV_LINKS = links && links.length > 0 ? links : FALLBACK_NAV_LINKS;
   const [menuOpen, setMenuOpen] = useState(false);
@@ -59,7 +77,31 @@ export function SiteHeader({
         </button>
 
         <Link href="/" className="shrink-0" data-shp-region="logo">
-          <Logo color={logoColor} height={logoHeight} src={logoSrc} />
+          {logoSrcCompact && logoSrcCompact !== logoSrc ? (
+            <>
+              <Logo
+                color={logoColor}
+                height={logoHeight}
+                src={logoSrcCompact}
+                fallbackText={storeName}
+                className="sm:hidden"
+              />
+              <Logo
+                color={logoColor}
+                height={logoHeight}
+                src={logoSrc}
+                fallbackText={storeName}
+                className="hidden sm:inline-block"
+              />
+            </>
+          ) : (
+            <Logo
+              color={logoColor}
+              height={logoHeight}
+              src={logoSrc}
+              fallbackText={storeName}
+            />
+          )}
         </Link>
 
         <nav className="hidden lg:flex lg:gap-8">

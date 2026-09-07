@@ -4,6 +4,7 @@ import { cachedForShop } from "@/lib/data/cached";
 import { GLOBAL_EDITS_DEFAULTS } from "@/lib/global-edits";
 import { VISIBILITY_DEFAULTS } from "@/lib/visibility";
 import { HOLDING_PAGE_COLUMN_DEFAULTS } from "@/lib/holding-page";
+import { BRAND_MARKS_DEFAULTS } from "@/lib/brand-marks";
 import { STORE_DEFAULTS, resolveStoreDefaults } from "@/lib/store-defaults";
 
 const DEFAULTS = {
@@ -21,6 +22,7 @@ const DEFAULTS = {
   ...GLOBAL_EDITS_DEFAULTS,
   ...VISIBILITY_DEFAULTS,
   ...HOLDING_PAGE_COLUMN_DEFAULTS,
+  ...BRAND_MARKS_DEFAULTS,
   ...STORE_DEFAULTS,
 };
 
