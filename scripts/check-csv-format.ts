@@ -16,10 +16,12 @@ import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 import { SHOPIFY_COLUMN_COUNT, SHOPIFY_PRODUCT_COLUMNS } from "../lib/csv/shopify-columns";
 import { CSV_LINE_END, csvField, csvHeader, exportProductsCsv, pricePair, type ExportableProduct } from "../lib/csv/export";
-import { parseCsv, toRecords } from "../lib/csv/parse";
+import { cellNumber, parseCsv, toRecords } from "../lib/csv/parse";
 import { readShopifyProducts } from "../lib/csv/import";
 import { SHOPIFY_CUSTOMER_COLUMNS } from "../lib/csv/customer-columns";
 import { customerCsvHeader, exportCustomersCsv, joinName, readShopifyCustomers, splitName, type ExportableCustomer } from "../lib/csv/customers";
+import { SHOPIFY_ORDER_COLUMNS } from "../lib/csv/order-columns";
+import { exportOrdersCsv, orderCsvHeader, readShopifyOrders, type ExportableOrder } from "../lib/csv/orders";
 
 let pass = 0,
   fail = 0;
@@ -425,6 +427,101 @@ check(
   "somebody with no name is not nameless",
   readShopifyCustomers("Email\r\nsomebody@b.test\r\n").customers[0].name === "somebody"
 );
+
+console.log("\nORDERS GO OUT AND COME BACK");
+
+check("the order header is Shopify's", orderCsvHeader() === SHOPIFY_ORDER_COLUMNS.join(","));
+
+const placed = new Date("2026-03-14T09:30:00.000Z");
+const orders: ExportableOrder[] = [
+  {
+    id: "DZVN00I",
+    customerName: "Faisal Siddiqui",
+    customerEmail: "faisal@example.test",
+    customerPhone: "03001234567",
+    shippingLine1: 'House 12, "The Corner"',
+    shippingLine2: "Street 24",
+    shippingCity: "Karachi",
+    shippingProvince: "Sindh",
+    shippingPostalCode: "75500",
+    subtotal: 43223,
+    shippingFee: 0,
+    total: 43223,
+    discountCode: "WELCOME10",
+    discountAmount: 500,
+    paymentMethod: "BANK_TRANSFER",
+    paymentStatus: "CONFIRMED",
+    orderStatus: "DELIVERED",
+    notes: "Leave with the guard,\nplease",
+    createdAt: placed,
+    items: [
+      { title: "Slim Hoodie (S/Rust)", sku: "DEMO-001-S", quantity: 3, price: 8167 },
+      { title: "Textured Tee (M/Navy)", sku: "DEMO-002-M", quantity: 2, price: 7188 },
+    ],
+  },
+];
+
+const backAgain = readShopifyOrders(exportOrdersCsv(orders, "PKR"));
+check("it reads without complaint", backAgain.problems.length === 0, backAgain.problems.map((p) => `line ${p.line}: ${p.message}`).join("; "));
+check("the order comes back", backAgain.orders.length === 1);
+check("and every column is one Shopify defines", backAgain.unknownColumns.length === 0);
+const back = backAgain.orders[0];
+check("the order number survives", back.reference === "DZVN00I");
+check("the customer survives", back.customerName === "Faisal Siddiqui" && back.customerEmail === "faisal@example.test");
+check("an address with a quote survives", back.shippingLine1 === 'House 12, "The Corner"');
+check("a note with a newline survives", back.notes === "Leave with the guard,\nplease");
+check("the money survives", back.subtotal === 43223 && back.total === 43223);
+check("the discount survives", back.discountCode === "WELCOME10" && back.discountAmount === 500);
+// Shopify says "paid"/"fulfilled"; this platform says CONFIRMED/DELIVERED.
+check("paid comes back as paid", back.paymentStatus === "CONFIRMED");
+check("fulfilled comes back as delivered", back.orderStatus === "DELIVERED");
+check("the payment method survives", back.paymentMethod === "BANK_TRANSFER");
+check("the date survives to the second", back.placedAt.toISOString() === placed.toISOString());
+check("both lines come back", back.items.length === 2);
+check("in the order they were written", back.items[0].sku === "DEMO-001-S");
+check("with their quantities", back.items[0].quantity === 3 && back.items[1].quantity === 2);
+check("and their prices", back.items[1].price === 7188);
+
+console.log("\nA BROKEN ORDER FILE SAYS WHICH LINE IS BROKEN");
+check(
+  "a file with no Name column is refused",
+  readShopifyOrders("Email,Total\r\na@b.test,10\r\n").orders.length === 0
+);
+check(
+  "an order with no email is reported",
+  readShopifyOrders("Name,Email,Total\r\n#1001,,10\r\n").problems.some((p) => p.line === 2)
+);
+check(
+  "a total that is not a number is reported",
+  readShopifyOrders("Name,Email,Total\r\n#1001,a@b.test,lots\r\n").problems.some((p) => /total/i.test(p.message))
+);
+check(
+  "a date that is not a date is reported",
+  readShopifyOrders("Name,Email,Total,Created at\r\n#1001,a@b.test,10,soon\r\n").problems.some((p) => /date/i.test(p.message))
+);
+// A cancelled order is cancelled whatever its fulfilment column says.
+check(
+  "a cancelled order comes back cancelled",
+  readShopifyOrders(
+    "Name,Email,Total,Fulfillment Status,Cancelled at\r\n#1001,a@b.test,10,fulfilled,2026-01-01T00:00:00Z\r\n"
+  ).orders[0].orderStatus === "CANCELLED"
+);
+// Continuation rows carry only the name and their own line.
+check(
+  "a second line joins the order above it",
+  readShopifyOrders(
+    "Name,Email,Total,Lineitem name,Lineitem quantity\r\n#1001,a@b.test,10,One,1\r\n#1001,,,Two,2\r\n"
+  ).orders[0].items.length === 2
+);
+
+// The bug that made this a shared function: a price column full of words
+// imported silently as free, because stripping non-digits turned "lots" into
+// an empty string and an empty string into nothing to complain about.
+check("a cell of words is not a number", cellNumber("lots") === "bad");
+check("an empty cell is nothing, not zero", cellNumber("") === null);
+check("a price with a symbol in it is a number", cellNumber("Rs 1,250") === 1250);
+check("a negative is a number", cellNumber("-40") === -40);
+check("a zero is a zero", cellNumber("0") === 0);
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);

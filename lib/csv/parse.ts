@@ -115,3 +115,25 @@ export function toRecords(rows: string[][]): { header: string[]; records: CsvRow
   });
   return { header, records };
 }
+
+/**
+ * A number from a cell, or a complaint.
+ *
+ * Three answers, not two: `null` when the cell is empty, `"bad"` when it holds
+ * something that is not a number, and the number otherwise. The first version
+ * of this stripped every non-digit and then parsed, which turned "lots" into
+ * an empty string and an empty string into zero — so a price column full of
+ * words imported silently as free.
+ *
+ * Currency symbols, spaces and thousands separators are stripped, because a
+ * spreadsheet writes them and a merchant should not have to know that.
+ */
+export function cellNumber(value: string): number | null | "bad" {
+  const raw = value.trim();
+  if (raw === "") return null;
+  const cleaned = raw.replace(/[^0-9.-]/g, "");
+  // Something was written, and none of it was a number.
+  if (cleaned === "" || !/[0-9]/.test(cleaned)) return "bad";
+  const n = Number(cleaned);
+  return Number.isFinite(n) ? n : "bad";
+}

@@ -24,6 +24,11 @@ import { cn } from "@/lib/utils";
  * and customers arrive in different files with different columns, and a
  * merchant is asked exactly the same question about each.
  */
+/** How many rows pressing Import would actually write. */
+function writable(plan: ImportPlan): number {
+  return plan.rows.filter((r) => r.action !== "skip").length;
+}
+
 export function ImportDialog({
   noun,
   plural,
@@ -177,9 +182,16 @@ export function ImportDialog({
                       <Check className="h-3.5 w-3.5" />
                       {plan.creating} to add
                     </span>
-                    <span className="inline-flex items-center gap-1.5 rounded-pill bg-brand-100 px-2.5 py-1 text-xs font-medium text-brand-700">
-                      {plan.updating} to overwrite
-                    </span>
+                    {plan.updating > 0 && (
+                      <span className="inline-flex items-center gap-1.5 rounded-pill bg-brand-100 px-2.5 py-1 text-xs font-medium text-brand-700">
+                        {plan.updating} to overwrite
+                      </span>
+                    )}
+                    {(plan.skipping ?? 0) > 0 && (
+                      <span className="inline-flex items-center gap-1.5 rounded-pill bg-subtle px-2.5 py-1 text-xs font-medium text-ink-soft">
+                        {plan.skipping} already here
+                      </span>
+                    )}
                     {plan.problems.length > 0 && (
                       <span className="inline-flex items-center gap-1.5 rounded-pill bg-amber-bg px-2.5 py-1 text-xs font-medium text-amber">
                         <AlertTriangle className="h-3.5 w-3.5" />
@@ -234,10 +246,16 @@ export function ImportDialog({
                                 "flex-shrink-0 rounded-pill px-2 py-0.5 text-[11px] font-medium",
                                 row.action === "create"
                                   ? "bg-green-bg text-green"
-                                  : "bg-brand-100 text-brand-700"
+                                  : row.action === "update"
+                                    ? "bg-brand-100 text-brand-700"
+                                    : "bg-subtle text-ink-soft"
                               )}
                             >
-                              {row.action === "create" ? "New" : "Overwrite"}
+                              {row.action === "create"
+                                ? "New"
+                                : row.action === "update"
+                                  ? "Overwrite"
+                                  : "Already here"}
                             </span>
                           </li>
                         ))}
@@ -268,13 +286,13 @@ export function ImportDialog({
                 <Button
                   variant="primary"
                   size="sm"
-                  disabled={!plan || plan.rows.length === 0 || writing}
+                  disabled={!plan || writable(plan) === 0 || writing}
                   onClick={write}
                 >
                   {writing
                     ? "Importing…"
                     : plan
-                      ? `Import ${plan.rows.length} ${plan.rows.length === 1 ? noun : plural}`
+                      ? `Import ${writable(plan)} ${writable(plan) === 1 ? noun : plural}`
                       : "Import"}
                 </Button>
               </div>

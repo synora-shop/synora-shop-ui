@@ -1,3 +1,5 @@
+import { Download } from "lucide-react";
+import { buttonClass } from "@/components/ui/primitives";
 import { cn } from "@/lib/utils";
 import { db } from "@/lib/data/shop";
 import { getStoreSettings } from "@/lib/data/settings";
@@ -14,6 +16,8 @@ import { ListSearch } from "@/components/admin/list-search";
 import { FilterDisclosure } from "@/components/admin/filter-disclosure";
 import { PerPageSelect } from "@/components/admin/per-page-select";
 import { PaginationBar } from "@/components/admin/pagination-bar";
+import { ImportDialog } from "@/components/admin/import-dialog";
+import { applyOrderImport, planOrderImport } from "@/app/admin/orders/import/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -85,8 +89,23 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
             href: sortHref("/admin/orders", sp, o.value, ORDER_SORTS),
           }))}
         />
-        <div className="ml-auto">
+        <div className="ml-auto flex flex-wrap items-center gap-2">
           <PerPageSelect basePath="/admin/orders" searchParams={sp} total={total} />
+          {/* Shopify exports orders and cannot import them, which is why a
+              merchant moving between platforms loses their history. */}
+          <ImportDialog
+            noun="order"
+            plural="orders"
+            blurb="A Shopify order export, or one from here. Orders already here are skipped rather than overwritten — an order is a record of something that happened. Nothing is emailed and no stock moves."
+            matchedBy="order number"
+            overwriteWarning="Orders already here are left exactly as they are. Only the ones this file brings are written."
+            plan={planOrderImport}
+            apply={applyOrderImport}
+          />
+          <a href="/admin/orders/export" className={buttonClass("secondary", "sm")}>
+            <Download className="h-4 w-4" />
+            Export CSV
+          </a>
         </div>
       </ActionBar>
 

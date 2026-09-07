@@ -16,13 +16,23 @@ export type ImportRow = {
   title: string;
   /** A short fact or two about it, right-aligned. */
   detail: string;
-  action: "create" | "update";
+  /**
+   * What would happen to it.
+   *
+   * "skip" is not a failure — it is the honest answer for a record that must
+   * not be rewritten. An order is a record of something that happened, so an
+   * order already here is left exactly as it is, and saying "overwrite" about
+   * it would be a lie the merchant only discovers afterwards.
+   */
+  action: "create" | "update" | "skip";
 };
 
 export type ImportPlan = {
   rows: ImportRow[];
   creating: number;
   updating: number;
+  /** Rows that are already here and will be left alone. */
+  skipping?: number;
   problems: { line: number; message: string }[];
   /** Columns the file carries that the format does not define. */
   unknownColumns: string[];

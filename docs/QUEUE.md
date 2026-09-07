@@ -164,6 +164,14 @@ that both write `businessType` is two rules waiting to disagree.
 
 ## Done on 7 September
 
+- **Import and export for customers and orders.** Products could do both;
+  customers and orders could do neither. Both now use Shopify's own columns.
+  The order half matters most: Shopify exports orders and cannot read them
+  back, which is exactly how a merchant loses their history when they move.
+  Importing an order sends nothing, moves no stock, keeps the date it
+  happened, and skips anything already here rather than rewriting it.
+
+
 - **The Currency setting is read.** Every price on every screen was printed by
   `formatPKR`, which hard-coded rupees, in a product whose Settings offered
   nine currencies. Now: one `formatMoney(amount, currency)`, a context both

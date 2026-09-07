@@ -553,6 +553,29 @@ check("and writing is a second, separate press", /apply: \(csv: string\)/.test(i
 const productsUse = readFileSync(join(ROOT, "app/admin/products/page.tsx"), "utf8");
 const customersUse = readFileSync(join(ROOT, "app/admin/customers/page.tsx"), "utf8");
 check("both lists use it", /<ImportDialog/.test(productsUse) && /<ImportDialog/.test(customersUse));
+// Shopify exports orders and cannot import them, which is why a merchant
+// moving between platforms loses their history.
+const ordersUse = readFileSync(join(ROOT, "app/admin/orders/page.tsx"), "utf8");
+check("orders can be exported and imported", /<ImportDialog/.test(ordersUse) && /\/admin\/orders\/export/.test(ordersUse));
+const orderImport = readFileSync(join(ROOT, "app/admin/orders/import/actions.ts"), "utf8");
+// An order that happened last year must not email a customer today, and must
+// not take stock off a shelf it left months ago.
+check("importing an order sends nothing", !/sendOrderEmails|sendOrderPush|notify/.test(orderImport));
+check(
+  "and moves no stock",
+  // The comment explaining the rule mentions it; a write would be a call.
+  !/(productVariant|stock)\s*[:.]\s*\{?\s*(decrement|increment|update)/.test(orderImport)
+);
+// An order is a record of something that happened.
+check("an order already here is skipped, not rewritten", /action: known\.has\(o\.reference\) \? "skip"/.test(orderImport));
+check("and the date it happened is kept", /createdAt: order\.placedAt/.test(orderImport));
+// Guessing a cost would put a made-up profit on a real order.
+check("an unknown cost stays unknown", /costPrice: 0/.test(orderImport));
+// "Overwrite" would be a lie the merchant only discovers afterwards.
+const dialogSkip = readFileSync(join(ROOT, "components/admin/import-dialog.tsx"), "utf8");
+check("the dialog can say a row will be left alone", /Already here/.test(dialogSkip));
+check("and counts only what it would write", /function writable/.test(dialogSkip));
+
 // A customer list is the most personal thing here: it should be a merchant's
 // to take with them, and theirs to bring in. Both, or neither.
 check("customers can be exported too", /\/admin\/customers\/export/.test(customersUse));

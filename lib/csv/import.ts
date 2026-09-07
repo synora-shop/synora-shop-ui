@@ -1,5 +1,5 @@
 import { SHOPIFY_PRODUCT_COLUMNS } from "@/lib/csv/shopify-columns";
-import { parseCsv, toRecords, type CsvRow } from "@/lib/csv/parse";
+import { cellNumber, parseCsv, toRecords, type CsvRow } from "@/lib/csv/parse";
 
 /**
  * Shopify's product CSV, read back.
@@ -112,15 +112,6 @@ const NO_OPTION = "Default Title";
 
 const text = (row: CsvRow, column: string): string => (row[column] ?? "").trim();
 
-/** A number, or null when the cell is empty. NaN is a problem, not a zero. */
-function number(value: string): number | null | "bad" {
-  const cleaned = value.replace(/[^0-9.-]/g, "");
-  if (cleaned === "") return null;
-  const n = Number(cleaned);
-  if (!Number.isFinite(n)) return "bad";
-  return n;
-}
-
 /** Whatever the file says for a boolean column. Shopify writes TRUE/FALSE. */
 function boolean(value: string, fallback: boolean): boolean {
   const v = value.trim().toLowerCase();
@@ -192,9 +183,9 @@ export function readShopifyProducts(csv: string): ImportReading {
         return;
       }
 
-      const price = number(text(record, "Price"));
-      const compareAt = number(text(record, "Compare-at price"));
-      const cost = number(text(record, "Cost per item"));
+      const price = cellNumber(text(record, "Price"));
+      const compareAt = cellNumber(text(record, "Compare-at price"));
+      const cost = cellNumber(text(record, "Cost per item"));
 
       if (price === "bad") {
         problems.push({ line, message: `"${text(record, "Price")}" is not a price.` });
@@ -249,7 +240,7 @@ export function readShopifyProducts(csv: string): ImportReading {
     // ---- the picture, if this row carries one
     const imageUrl = text(record, "Product image URL");
     if (imageUrl !== "") {
-      const position = number(text(record, "Image position"));
+      const position = cellNumber(text(record, "Image position"));
       imagesByHandle.get(slug)!.push({
         url: imageUrl,
         position: typeof position === "number" ? position : Number.MAX_SAFE_INTEGER,
@@ -270,7 +261,7 @@ export function readShopifyProducts(csv: string): ImportReading {
       // Not a variant: the product itself, written the only way the format can
       // write a product that has none. Its stock still belongs somewhere, so
       // it becomes a single unnamed variant rather than being dropped.
-      const stock = number(inventory);
+      const stock = cellNumber(inventory);
       if (stock === "bad") {
         problems.push({ line, message: `"${inventory}" is not a number of items.` });
         return;
@@ -290,13 +281,13 @@ export function readShopifyProducts(csv: string): ImportReading {
       return;
     }
 
-    const stock = number(inventory);
+    const stock = cellNumber(inventory);
     if (stock === "bad") {
       problems.push({ line, message: `"${inventory}" is not a number of items.` });
       return;
     }
-    const weight = number(text(record, "Weight value (grams)"));
-    const rowPrice = number(text(record, "Price"));
+    const weight = cellNumber(text(record, "Weight value (grams)"));
+    const rowPrice = cellNumber(text(record, "Price"));
     if (rowPrice === "bad") {
       problems.push({ line, message: `"${text(record, "Price")}" is not a price.` });
       return;
