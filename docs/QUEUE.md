@@ -573,6 +573,45 @@ what they cost, what a trial ends into, and what happens on a failed payment —
 Not to be confused with **Payments**, which shipped: that is how a merchant
 takes money from their customers, and it is the other direction.
 
+### The research so far — two money flows, 8 September
+
+A payment-architecture note came back from the merchant's own research
+(`Synora_Digitals_Payment_Integration_Transcript.docx`). Its central point is
+right and is already the shape of this codebase: there are **two** flows, they
+point in opposite directions, and only one of them needs a registered company.
+
+- **Merchant payments** — a shopper pays a merchant. A gateway such as Payfast
+  passes the money straight to the *merchant's* bank account under the
+  *merchant's* own gateway account. The platform is software, never a party to
+  the payment, so the platform needs no registration to build or ship it.
+- **SaaS billing** — a merchant pays Synora. Money lands in a Synora account,
+  which needs a registered entity, an NTN and a business bank account before a
+  provider will open a merchant account at all.
+
+Three things the note leaves out that decide how the code is written:
+
+1. **Pass-through is a rule to enforce, not a description.** The moment a cut is
+   taken or funds touch a platform account, this stops being software and starts
+   being an aggregator. Merchant credentials in, money never through.
+2. **A gateway key is not an account detail.** The four methods that shipped are
+   text a customer reads. A gateway carries a secret: encrypted at rest, never
+   sent to a browser, never logged, never echoed back into a form.
+3. **A return URL is not a payment.** An order may only be marked paid by a
+   signed server-to-server notification, verified and idempotent on the
+   provider's transaction id. Trusting the shopper's redirect is the standard
+   way these are robbed.
+
+Also implied: `ALL_PAYMENT_METHODS` currently models *offline* methods only —
+`detailsField` is a line of text to show. An online gateway needs a payment
+record of its own (attempt, provider reference, amount, status, raw payload)
+kept apart from order status, because an attempt can fail without the order
+changing.
+
+Sequencing that follows from it: the sandbox needs no registration, so merchant
+payments can be built now; billing can start on manual invoices driving the
+`ShopStatus` values that already exist, and only needs a provider when it should
+charge a card by itself.
+
 ## Payments and Store defaults moved, 8 September
 
 Two moves asked for, and a fault under one of them.
