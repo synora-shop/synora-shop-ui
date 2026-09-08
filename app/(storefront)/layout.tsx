@@ -7,7 +7,6 @@ import { ThemeStyle } from "@/components/storefront/theme-style";
 import { AnnouncementBar } from "@/components/storefront/announcement-bar";
 import { getStoreSettings } from "@/lib/data/settings";
 import { CurrencyProvider } from "@/components/ui/currency";
-import { resolveStoreDefaults } from "@/lib/store-defaults";
 import { getThemeTokens } from "@/lib/data/theme";
 import { getFontAssets } from "@/lib/data/fonts";
 import { getStickyButtons } from "@/lib/data/sticky-buttons";
@@ -15,7 +14,9 @@ import { getMenus, menuForSlot, headerLinks, footerColumns } from "@/lib/data/me
 import { getSiteText, text } from "@/lib/site-text";
 import { toGlobalEdits, footerCopyright } from "@/lib/global-edits";
 import { toBrandMarks, pickLogo, faviconType } from "@/lib/brand-marks";
-import { offeredMethods } from "@/lib/payment-methods";
+import { checkoutMethods } from "@/lib/payment-methods";
+import { offerableGateways } from "@/lib/payments/offer";
+import { shopSession } from "@/lib/auth-guard";
 import { isDarkBackground } from "@/lib/contrast";
 import { resolveLogoColor } from "@/lib/theme-tokens";
 import { guardCanonicalHost, guardShopHost } from "@/lib/canonical";
@@ -23,7 +24,7 @@ import { headers } from "next/headers";
 import { SHOP_PATH_HEADER } from "@/lib/shop-context";
 import { canonicalUrl, currentShop } from "@/lib/data/shop";
 import { recordVisit } from "@/lib/analytics/visits";
-import { STORE_DEFAULTS } from "@/lib/store-defaults";
+import { STORE_DEFAULTS, resolveStoreDefaults } from "@/lib/store-defaults";
 import type { Metadata } from "next";
 
 // Settings (WhatsApp number, etc.), menus and site text are admin-editable
@@ -134,6 +135,26 @@ export default async function StorefrontLayout({ children }: LayoutProps<"/">) {
   // every storefront that had never uploaded one.
   const storeDisplayName = resolveStoreDefaults(settings).storeName;
 
+  // What the footer lists as ways to pay.
+  //
+  // The same rule the checkout uses, so the two cannot disagree: a gateway
+  // still in test mode is named only for the shop's own staff, never for a
+  // customer who could not use it.
+  const shop = await currentShop();
+  const staff = shop ? await shopSession() : null;
+  const footerGateways = shop
+    ? await offerableGateways(
+        shop.id,
+        resolveStoreDefaults(settings).currency,
+        !!staff && staff.shop.id === shop.id
+      )
+    : [];
+  const footerMethods = checkoutMethods(
+    settings.enabledPaymentMethods,
+    settings,
+    footerGateways
+  ).map((m) => m.label);
+
   const headerMenu = menuForSlot(menus, settings.headerMenuId, "header");
   const footerMenu = menuForSlot(menus, settings.footerMenuId, "footer");
   const announcementText = edits.announcementText;
@@ -170,8 +191,10 @@ export default async function StorefrontLayout({ children }: LayoutProps<"/">) {
         logoSrc={pickLogo(marks, { dark: isDarkBackground(tokens.footerBackground) }) || undefined}
         storeName={storeDisplayName}
         // What this shop actually takes, not what the platform used to list for
-        // everybody. See lib/payment-methods.ts.
-        paymentMethods={offeredMethods(settings.enabledPaymentMethods, settings).map((m) => m.label)}
+        // everybody. See lib/payment-methods.ts. Gateways included, so a footer
+        // that says "Cash on Delivery" alone is not the last thing a customer
+        // reads before a checkout that also takes cards.
+        paymentMethods={footerMethods}
       />
       {/* Configured buttons replace the original hardcoded WhatsApp bubble.
           With none set up the old button still shows, so an existing store

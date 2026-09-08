@@ -570,6 +570,11 @@ What it needs before it can start: which provider, what the plans are called,
 what they cost, what a trial ends into, and what happens on a failed payment —
 `PAST_DUE` exists but nothing moves a shop into or out of it.
 
+Worth saying now that card payments are built: **none of that engine is reusable
+here**. It is built to hold a merchant's credentials and never touch the money,
+which is the opposite of what billing needs. Billing needs an account in the
+platform's name, and that needs the registration.
+
 Not to be confused with **Payments**, which shipped: that is how a merchant
 takes money from their customers, and it is the other direction.
 
@@ -611,6 +616,40 @@ Sequencing that follows from it: the sandbox needs no registration, so merchant
 payments can be built now; billing can start on manual invoices driving the
 `ShopStatus` values that already exist, and only needs a provider when it should
 charge a card by itself.
+
+## Card payments, 8 September — built
+
+Merchant payments, the half that needs no company registration. Built as an
+engine plus one adapter, so a second provider is a small file rather than
+another chance to make the same mistakes.
+
+**What is done and holding:** sealed credentials (AES-256-GCM, bound to the shop
+and provider), a single verification path that asks the provider rather than
+believing a callback, amount and currency compared against a frozen attempt,
+conditional claim so concurrent callbacks confirm once, thirty-minute stock
+reservations that give back the discount and the redemption row as well as the
+stock, a go-live gate that only a real sandbox payment can open, and 84
+assertions in `npm run check:gateways` holding all of it up.
+
+**What is not proven yet, and cannot be from here:**
+
+- **A real PayFast account.** Everything is testable alone except the wire
+  itself. The sandbox endpoints are confirmed by two independent public SDKs;
+  the live ones are the conventional counterpart and must be checked against the
+  merchant's own onboarding pack. Going live re-probes the credentials against
+  the live host first, so a wrong host fails on the settings screen rather than
+  at a customer's checkout — but it fails, and that is what the four
+  `PAYFAST_*_BASE` variables exist to correct without a deploy.
+- **`PAYMENT_KEYS` in production.** Until it is set, the screen says the
+  platform cannot store keys and refuses to take any. Nothing else breaks.
+- **The exact field names on a live callback.** The reference is read from seven
+  spellings of "basket id" and nothing else is read at all, so a naming surprise
+  costs a delayed confirmation, never a wrong one — the return page and the
+  sweep both re-verify.
+
+**Deliberately not built:** Safepay, refunds through the gateway, partial
+payments, and saved cards. Refunds are the first one worth doing next; today a
+refund is a bank transfer and a note.
 
 ## Payments and Store defaults moved, 8 September
 

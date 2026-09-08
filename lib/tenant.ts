@@ -76,6 +76,14 @@ export const TENANT_MODELS: ReadonlySet<string> = new Set([
   "Membership",
   "StaffInvite",
   "Domain",
+  // Money. Never read through db() today — a gateway callback has no shop
+  // context to read them with, so lib/payments uses the raw client and names
+  // the shop itself. Listed anyway: the day something does reach for one of
+  // these through the tenant client, it must be scoped by default rather than
+  // by whoever remembers.
+  "PaymentGateway",
+  "Payment",
+  "PaymentEvent",
   "Discount",
   "DiscountRedemption",
 ]);

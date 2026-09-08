@@ -221,6 +221,115 @@ Every mutation is a server action. The shape they all share:
 
 ---
 
+## 8b. Taking money
+
+Two directions, and they are not the same system.
+
+**Payments** is how a merchant is paid by their customers. **Billing** is how
+the platform is paid by merchants, and it is not built — see `docs/QUEUE.md`.
+
+### The platform is not a party to a payment
+
+A merchant holds the account with the provider. The provider settles into the
+merchant's own bank. We hold the credentials needed to speak to the provider on
+their behalf and nothing else — no cut, no float, no funds passing through a
+platform account. That is the line between being software and being a payment
+aggregator, and the schema is shaped to make crossing it deliberate rather than
+accidental.
+
+### The one rule
+
+**The provider is asked, never told.**
+
+A gateway's notification endpoint is public and unauthenticated. It has to be:
+the provider's servers must reach it and cannot authenticate to us. So the body
+of a callback is a claim by a stranger, and it is used for exactly one thing —
+which reference to go and ask about.
+
+`lib/payments/verify.ts` is the only code that can make an order paid. Three
+independent paths call it and none of them decides anything itself:
+
+| Path | When |
+| --- | --- |
+| The provider's callback | Whenever the provider says so |
+| The customer's return to the site | Every load of the confirmation page |
+| The daily sweep | Whatever the other two missed |
+
+All three pass a reference and believe the answer. The answer comes from calling
+the provider's own API with the merchant's credentials.
+
+Five rules underneath, each of them a bug somebody has shipped:
+
+- Only `lookup()` can produce PAID.
+- The amount must match the frozen attempt, to the rupee — not the order, which
+  can be edited afterwards.
+- The currency must match.
+- The confirmation is claimed with a conditional write, so two callbacks confirm
+  once and everything downstream hangs off `count === 1`.
+- Anything unclear — unreachable, unparseable, an unrecognised status — leaves
+  the order unpaid. **Failing closed costs a support message. Failing open ships
+  goods for free.**
+
+For contrast: the most-used PayFast library marks an order paid on any POST that
+merely contains a transaction id, and the field PayFast calls `SIGNATURE` is
+filled with random hex by its own reference SDKs. There is nothing on a callback
+to verify, which is why we do not try.
+
+### Credentials
+
+Sealed, not stored. AES-256-GCM, keyed from `PAYMENT_KEYS`, with the shop id and
+provider bound in as additional authenticated data — so a row lifted into
+another shop's id does not decrypt at all, rather than decrypting into somebody
+else's money. `PAYMENT_KEYS` is `version:base64` pairs, comma separated; the
+highest version seals new secrets and the older ones stay until every row is
+re-sealed.
+
+Nothing reads a credential back. There is no action, no API and no screen that
+returns one. Replacing keys proves the new ones against the provider **before**
+the old ones are touched, so a typo changes nothing — a "delete first" version
+of the same feature breaks the checkout in the window between, and destroys a
+working key when the new one is wrong.
+
+### Four states a merchant keeps apart
+
+| | Means | Reversible |
+| --- | --- | --- |
+| Connected | There are keys here | — |
+| Switched on | Customers are offered it | Yes, keeps the keys |
+| Live | Real money | Yes |
+| Disconnected | The keys are erased | **No** |
+
+Live is locked until a sandbox payment has confirmed through the same
+verification path a customer's would. The test is done by the merchant buying
+from their own storefront while signed in: a gateway in test mode is offered to
+the shop's own staff and to nobody else. Nothing about the test is a special
+case, which is the only kind of test worth having.
+
+### Reservations
+
+Stock is decremented when the order is written, before the customer has paid —
+the alternative is two people buying the last item and one of them paying for
+something that does not exist. So a gateway order carries a **thirty-minute**
+deadline, and past it the order is cancelled and gives back all three things it
+took: the stock, the discount use, and the redemption row that enforces a
+per-customer limit.
+
+Released on the paths that care — a checkout about to price the same stock, and
+the merchant's own order list — because the plan allows one scheduled run a day,
+and a thirty-minute hold swept daily is a day-long hold. The cron is the
+backstop for shops nobody has visited.
+
+### Adding a provider
+
+`lib/payments/providers.ts` gains an entry and `lib/payments/` gains an adapter
+with three verbs: `probe`, `start`, `lookup`. Nothing else changes. The engine
+is provider-agnostic on purpose — the security is written once and every gateway
+inherits it, rather than each new one arriving with its own version of the same
+three mistakes. An adapter reports what a provider said and is never asked
+whether to believe it.
+
+---
+
 ## 9. What runs on a schedule
 
 `vercel.json`. **The plan allows one cron run per day**, and a deploy carrying a
@@ -228,7 +337,7 @@ finer expression is refused outright — which is how this was discovered.
 
 | Path | When | Does |
 | --- | --- | --- |
-| `/api/cron/prune` | 03:17 daily | Deletes expired rows |
+| `/api/cron/prune` | 03:17 daily | Deletes expired rows, releases expired payment reservations |
 | `/api/cron/domains` | 04:43 daily | Checks every domain that is due |
 
 Both gated on `CRON_SECRET`, and both **404** an unauthenticated caller rather

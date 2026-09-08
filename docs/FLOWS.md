@@ -304,6 +304,72 @@ to turn `"lots"` into `""` into `0`.
 
 ---
 
+## 5b. Being paid by card
+
+### Connecting
+
+1. **Settings → Payments → Card and wallet payments.** The merchant needs their
+   own account with the provider; the card links out to it.
+2. They paste in their Merchant ID and Secured key. Before anything is written,
+   the keys are used to ask the provider for an access token. **A typo is
+   refused here** — nothing is stored, and if they were replacing existing keys,
+   the old ones keep working.
+3. Accepted keys are sealed and saved **in test mode, switched off**. Saving a
+   key never switches a gateway on: that is a separate, deliberate act.
+
+### Proving it works
+
+4. The merchant switches it on. While it is in test mode it appears at checkout
+   **for them and nobody else** — the storefront asks whether the visitor is a
+   member of this shop, server-side.
+5. They open their own storefront, buy something, and are sent to the provider's
+   sandbox. They pay with a test card and come back.
+6. That payment confirms through exactly the same verification path a customer's
+   would, and confirming is what writes `sandboxVerifiedAt`. **Nothing else can
+   write it** — a merchant cannot unlock live payments by saving a form.
+7. **Take real payments** unlocks. Switching it on re-proves the keys against
+   the live endpoint first, so a wrong live key is discovered on this screen
+   rather than by a customer who could not pay.
+
+### A customer paying
+
+8. They pick the gateway at checkout and press **Continue to payment** — which
+   says that, not "Place order", because pressing it takes them to another site.
+9. The order is written, stock is decremented, and it is given a **thirty-minute
+   deadline**. An attempt row freezes the amount asked for.
+10. The browser posts a form to the provider. Nothing secret is in it: the
+    merchant's key never leaves the server, and the one-time token it bought is
+    worth nothing alone.
+11. The customer pays and comes back to the confirmation page.
+
+### What decides whether they paid
+
+12. **Not the URL they came back to.** That is a link, and anybody can type it.
+    Landing on the confirmation page triggers a verification: we call the
+    provider with the merchant's credentials and ask what happened to that
+    reference.
+13. The provider's callback does the same thing, from the other direction, and
+    reads nothing from its own body but the reference.
+14. Both funnel into one function. The amount and currency must match the frozen
+    attempt; the confirmation is claimed with a conditional write so two arriving
+    together confirm once; and only the winner sends the emails and the push.
+15. **Anything unclear leaves it unpaid.** An unreachable provider is not a
+    failed payment and is not a successful one.
+
+### When it does not go through
+
+- **Declined**: the attempt is marked failed, the order keeps its reservation,
+  and the confirmation page offers **Try paying again** — which re-reads the
+  amount from the order rather than taking it from the caller.
+- **Abandoned**: at thirty minutes the order is cancelled and gives back the
+  stock, the discount use and the redemption row. Released when a checkout or
+  the merchant's order list next looks, with the daily cron as the backstop.
+- **Paid the wrong amount**: never confirmed, never quietly cancelled. Marked
+  as a mismatch and left for a person, because money may genuinely have moved
+  and that is not a state for software to guess its way out of.
+
+---
+
 ## 6. Everything that saves
 
 One bar, one pattern, every screen. `components/admin/use-editor.ts`.

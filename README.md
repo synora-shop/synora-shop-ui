@@ -89,6 +89,38 @@ The whole-units decision does not fit a currency with a minor unit — a
 merchant cannot price something at 19.99 today. Changing it means storing minor
 units everywhere and migrating every row; see `docs/QUEUE.md`.
 
+### Taking it
+
+A shop can connect its **own** account with a payment gateway, and the money
+settles into the merchant's bank. The platform is never a party to the payment:
+no cut, no float, nothing passing through a platform account.
+
+The rule the whole engine is shaped around is **the provider is asked, never
+told**. A callback's body is a claim by a stranger — its endpoint is public
+because it has to be — so it is used only to decide which reference to ask the
+provider about. `lib/payments/verify.ts` is the only code that can mark an order
+paid, and it fails closed on anything unclear.
+
+**`PAYMENT_KEYS` must be set or no gateway can be connected at all.** It seals
+merchant credentials, and the screen says plainly when it is missing rather than
+accepting a secured key it cannot encrypt:
+
+```bash
+node -e "console.log('1:' + require('crypto').randomBytes(32).toString('base64'))"
+```
+
+One or more `version:base64` pairs, comma separated. The highest version seals
+new secrets; keep the older ones until every row has been re-sealed. **Losing
+the key means every merchant re-enters their credentials** — it cannot be
+recovered from the database, which is the point of it.
+
+Optional, and only if a provider's onboarding pack names different hosts than
+the defaults: `PAYFAST_SANDBOX_BASE`, `PAYFAST_LIVE_BASE`,
+`PAYFAST_SANDBOX_VERIFY_BASE`, `PAYFAST_LIVE_VERIFY_BASE`. Overrides are checked
+against a host allowlist, so this cannot be pointed at somebody else's server.
+
+`docs/ARCHITECTURE.md` §8b has the rest.
+
 ---
 
 ## Leaving and arriving
