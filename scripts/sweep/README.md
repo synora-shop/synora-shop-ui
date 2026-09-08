@@ -13,6 +13,7 @@ what happens when somebody lies to the checkout.
     npx tsx scripts/sweep/arithmetic.ts   # 61-70  does the money add up
     npx tsx scripts/sweep/staleness.ts    # 71-80  guards, caches and integrity
     npx tsx scripts/sweep/closed.ts       # 96-100 a shut shop, and two orders at once
+    npx tsx scripts/sweep/payments.ts     # 101-115 lying to a payment callback
     npx tsx scripts/sweep/facts.ts        # what the database says, for the browser probes
 
 The browser half needs Chrome listening on the DevTools port and a signed-in

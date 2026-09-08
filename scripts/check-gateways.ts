@@ -31,6 +31,7 @@ import { join, relative } from "path";
 import { randomBytes } from "crypto";
 import * as crypto from "../lib/payments/crypto";
 import { checkoutMethods, checkoutMethodValues } from "../lib/payment-methods";
+import { amountsMatch, currenciesMatch, AMOUNT_TOLERANCE } from "../lib/payments/amounts";
 import {
   providerSupportsCurrency,
   RESERVATION_MS,
@@ -218,6 +219,37 @@ check(
   /adapterFor\(provider\)\.lookup\(/.test(verify),
   "the only thing allowed to produce PAID"
 );
+// Called, not grepped. This is the comparison that decides whether goods ship.
+check("the exact amount matches", amountsMatch(1000, 1000));
+check("and its decimal spelling does", amountsMatch(1000, 1000.0));
+check("a rupee short does not", !amountsMatch(1000, 999), "the underpayment case");
+check("a rupee over does not", !amountsMatch(1000, 1001));
+check(
+  "a hundredth short does not",
+  !amountsMatch(1000, 999.99),
+  "the tolerance absorbs float parsing, not money"
+);
+check("nothing does not", !amountsMatch(1000, null));
+check("undefined does not", !amountsMatch(1000, undefined));
+check("NaN does not", !amountsMatch(1000, Number.NaN), "the value a failed parse produces");
+check("Infinity does not", !amountsMatch(1000, Number.POSITIVE_INFINITY));
+check("zero against a real price does not", !amountsMatch(1000, 0));
+check("and a free order is still compared", amountsMatch(0, 0) && !amountsMatch(0, 1));
+check("the tolerance is half a minor unit", AMOUNT_TOLERANCE === 0.005);
+
+check("the same currency matches", currenciesMatch("PKR", "PKR"));
+check("in any case", currenciesMatch("PKR", "pkr") && currenciesMatch("PKR", " PKR "));
+check(
+  "a different one does not",
+  !currenciesMatch("PKR", "USD"),
+  "1000 dollars is not 1000 rupees"
+);
+check(
+  "and a provider that says nothing is not treated as disagreeing",
+  currenciesMatch("PKR", null),
+  "the amount check still has to pass on its own"
+);
+
 check(
   "the amount is compared before confirming",
   verify.indexOf("amountsMatch") < verify.indexOf("return confirm(") &&
@@ -226,7 +258,7 @@ check(
 );
 check(
   "so is the currency",
-  /answer\.currency\.toUpperCase\(\) !== payment\.currency\.toUpperCase\(\)/.test(verify)
+  /currenciesMatch\(payment\.currency, answer\.currency\)/.test(verify)
 );
 check(
   "a confirmation is claimed conditionally",
@@ -482,6 +514,29 @@ check(
 check(
   "and only over https",
   /parsed\.protocol !== "https:"/.test(read("lib/payments/adapter.ts"))
+);
+check(
+  "the transaction-status endpoint has no guessed default",
+  !/PAYFAST_(SANDBOX|LIVE)_VERIFY_BASE\s*\|\|/.test(adapter),
+  "it is not published, and a wrong default would fail in silence rather than loudly"
+);
+check(
+  "a gateway that cannot be checked is offered to nobody",
+  /canVerify\(row\.provider, row\.mode\)/.test(read("lib/payments/offer.ts")),
+  "otherwise customers reach a payment page and every order stays unpaid"
+);
+check(
+  "and cannot be taken live",
+  /if \(!canVerify\(provider, "LIVE"\)\)/.test(gateways)
+);
+check(
+  "and the merchant is told it is our missing setting, not theirs",
+  /missing its check address/.test(gateways)
+);
+check(
+  "an unrecognised merchant is explained rather than shown a status code",
+  /did not recognise this Merchant ID and Secured key/.test(adapter),
+  "PayFast answers an unknown merchant with a 500 and a .NET null reference"
 );
 check(
   "every gateway call has a timeout",

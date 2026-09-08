@@ -48,11 +48,19 @@ const ALLOWED_HOSTS = ["apps.net.pk", "gopayfast.com"] as const;
 /**
  * Where each environment lives.
  *
- * The sandbox pair is confirmed by two independent public SDKs. The live pair
- * is the conventional counterpart and must be checked against the merchant's
- * own onboarding pack — which is why going live re-probes the credentials
- * against the live host before it is allowed, rather than trusting this
- * constant and finding out at a customer's checkout.
+ * The token and checkout pair is confirmed two ways: by two independent public
+ * SDKs, and by asking the hosts directly — the sandbox answers a bad key with a
+ * 500, and PostTransaction answers a GET with a 405, both of which are the
+ * replies of endpoints that exist.
+ *
+ * **The transaction-status endpoint has no default, on purpose.** It is not
+ * published: the reference package requires the integrator to configure it,
+ * and every path that could plausibly be it answers 404 from outside. A guessed
+ * default would be worse than none, because it would fail quietly — payments
+ * would simply never confirm, and nobody would be told why. So it is required
+ * configuration, its absence is reported as a blocked gateway on the settings
+ * screen, and going live is refused until it is set. The value comes from the
+ * merchant's own PayFast onboarding pack.
  */
 function endpoints(mode: GatewayModeValue) {
   const sandbox = mode === "SANDBOX";
@@ -60,14 +68,23 @@ function endpoints(mode: GatewayModeValue) {
     ? process.env.PAYFAST_SANDBOX_BASE || "https://ipguat.apps.net.pk/Ecommerce/api/Transaction/"
     : process.env.PAYFAST_LIVE_BASE || "https://ipg1.apps.net.pk/Ecommerce/api/Transaction/";
   const verifyBase = sandbox
-    ? process.env.PAYFAST_SANDBOX_VERIFY_BASE || "https://ipguat.apps.net.pk/Ecommerce/api/"
-    : process.env.PAYFAST_LIVE_VERIFY_BASE || "https://ipg1.apps.net.pk/Ecommerce/api/";
+    ? process.env.PAYFAST_SANDBOX_VERIFY_BASE
+    : process.env.PAYFAST_LIVE_VERIFY_BASE;
 
   return {
     token: assertAllowedHost(new URL("GetAccessToken", base).toString(), ALLOWED_HOSTS).toString(),
     checkout: assertAllowedHost(new URL("PostTransaction", base).toString(), ALLOWED_HOSTS).toString(),
-    verifyBase: assertAllowedHost(verifyBase, ALLOWED_HOSTS).toString(),
+    verifyBase: verifyBase
+      ? assertAllowedHost(verifyBase, ALLOWED_HOSTS).toString()
+      : null,
   };
+}
+
+/** Whether payments in this mode can be verified at all. */
+export function payfastCanVerify(mode: GatewayModeValue): boolean {
+  return !!(mode === "SANDBOX"
+    ? process.env.PAYFAST_SANDBOX_VERIFY_BASE
+    : process.env.PAYFAST_LIVE_VERIFY_BASE);
 }
 
 /** PKR has no minor unit in practice, but PayFast wants two decimal places. */
@@ -92,12 +109,29 @@ async function postForm(url: string, body: Record<string, string>): Promise<unkn
     cache: "no-store",
   });
   const text = await res.text();
-  if (!res.ok) throw new Error(`PayFast returned ${res.status}`);
+
+  let payload: unknown = null;
   try {
-    return JSON.parse(text);
+    payload = JSON.parse(text);
   } catch {
-    throw new Error("PayFast returned something that is not JSON");
+    /* Left null; handled below. */
   }
+
+  if (!res.ok) {
+    // PayFast answers an unrecognised merchant with a 500 and a .NET null
+    // reference rather than a refusal, so the status code alone cannot be
+    // shown to a shop owner — "PayFast returned 500" tells them nothing they
+    // can act on. Confirmed by asking the sandbox directly with a made-up key.
+    const exception = field(payload, "ExceptionType", "ExceptionMessage") ?? "";
+    if (res.status >= 500 && /NullReference/i.test(exception)) {
+      throw new Error("PayFast did not recognise this Merchant ID and Secured key");
+    }
+    const said = field(payload, "MESSAGE", "message", "Message", "ERROR_MESSAGE");
+    throw new Error(said ? `PayFast said: ${said}` : `PayFast returned ${res.status}`);
+  }
+
+  if (payload == null) throw new Error("PayFast returned something that is not JSON");
+  return payload;
 }
 
 /** Case-insensitive read, because these APIs are inconsistent about it. */
@@ -225,6 +259,16 @@ export const payfast: GatewayAdapter = {
   async lookup(credentials, mode, reference): Promise<LookupResult> {
     try {
       const { verifyBase } = endpoints(mode);
+      if (!verifyBase) {
+        // Fails closed, loudly. Without somewhere to ask, nothing can be
+        // confirmed — and confirming on anything less than an answer from
+        // PayFast is the one thing this whole engine exists not to do.
+        return {
+          ok: false,
+          error:
+            "This platform has not been told where to check PayFast payments. Nothing can be confirmed until PAYFAST_SANDBOX_VERIFY_BASE / PAYFAST_LIVE_VERIFY_BASE is set from your PayFast onboarding pack.",
+        };
+      }
       const url = new URL("transaction/view/basket/id", verifyBase);
       url.searchParams.set("basket_id", reference);
       assertAllowedHost(url.toString(), ALLOWED_HOSTS);

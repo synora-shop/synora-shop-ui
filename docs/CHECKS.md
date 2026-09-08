@@ -1,6 +1,6 @@
 # The guards
 
-Twenty-five scripts, **2,381 assertions as of 8 September 2026**, all of them
+Twenty-five scripts, **2,402 assertions as of 8 September 2026**, all of them
 dependency-free, all exiting non-zero on failure. `npm run check` runs the lot.
 
 The per-script counts below are a snapshot and will drift as assertions are
@@ -13,7 +13,9 @@ top of each says which. **Read that comment before deleting a check** — severa
 of them look arbitrary until you know what they caught.
 
 There is a second half that these cannot do: `scripts/sweep/` drives a running
-shop with a hundred probes, for the faults that reading source cannot find.
+shop with a hundred and fifteen probes, for the faults that reading source
+cannot find — including 101-115, which lie to a payment callback in every shape
+the popular integrations accept.
 
 ---
 
@@ -39,7 +41,7 @@ shop with a hundred probes, for the faults that reading source cannot find.
 | `check:paging` **37** | Page counts, bounds, the last page | — |
 | `check:spotlight` **31** | The refusal points at the cure; `.attention` has exactly one user | "Pause it first" named a cure without saying where it was kept |
 | `check:address` **48** | Renaming a shop moves its address without touching a custom domain, breaking shared links, or taking a name somebody holds | A store's public URL is derived from its name, so a rename is three dangerous things at once |
-| `check:gateways` **84** | Sealed credentials really seal; only the verification path pays for an order, and only by asking the provider; test mode never reaches a customer; an unpaid order gives back everything it took | The most-used PayFast library marks an order paid on any POST carrying a transaction id, and the field PayFast calls SIGNATURE is random hex |
+| `check:gateways` **105** | Sealed credentials really seal; only the verification path pays for an order, and only by asking the provider; test mode never reaches a customer; an unpaid order gives back everything it took | The most-used PayFast library marks an order paid on any POST carrying a transaction id, and the field PayFast calls SIGNATURE is random hex |
 | `check:payments` **32** | A merchant chooses how they get paid; a method with no details is not offered; the server refuses one the shop does not take | Which methods existed was a constant in source, while Settings offered account details for methods no customer could pick |
 | `check:editor` **29** | Discard and Save exist wherever there is unsaved work | — |
 | `check:responsive` **29** | No screen scrolls sideways | — |

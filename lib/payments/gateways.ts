@@ -1,7 +1,7 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import { credentialContext, open, paymentCryptoReady, seal } from "@/lib/payments/crypto";
-import { payfast } from "@/lib/payments/payfast";
+import { payfast, payfastCanVerify } from "@/lib/payments/payfast";
 import {
   gatewayMeta,
   providerSupportsCurrency,
@@ -97,11 +97,30 @@ function blockedReason(
     const meta = gatewayMeta(provider)!;
     return `${meta.label} settles in ${meta.currencies.join(", ")}, and this store prices in ${currency}.`;
   }
+  if (!canVerify(provider, row.mode)) {
+    // Named rather than left to fail quietly. Without somewhere to ask the
+    // provider, a payment can never be confirmed — and a merchant watching
+    // orders sit unpaid deserves to know it is a missing setting on our side,
+    // not something they did.
+    return "We can't confirm payments with this provider yet — the platform is missing its check address. Nothing will be charged until it is set.";
+  }
   if (!row.isActive) return "Switched off. Customers are not being offered it.";
   if (row.mode === "SANDBOX") {
     return "In test mode. Real customers cannot pay with it until you go live.";
   }
   return null;
+}
+
+/**
+ * Whether a confirmed payment is even possible in this mode.
+ *
+ * PayFast's transaction-status endpoint is not published — its own reference
+ * package makes the integrator configure it, and it arrives in a merchant's
+ * onboarding pack. Rather than guess a URL that would 404 in silence, the
+ * absence is a first-class state that every screen and every gate reads.
+ */
+export function canVerify(provider: GatewayProviderValue, mode: GatewayModeValue): boolean {
+  return provider === "PAYFAST" ? payfastCanVerify(mode) : true;
 }
 
 /** The stored connection, or null. Never includes anything readable. */
@@ -147,6 +166,7 @@ export function isUsable(row: PaymentGateway | null, currency: string): row is P
   if (row.mode !== "LIVE") return false;
   if (!providerSupportsCurrency(row.provider, currency)) return false;
   if (!paymentCryptoReady()) return false;
+  if (!canVerify(row.provider, row.mode)) return false;
   return true;
 }
 
@@ -287,6 +307,13 @@ export async function setMode(
   if (!row?.secret) return { ok: false, error: "Connect this gateway first." };
 
   if (mode === "LIVE") {
+    if (!canVerify(provider, "LIVE")) {
+      return {
+        ok: false,
+        error:
+          "This platform cannot check live payments with that provider yet, so nothing would ever confirm. Still in test mode.",
+      };
+    }
     if (!row.sandboxVerifiedAt) {
       return {
         ok: false,

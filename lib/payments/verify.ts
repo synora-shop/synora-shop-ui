@@ -4,6 +4,7 @@ import { adapterFor, openCredentials } from "@/lib/payments/gateways";
 import { releaseOrder } from "@/lib/payments/reservations";
 import type { GatewayProviderValue } from "@/lib/payments/providers";
 import { announcePaidOrder } from "@/lib/payments/announce";
+import { amountsMatch, currenciesMatch } from "@/lib/payments/amounts";
 import type { Payment } from "@/lib/generated/prisma/client";
 
 /**
@@ -46,12 +47,6 @@ export type VerifyOutcome =
   | { state: "MISMATCHED"; orderId: string; reason: string }
   | { state: "UNAVAILABLE"; orderId: string | null; reason: string }
   | { state: "UNKNOWN_REFERENCE" };
-
-/** Amounts are whole currency units; the provider answers in decimals. */
-function amountsMatch(asked: number, paid: number | null): boolean {
-  if (paid == null || !Number.isFinite(paid)) return false;
-  return Math.abs(paid - asked) < 0.005;
-}
 
 async function record(args: {
   payment: Payment | null;
@@ -167,7 +162,7 @@ export async function verifyPayment(
         ip
       );
     }
-    if (answer.currency && answer.currency.toUpperCase() !== payment.currency.toUpperCase()) {
+    if (!currenciesMatch(payment.currency, answer.currency)) {
       return mismatch(
         payment,
         source,

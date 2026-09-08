@@ -1,5 +1,5 @@
 import "server-only";
-import { allGatewayRows } from "@/lib/payments/gateways";
+import { allGatewayRows, canVerify } from "@/lib/payments/gateways";
 import { paymentCryptoReady } from "@/lib/payments/crypto";
 import { gatewayMeta, providerSupportsCurrency } from "@/lib/payments/providers";
 import type { OfferableGateway } from "@/lib/payment-methods";
@@ -40,6 +40,10 @@ export async function offerableGateways(
 function offerable(row: PaymentGateway, currency: string, isStaff: boolean): boolean {
   if (!row.secret) return false;
   if (!row.isActive) return false;
+  // Nowhere to ask whether a payment succeeded means no payment can ever be
+  // confirmed. Offering it would take customers to a payment page and then
+  // leave every one of their orders unpaid.
+  if (!canVerify(row.provider, row.mode)) return false;
   if (!providerSupportsCurrency(row.provider, currency)) return false;
   if (row.mode === "SANDBOX") return isStaff;
   return true;
