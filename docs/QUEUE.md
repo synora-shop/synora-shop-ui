@@ -631,6 +631,19 @@ reservations that give back the discount and the redemption row as well as the
 stock, a go-live gate that only a real sandbox payment can open, and 84
 assertions in `npm run check:gateways` holding all of it up.
 
+**Deployed 8 September**, commit `48e12a7`, aliased to app/shop/*.shop
+.synoradigitals.com. Both migrations applied — the checkout renders its payment
+list on every request and reads the `PaymentGateway` table to do it, so a
+missing table would be a 500 rather than a 200.
+
+**`PAYMENT_KEYS` is not set in production yet**, deliberately: setting a
+production secret needs the merchant's own hand. Until it is, the Payments
+screen says card payments are not configured and refuses to accept a key, and
+`offerableGateways` returns nothing — so no storefront is affected in any way.
+
+    printf '1:%s' "$(node -e "console.log(require('crypto').randomBytes(32).toString('base64'))")" \
+      | npx vercel env add PAYMENT_KEYS production
+
 **What is not proven yet, and cannot be from here:**
 
 - **A real PayFast account.** Everything is testable alone except the wire
