@@ -18,6 +18,8 @@ import { PerPageSelect } from "@/components/admin/per-page-select";
 import { PaginationBar } from "@/components/admin/pagination-bar";
 import { ImportDialog } from "@/components/admin/import-dialog";
 import { applyOrderImport, planOrderImport } from "@/app/admin/orders/import/actions";
+import { releaseExpiredForShop } from "@/lib/payments/reservations";
+import { currentShopId } from "@/lib/data/shop";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +28,15 @@ const STATUSES = ["PENDING", "CONFIRMED", "PACKED", "SHIPPED", "DELIVERED", "CAN
 export default async function AdminOrdersPage(props: PageProps<"/admin/orders">) {
   const sp = await props.searchParams;
   const { timeZone } = await getStoreSettings();
+
+  // Give back stock held by online payments nobody finished.
+  //
+  // Here as well as at checkout because this is the other screen where a stale
+  // reservation misleads someone: a merchant looking at their orders should not
+  // see a list of pending sales that no longer exist, nor a stock figure that
+  // is quietly short. The scheduled sweep runs once a day, which is all the
+  // plan allows, so the work is done where it is noticed.
+  await releaseExpiredForShop(await currentShopId()).catch(() => {});
   const status = keepKnown(readFilter(sp, "status"), STATUSES);
 
   // An order is looked for by its number, or by whoever placed it. Those are

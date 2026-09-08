@@ -138,6 +138,10 @@ enum PaymentMethod {
   BANK_TRANSFER
   JAZZCASH
   EASYPAISA
+  /// Paid through the PayFast gateway. One value per provider rather than a
+  /// single "CARD", because which provider took the money is a fact about the
+  /// order that a merchant will need when they reconcile their settlements.
+  PAYFAST
 }
 
 enum PaymentStatus {

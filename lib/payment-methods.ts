@@ -119,3 +119,92 @@ export function methodsMissingDetails(
     return !(typeof value === "string" && value.trim().length > 0);
   });
 }
+
+/* ---------------------------------------------------------------------------
+ * Gateways
+ *
+ * A hosted gateway is a way to pay, so it belongs in the same list as the
+ * others — but it is switched on somewhere else, and that difference is worth
+ * being explicit about.
+ *
+ * The four methods above are toggled in `enabledPaymentMethods`. A gateway is
+ * not: its own connection row carries whether it is active, because that switch
+ * has to sit beside the credentials, the test mode and the go-live gate. Two
+ * switches for one thing is the shape of the bug this file was written to fix —
+ * a merchant turning something on in one place while another place quietly
+ * keeps it off — so a gateway has exactly one, and it is not here.
+ * ------------------------------------------------------------------------- */
+
+/** One thing a customer can pick at checkout, whatever kind it is. */
+export type CheckoutMethod = {
+  value: string;
+  label: string;
+  hint: string;
+  kind: "offline" | "gateway";
+  /**
+   * What the customer is shown once they pick it — the merchant's bank details
+   * and so on. Null for a gateway, which shows nothing because the customer is
+   * about to leave for the provider's own page.
+   */
+  instructions: string | null;
+  /** True when picking it sends the customer to another website. */
+  redirects: boolean;
+};
+
+/** A gateway the storefront may offer, already filtered by the caller. */
+export type OfferableGateway = {
+  /** The `PaymentMethod` value, e.g. "PAYFAST". */
+  value: string;
+  label: string;
+  /** True while the shop's own staff are testing it. Shown, never hidden. */
+  testMode: boolean;
+};
+
+/**
+ * Everything a customer may choose from, in the order they should see it.
+ *
+ * Gateways first: paying now is the path most shoppers want, and burying it
+ * under three sets of transfer instructions is how a store ends up with a
+ * checkout that technically supports cards and practically does not.
+ *
+ * The never-empty rule from `offeredMethods` still holds underneath, so a shop
+ * with no gateway and nothing filled in still has a working checkout.
+ */
+export function checkoutMethods(
+  enabled: readonly string[],
+  details: Record<string, unknown>,
+  gateways: readonly OfferableGateway[] = []
+): CheckoutMethod[] {
+  const online: CheckoutMethod[] = gateways.map((g) => ({
+    value: g.value,
+    label: g.label,
+    hint: g.testMode
+      ? "Test mode — only you can see this, and no real money moves."
+      : "Pay securely by card, wallet or bank. You'll come straight back.",
+    kind: "gateway",
+    instructions: null,
+    redirects: true,
+  }));
+
+  const offline: CheckoutMethod[] = offeredMethods(enabled, details).map((m) => ({
+    value: m.value,
+    label: m.label,
+    hint: m.hint,
+    kind: "offline",
+    instructions: m.detailsField
+      ? ((details[m.detailsField] as string | null | undefined) ?? null)
+      : null,
+    redirects: false,
+  }));
+
+  return [...online, ...offline];
+}
+
+/** Just the values, for validating what a checkout submitted. */
+export function checkoutMethodValues(
+  enabled: readonly string[],
+  details: Record<string, unknown>,
+  gateways: readonly OfferableGateway[] = []
+): string[] {
+  return checkoutMethods(enabled, details, gateways).map((m) => m.value);
+}

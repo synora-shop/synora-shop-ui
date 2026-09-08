@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { previewDiscount } from "@/app/(storefront)/checkout/actions";
 import { CITIES } from "@/lib/cities";
 import { isValidEmail, isValidPakistaniPhone } from "@/lib/validation";
-import { offeredMethods } from "@/lib/payment-methods";
+import type { CheckoutMethod } from "@/lib/payment-methods";
 import { useMoney } from "@/components/ui/currency";
 import { FieldError } from "@/components/ui/primitives";
 
@@ -49,16 +49,55 @@ type Labels = {
   emailError?: string;
   phoneError?: string;
   genericError?: string;
+  continueToPayment?: string;
+  sendingToGateway?: string;
+  gatewayNote?: string;
 };
+
+/**
+ * Send the browser to a payment provider.
+ *
+ * These gateways take their parameters by POST, so this builds a real form and
+ * submits it: a top-level navigation the customer can see in their address bar,
+ * not a fetch. Nothing secret travels — the merchant's key never leaves the
+ * server, and the one-time token in here is worth nothing on its own.
+ */
+function handOver(url: string, fields: Record<string, string>): void {
+  const form = document.createElement("form");
+  form.method = "POST";
+  form.action = url;
+  form.style.display = "none";
+
+  for (const [name, value] of Object.entries(fields)) {
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = name;
+    input.value = value;
+    form.appendChild(input);
+  }
+
+  document.body.appendChild(form);
+  form.submit();
+}
 
 export function CheckoutForm({
   settings,
+  methods,
   initialValues,
   placeOrderLabel = "Place Order",
   placingOrderLabel = "Placing order…",
   labels = {},
 }: {
   settings: Settings;
+  /**
+   * What this shop accepts, worked out on the server.
+   *
+   * Passed in rather than derived here, because the list now includes gateways
+   * and whether a gateway may be offered depends on things a browser must not
+   * be asked about: whether it is connected, whether it is live, and whether
+   * the person looking is the shop's own staff.
+   */
+  methods: CheckoutMethod[];
   initialValues?: InitialValues;
   placeOrderLabel?: string;
   placingOrderLabel?: string;
@@ -81,19 +120,27 @@ export function CheckoutForm({
     emailError = "Please enter a valid email address.",
     phoneError = "Please enter a valid Pakistani phone number, e.g. 03XXXXXXXXX.",
     genericError = "Something went wrong",
+    // Said plainly, because the button no longer finishes the job: pressing it
+    // takes the customer to another website. A shopper who expects "order
+    // placed" and gets a bank's payment page abandons it.
+    continueToPayment: continueToPaymentLabel = "Continue to payment",
+    sendingToGateway: sendingToGatewayLabel = "Taking you to payment…",
+    gatewayNote: gatewayNoteLabel = "You'll be taken to a secure payment page, then brought back here.",
   } = labels;
   const router = useRouter();
   const items = useCartStore((s) => s.items);
   const subtotal = useCartStore((s) => s.subtotal());
   const clear = useCartStore((s) => s.clear);
 
-  const [paymentMethod, setPaymentMethod] =
-    useState<string>("COD");
+  // The first thing offered, not a hard-coded "COD". A shop that has turned
+  // cash on delivery off used to open its checkout with it selected anyway, and
+  // the order was refused on submit for naming a method the shop does not take.
+  const [paymentMethod, setPaymentMethod] = useState<string>(methods[0]?.value ?? "COD");
 
-  // What this shop actually accepts: switched on, and answerable. A method with
-  // no account details behind it would show a customer an option that tells
-  // them nothing about where to send the money.
-  const PAYMENT_METHODS = offeredMethods(settings.enabledPaymentMethods, settings);
+  const PAYMENT_METHODS = methods;
+  const selectedIsGateway = methods.some((m) => m.value === paymentMethod && m.kind === "gateway");
+  /** Set while the browser is handing the customer over to a gateway. */
+  const [leavingFor, setLeavingFor] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -136,11 +183,6 @@ export function CheckoutForm({
     setCodeInput("");
   }
 
-  const instructions: Record<string, string | null> = {
-    BANK_TRANSFER: settings.bankAccountDetails,
-    JAZZCASH: settings.jazzcashAccountDetails,
-    EASYPAISA: settings.easypaisaAccountDetails,
-  };
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -191,6 +233,17 @@ export function CheckoutForm({
       if (!res.ok) throw new Error(data.error ?? "Failed to place order");
 
       clear();
+
+      // A gateway order comes back with a form to submit rather than a page to
+      // go to. The customer leaves for the provider's own site, pays there, and
+      // is returned to the confirmation page — which does not take their word
+      // for what happened either; see app/(storefront)/order-confirmation.
+      if (data.redirect?.url && data.redirect.fields) {
+        setLeavingFor(data.redirect.url);
+        handOver(data.redirect.url, data.redirect.fields as Record<string, string>);
+        return;
+      }
+
       router.push(`/order-confirmation/${data.orderId}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : genericError);
@@ -296,12 +349,15 @@ export function CheckoutForm({
                 />
                 <span className="text-sm font-medium">{m.label}</span>
               </span>
-              {paymentMethod === m.value && instructions[m.value] && (
+              {paymentMethod === m.value && m.instructions && (
                 <p className="ml-6 whitespace-pre-line text-xs text-ink-soft">
-                  {instructions[m.value]}
+                  {m.instructions}
                   <br />
                   {paymentInstructionsNote}
                 </p>
+              )}
+              {paymentMethod === m.value && m.kind === "gateway" && (
+                <p className="ml-6 text-xs text-ink-soft">{m.hint}</p>
               )}
             </label>
           ))}
@@ -396,8 +452,17 @@ export function CheckoutForm({
           disabled={submitting || items.length === 0}
           className="mt-6 w-full rounded-full bg-brand-500 px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-brand-600 active:bg-brand-700 disabled:opacity-50"
         >
-          {submitting ? placingOrderLabel : placeOrderLabel}
+          {leavingFor
+            ? sendingToGatewayLabel
+            : submitting
+              ? placingOrderLabel
+              : selectedIsGateway
+                ? continueToPaymentLabel
+                : placeOrderLabel}
         </button>
+        {selectedIsGateway && !leavingFor && (
+          <p className="mt-2 text-center text-xs text-ink-soft">{gatewayNoteLabel}</p>
+        )}
       </div>
     </form>
   );

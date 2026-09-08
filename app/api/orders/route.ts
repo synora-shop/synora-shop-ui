@@ -11,12 +11,20 @@ import { effectivePrice } from "@/lib/data/products";
 import { provinceForCity } from "@/lib/cities";
 import { isValidEmail, isValidPakistaniPhone } from "@/lib/validation";
 import { generateOrderId } from "@/lib/order-id";
-import { offeredMethodValues } from "@/lib/payment-methods";
+import { checkoutMethodValues } from "@/lib/payment-methods";
+import { resolveStoreDefaults } from "@/lib/store-defaults";
+import { shopSession } from "@/lib/auth-guard";
+import { offerableGateways } from "@/lib/payments/offer";
+import { startPayment } from "@/lib/payments/start";
+import { releaseExpiredForShop, releaseOrder } from "@/lib/payments/reservations";
+import { RESERVATION_MS, isGatewayProvider } from "@/lib/payments/providers";
+import { canonicalUrl } from "@/lib/data/shop";
 import { isEnquiryOnly, PRODUCT_KIND_META } from "@/lib/product-kind";
 
-// Full set the DB/type system supports — which of these are actually
-// accepted right now is controlled by ENABLED_PAYMENT_METHOD_VALUES below.
-type PaymentMethod = "COD" | "BANK_TRANSFER" | "JAZZCASH" | "EASYPAISA";
+// Full set the DB/type system supports. Which of these a given shop actually
+// accepts is decided below, against that shop's own settings and its gateway
+// connections — never against a constant, and never against the request.
+type PaymentMethod = "COD" | "BANK_TRANSFER" | "JAZZCASH" | "EASYPAISA" | "PAYFAST";
 
 type CheckoutItem = { productId: string; variantId: string; quantity: number };
 
@@ -88,17 +96,38 @@ export async function POST(request: Request) {
 
   const session = await auth();
   const settings = await getStoreSettings();
+  const sid = await currentShopId();
+  const currency = resolveStoreDefaults(settings).currency;
+
+  // Stock held by gateway orders nobody finished paying for.
+  //
+  // Given back before this checkout prices anything, so a shopper is never told
+  // the last one is gone because somebody walked away from a payment page half
+  // an hour ago. Done here rather than only on a schedule because the plan
+  // allows one scheduled run a day, and a thirty-minute hold swept daily is a
+  // day-long hold. Bounded, and it fails soft: a sweep that errors must not
+  // stop somebody buying something.
+  await releaseExpiredForShop(sid).catch((err) =>
+    console.error("[orders] releasing expired reservations failed", err)
+  );
+
+  // Whether this is the shop's own staff, which is the only thing that makes a
+  // gateway in test mode available. From the session and the membership, never
+  // from anything the request said.
+  const staff = await shopSession();
+  const isStaff = !!staff && staff.shop.id === sid;
+
+  const gateways = await offerableGateways(sid, currency, isStaff);
+  const usingGateway = isGatewayProvider(body.paymentMethod);
 
   // Which methods are accepted is the shop's setting now, not a constant, so it
   // is checked here where the shop is known rather than in isValidPayload,
   // which only sees the request. A stale tab or a direct POST naming a method
   // this shop does not take is refused, the same as it always was — the list it
-  // is refused against is simply the merchant's own.
-  if (!offeredMethodValues(settings.enabledPaymentMethods, settings).includes(body.paymentMethod)) {
+  // is refused against is simply the merchant's own, gateways included.
+  if (!checkoutMethodValues(settings.enabledPaymentMethods, settings, gateways).includes(body.paymentMethod)) {
     return NextResponse.json({ error: "That payment method isn't accepted." }, { status: 400 });
   }
-
-  const sid = await currentShopId();
 
   try {
     const order = await prisma.$transaction(async (tx) => {
@@ -261,6 +290,10 @@ export async function POST(request: Request) {
               shippingProvince,
               shippingPostalCode: body.shippingPostalCode,
               paymentMethod: body.paymentMethod,
+              // A gateway order holds its stock for half an hour and then gives
+              // it back. Null for the manual methods, which are not waiting on
+              // anything and whose stock the merchant releases by cancelling.
+              reservedUntil: usingGateway ? new Date(Date.now() + RESERVATION_MS) : null,
               notes: body.notes,
               discountId,
               discountCode,
@@ -310,6 +343,55 @@ export async function POST(request: Request) {
 
       return created;
     });
+
+    // A gateway order is not finished here. It is an intention with stock held
+    // against it, and it becomes an order when the money is verified.
+    //
+    // Nothing is announced yet, deliberately: telling a merchant "new order"
+    // for a card that then declines is how a shop packs a parcel nobody paid
+    // for. The emails and the push go out from lib/payments/verify.ts, once,
+    // on the transaction that confirms the payment.
+    if (usingGateway) {
+      const shop = await requireShop();
+      // The host the customer is actually on, so they come back to the shop
+      // they were buying from rather than to its platform address.
+      const host = request.headers.get("host");
+      const origin = host ? `https://${host}` : await canonicalUrl(sid);
+
+      const started = await startPayment({
+        orderId: order.id,
+        shopId: sid,
+        provider: "PAYFAST",
+        amount: order.total,
+        currency,
+        shopName: shop.name,
+        customerName: order.customerName,
+        customerEmail: order.customerEmail,
+        customerPhone: order.customerPhone,
+        origin,
+        // Always the platform address: a custom domain can be taken off a shop
+        // between the order and the callback, and the notification would then
+        // arrive nowhere.
+        callbackOrigin: await canonicalUrl(sid),
+        allowTestMode: isStaff,
+      });
+
+      if (!started.ok) {
+        // The provider would not start the payment, so there is nothing for the
+        // customer to do with this order. Released immediately rather than left
+        // to time out — the stock goes back now, not in half an hour.
+        await releaseOrder(order.id, "gateway would not start the payment").catch(() => {});
+        return NextResponse.json({ error: started.error }, { status: 502 });
+      }
+
+      // The form the browser submits to reach the provider. Nothing secret is
+      // in it: the merchant's key stays on this server, and only the one-time
+      // token it bought travels.
+      return NextResponse.json({
+        orderId: order.id,
+        redirect: { url: started.url, fields: started.fields },
+      });
+    }
 
     // The notice goes to this shop, not to the platform — see
     // shopNotificationEmail. Resolved after the order is committed so a slow

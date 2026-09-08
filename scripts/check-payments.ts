@@ -129,7 +129,11 @@ for (const [file, why] of [
   ["app/api/orders/route.ts", "the server refuses what it does not"],
 ] as const) {
   const src = read(file);
-  check(`${why}`, /offeredMethod/.test(src), `${file} does not ask lib/payment-methods`);
+  check(
+    `${why}`,
+    /offeredMethod|checkoutMethod|CheckoutMethod/.test(src),
+    `${file} does not ask lib/payment-methods`
+  );
   check(
     `${file} does not import a fixed list`,
     !/ENABLED_PAYMENT_METHODS/.test(src)
@@ -139,8 +143,13 @@ for (const [file, why] of [
 const orders = read("app/api/orders/route.ts");
 check(
   "the order API checks the method against the shop, not the request",
-  /offeredMethodValues\(settings\.enabledPaymentMethods, settings\)/.test(orders),
+  /checkoutMethodValues\(settings\.enabledPaymentMethods, settings, gateways\)/.test(orders),
   "a stale tab or a direct POST must not place an order with a method this shop refused"
+);
+check(
+  "and the list it checks against includes the shop's gateways",
+  /offerableGateways\(/.test(orders),
+  "a gateway is a way to pay; leaving it out of the check refuses every card order"
 );
 check(
   "and says so plainly",
