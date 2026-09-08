@@ -88,10 +88,29 @@ check("leading zeros are kept", (() => {
 check("codes vary", new Set(Array.from({ length: 200 }, () => createNumericCode())).size > 150);
 
 console.log("\nEVERY LIMIT ACTUALLY LIMITS");
+
+// Limits a machine is meant to trip, not a person.
+//
+// A payment provider retrying its notifications is legitimate traffic that a
+// human-sized ceiling would turn away, and turning one away costs a merchant a
+// confirmed order. Named here rather than raising the ceiling for everything,
+// so the twenty-attempt rule keeps meaning what it says for the limits that
+// stand between somebody and an account.
+const MACHINE_FACING = new Set(["paymentCallback"]);
+
 for (const [name, limit] of Object.entries(LIMITS)) {
-  check(`${name} allows a finite number of attempts`, limit.max > 0 && limit.max <= 20, String(limit.max));
+  const ceiling = MACHINE_FACING.has(name) ? 500 : 20;
+  check(
+    `${name} allows a finite number of attempts`,
+    limit.max > 0 && limit.max <= ceiling,
+    `${limit.max} of ${ceiling}`
+  );
   check(`${name} has a window`, limit.windowMs > 0);
   check(`${name} blocks for a while after tripping`, limit.blockMs > 0);
+}
+// The carve-out cannot quietly grow: anything named in it must actually exist.
+for (const name of MACHINE_FACING) {
+  check(`${name} is a real limit`, name in LIMITS);
 }
 // Sign-in is the one an attacker grinds. It allows more attempts than the
 // mail-sending limits because people genuinely mistype passwords — what

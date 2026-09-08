@@ -147,6 +147,45 @@ enum PaymentStatus {
   FAILED
 }
 
+/// Which hosted gateway a shop is connected to.
+///
+/// One value per provider rather than a generic "CARD", because the merchant
+/// holds the account and the money goes to *their* bank — which provider it is
+/// is a fact about the order, not an implementation detail. Adding a second
+/// gateway adds a value here and an adapter in lib/payments/, and nothing else.
+enum GatewayProvider {
+  PAYFAST
+}
+
+/// Test or real money. Never inferred, always stored on the attempt, so an
+/// order taken in sandbox can never be read later as revenue.
+enum GatewayMode {
+  SANDBOX
+  LIVE
+}
+
+/// One attempt at paying for an order through a gateway.
+///
+/// Deliberately not the same thing as `PaymentStatus` on the order. A customer
+/// may fail twice and succeed on the third go; the order has one payment state
+/// and three attempts, and collapsing them loses the only record of what
+/// actually happened.
+enum PaymentAttemptStatus {
+  /// Created, customer not yet sent to the gateway.
+  INITIATED
+  /// Customer is at the gateway. Nothing has been confirmed.
+  PENDING
+  /// Verified against the provider's own API. The only status that pays for an order.
+  CONFIRMED
+  /// The provider says it failed, or the customer came back without paying.
+  FAILED
+  /// The reservation window closed with no confirmation.
+  EXPIRED
+  /// The provider reports a payment whose amount, currency or order does not
+  /// match what we asked for. Never confirmed, always surfaced to the merchant.
+  MISMATCHED
+}
+
 enum OrderStatus {
   PENDING
   CONFIRMED
@@ -277,6 +316,9 @@ model Shop {
   fonts             FontAsset[]
   stickyButtons     StickyButton[]
   redirects         Redirect[]
+  paymentGateways   PaymentGateway[]
+  payments          Payment[]
+  paymentEvents     PaymentEvent[]
   pushSubscriptions PushSubscription[]
   auditLogs         AuditLog[]
 
@@ -627,8 +669,8 @@ model Category {
 }
 
 model Product {
-  id          String           @id @default(cuid())
-  shop        Shop             @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  id          String   @id @default(cuid())
+  shop        Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
   shopId      String
   title       String
   slug        String
@@ -645,26 +687,26 @@ model Product {
   option3Name String?
 
   /// Who makes it. Shopify's "Vendor", and the column merchants actually use.
-  vendor      String?
+  vendor String?
   /// Free tags. Shopify's are one comma separated cell; stored as a list.
-  tags        String[]        @default([])
+  tags   String[] @default([])
 
   /// Columns from Shopify's product CSV that SHOP itself never reads, kept
   /// verbatim so an export can be diffed against a Shopify export and match.
   /// A JSON column rather than twenty real ones: thirteen of them are Google
   /// Shopping fields nothing in this platform will ever query.
-  csvExtras   Json            @default("{}")
-  basePrice   Int // stored in PKR, integer (no paisa)
-  salePrice   Int?
-  costPrice   Int              @default(0) // what you pay per unit, PKR — admin/profit-calc only, never sent to the storefront
+  csvExtras  Json             @default("{}")
+  basePrice  Int // stored in PKR, integer (no paisa)
+  salePrice  Int?
+  costPrice  Int              @default(0) // what you pay per unit, PKR — admin/profit-calc only, never sent to the storefront
   // Many-to-many — a product can sit in several categories at once (e.g. a discounted Lawn
   // piece is both "Lawn" and "Sale"). "Sale" membership is kept in sync with salePrice
   // automatically by saveProduct() rather than left to the admin to remember — see actions.ts.
-  categories  Category[]
-  variants    ProductVariant[]
-  isFeatured  Boolean          @default(false)
-  isActive    Boolean          @default(true)
-  status      ProductStatus    @default(PUBLISHED) // DRAFT = half-configured/unpublished, hidden from storefront regardless of isActive
+  categories Category[]
+  variants   ProductVariant[]
+  isFeatured Boolean          @default(false)
+  isActive   Boolean          @default(true)
+  status     ProductStatus    @default(PUBLISHED) // DRAFT = half-configured/unpublished, hidden from storefront regardless of isActive
 
   // --- How this product is sold -------------------------------------------
   // NORMAL products use basePrice/salePrice/variants above and nothing below.
@@ -701,23 +743,23 @@ model Product {
 }
 
 model ProductVariant {
-  id            String      @id @default(cuid())
-  shop          Shop        @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  shopId        String
-  product       Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
-  productId     String
+  id        String  @id @default(cuid())
+  shop      Shop    @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId    String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
   /// Kept while the option columns are filled in and every reader is moved
   /// across. See the expand and contract migration in
   /// 20261011000000_variant_named_options.
-  size          String
-  color         String
-  colorHex      String?
+  size      String
+  color     String
+  colorHex  String?
 
   /// The variant's position on each of its product's named axes. option1 holds
   /// what size held; option2 holds what color held.
-  option1       String      @default("")
-  option2       String      @default("")
-  option3       String      @default("")
+  option1 String @default("")
+  option2 String @default("")
+  option3 String @default("")
 
   barcode       String?
   weightGrams   Int?
@@ -766,6 +808,17 @@ model Order {
   orderStatus         OrderStatus   @default(PENDING)
   transactionProofUrl String?
   notes               String?
+  /// When an unpaid gateway order stops holding its stock.
+  ///
+  /// Stock is decremented when the order is written, before the customer has
+  /// paid — otherwise two people buy the last item and one of them pays for
+  /// something that does not exist. The cost of that choice is a customer who
+  /// wanders off at the gateway and silently locks up inventory, so a gateway
+  /// order carries a deadline. Past it, the order is cancelled and the stock
+  /// goes back. Null for Cash on Delivery and the manual methods, which are
+  /// not waiting on anything.
+  reservedUntil       DateTime?
+  payments            Payment[]
   deletedAt           DateTime? // set when moved to the admin Bin (soft delete) — excluded from every revenue/profit aggregate until restored
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @updatedAt
@@ -797,6 +850,155 @@ model OrderItem {
 
   @@index([orderId])
   @@index([shopId])
+}
+
+// A shop's connection to a hosted payment gateway.
+//
+// The platform is not a party to these payments. The merchant holds the account
+// with the provider, the provider settles into the merchant's own bank, and
+// this row holds only the credentials needed to speak to the provider on the
+// merchant's behalf. Nothing about this is a payment aggregator, and it must
+// stay that way: the moment money passes through a platform account this stops
+// being software.
+//
+// The credentials are a sealed blob, not columns. See lib/payments/crypto.ts —
+// AES-256-GCM, keyed from the environment, with the shop id and the provider
+// bound in as additional authenticated data so a row lifted into another shop's
+// id will not decrypt at all rather than decrypting into somebody else's money.
+model PaymentGateway {
+  id       String          @id @default(cuid())
+  shop     Shop            @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId   String
+  provider GatewayProvider
+
+  /// Test or live. A gateway starts in SANDBOX and cannot leave it until a real
+  /// sandbox payment has completed end to end — see sandboxVerifiedAt.
+  mode GatewayMode @default(SANDBOX)
+
+  /// Whether the storefront offers it. Separate from having credentials on
+  /// purpose: switching a gateway off for an afternoon must not make the
+  /// merchant fetch their keys from the provider again to switch it back on.
+  isActive Boolean @default(false)
+
+  /// The sealed credentials. Null once disconnected — disconnecting wipes them
+  /// rather than merely hiding them.
+  secret     Bytes?
+  /// Which environment key sealed `secret`, so keys can be rotated without
+  /// every merchant re-entering theirs.
+  keyVersion Int    @default(1)
+
+  /// Set the first time credentials were accepted; kept across replacements, so
+  /// "connected since" survives a key rotation at the provider's end.
+  connectedAt          DateTime?
+  /// Set every time the credentials are replaced.
+  credentialsUpdatedAt DateTime?
+
+  /// The go-live gate. Set only by a sandbox payment that reached CONFIRMED
+  /// through the one verification path, never by saving a form. Until it is
+  /// set, LIVE cannot be selected.
+  sandboxVerifiedAt DateTime?
+  /// The first live payment that confirmed. Informational.
+  liveVerifiedAt    DateTime?
+
+  /// The last time the credentials were exercised against the provider, and
+  /// what went wrong if it failed. Shown to the merchant so a key that has been
+  /// revoked at the provider's end is visible before a customer finds it.
+  lastCheckedAt DateTime?
+  lastError     String?
+
+  payments  Payment[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@unique([shopId, provider])
+  @@index([shopId])
+}
+
+// One attempt at paying for one order through a gateway.
+//
+// Kept apart from the order's own paymentStatus because an attempt can fail
+// without anything about the order changing, and because the amount asked for
+// has to be recorded at the moment it is asked for: verification compares what
+// the provider says was paid against this row, not against the order, so a
+// later edit to the order cannot retroactively make an underpayment match.
+model Payment {
+  id      String @id @default(cuid())
+  shop    Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId  String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId String
+
+  gateway   PaymentGateway? @relation(fields: [gatewayId], references: [id], onDelete: SetNull)
+  gatewayId String?
+  provider  GatewayProvider
+  mode      GatewayMode
+
+  /// What we hand the provider as the basket/order reference, and what comes
+  /// back on the callback.
+  ///
+  /// Globally unique and random, not the order id: order ids are five
+  /// characters and unique only within a shop, so two shops routinely hold the
+  /// same one. Sent as a shared reference, that is one shop confirming another
+  /// shop's order. It is also unguessable, which matters because it is the only
+  /// thing a callback carries.
+  reference String @unique
+
+  /// Minor-unit integer, in the same units as Order.total, frozen at the moment
+  /// the attempt was created.
+  amount   Int
+  currency String
+
+  status        PaymentAttemptStatus @default(INITIATED)
+  /// The provider's own transaction id, once known. Unique per provider, which
+  /// is what makes a replayed callback a no-op rather than a second payment.
+  providerRef   String?
+  failureReason String?
+  verifiedAt    DateTime?
+
+  /// When this attempt stops being answerable and its order releases stock.
+  expiresAt DateTime
+
+  events    PaymentEvent[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@unique([provider, providerRef])
+  @@index([shopId, orderId])
+  @@index([status, expiresAt])
+}
+
+// Everything that ever claimed something about a payment.
+//
+// Written before a claim is acted on, including claims that turn out to be
+// forged or to name nothing at all. A callback endpoint is public by necessity
+// — the provider must be able to reach it and cannot authenticate to us — so
+// the record of who said what, from which address, is the only account of an
+// attempt to be paid for nothing.
+//
+// shopId is nullable on purpose: an event that resolves to no known payment
+// belongs to no shop, and pretending otherwise would file a stranger's forgery
+// in a merchant's records.
+model PaymentEvent {
+  id        String          @id @default(cuid())
+  shop      Shop?           @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId    String?
+  payment   Payment?        @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  paymentId String?
+  provider  GatewayProvider
+
+  /// Where the claim arrived from: "callback", "return", "sweep", "connect".
+  source  String
+  /// What was decided: "confirmed", "already-confirmed", "failed", "mismatch",
+  /// "unknown-reference", "expired", "provider-error".
+  outcome String
+  detail  String?
+  ip      String?
+
+  createdAt DateTime @default(now())
+
+  @@index([paymentId])
+  @@index([shopId, createdAt])
+  @@index([createdAt])
 }
 
 // A browser's Web Push subscription, registered from the admin panel so the
@@ -942,14 +1144,14 @@ model StoreSettings {
   /// turns it off while a store is being built, or for a private catalogue that
   /// is meant to be shared by link only. It is an instruction, not a lock:
   /// robots.txt is obeyed by search engines and ignored by everything else.
-  searchIndexing   Boolean  @default(true)
+  searchIndexing Boolean @default(true)
 
   /// Whether public forms carry the honeypot field — see lib/spam.ts.
   ///
   /// On by default. A merchant only turns it off to diagnose a genuine
   /// submission that went missing, which is the one case where a silent filter
   /// is worse than the spam it stops.
-  spamProtection   Boolean  @default(true)
+  spamProtection Boolean @default(true)
 
   // --- Store defaults -----------------------------------------------------
   // The facts about the business that everything else is expressed in: what
@@ -982,13 +1184,13 @@ model StoreSettings {
 /// So: its own small table, its own screen, its own export, and deletable on
 /// request without touching anything else. The email is the only thing stored.
 model ReopenSignup {
-  id     String @id @default(cuid())
-  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  shopId String
-  email  String
+  id         String    @id @default(cuid())
+  shop       Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId     String
+  email      String
   /// When they asked. Also the consent record — this is the whole of what they
   /// agreed to, so the time they agreed is the only other fact worth keeping.
-  createdAt DateTime @default(now())
+  createdAt  DateTime  @default(now())
   /// Set when the merchant has marked them told, so reopening twice does not
   /// mean writing to the same people twice.
   notifiedAt DateTime?
@@ -1295,7 +1497,7 @@ model Metafield {
   /// NULLS NOT DISTINCT, but Prisma does not generate that, so the schema and
   /// the database would disagree about an index. "" collides with "" and needs
   /// neither exception.
-  ownerId   String  @default("")
+  ownerId   String @default("")
 
   /// Shopify splits the name in two so an app's fields cannot collide with a
   /// merchant's. "custom" is the namespace a merchant's own fields live in.
@@ -1338,7 +1540,7 @@ model Menu {
   shopId String
 
   /// What the merchant calls it, e.g. "Main menu".
-  name String
+  name   String
   /// Stable identifier, so renaming a menu never breaks an assignment.
   handle String
 
@@ -1369,10 +1571,10 @@ model MenuItem {
   groupLabel String?
   label      String
   href       String
-  page       Page?        @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  page       Page?         @relation(fields: [pageId], references: [id], onDelete: Cascade)
   pageId     String?
   order      Int
-  isVisible  Boolean      @default(true)
+  isVisible  Boolean       @default(true)
 
   /// Self-relation for dropdowns. Deliberately only two levels deep: a third
   /// tier is unusable on touch and hides the very items it was added to
@@ -1382,10 +1584,6 @@ model MenuItem {
   parentId String?
   children MenuItem[] @relation("MenuItemChildren")
 
-  @@index([shopId, menuId])
-  @@index([pageId])
-  @@index([parentId])
-
   /// The kind of business this item's menu belongs to.
   ///
   /// Duplicated from the parent menu rather than joined for it: the tenant
@@ -1394,6 +1592,9 @@ model MenuItem {
   /// collection, which is exactly what this partition exists to stop.
   businessType BusinessType @default(ECOMMERCE)
 
+  @@index([shopId, menuId])
+  @@index([pageId])
+  @@index([parentId])
 }
 
 // A buyer asking about a BULK or CUSTOM product.
@@ -1444,11 +1645,11 @@ model Article {
   shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
   shopId String
 
-  slug  String
-  title String
+  slug       String
+  title      String
   /// Shown in listings. Falls back to the opening of the body when empty, so a
   /// merchant who never writes one still gets a readable card.
-  excerpt String?
+  excerpt    String?
   /// Rich text. A post is written, not arranged, so it is one field rather than
   /// a canvas of sections.
   body       String
@@ -1483,14 +1684,14 @@ model OpeningHours {
   shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
   shopId String
 
-  day    Int
+  day        Int
   /// "09:00" / "17:30", local to the shop. Stored as text rather than a time:
   /// these are opening hours on a sign, not instants, and a timezone-aware type
   /// would invite a conversion that is always wrong somewhere.
-  opensAt  String?
-  closesAt String?
+  opensAt    String?
+  closesAt   String?
   /// Closed all day. Distinct from "no hours set", which shows nothing at all.
-  closed Boolean @default(false)
+  closed     Boolean @default(false)
   /// A second service, for a kitchen that shuts between lunch and dinner.
   reopensAt  String?
   reclosesAt String?

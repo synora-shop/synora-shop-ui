@@ -62,6 +62,17 @@ export const LIMITS = {
   // to say the least-watched endpoint in the product. Tight, because there is
   // no honest reason for one visitor to leave five addresses.
   reopenSignup: { max: 5, windowMs: 60 * 60 * 1000, blockMs: 60 * 60 * 1000 },
+  // A gateway's notification endpoint. Public by necessity — the provider must
+  // reach it and cannot authenticate to us — so it is the one place a stranger
+  // can make us do work by asking. Deliberately generous: a real provider
+  // retrying a burst of genuine notifications must never be turned away, and
+  // the endpoint cannot be tricked into confirming anything anyway. The limit
+  // exists to stop it being used as a free way to make us call an API, not to
+  // decide who is telling the truth.
+  paymentCallback: { max: 240, windowMs: 15 * 60 * 1000, blockMs: 10 * 60 * 1000 },
+  // A customer refreshing the "did my payment go through" page. One shopper
+  // pressing reload should not be able to loop a call to the provider.
+  paymentCheck: { max: 20, windowMs: 5 * 60 * 1000, blockMs: 5 * 60 * 1000 },
 } as const satisfies Record<string, Limit>;
 
 export type LimitName = keyof typeof LIMITS;
@@ -180,6 +191,8 @@ const MESSAGES: Record<LimitName, (seconds: number) => string> = {
   customerRegister: (s) => `Too many sign-ups from here. Try again in ${humanise(s)}.`,
   discountPreview: (s) => `Too many codes tried. Try again in ${humanise(s)}.`,
   reopenSignup: (s) => `That's already been sent. Try again in ${humanise(s)}.`,
+  paymentCallback: (s) => `Too many notifications. Try again in ${humanise(s)}.`,
+  paymentCheck: (s) => `Checking too often. Try again in ${humanise(s)}.`,
 };
 
 export function humanise(seconds: number): string {

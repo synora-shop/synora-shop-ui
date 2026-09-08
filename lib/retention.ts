@@ -45,6 +45,13 @@ export const RETENTION = {
    * known size rather than an open-ended one.
    */
   visitDays: 400,
+  /**
+   * Everything that ever claimed something about a payment, including the
+   * claims that were forged. Two years, because "why was this order marked
+   * paid" and "who has been probing our callback" are both questions asked
+   * long after the money moved, and because the row is a few hundred bytes.
+   */
+  paymentEventDays: 730,
 } as const;
 
 const day = 24 * 60 * 60 * 1000;
@@ -106,6 +113,12 @@ export async function pruneExpiredRows(): Promise<PruneReport> {
 
   await step("auditLog", () =>
     prisma.auditLog.deleteMany({ where: { createdAt: { lt: ago(RETENTION.auditDays) } } })
+  );
+
+  await step("paymentEvent", () =>
+    prisma.paymentEvent.deleteMany({
+      where: { createdAt: { lt: ago(RETENTION.paymentEventDays) } },
+    })
   );
 
   return report;

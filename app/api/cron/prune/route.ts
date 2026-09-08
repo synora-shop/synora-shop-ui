@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { pruneExpiredRows } from "@/lib/retention";
+import { releaseExpiredEverywhere } from "@/lib/payments/reservations";
 
 // Scheduled housekeeping. Wired to a daily cron in vercel.json.
 //
@@ -31,6 +32,21 @@ export async function GET() {
 
   const started = Date.now();
   const report = await pruneExpiredRows();
+
+  // Stock held by unpaid gateway orders whose window closed.
+  //
+  // The backstop, not the mechanism. Reservations last half an hour and this
+  // runs once a day — the plan allows no more — so the work is normally done by
+  // lib/payments/reservations.ts on the paths that care: a checkout about to
+  // price the same stock, and the merchant's own order list. This catches what
+  // belongs to a shop nobody has visited since.
+  try {
+    report.paymentReservation = await releaseExpiredEverywhere();
+  } catch (err) {
+    console.error("[cron/prune] releasing payment reservations failed", err);
+    report.paymentReservation = -1;
+  }
+
   const ms = Date.now() - started;
 
   // Logged as well as returned — the cron's own response is not somewhere

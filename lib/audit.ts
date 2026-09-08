@@ -25,6 +25,15 @@ export type AuditAction =
   | "shop.address.revert"
   | "shop.maintenance.on"
   | "shop.maintenance.off"
+  // Money. A merchant's gateway credentials are the keys to their takings, so
+  // every touch of them is recorded — including the ones that fail.
+  | "payments.gateway.connect"
+  | "payments.gateway.replace"
+  | "payments.gateway.activate"
+  | "payments.gateway.deactivate"
+  | "payments.gateway.golive"
+  | "payments.gateway.testmode"
+  | "payments.gateway.disconnect"
   | "domain.add"
   | "domain.remove"
   | "domain.primary"
