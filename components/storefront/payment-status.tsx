@@ -27,11 +27,19 @@ const LOOK: Record<
 export function PaymentStatus({
   state,
   orderId,
+  reference,
   message,
   canRetry,
 }: {
   state: PaymentState;
   orderId: string;
+  /**
+   * The payment reference from the return URL.
+   *
+   * What stands in for a session on a guest order: without it there is no Try
+   * paying again, because an order id alone is five guessable characters.
+   */
+  reference: string | null;
   message: string;
   /** Only while the order is unpaid and still holding its stock. */
   canRetry: boolean;
@@ -45,7 +53,7 @@ export function PaymentStatus({
   async function tryAgain() {
     setBusy(true);
     setError(null);
-    const result = await retryPayment(orderId);
+    const result = await retryPayment(orderId, reference ?? "");
     if (!result.ok) {
       setError(result.error);
       setBusy(false);
@@ -76,7 +84,7 @@ export function PaymentStatus({
       </p>
       <p className="mt-2 text-sm text-ink-soft">{message}</p>
 
-      {canRetry && (
+      {canRetry && reference && (
         <>
           <button
             type="button"

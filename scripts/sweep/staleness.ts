@@ -45,15 +45,43 @@ async function main() {
 
   // 74 every server action that writes has a role guard
   const files = walk(process.cwd() + "/app").filter((f) => readFileSync(f, "utf8").startsWith('"use server"'));
+  // Actions that are public on purpose, each with the reason it is allowed to
+  // be and the gates that stand in for a session.
+  //
+  // An allowlist rather than a silent pass, because this probe reported the
+  // first of these as a failure on every run — and a probe that always fails
+  // is one people stop reading. Listing them makes the exemption a decision
+  // somebody made rather than a wart, and a new unguarded action still fails.
+  const PUBLIC_ON_PURPOSE: Record<string, string> = {
+    "/app/(storefront)/maintenance/actions.ts":
+      "the holding page's 'tell me when you reopen' — the shop must be shut, the merchant must have switched it on, honeypot and per-address rate limit",
+    "/app/(storefront)/order-confirmation/actions.ts":
+      "retrying a failed card payment on a guest order — needs the payment reference from the return URL, the order must still be unpaid and holding stock, and the amount is read from the order",
+  };
+
   const unguarded = files.filter((f) => {
     const src = readFileSync(f, "utf8");
-    const writes = /\.(create|createMany|update|updateMany|upsert|delete|deleteMany)\(/.test(src);
+    const rel = f.replace(process.cwd(), "");
+    if (rel in PUBLIC_ON_PURPOSE) return false;
+    // A write here, or a call to something in lib/ that writes on this file's
+    // behalf. The second half matters: an action whose only write is inside a
+    // helper used to pass this probe by accident.
+    const writes =
+      /\.(create|createMany|update|updateMany|upsert|delete|deleteMany)\(/.test(src) ||
+      /\b(startPayment|releaseOrder|saveCredentials|verifyPayment)\(/.test(src);
     // A merchant action asks for a role; a customer action asks who the
     // shopper is and scopes the write to them. Both establish who is asking,
     // which is the rule — the first version of this probe only knew the first
     // half and reported the address book, which is correctly guarded.
     return writes && !/requireRole|requireAdmin|auth\(\)|currentCustomer\(\)/.test(src);
   });
+
+  // The allowlist cannot rot: every file named in it must exist and must still
+  // be a server action.
+  const stale = Object.keys(PUBLIC_ON_PURPOSE).filter(
+    (rel) => !files.some((f) => f.replace(process.cwd(), "") === rel)
+  );
+  probe("74a every deliberately public action still exists", stale.length === 0, stale.join(", ") || `${Object.keys(PUBLIC_ON_PURPOSE).length} listed`);
   probe("74 every action that writes asks who is asking", unguarded.length === 0,
     unguarded.map((f) => f.replace(process.cwd(), "")).join(", ") || `${files.length} action files`);
 

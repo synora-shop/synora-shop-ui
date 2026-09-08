@@ -18,22 +18,42 @@ import { headers } from "next/headers";
  * exists and is still holding its stock, so this starts a fresh attempt against
  * the same order rather than making them shop again.
  *
- * What stops it being a way to make a store call its provider all day: it is
- * rate limited, it only ever works on an order that is unpaid and still inside
- * its window, and it can only ask for the amount already on the order. Someone
- * who guesses an order id can, at worst, offer to pay a stranger's bill.
+ * Public and unauthenticated, because a guest checkout has no session and
+ * somebody whose card was declined has to be able to try again. So what stands
+ * in for one is **the payment reference**: 24 random bytes, minted when the
+ * customer was sent to the provider and handed back to them in the return URL.
+ *
+ * Requiring it matters. Order ids are five characters, and the confirmation
+ * page has always been reachable by anyone who guesses one. Without the
+ * reference, this action would inherit that — a stranger walking order ids
+ * could start payment attempts against other people's orders and learn each
+ * one's state from the refusals. With it, guessing an order id is not enough,
+ * and the reference is only ever known to the person who was sent to pay.
+ *
+ * Everything else is belt and braces: rate limited, only ever an order that is
+ * unpaid and still inside its window, and the amount is read from the order
+ * rather than taken from the caller.
  */
 export type RetryResult =
   | { ok: true; url: string; fields: Record<string, string> }
   | { ok: false; error: string };
 
-export async function retryPayment(orderId: string): Promise<RetryResult> {
+export async function retryPayment(orderId: string, reference: string): Promise<RetryResult> {
   const limited = await rateLimit("paymentCheck", await clientIp());
   if (!limited.ok) return { ok: false, error: limited.message };
+
+  if (typeof reference !== "string" || reference.length < 16 || reference.length > 200) {
+    return { ok: false, error: "That payment link is not valid." };
+  }
 
   const t = await db();
   const order = await t.order.findFirst({ where: { id: orderId } });
   if (!order) return { ok: false, error: "That order could not be found." };
+
+  // The reference must be one this shop issued, for this order. Scoped through
+  // db(), so a reference belonging to another shop does not resolve at all.
+  const attempt = await t.payment.findFirst({ where: { reference, orderId: order.id } });
+  if (!attempt) return { ok: false, error: "That payment link is not valid." };
 
   if (order.paymentStatus === "CONFIRMED") {
     return { ok: false, error: "This order is already paid for." };

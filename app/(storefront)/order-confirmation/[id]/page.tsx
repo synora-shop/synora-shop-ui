@@ -107,6 +107,7 @@ export default async function OrderConfirmationPage(props: PageProps<"/order-con
         <PaymentStatus
           state={state}
           orderId={order.id}
+          reference={reference}
           message={statusMessage}
           canRetry={online && order.paymentStatus !== "CONFIRMED" && stillHolding}
         />

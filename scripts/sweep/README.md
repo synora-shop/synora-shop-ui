@@ -13,7 +13,9 @@ what happens when somebody lies to the checkout.
     npx tsx scripts/sweep/arithmetic.ts   # 61-70  does the money add up
     npx tsx scripts/sweep/staleness.ts    # 71-80  guards, caches and integrity
     npx tsx scripts/sweep/closed.ts       # 96-100 a shut shop, and two orders at once
-    npx tsx scripts/sweep/payments.ts     # 101-115 lying to a payment callback
+    npx tsx scripts/sweep/payments.ts       # 101-115 lying to a payment callback
+    npx tsx scripts/sweep/gateway-offers.ts # 116-128 who is offered a gateway
+    npx tsx scripts/sweep/gateway-screen.ts # 129-140 the four states of a gateway
     npx tsx scripts/sweep/facts.ts        # what the database says, for the browser probes
 
 The browser half needs Chrome listening on the DevTools port and a signed-in
@@ -29,6 +31,12 @@ session in it:
 
 **These probes write to the database.** Each puts back what it changed, and
 says so as it finishes. Run them against a development shop, never production.
+
+The gateway probes also need the two verification addresses set in `.env`
+(`PAYFAST_SANDBOX_VERIFY_BASE`, `PAYFAST_LIVE_VERIFY_BASE`). Without them a
+gateway is deliberately offered to nobody — a payment that can never be
+confirmed must never be started — so probes 118 and 122 fail, correctly, and
+the failure is the fail-closed rule working rather than a fault.
 
 ## What the sweep is for
 

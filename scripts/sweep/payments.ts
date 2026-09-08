@@ -205,6 +205,46 @@ async function main() {
   const final = await prisma.order.findUnique({ where: { id: order.id } });
   probe("115  a late callback cannot revive a cancelled order", final?.paymentStatus !== "CONFIRMED", String(final?.paymentStatus));
 
+  // 116 two releases arriving at once.
+  //
+  // The guard is a conditional update inside a transaction, so the loser
+  // updates nothing. Worth firing for real rather than reasoning about: a
+  // reservation released twice restocks twice, and a shop that oversells
+  // because of its own cleanup is worse than one that never held the stock.
+  const raceOrderId = `R${randomBytes(2).toString("hex")}`;
+  await prisma.order.create({
+    data: {
+      id: raceOrderId, shopId: shop.id,
+      customerName: "Race", customerEmail: `race-${raceOrderId}@example.invalid`,
+      customerPhone: "03001234567", shippingLine1: "1 Race St",
+      shippingCity: "Lahore", shippingProvince: "Punjab",
+      subtotal: 1000, shippingFee: 0, total: 1000,
+      paymentMethod: "PAYFAST", reservedUntil: new Date(Date.now() - 1000),
+      items: { create: [{
+        shopId: shop.id, productId: variant.productId, variantId: variant.id,
+        title: variant.product.title, size: variant.size, color: variant.color,
+        price: 1000, costPrice: 0, quantity: 1,
+      }] },
+    },
+  });
+  await prisma.productVariant.update({ where: { id: variant.id }, data: { stock: { decrement: 1 } } });
+
+  await Promise.all([
+    fetch(`${BASE}/checkout`, { headers: { host: "my-store.localhost:3000" } }),
+    fetch(`${BASE}/checkout`, { headers: { host: "my-store.localhost:3000" } }),
+    fetch(`${BASE}/checkout`, { headers: { host: "my-store.localhost:3000" } }),
+  ]);
+
+  const raced = await prisma.productVariant.findUnique({ where: { id: variant.id } });
+  probe("116 three releases at once restock exactly once",
+    raced?.stock === stockBefore, `${raced?.stock} of ${stockBefore}`);
+  const racedOrder = await prisma.order.findUnique({ where: { id: raceOrderId } });
+  probe("117 and the order is cancelled once",
+    racedOrder?.orderStatus === "CANCELLED", String(racedOrder?.orderStatus));
+
+  await prisma.orderItem.deleteMany({ where: { orderId: raceOrderId } });
+  await prisma.order.delete({ where: { id: raceOrderId } });
+
   console.log("\nPUTTING IT BACK");
   await prisma.paymentEvent.deleteMany({
     where: { OR: [{ paymentId: payment.id }, ...(orphan ? [{ id: orphan.id }] : [])] },

@@ -412,9 +412,22 @@ check(
   /randomBytes\(24\)/.test(start),
   "order ids are five characters and unique only within a shop"
 );
+const retry = read("app/(storefront)/order-confirmation/actions.ts");
+check("the amount comes from the order, never from the caller", /amount: order\.total/.test(retry));
 check(
-  "the amount comes from the order, never from the caller",
-  /amount: order\.total/.test(read("app/(storefront)/order-confirmation/actions.ts"))
+  "retrying needs the payment reference, not just the order id",
+  /retryPayment\(orderId: string, reference: string\)/.test(retry) &&
+    /t\.payment\.findFirst\(\{ where: \{ reference, orderId: order\.id \} \}\)/.test(retry),
+  "order ids are five characters, and the confirmation page has always been guessable"
+);
+check(
+  "and a reference from another shop does not resolve",
+  /const t = await db\(\);/.test(retry),
+  "the tenant client, not the raw one"
+);
+check(
+  "the button is not offered without one",
+  /\{canRetry && reference && \(/.test(read("components/storefront/payment-status.tsx"))
 );
 check(
   "the callback address is always the platform's own",
