@@ -108,6 +108,70 @@ check(
 );
 
 // ---------------------------------------------------------------------------
+// The way back
+// ---------------------------------------------------------------------------
+
+check(
+  "moving onto an address that already exists reuses its row",
+  /const target = await tx\.domain\.findUnique/.test(domains),
+  "reverting is exactly this case, and creating a second row for one hostname violates the unique index — which is what happened the first time, and only showed when the button was pressed"
+);
+check(
+  "the row being moved onto is promoted, not duplicated",
+  /if \(target\) \{\s*await tx\.domain\.update\(\{ where: \{ id: target\.id \}/.test(domains)
+);
+check(
+  "and on a move that keeps nothing, the stale row is removed first",
+  /if \(target\) await tx\.domain\.delete/.test(domains),
+  "otherwise the rename collides with it"
+);
+check(
+  "the old address is demoted before the new one is promoted",
+  domains.indexOf("isPlatform: false, isPrimary: false") <
+    domains.indexOf("isPrimary: old.isPrimary"),
+  "the database refuses two primaries for one shop, even mid-transaction"
+);
+
+const actions = read("app/admin/domain-actions.ts");
+check("there is a revert action", /export async function revertToAddress/.test(actions));
+check(
+  "it only accepts an address this shop used to have",
+  /isFormerAddress\(target\)/.test(actions),
+  "a custom domain is not something to 'go back' to"
+);
+check(
+  "and reverting keeps the address it is leaving",
+  /moveFreeAddress\(me\.shop\.id, sub, \{ keepOld: true \}\)/.test(actions),
+  "time passed and links were made on the newer name; reverting is not undoing"
+);
+check("the revert is recorded", /shop\.address\.revert/.test(actions));
+
+const manager = read("components/admin/domain-manager.tsx");
+check("a former address is marked as one", /previous address/.test(manager));
+check("and offers the way back", /Use this again/.test(manager));
+check(
+  "a former address is not offered DNS records",
+  /!domain\.isPlatform && !former && \(/.test(manager),
+  "records for a hostname on our own zone are nonsense to show a merchant"
+);
+check(
+  "nor made the main address",
+  /!domain\.isPrimary && !former &&/.test(manager),
+  "a former address as the canonical one, while the shop sits on another name, is a contradiction"
+);
+
+const helpers = read("lib/domains.ts");
+check("a former address is told apart by shape", /export function isFormerAddress/.test(helpers));
+check(
+  "and never confused with the current free one",
+  /if \(domain\.isPlatform\) return false;/.test(helpers)
+);
+check(
+  "its subdomain can be read back out",
+  /export function subdomainOf/.test(helpers)
+);
+
+// ---------------------------------------------------------------------------
 // A retired address still resolves
 // ---------------------------------------------------------------------------
 

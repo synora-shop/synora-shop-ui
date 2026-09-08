@@ -165,7 +165,7 @@ check:design  check:motion  check:holding  check:spotlight
 check:brand  check:address  check:payments
 ```
 
-Twenty-four scripts, **2,280 assertions** at the last count. Those are static: they read the
+Twenty-four scripts, **2,295 assertions** at the last count. Those are static: they read the
 source. `scripts/sweep/` is the other half — a hundred probes against a running
 shop, for the faults reading the source cannot find. It found a CSV that could
 run a formula on the merchant's computer and twenty-two controls a screen

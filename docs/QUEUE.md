@@ -595,3 +595,35 @@ Two moves asked for, and a fault under one of them.
 - **The general settings save would have wiped the payment details.** It wrote
   every field it knew about, and the form had just stopped rendering three of
   them, so the first save of a shipping fee would have set all three to null.
+
+## The way back from a rename, 8 September
+
+"Address change reflect is working but there is no revert back or anything. It
+doesn't give full control."
+
+Correct, and the documentation already described the right model — for pages:
+*"Moving a page never breaks anything. The old address forwards to the new one
+automatically and the forward is listed under Links & redirects."* Store
+addresses had the forward and nothing else.
+
+Built the revert only, per the decision: a previous address now carries a
+**Use this again** button, which is the same move in the other direction and
+keeps the address it leaves behind.
+
+Two things that fixed on the way:
+
+- **A former address was being treated as a custom domain.** It was offered
+  "Check now", "Show records" and "Make main" — DNS records for a hostname on
+  our own zone, a check against our own nameservers, and a canonical address
+  contradicting the shop's own subdomain. It is told apart by shape now
+  (`isFormerAddress`) and offered only the way back and removal.
+- **Reverting violated the unique index.** `moveFreeAddress` always *created*
+  the row it was moving to, and going back to a name the shop already held a row
+  for is exactly the case where one exists. It reuses the row now, and a move
+  that keeps nothing deletes the stale one first. This only showed when the
+  button was pressed — the direct tests written for the original rename all
+  passed.
+
+Still not built, and deliberately: the **history list** and the **release
+control** from the fuller model. The doc update will say whether they are
+wanted.

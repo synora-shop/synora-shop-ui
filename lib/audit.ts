@@ -21,6 +21,8 @@ export type AuditAction =
   | "shop.settings.update"
   // Taking a storefront off the internet, and putting it back. Recorded
   // because it is the kind of thing someone later says they did not do.
+  // Moving the free address back to one the shop used to have.
+  | "shop.address.revert"
   | "shop.maintenance.on"
   | "shop.maintenance.off"
   | "domain.add"

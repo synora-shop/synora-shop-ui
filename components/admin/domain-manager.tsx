@@ -9,16 +9,12 @@ import {
   Globe,
   Loader2,
   Plus,
+  RotateCcw,
   Star,
   Trash2,
 } from "lucide-react";
-import {
-  checkDomain,
-  connectDomain,
-  disconnectDomain,
-  makePrimary,
-} from "@/app/admin/domain-actions";
-import { domainProblem, type DnsRecord } from "@/lib/domains";
+import { checkDomain, connectDomain, disconnectDomain, makePrimary, revertToAddress } from "@/app/admin/domain-actions";
+import { domainProblem, isFormerAddress, type DnsRecord } from "@/lib/domains";
 import { Badge, Button, Card, CardTitle, FieldError } from "@/components/ui/primitives";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast";
@@ -167,6 +163,13 @@ export function DomainManager({
           const StatusIcon = status.icon;
           const showRecords = expanded === domain.id;
 
+          // An address this shop used to have, kept so shared links still
+          // work. Not a custom domain, and it must not be offered what one
+          // gets: DNS records for a hostname on our own zone are nonsense, and
+          // "check now" would query our own nameservers on the merchant's
+          // behalf. What it gets instead is the way back.
+          const former = isFormerAddress(domain);
+
           return (
             <div key={domain.id} className="p-4">
               <div className="flex flex-wrap items-center gap-3">
@@ -188,6 +191,7 @@ export function DomainManager({
                       </Badge>
                     )}
                     {domain.isPlatform && <Badge>free address</Badge>}
+                    {former && <Badge>previous address</Badge>}
                     <Badge tone={status.tone}>
                       <StatusIcon
                         className={`h-3 w-3 ${domain.status === "VERIFIED" ? "animate-spin" : ""}`}
@@ -204,7 +208,7 @@ export function DomainManager({
                   {/* Live domains too. A domain that has stopped working shows
                       its error here, and the merchant who has just fixed it
                       should not have to wait for the hourly checker. */}
-                  {!domain.isPlatform && (
+                  {!domain.isPlatform && !former && (
                     <Button
                       size="sm"
                       disabled={pending}
@@ -217,7 +221,7 @@ export function DomainManager({
                     </Button>
                   )}
 
-                  {!domain.isPlatform && (
+                  {!domain.isPlatform && !former && (
                     <Button
                       size="sm"
                       variant="ghost"
@@ -227,7 +231,30 @@ export function DomainManager({
                     </Button>
                   )}
 
-                  {!domain.isPrimary && domain.status === "ACTIVE" && (
+                  {/* The way back. Renaming the shop moved the address forwards
+                      and there was no way to change your mind — the old one sat
+                      in this list, still redirecting, with nothing to press. */}
+                  {former && (
+                    <Button
+                      size="sm"
+                      disabled={pending}
+                      onClick={async () => {
+                        const ok = await confirm({
+                          title: `Go back to ${domain.hostname}?`,
+                          description: `Your store returns to this address, and ${
+                            domains.find((d) => d.isPlatform)?.hostname ?? "the current one"
+                          } is kept working and forwards here — the same way this one has been. Nothing shared on either address stops working.`,
+                          confirmLabel: "Use this address again",
+                        });
+                        if (ok) run(() => revertToAddress(domain.id));
+                      }}
+                    >
+                      <RotateCcw className="h-3.5 w-3.5" />
+                      Use this again
+                    </Button>
+                  )}
+
+                  {!domain.isPrimary && !former && domain.status === "ACTIVE" && (
                     <Button
                       size="sm"
                       disabled={pending}

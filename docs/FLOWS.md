@@ -218,6 +218,20 @@ the old address forever holds names on behalf of shops that did not want them;
 dropping it breaks every link, bookmark and search result silently. So there
 are two answers, both are answers, and clicking outside is not one of them.
 
+**And there is a way back.** A kept address shows on Domains as a *previous
+address* with one action — **Use this again** — which is the same move in the
+other direction, and keeps the address it is leaving for the same reason:
+whatever was shared while the shop sat on the newer name would otherwise break
+the moment somebody changed their mind. Reverting is not undoing; time passed,
+and links were made.
+
+A previous address is told apart by shape rather than by a column — a hostname
+inside our own zone that is not the shop's current free address can only be one
+— and it is deliberately *not* offered what a custom domain gets. DNS records
+for a hostname on our own zone are nonsense to show a merchant, "check now"
+would query our own nameservers on their behalf, and making it the main address
+while the shop sits on another name is a contradiction.
+
 **A kept address is a real row**, not a special case: `isPlatform` goes false,
 so `ensurePlatformDomain` cannot mistake it for the current one, the merchant
 can see it in Domains, and they can remove it later to release the name.

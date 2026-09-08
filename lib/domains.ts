@@ -231,6 +231,40 @@ export function backoffMs(failedChecks: number): number {
 /** After this many consecutive failures, stop checking until asked again. */
 export const MAX_AUTOMATIC_CHECKS = 20;
 
+/**
+ * Whether this row is an address the shop used to have.
+ *
+ * A hostname inside our own zone that is not the shop's current free address:
+ * left behind by a rename, kept so the links people already shared still work.
+ *
+ * Told apart by shape rather than by a column, because that is what it is —
+ * anything under PLATFORM_DOMAIN is ours by definition, so a row holding one
+ * and not marked isPlatform can only be a former address. A merchant cannot
+ * add one: `addDomain` refuses every hostname classifyHost calls ours.
+ *
+ * It matters because such a row is not a custom domain and must not be offered
+ * the things a custom domain gets. DNS records for a hostname on our own zone
+ * are nonsense to show a merchant, and "check now" would have us querying our
+ * own nameservers on their behalf.
+ */
+export function isFormerAddress(domain: {
+  hostname: string;
+  isPlatform: boolean;
+}): boolean {
+  if (domain.isPlatform) return false;
+  const host = normaliseHost(domain.hostname);
+  return host.endsWith(`.${PLATFORM_DOMAIN}`);
+}
+
+/** The subdomain part of one of our own hostnames, for putting it back. */
+export function subdomainOf(hostname: string): string | null {
+  const host = normaliseHost(hostname);
+  const suffix = `.${PLATFORM_DOMAIN}`;
+  if (!host.endsWith(suffix)) return null;
+  const sub = host.slice(0, -suffix.length);
+  return sub && !sub.includes(".") ? sub : null;
+}
+
 /** The address to show for a domain. */
 export function domainUrl(hostname: string): string {
   return `https://${normaliseHost(hostname)}`;

@@ -371,36 +371,60 @@ export async function moveFreeAddress(
       return;
     }
 
+    // The address being moved to may already exist as a row: going *back* to a
+    // name this shop used before is exactly that, and it is the ordinary case
+    // rather than an edge one. Creating a second row for the same hostname
+    // violates the unique index — which is what happened the first time this
+    // was written, and only showed when the revert button was actually pressed.
+    const target = await tx.domain.findUnique({
+      where: { hostname: to },
+      select: { id: true },
+    });
+
     if (keepOld) {
       // The old hostname stops being *the* free address and becomes a row that
       // still resolves. isPlatform goes false deliberately: it is no longer the
       // address this shop is guaranteed, ensurePlatformDomain must not mistake
       // it for one, and the merchant is now allowed to remove it — which is
       // how they release the name when they no longer want the redirect.
+      //
+      // Demoted before the other is promoted, so there is never a moment with
+      // two primaries for one shop; the database refuses that outright.
       await tx.domain.update({
         where: { id: old.id },
         data: { isPlatform: false, isPrimary: false },
       });
-      await tx.domain.create({
-        data: {
-          shopId,
-          hostname: to,
-          status: "ACTIVE",
-          isPlatform: true,
-          // Only if the old one was. A shop with a custom domain as its
-          // canonical address keeps that; the free address moves underneath it.
-          isPrimary: old.isPrimary,
-          verificationToken: "",
-          verifiedAt: new Date(),
-          activatedAt: new Date(),
-        },
-      });
+
+      const becomes = {
+        status: "ACTIVE" as const,
+        isPlatform: true,
+        // Only if the old one was. A shop with a custom domain as its canonical
+        // address keeps that; the free address moves underneath it.
+        isPrimary: old.isPrimary,
+        verifiedAt: new Date(),
+        activatedAt: new Date(),
+        lastError: null,
+        failedChecks: 0,
+      };
+
+      if (target) {
+        await tx.domain.update({ where: { id: target.id }, data: becomes });
+      } else {
+        await tx.domain.create({
+          data: { shopId, hostname: to, verificationToken: "", ...becomes },
+        });
+      }
       return;
     }
 
-    // Not kept: the same row is renamed, so nothing is left resolving and the
-    // old name returns to the pool.
-    await tx.domain.update({ where: { id: old.id }, data: { hostname: to } });
+    // Not kept: nothing is left resolving on the old name, and it returns to
+    // the pool. A row already sitting on the new name is removed first, or the
+    // rename below collides with it.
+    if (target) await tx.domain.delete({ where: { id: target.id } });
+    await tx.domain.update({
+      where: { id: old.id },
+      data: { hostname: to, isPlatform: true },
+    });
   });
 
   return { ok: true, from, to, keptOld: keepOld };

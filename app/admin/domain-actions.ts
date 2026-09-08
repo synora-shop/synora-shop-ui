@@ -3,12 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/auth-guard";
 import { audit } from "@/lib/audit";
+import { invalidateShop } from "@/lib/data/cached";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
-import { parseDomain } from "@/lib/domains";
+import { isFormerAddress, parseDomain, subdomainOf } from "@/lib/domains";
 import { domainExists } from "@/lib/dns";
 import {
   addDomain,
   domainsForShop,
+  moveFreeAddress,
   removeDomain,
   setPrimaryDomain,
   verifyDomain,
@@ -131,4 +133,52 @@ export async function disconnectDomain(domainId: string): Promise<Result> {
 
   revalidatePath("/admin/domains");
   return { ok: true, message: "Domain removed." };
+}
+
+/**
+ * Goes back to an address this shop used to have.
+ *
+ * The way out of a rename. Moving the free address forwards was already
+ * possible and going back was not, which made a one-click change a one-way
+ * one — the merchant could see the old address sitting in this list, still
+ * redirecting, with no way to say "actually, that one".
+ *
+ * It is the same move in the other direction, and it keeps the address being
+ * left behind for exactly the same reason: whatever was shared while the shop
+ * sat on the newer name would otherwise break the moment somebody changed
+ * their mind. Reverting is not undoing — time passed, and links were made.
+ */
+export async function revertToAddress(domainId: string): Promise<Result> {
+  const me = await requireRole("ADMIN");
+
+  const domains = await domainsForShop(me.shop.id);
+  const target = domains.find((d) => d.id === domainId);
+  if (!target) return { ok: false, error: "That address isn't set up on this store." };
+
+  if (!isFormerAddress(target)) {
+    return { ok: false, error: "That is not an address you used to have." };
+  }
+
+  const sub = subdomainOf(target.hostname);
+  if (!sub) return { ok: false, error: "That address can't be put back." };
+
+  const move = await moveFreeAddress(me.shop.id, sub, { keepOld: true });
+  if (!move.ok) return { ok: false, error: move.error };
+
+  await audit({
+    action: "shop.address.revert",
+    shopId: me.shop.id,
+    entity: "domain",
+    entityId: domainId,
+    userId: me.userId,
+    actorEmail: me.email,
+    detail: { from: move.from, to: move.to },
+  });
+
+  invalidateShop(me.shop.id, "settings");
+  revalidatePath("/admin/domains");
+  revalidatePath("/admin", "layout");
+  revalidatePath("/", "layout");
+
+  return { ok: true, message: `Your store is back at ${move.to}.` };
 }
