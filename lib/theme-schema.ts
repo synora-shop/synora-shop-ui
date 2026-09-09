@@ -4,12 +4,80 @@
 
 import type { SettingField } from "@/lib/section-schema";
 import { FONT_STACKS, THEME_TOKEN_DEFAULTS } from "@/lib/theme-tokens";
+import {
+  CARD_LAYOUTS,
+  FOOTER_LAYOUTS,
+  GRID_DENSITIES,
+  HEADER_LAYOUTS,
+  THEME_FEATURES,
+  THEME_LAYOUT_DEFAULTS,
+} from "@/lib/theme-layout";
 
 const fontOptions = Object.entries(FONT_STACKS).map(([value, { label }]) => ({ value, label }));
 
 export type ThemeGroup = { title: string; fields: SettingField[] };
 
 export const THEME_GROUPS: ThemeGroup[] = [
+  /**
+   * Arrangement, and the behaviour that goes with it.
+   *
+   * First, deliberately. A merchant opening this panel is deciding what kind of
+   * shop they are running, and that is a bigger question than which green the
+   * buttons should be. It is also the group that did not exist while a theme
+   * was only a palette.
+   *
+   * These keys are layout keys, not token keys. The panel carries both and the
+   * save splits them — see saveThemeTokens.
+   */
+  {
+    title: "Layout",
+    fields: [
+      {
+        key: "header",
+        kind: "select",
+        label: "Header",
+        info: HEADER_LAYOUTS.classic.description,
+        default: THEME_LAYOUT_DEFAULTS.header,
+        options: Object.entries(HEADER_LAYOUTS).map(([value, v]) => ({ value, label: (v as { label: string }).label })),
+      },
+      {
+        key: "productCard",
+        kind: "select",
+        label: "Product card",
+        info: "The shape of every product in a grid, which is most of what a customer sees.",
+        default: THEME_LAYOUT_DEFAULTS.productCard,
+        options: Object.entries(CARD_LAYOUTS).map(([value, v]) => ({ value, label: (v as { label: string }).label })),
+      },
+      {
+        key: "grid",
+        kind: "select",
+        label: "Space between products",
+        info: "How many fit across a row is set in Preferences; this is the air around them.",
+        default: THEME_LAYOUT_DEFAULTS.grid,
+        options: Object.entries(GRID_DENSITIES).map(([value, v]) => ({ value, label: (v as { label: string }).label })),
+      },
+      {
+        key: "footer",
+        kind: "select",
+        label: "Footer",
+        info: FOOTER_LAYOUTS.columns.description,
+        default: THEME_LAYOUT_DEFAULTS.footer,
+        options: Object.entries(FOOTER_LAYOUTS).map(([value, v]) => ({ value, label: (v as { label: string }).label })),
+      },
+    ],
+  },
+  {
+    title: "Shopping",
+    fields: (Object.entries(THEME_FEATURES) as [keyof typeof THEME_FEATURES, { label: string; description: string }][]).map(
+      ([key, meta]) => ({
+        key,
+        kind: "checkbox" as const,
+        label: meta.label,
+        info: meta.description,
+        default: THEME_LAYOUT_DEFAULTS[key],
+      })
+    ),
+  },
   {
     title: "Colour",
     fields: [

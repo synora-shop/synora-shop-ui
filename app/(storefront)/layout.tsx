@@ -7,7 +7,7 @@ import { ThemeStyle } from "@/components/storefront/theme-style";
 import { AnnouncementBar } from "@/components/storefront/announcement-bar";
 import { getStoreSettings } from "@/lib/data/settings";
 import { CurrencyProvider } from "@/components/ui/currency";
-import { getThemeTokens } from "@/lib/data/theme";
+import { getThemeTokens, getThemeLayout } from "@/lib/data/theme";
 import { getFontAssets } from "@/lib/data/fonts";
 import { getStickyButtons } from "@/lib/data/sticky-buttons";
 import { getMenus, menuForSlot, headerLinks, footerColumns } from "@/lib/data/menus";
@@ -117,13 +117,14 @@ export default async function StorefrontLayout({ children }: LayoutProps<"/">) {
   }
 
 
-  const [settings, menus, siteText, tokens, fonts, stickyButtons] = await Promise.all([
+  const [settings, menus, siteText, tokens, fonts, stickyButtons, layout] = await Promise.all([
     getStoreSettings(),
     getMenus(),
     getSiteText(),
     getThemeTokens(),
     getFontAssets(),
     getStickyButtons(),
+    getThemeLayout(),
   ]);
   const edits = toGlobalEdits(settings);
 
@@ -173,6 +174,7 @@ export default async function StorefrontLayout({ children }: LayoutProps<"/">) {
           nearest thing the merchant has actually uploaded. It never has to
           know which of the four slots were filled in. */}
       <SiteHeader
+        layout={layout.header}
         links={headerLinks(headerMenu?.items ?? [])}
         logoColor={resolveLogoColor(tokens, tokens.headerBackground)}
         logoSrc={pickLogo(marks, { dark: headerIsDark }) || undefined}
@@ -182,6 +184,7 @@ export default async function StorefrontLayout({ children }: LayoutProps<"/">) {
       />
       <main className="flex-1">{children}</main>
       <SiteFooter
+        layout={layout.footer}
         columns={footerColumns(footerMenu?.items ?? [])}
         tagline={text(siteText, "footer.tagline")}
         copyrightText={footerCopyright(edits)}

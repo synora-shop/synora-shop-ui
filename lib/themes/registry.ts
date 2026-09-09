@@ -21,6 +21,7 @@
  */
 import { SECTION_TYPES } from "@/lib/section-schema";
 import { THEME_TOKEN_DEFAULTS, type ThemeTokens } from "@/lib/theme-tokens";
+import { THEME_LAYOUT_DEFAULTS, type ThemeLayout } from "@/lib/theme-layout";
 
 /**
  * What kind of business a shop is.
@@ -60,6 +61,15 @@ export type ThemeDefinition = {
    * it only changes where a *new* shop begins.
    */
   tokens: Partial<ThemeTokens>;
+  /**
+   * How this theme *arranges* the storefront, and what it switches on.
+   *
+   * The half that was missing. A theme with only tokens is a palette: Aurora
+   * and Meridian rendered the same HTML and differed in CSS variables alone.
+   * Omitted means "the original storefront", so a theme that says nothing here
+   * behaves exactly as every theme did before this existed.
+   */
+  layout?: Partial<ThemeLayout>;
 };
 
 /* -------------------------------------------------------------------------- */
@@ -121,6 +131,65 @@ const meridian: ThemeDefinition = {
     cornerRadius: 0,
     buttonRadius: 0,
     containerWidth: 1440,
+  },
+};
+
+/**
+ * Atlas — the first theme that is more than a palette.
+ *
+ * Aurora and Meridian differ in colour, type and corner radius, and in nothing
+ * else: the same header, the same card, the same grid, the same footer. Atlas
+ * is the theme that proves the other half of the registry works, so it changes
+ * every one of those and switches on the behaviour a shop actually sells with.
+ *
+ * The choices hang together rather than being picked for variety. A centred
+ * header and a tall, centred card make a shop that leads with photography; a
+ * tight grid earns back the room that costs; a band footer keeps the bottom of
+ * a phone page short. Hover swap and quick-add belong to a grid that expects to
+ * be browsed rather than searched, and a sticky buy bar belongs to a long
+ * product page on a phone, which is where most of these shops are read.
+ *
+ * Colour is deliberately neither of the other two: a deep pine against a warm
+ * off-white, with amber for the second voice — not Aurora's maroon, and not
+ * Meridian's absence of colour.
+ */
+const atlas: ThemeDefinition = {
+  key: "atlas",
+  name: "Atlas",
+  description: "Photography-led, with a tight grid and quick buying. For a shop with a look.",
+  businessTypes: ["ecommerce"],
+  sections: [...SECTION_TYPES],
+  tokens: {
+    accent: "#12463c",
+    secondary: "#c8763f",
+    accentContrast: "#ffffff",
+    pageBackground: "#fbfbf9",
+    surface: "#ffffff",
+    textPrimary: "#12181a",
+    textMuted: "#5a6663",
+    border: "#e3e5e0",
+    headerBackground: "#ffffff",
+    footerBackground: "#12181a",
+    headingFont: "inter",
+    bodyFont: "inter",
+    baseFontSize: 16,
+    headingWeight: 700,
+    headingLetterSpacing: -1,
+    // Softened rather than square: Meridian already owns the hard corner, and
+    // an unrounded photograph beside a rounded button looks like an accident.
+    cornerRadius: 6,
+    buttonRadius: 6,
+    containerWidth: 1360,
+  },
+  layout: {
+    header: "centred",
+    productCard: "editorial",
+    grid: "tight",
+    footer: "band",
+    hoverSwapImage: true,
+    quickAdd: true,
+    stickyBuyBar: true,
+    swatchesOnCard: true,
   },
 };
 
@@ -274,6 +343,7 @@ const service: ThemeDefinition = {
 export const THEMES: Record<string, ThemeDefinition> = {
   aurora,
   meridian,
+  atlas,
   quill,
   column,
   hearth,
@@ -319,6 +389,19 @@ export function themeTokens(
   merchant: Partial<ThemeTokens> = {}
 ): ThemeTokens {
   return { ...THEME_TOKEN_DEFAULTS, ...themeFor(key).tokens, ...merchant };
+}
+
+/**
+ * The layout a theme starts at, with the merchant's changes on top.
+ *
+ * Same three layers as `themeTokens`, and the same rule: a merchant who has
+ * chosen a header outranks the theme that suggested one.
+ */
+export function themeLayout(
+  key: string | null | undefined,
+  merchant: Partial<ThemeLayout> = {}
+): ThemeLayout {
+  return { ...THEME_LAYOUT_DEFAULTS, ...themeFor(key).layout, ...merchant };
 }
 
 /** Whether a theme offers a section type. */

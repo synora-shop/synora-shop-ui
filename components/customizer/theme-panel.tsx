@@ -11,6 +11,7 @@ import { settingAnchor } from "@/lib/settings-index";
 import { type SaveState } from "@/components/ui/save-button";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { THEME_GROUPS, coerceThemeValue } from "@/lib/theme-schema";
+import { type ThemeLayout } from "@/lib/theme-layout";
 import {
   themeTokensToCss,
   resolveTextColor,
@@ -31,9 +32,18 @@ const DEVICES = [
 
 type DeviceKey = (typeof DEVICES)[number]["key"];
 
-export function ThemePanel({ initialTokens }: { initialTokens: ThemeTokens }) {
-  const [tokens, setTokens] = useState<ThemeTokens>(initialTokens);
-  const [saved, setSaved] = useState<ThemeTokens>(initialTokens);
+/**
+ * Colour, type and arrangement, edited as one list.
+ *
+ * They are two things underneath — a token is a CSS value, a layout choice
+ * picks a component — but to a merchant "what does my shop look like" is one
+ * question, so the panel carries one object and the save splits it.
+ */
+export type ThemePanelState = ThemeTokens & ThemeLayout;
+
+export function ThemePanel({ initialTokens }: { initialTokens: ThemePanelState }) {
+  const [tokens, setTokens] = useState<ThemePanelState>(initialTokens);
+  const [saved, setSaved] = useState<ThemePanelState>(initialTokens);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [device, setDevice] = useState<DeviceKey>("desktop");
   const iframeRef = useRef<HTMLIFrameElement | null>(null);

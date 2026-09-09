@@ -1,0 +1,11 @@
+-- A theme becomes something that arranges, not only something that paints.
+--
+-- Until now a theme was tokens and nothing else: Aurora and Meridian rendered
+-- byte-identical HTML and differed only in CSS custom properties. This column
+-- holds which header, product card, grid and footer a storefront uses, and
+-- which of the theme's behaviours are switched on.
+--
+-- Defaults to an empty object, which reads as "whatever the theme says", and
+-- every theme's own default is what the storefront already did. So this changes
+-- nothing about any existing shop until a merchant or a theme says otherwise.
+ALTER TABLE "ThemeSettings" ADD COLUMN IF NOT EXISTS "layout" JSONB NOT NULL DEFAULT '{}';

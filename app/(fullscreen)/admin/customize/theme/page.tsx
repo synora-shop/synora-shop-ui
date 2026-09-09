@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { getThemeTokens } from "@/lib/data/theme";
+import { getThemeTokens, getThemeLayout } from "@/lib/data/theme";
 import { ThemePanel } from "@/components/customizer/theme-panel";
 
 /**
@@ -15,7 +15,9 @@ import { ThemePanel } from "@/components/customizer/theme-panel";
  * Theme button opens this, and this goes back to the customizer.
  */
 export default async function CustomizeThemePage() {
-  const tokens = await getThemeTokens();
+  // Both halves of "what does my shop look like", merged for one panel. They
+  // are stored separately and split again on save — see saveThemeTokens.
+  const [tokens, layout] = await Promise.all([getThemeTokens(), getThemeLayout()]);
 
   return (
     <div className="flex h-dvh flex-col bg-canvas">
@@ -31,7 +33,7 @@ export default async function CustomizeThemePage() {
       </header>
       <div className="min-h-0 flex-1 overflow-y-auto">
         <div className="mx-auto max-w-xl p-4">
-          <ThemePanel initialTokens={tokens} />
+          <ThemePanel initialTokens={{ ...tokens, ...layout }} />
         </div>
       </div>
     </div>

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Container } from "@/components/ui/container";
 import { ProductCard } from "@/components/storefront/product-card";
 import { ProductGallery } from "@/components/storefront/product-gallery";
+import { getThemeLayout } from "@/lib/data/theme";
 import { ProductPurchasePanel } from "@/components/storefront/product-purchase-panel";
 import { EnquiryPanel } from "@/components/storefront/enquiry-panel";
 import { isEnquiryOnly } from "@/lib/product-kind";
@@ -32,7 +33,11 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
     product.id
   );
   const price = effectivePrice(product);
-  const [settings, siteText] = await Promise.all([getStoreSettings(), getSiteText()]);
+  const [settings, siteText, layout] = await Promise.all([
+    getStoreSettings(),
+    getSiteText(),
+    getThemeLayout(),
+  ]);
   const edits = toGlobalEdits(settings);
 
   return (
@@ -51,6 +56,7 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
               <EnquiryPanel currency={currency} product={product} />
             ) : (
             <ProductPurchasePanel
+              stickyBuyBar={layout.stickyBuyBar}
               productId={product.id}
               slug={product.slug}
               title={product.title}
@@ -90,7 +96,7 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
           <h2 className="font-serif text-2xl font-semibold text-ink">You may also like</h2>
           <div className="mt-6 grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-4">
             {related.map((p) => (
-              <ProductCard key={p.id} currency={currency} product={p} saleBadgeLabel={text(siteText, "product.saleBadge")} edits={edits} />
+              <ProductCard key={p.id} currency={currency} product={p} layout={layout.productCard} features={layout} saleBadgeLabel={text(siteText, "product.saleBadge")} edits={edits} />
             ))}
           </div>
         </section>

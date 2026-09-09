@@ -6,6 +6,8 @@ import { ChevronDown, Menu, Search, ShoppingBag, User, X } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { Logo } from "@/components/ui/logo";
 import { useCartStore } from "@/lib/cart-store";
+import { THEME_LAYOUT_DEFAULTS, type HeaderLayout } from "@/lib/theme-layout";
+import { cn } from "@/lib/utils";
 
 type NavLink = {
   href: string;
@@ -30,8 +32,16 @@ export function SiteHeader({
   logoSrcCompact,
   logoHeight = 24,
   storeName,
+  layout,
 }: {
   links?: NavLink[];
+  /**
+   * Where the logo and the links sit.
+   *
+   * Optional, and defaulting to the arrangement the storefront has always had,
+   * so a shop on a theme that says nothing about its header is untouched.
+   */
+  layout?: HeaderLayout;
   logoColor?: string | null;
   /** The wide mark, resolved for this header's background. */
   logoSrc?: string;
@@ -56,55 +66,10 @@ export function SiteHeader({
   const [menuOpen, setMenuOpen] = useState(false);
   const totalItems = useCartStore((s) => s.totalItems());
 
-  return (
-    <header
-      data-shp-region="header"
-      // Falls back to the original canvas/ink when no theme is set, so an
-      // unthemed store renders byte-for-byte as it did before.
-      style={{
-        backgroundColor: "var(--shp-header-bg, var(--color-canvas))",
-        color: "var(--shp-header-text, var(--color-ink))",
-      }}
-      className="sticky top-0 z-30 border-b border-border backdrop-blur"
-    >
-      <Container className="flex h-16 items-center justify-between gap-4">
-        <button
-          className="inline-flex items-center justify-center rounded p-1 transition-colors hover:bg-subtle active:bg-brand-100 lg:hidden"
-          aria-label="Toggle menu"
-          onClick={() => setMenuOpen((v) => !v)}
-        >
-          {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
+  const mode = layout ?? THEME_LAYOUT_DEFAULTS.header;
 
-        <Link href="/" className="shrink-0" data-shp-region="logo">
-          {logoSrcCompact && logoSrcCompact !== logoSrc ? (
-            <>
-              <Logo
-                color={logoColor}
-                height={logoHeight}
-                src={logoSrcCompact}
-                fallbackText={storeName}
-                className="sm:hidden"
-              />
-              <Logo
-                color={logoColor}
-                height={logoHeight}
-                src={logoSrc}
-                fallbackText={storeName}
-                className="hidden sm:inline-block"
-              />
-            </>
-          ) : (
-            <Logo
-              color={logoColor}
-              height={logoHeight}
-              src={logoSrc}
-              fallbackText={storeName}
-            />
-          )}
-        </Link>
-
-        <nav className="hidden lg:flex lg:gap-8">
+  const desktopNav = (
+    <nav className="hidden lg:flex lg:gap-8">
           {NAV_LINKS.map((link) =>
             link.children?.length ? (
               // The parent stays a real link, not just a menu trigger: a
@@ -144,9 +109,75 @@ export function SiteHeader({
               </Link>
             )
           )}
-        </nav>
+    </nav>
+  );
 
-        <div className="flex items-center gap-2">
+  return (
+    <header
+      data-shp-region="header"
+      // Falls back to the original canvas/ink when no theme is set, so an
+      // unthemed store renders byte-for-byte as it did before.
+      style={{
+        backgroundColor: "var(--shp-header-bg, var(--color-canvas))",
+        color: "var(--shp-header-text, var(--color-ink))",
+      }}
+      className="sticky top-0 z-30 border-b border-border backdrop-blur"
+    >
+      <Container className={cn("flex h-16 items-center justify-between gap-4", mode === "centred" && "lg:relative")}>
+        <button
+          className={cn(
+            "inline-flex items-center justify-center rounded p-1 transition-colors hover:bg-subtle active:bg-brand-100",
+            // Minimal keeps the button at every width: its links live nowhere
+            // else, so hiding it on a desktop would hide the navigation.
+            mode !== "minimal" && "lg:hidden"
+          )}
+          aria-label="Toggle menu"
+          onClick={() => setMenuOpen((v) => !v)}
+        >
+          {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
+
+        <Link
+          href="/"
+          className={cn("shrink-0", mode === "centred" && "lg:absolute lg:left-1/2 lg:-translate-x-1/2")}
+          data-shp-region="logo"
+        >
+          {logoSrcCompact && logoSrcCompact !== logoSrc ? (
+            <>
+              <Logo
+                color={logoColor}
+                height={logoHeight}
+                src={logoSrcCompact}
+                fallbackText={storeName}
+                className="sm:hidden"
+              />
+              <Logo
+                color={logoColor}
+                height={logoHeight}
+                src={logoSrc}
+                fallbackText={storeName}
+                className="hidden sm:inline-block"
+              />
+            </>
+          ) : (
+            <Logo
+              color={logoColor}
+              height={logoHeight}
+              src={logoSrc}
+              fallbackText={storeName}
+            />
+          )}
+        </Link>
+
+        {mode === "classic" && desktopNav}
+
+        {/* Pushed right by hand in the centred header.
+
+            The logo is taken out of the flex flow there so it can sit on the
+            true middle of the row, which leaves the tools as the only child of
+            a justify-between and slides them to the left edge. Looked correct
+            in the markup and wrong on the screen. */}
+        <div className={cn("flex items-center gap-2", mode === "centred" && "lg:ml-auto")}>
           <Link
             href="/shop"
             aria-label="Search"
@@ -175,6 +206,14 @@ export function SiteHeader({
           </Link>
         </div>
       </Container>
+
+      {/* Centred puts the links on their own row underneath the logo. It costs
+          about forty pixels of height, which is the trade a shop makes for a
+          symmetrical mark — and the reason a shop with many links should stay
+          on Classic. */}
+      {mode === "centred" && (
+        <Container className="hidden justify-center pb-3 lg:flex">{desktopNav}</Container>
+      )}
 
       {menuOpen && (
         <nav className="border-t border-border bg-canvas lg:hidden">

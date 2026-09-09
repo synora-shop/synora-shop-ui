@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -33,6 +33,7 @@ export function ProductPurchasePanel({
   addedToCartLabel = "Added to Cart",
   buyNowLabel = "Buy Now",
   orderViaWhatsAppLabel = "Order via WhatsApp",
+  stickyBuyBar = false,
 }: {
   productId: string;
   slug: string;
@@ -49,9 +50,40 @@ export function ProductPurchasePanel({
   addedToCartLabel?: string;
   buyNowLabel?: string;
   orderViaWhatsAppLabel?: string;
+  /**
+   * Whether the price and Add to basket follow the page down.
+   *
+   * A theme's choice, off by default. It only ever appears on narrow screens:
+   * on a desktop the buttons are beside the photo and rarely leave the view,
+   * so a fixed bar there would cover the page to solve nothing.
+   */
+  stickyBuyBar?: boolean;
 }) {
   const money = useMoney();
   const router = useRouter();
+
+  /**
+   * Whether the real buy buttons have scrolled out of view.
+   *
+   * Watched rather than measured against a scroll position, because the
+   * distance depends on how long the description is, how many variants there
+   * are and how wide the window is — a fixed threshold is wrong on most pages.
+   */
+  const buyRowRef = useRef<HTMLDivElement | null>(null);
+  const [buyRowGone, setBuyRowGone] = useState(false);
+
+  useEffect(() => {
+    const el = buyRowRef.current;
+    if (!stickyBuyBar || !el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setBuyRowGone(!entry.isIntersecting),
+      // A little margin, so the bar does not flicker in and out while the
+      // buttons sit exactly on the edge of the viewport.
+      { rootMargin: "-8px 0px 0px 0px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [stickyBuyBar]);
   const addItem = useCartStore((s) => s.addItem);
 
   const sizes = useMemo(() => Array.from(new Set(variants.map((v) => v.size))), [variants]);
@@ -148,7 +180,7 @@ export function ProductPurchasePanel({
           })()
         ))}
 
-      <div className="flex flex-col gap-3 sm:flex-row">
+      <div ref={buyRowRef} className="flex flex-col gap-3 sm:flex-row">
         <button
           onClick={handleAddToCart}
           disabled={!selectedVariant || outOfStock}
@@ -173,6 +205,36 @@ export function ProductPurchasePanel({
           {buyNowLabel}
         </button>
       </div>
+
+      {/*
+        The buy bar that follows the page.
+ 
+        Shown only once the real buttons have scrolled away, and hidden again
+        the moment they are back — a bar duplicating a button three inches
+        below it is clutter, not help. It is the same handler and the same
+        disabled rule as the button above, not a second way to buy that could
+        drift from the first.
+      */}
+      {stickyBuyBar && buyRowGone && (
+        <div
+          className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-[var(--shp-surface,#fff)]/95 px-4 py-3 backdrop-blur lg:hidden"
+          style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
+        >
+          <div className="mx-auto flex max-w-3xl items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-xs text-ink-soft">{title}</p>
+              <p className="text-sm font-medium text-ink">{money(price)}</p>
+            </div>
+            <button
+              onClick={handleAddToCart}
+              disabled={!selectedVariant || outOfStock}
+              className="shrink-0 rounded-full bg-brand-500 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {added ? addedToCartLabel : addToCartLabel}
+            </button>
+          </div>
+        </div>
+      )}
 
       {whatsappOrderButton && (
         <a

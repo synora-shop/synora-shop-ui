@@ -4,6 +4,7 @@ import { currentShop } from "@/lib/data/shop";
 import { cachedForShop } from "@/lib/data/cached";
 import { SHOP_PATH_HEADER } from "@/lib/shop-context";
 import { THEMES, themeFor } from "@/lib/themes/registry";
+import { resolveThemeLayout, type ThemeLayout } from "@/lib/theme-layout";
 import { resolveThemeTokens, type ThemeTokens } from "@/lib/theme-tokens";
 
 /**
@@ -56,7 +57,9 @@ export const getThemeTokens = cache(async (): Promise<ThemeTokens> => {
       const found = await t.themeSettings.findFirst({
         where: { businessType: shop.businessType },
       });
-      return found ? { themeKey: found.themeKey, tokens: found.tokens } : null;
+      return found
+        ? { themeKey: found.themeKey, tokens: found.tokens, layout: found.layout }
+        : null;
     }),
     previewTheme(),
   ]);
@@ -69,4 +72,42 @@ export const getThemeTokens = cache(async (): Promise<ThemeTokens> => {
     ...themeFor(key).tokens,
     ...((row?.tokens ?? {}) as Record<string, unknown>),
   });
+});
+
+/**
+ * How this storefront is arranged, for the request being rendered.
+ *
+ * The same three layers as `getThemeTokens`, over the same row, and the same
+ * `?__theme=` preview — so the Themes screen shows a merchant an unchosen
+ * theme's *structure* as well as its colours, which is the whole point of a
+ * theme being more than a palette.
+ *
+ * Its own function rather than a field on the tokens, because almost everything
+ * that needs one needs only one: the header does not care about the card, and a
+ * page rendering thirty cards should not carry the footer's variant into each.
+ */
+export const getThemeLayout = cache(async (): Promise<ThemeLayout> => {
+  const shop = await currentShop();
+  if (!shop) return resolveThemeLayout(undefined);
+
+  const [row, preview] = await Promise.all([
+    cachedForShop(shop.id, "theme", async (t) => {
+      const found = await t.themeSettings.findFirst({
+        where: { businessType: shop.businessType },
+      });
+      return found
+        ? { themeKey: found.themeKey, tokens: found.tokens, layout: found.layout }
+        : null;
+    }),
+    previewTheme(),
+  ]);
+
+  const key = preview ?? row?.themeKey;
+
+  // A previewed theme shows its own arrangement, not the merchant's overrides
+  // of a different theme. Choosing a header on Aurora should not silently
+  // follow you into a preview of Atlas — the preview would then be of neither.
+  const merchant = preview ? {} : ((row?.layout ?? {}) as Record<string, unknown>);
+
+  return resolveThemeLayout({ ...themeFor(key).layout, ...merchant });
 });

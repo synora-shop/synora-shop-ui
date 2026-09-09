@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Container } from "@/components/ui/container";
+import { GRID_CLASSES } from "@/lib/theme-layout";
+import { getThemeLayout } from "@/lib/data/theme";
 import { ProductCard } from "@/components/storefront/product-card";
 import { ProductFilters } from "@/components/storefront/product-filters";
 import { getProducts, getFilterOptions, countByKind, type ProductFilters as Filters } from "@/lib/data/products";
@@ -36,11 +38,12 @@ export default async function ShopPage(props: PageProps<"/shop">) {
   const filters = parseFilters(sp);
   filters.sort = filters.sort ?? edits.defaultShopSort;
 
-  const [allProducts, options, siteText, kindCounts] = await Promise.all([
+  const [allProducts, options, siteText, kindCounts, layout] = await Promise.all([
     getProducts(filters),
     getFilterOptions(),
     getSiteText(),
     countByKind(),
+    getThemeLayout(),
   ]);
   const products = allProducts.filter(
     (p) => edits.outOfStockDisplay !== "HIDE" || totalStock(p.variants) > 0
@@ -76,12 +79,13 @@ export default async function ShopPage(props: PageProps<"/shop">) {
       ) : (
         <div
           className={cn(
-            "grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3",
+            "grid grid-cols-2 sm:grid-cols-3",
+            GRID_CLASSES[layout.grid],
             SHOP_GRID_LG_COLS_CLASS[edits.shopGridColumns] ?? "lg:grid-cols-4"
           )}
         >
           {products.map((p) => (
-            <ProductCard key={p.id} currency={currency} product={p} saleBadgeLabel={saleBadgeLabel} edits={edits} />
+            <ProductCard key={p.id} currency={currency} product={p} layout={layout.productCard} features={layout} saleBadgeLabel={saleBadgeLabel} edits={edits} />
           ))}
         </div>
       )}

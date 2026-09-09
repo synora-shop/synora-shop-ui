@@ -1379,6 +1379,18 @@ model ThemeSettings {
   /// letting a retired theme take a storefront offline.
   themeKey  String   @default("aurora")
   tokens    Json
+  /// What this storefront *arranges*, as opposed to what it paints: which
+  /// header, product card, grid and footer it uses, and which of the theme's
+  /// behaviours are switched on.
+  ///
+  /// A blob rather than a column per slot, following `tokens` directly above —
+  /// slots and features are added far more often than a migration is worth, and
+  /// lib/theme-layout.ts is the one validator, so an unknown variant falls back
+  /// rather than reaching a component.
+  ///
+  /// Empty means "whatever the theme says", which is what every existing row
+  /// means, because none of them has one.
+  layout    Json     @default("{}")
   updatedAt DateTime @updatedAt
 
   /// One row per business type, not per shop. A merchant who switches to a blog

@@ -330,6 +330,56 @@ whether to believe it.
 
 ---
 
+## 8c. Themes
+
+A theme is data, not a folder of components. It has always been three things —
+which sections it offers, the colours it starts at, and who it is for — and it
+is now four.
+
+**The fourth was missing, and it was the important one.** Until 9 September a
+theme was `tokens` and nothing else, and *no storefront component read the theme
+at all*. Aurora and Meridian rendered byte-identical HTML: same header, same
+card, same grid, same footer, differing only in CSS custom properties. A
+merchant choosing between them was choosing a colour scheme with two names,
+while the Themes screen offered it as a change of storefront.
+
+So a theme also picks a **variant per structural slot** and switches on the
+**behaviour** it wants:
+
+| Slot | Variants |
+| --- | --- |
+| `header` | classic · centred · minimal |
+| `productCard` | quiet · editorial · compact |
+| `grid` | roomy · tight *(spacing only)* |
+| `footer` | columns · band |
+
+| Feature | What it does |
+| --- | --- |
+| `hoverSwapImage` | The card shows the next photo on hover. Pure CSS. |
+| `quickAdd` | Add to basket from the grid — single-variant products only. |
+| `stickyBuyBar` | Price and Add follow a long product page. Narrow screens only. |
+| `swatchesOnCard` | The colours a product comes in, before it is opened. |
+
+Every variant is written **once**, in the component that owns that slot. Adding
+a theme still adds no components — the property the registry was built to
+protect — but a theme can now genuinely be a different shop.
+
+**Three layers, weakest first**, exactly as tokens resolve: the platform's
+defaults, then the theme's, then the merchant's. The defaults are precisely
+what the storefront did before this existed, so an untouched shop is untouched;
+`check:themes` asserts that directly, including that Aurora arranges nothing.
+
+`grid` sets spacing and not column count, on purpose. How many products fit
+across a row is already a merchant setting in Preferences, and a theme that also
+set it would be a second switch for one thing — the shape of bug
+`lib/payment-methods.ts` exists because of.
+
+Only the merchant's **differences** are stored, in `ThemeSettings.layout`.
+Writing a resolved layout would freeze today's theme defaults into their row, so
+switching theme later would change the colours and silently keep the old header.
+
+---
+
 ## 9. What runs on a schedule
 
 `vercel.json`. **The plan allows one cron run per day**, and a deploy carrying a

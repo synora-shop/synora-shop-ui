@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Container } from "@/components/ui/container";
+import { THEME_LAYOUT_DEFAULTS, type FooterLayout } from "@/lib/theme-layout";
 import { Logo } from "@/components/ui/logo";
 
 
@@ -40,7 +41,10 @@ export function SiteFooter({
   logoSrc,
   storeName,
   paymentMethods = [],
+  layout,
 }: {
+  /** How the footer is arranged. Defaults to the original columns. */
+  layout?: FooterLayout;
   columns?: FooterColumn[];
   tagline?: string;
   copyrightText?: string;
@@ -61,6 +65,8 @@ export function SiteFooter({
 }) {
   const footerColumns = columns && columns.length > 0 ? columns : FALLBACK_COLUMNS;
 
+  const mode = layout ?? THEME_LAYOUT_DEFAULTS.footer;
+
   return (
     <footer
       data-shp-region="footer"
@@ -70,7 +76,16 @@ export function SiteFooter({
       }}
       className="mt-24 border-t border-border"
     >
-      <Container className="grid grid-cols-2 gap-8 py-12 sm:grid-cols-4">
+      {/* Band collapses the columns into one centred stack and halves the
+          padding. On a phone the columns footer is most of a screen's worth of
+          scrolling before the page ends, which is the thing this fixes. */}
+      <Container
+        className={
+          mode === "band"
+            ? "flex flex-col items-center gap-6 py-8 text-center"
+            : "grid grid-cols-2 gap-8 py-12 sm:grid-cols-4"
+        }
+      >
         <div className="col-span-2 sm:col-span-1">
           <Logo color={logoColor} height={24} src={logoSrc} fallbackText={storeName} />
           <p className="mt-3 max-w-xs text-sm text-ink-soft">{tagline || FALLBACK_TAGLINE}</p>
