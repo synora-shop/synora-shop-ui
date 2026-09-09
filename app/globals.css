@@ -749,38 +749,75 @@ body {
  * that appears twice has stopped being an answer to "where?" and started being
  * decoration.
  *
+ * This is the second version. The first scaled the control itself — 1.08, then
+ * 0.98, then 1.05, three times over five seconds. On a pill button that is a
+ * wobble, not a pointer: the label distorts as it grows, the shape stops
+ * looking like the thing next to it, and the eye reads a glitch rather than an
+ * answer. It also pointed at nothing while it moved, because a control that
+ * changes size is harder to fix on, not easier.
+ *
+ * So nothing about the control moves now. Two things happen around it:
+ *
+ *   A ring, held. It appears at once and stays for the whole five seconds,
+ *   then fades. This is the part that answers the question — at any moment in
+ *   those five seconds, glancing at the screen shows which control was meant.
+ *
+ *   A halo, pinging outward three times. Motion catches the eye from the
+ *   corner of vision, which is the job while the merchant is still looking
+ *   somewhere else. It expands and fades like a radar sweep rather than
+ *   pulsing in place, so it reads as pointing rather than throbbing.
+ *
  * Five seconds, which is long by every other standard here and correct for
  * this one — the merchant has just changed page and has to find the thing
- * after their eyes have settled. Three cycles of grow, shrink and a ring, then
- * it stops of its own accord rather than waiting to be dismissed.
+ * after their eyes have settled. It ends on its own; nothing to dismiss.
  */
 @keyframes shp-attention {
-  0%, 100% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 rgb(47 41 201 / 0);
+  /* Full strength immediately: the merchant is arriving and looking now. */
+  0%,
+  86% {
+    box-shadow:
+      0 0 0 3px rgb(102 102 255 / 0.6),
+      0 0 0 9px rgb(102 102 255 / 0.14);
   }
-  8% {
-    transform: scale(1.08);
-    box-shadow: 0 0 0 6px rgb(47 41 201 / 0.30);
-  }
-  16% {
-    transform: scale(0.98);
-    box-shadow: 0 0 0 2px rgb(47 41 201 / 0.14);
-  }
-  24% {
-    transform: scale(1.05);
-    box-shadow: 0 0 0 8px rgb(47 41 201 / 0.22);
-  }
-  33% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 rgb(47 41 201 / 0);
+  /* Out gently at the end, so the screen settles rather than snapping. */
+  100% {
+    box-shadow:
+      0 0 0 3px rgb(102 102 255 / 0),
+      0 0 0 9px rgb(102 102 255 / 0);
   }
 }
+
+/* The sweep. Scaled from the element's own centre, so it reads as coming from
+   the control rather than landing on it. */
+@keyframes shp-attention-ping {
+  from {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+
 .attention {
-  animation: shp-attention 1666ms var(--ease-spring) 3;
+  animation: shp-attention 5000ms var(--ease-out) 1 both;
   /* Above neighbouring rows, or the ring is clipped by whatever sits next. */
   position: relative;
   z-index: 1;
+}
+
+.attention::after {
+  content: "";
+  position: absolute;
+  /* Just outside the held ring, so the two are read as one mark. */
+  inset: -3px;
+  /* Follows whatever shape it is on — a pill button, a card, a row. */
+  border-radius: inherit;
+  border: 2px solid var(--color-brand-500);
+  /* It sits over the control, and the control still has to be clickable. */
+  pointer-events: none;
+  animation: shp-attention-ping 1200ms var(--ease-out) 3 both;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -819,11 +856,18 @@ body {
     display: none;
   }
 
-  /* "Look here" still has to answer the question. A ring that does not move
-     is the honest translation of one that pulses. */
+  /* "Look here" still has to answer the question, and the held ring already
+     is the answer — it was never the moving part. So the ring stays, drawn
+     rather than animated, and only the sweep goes. */
   .attention {
-    box-shadow: 0 0 0 4px rgb(47 41 201 / 0.35);
-    transform: none;
+    box-shadow:
+      0 0 0 3px rgb(102 102 255 / 0.6),
+      0 0 0 9px rgb(102 102 255 / 0.14);
+  }
+
+  .attention::after {
+    animation: none;
+    display: none;
   }
 
 

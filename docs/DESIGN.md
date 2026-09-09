@@ -196,6 +196,16 @@ dialog opening, `.toast-in` / `.toast-out` for a message arriving and leaving,
 merchant has been sent to find. Nothing invents its own. *Check:
 `check:motion`.*
 
+`.attention` is a ring that holds and a halo that sweeps outward three times.
+**Nothing about the control itself moves.** The first version scaled it — 1.08,
+0.98, 1.05, three times over five seconds — and on a pill button that is a
+wobble rather than a pointer: the label distorts, the shape stops matching its
+neighbours, and something changing size is harder to fix the eye on, not
+easier. The sweep catches peripheral vision while the merchant is still looking
+elsewhere; the held ring answers "which one?" for anyone glancing over at any
+moment in those five seconds. Under reduced motion the sweep goes and the ring
+stays, because the ring was never the moving part.
+
 **`.attention` has exactly one user, and that is the rule.** It is the loudest
 thing in the product — five seconds of a control growing and pulsing — and it
 works only because it is rare. It answers one question, "where?", asked by a

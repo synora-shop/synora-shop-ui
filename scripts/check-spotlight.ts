@@ -165,16 +165,64 @@ check(
 );
 
 const css = readFileSync(join(ROOT, "app/globals.css"), "utf8");
-const cycles = /animation: shp-attention (\d+)ms [^;]*?(\d+);/.exec(css);
-check("the attention animation declares its length", cycles !== null);
-if (cycles) {
-  const total = Number(cycles[1]) * Number(cycles[2]);
+
+/** Duration × iteration count for one `animation:` shorthand. */
+function runsFor(name: string): number | null {
+  const decl = new RegExp(`animation: ${name} (\\d+)ms [^;]*;`).exec(css);
+  if (!decl) return null;
+  const ms = Number(decl[1]);
+  const count = /\s(\d+)\s/.exec(decl[0]);
+  return ms * (count ? Number(count[1]) : 1);
+}
+
+const held = runsFor("shp-attention");
+check("the attention animation declares its length", held !== null);
+if (held !== null) {
   check(
     "the animation and the class timer are the same length",
-    Math.abs(total - SPOTLIGHT_MS) < 50,
-    `the CSS runs ${total}ms, SPOTLIGHT_MS is ${SPOTLIGHT_MS}ms — a shorter timer cuts it off, a longer one holds a finished highlight`
+    Math.abs(held - SPOTLIGHT_MS) < 50,
+    `the CSS runs ${held}ms, SPOTLIGHT_MS is ${SPOTLIGHT_MS}ms — a shorter timer cuts it off, a longer one holds a finished highlight`
   );
 }
+
+// The two halves do different jobs, and the difference is the whole design.
+const ping = runsFor("shp-attention-ping");
+check("there is a sweep as well as a ring", ping !== null, "motion catches the eye; the ring answers the question");
+if (ping !== null && held !== null) {
+  check(
+    "the sweep finishes before the ring does",
+    ping <= held,
+    `sweep ${ping}ms, ring ${held}ms — a sweep still going when the mark has gone is pointing at nothing`
+  );
+}
+check(
+  "the sweep is drawn around the control, not on it",
+  /\.attention::after\s*\{[\s\S]{0,700}pointer-events: none/.test(css),
+  "it sits over the control, which still has to be clickable"
+);
+
+/*
+ * The control itself does not move.
+ *
+ * The first version of this animation scaled the button — 1.08, 0.98, 1.05,
+ * three times. On a pill that is a wobble rather than a pointer: the label
+ * distorts, the shape stops matching its neighbours, and a control that is
+ * changing size is harder to fix the eye on, not easier. The rewrite moves a
+ * halo around the control and leaves the control alone, and this is the
+ * assertion that keeps it that way.
+ */
+const attentionBlock = /@keyframes shp-attention \{[\s\S]*?\n\}/.exec(css);
+check(
+  "reduced motion keeps the ring and drops the sweep",
+  /\.attention \{[\s\S]{0,200}box-shadow/.test(css.slice(css.indexOf("prefers-reduced-motion"))) &&
+    /\.attention::after \{[\s\S]{0,120}(animation: none|display: none)/.test(css),
+  "the ring was never the moving part, so it is the part that survives"
+);
+check(
+  "the highlighted control is never scaled",
+  attentionBlock !== null && !/transform:\s*scale/.test(attentionBlock[0]),
+  "scaling a button distorts its label and reads as a glitch"
+);
 
 // It has to stay the only one.
 const SKIP = new Set(["node_modules", ".git", ".next", ".claude", "generated", "migrations"]);

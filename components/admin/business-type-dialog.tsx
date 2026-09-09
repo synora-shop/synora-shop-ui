@@ -4,10 +4,9 @@ import { useEffect, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { ArrowUpRight, Check, Info, Loader2, PauseCircle, X } from "lucide-react";
 import { switchBusinessType } from "@/app/admin/business-type-actions";
-import { pauseStore } from "@/app/admin/settings/lifecycle-actions";
 import { typeSwitchGate, type ShopStatusName } from "@/lib/store-type-switch";
 import { TYPE_GUIDE } from "@/lib/themes/type-guide";
-import { Badge, Button, ButtonLink } from "@/components/ui/primitives";
+import { Badge, ButtonLink } from "@/components/ui/primitives";
 import { spotlightHref } from "@/lib/spotlight";
 import { cn } from "@/lib/utils";
 
@@ -43,11 +42,12 @@ export function BusinessTypeDialog({
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [changing, setChanging] = useState<string | null>(null);
-  const [paused, setPaused] = useState(false);
 
-  // The gate is re-read after pausing rather than reloading the whole panel:
-  // the merchant is mid-decision, and a page reload would drop them out of it.
-  const gate = typeSwitchGate(paused ? "PAUSED" : status);
+  // The status this dialog was opened with. Nothing in here changes it any
+  // more: pausing happens on the Themes screen, where the words around the
+  // control explain what it does, and the merchant returns having actually
+  // seen where it lives.
+  const gate = typeSwitchGate(status);
   const canSwitch = mode === "switch" && gate.allowed;
 
   // Escape closes it, which is what anyone will try first.
@@ -58,15 +58,6 @@ export function BusinessTypeDialog({
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose, pending]);
-
-  function pause() {
-    setError(null);
-    startTransition(async () => {
-      const result = await pauseStore();
-      if (result.ok) setPaused(true);
-      else setError(result.error ?? "That did not work. Try again.");
-    });
-  }
 
   function choose(key: string) {
     if (key === current || pending || !canSwitch) return;
@@ -141,31 +132,26 @@ export function BusinessTypeDialog({
                 <PauseCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber" aria-hidden />
                 {gate.reason}
               </p>
-              {/* Two ways out of the same refusal, and they are for two
-                  different people.
+              {/* One way out of a refusal, and it is the one that teaches.
 
-                  A merchant who already knows what pausing means wants it done
-                  where they are standing. One who does not wants to see the
-                  control, in its own screen, with the words around it that say
-                  what it does and how to undo it — and to come away knowing
-                  where it lives for next time. Telling only the first kind is
-                  how a refusal becomes a dead end.
+                  There were two: pause from in here, or go and see the
+                  control. The first is gone. Pausing a live storefront from
+                  inside a dialog about something else is a big thing done in
+                  passing — the merchant never sees where the control lives, so
+                  they are back here next time, and they skip the confirmation
+                  that offers to write the holding page their customers are
+                  about to be shown.
 
-                  The link carries ?show=pause, which lights the button up for
-                  five seconds when they land. See lib/spotlight.ts. */}
+                  So: show them where it is. They pause it in the place that
+                  explains what pausing means, and they come away knowing where
+                  to undo it.
+
+                  The link carries ?show=pause, which lights the control up when
+                  they land. See lib/spotlight.ts. */}
               {gate.canPause && (
-                <div className="mt-2.5 flex flex-wrap items-center gap-2">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    disabled={pending}
-                    onClick={pause}
-                  >
-                    {pending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                    {pending ? "Pausing…" : "Pause my store"}
-                  </Button>
+                <div className="mt-2.5">
                   <ButtonLink
-                    variant="ghost"
+                    variant="secondary"
                     size="sm"
                     href={spotlightHref("/admin/theme", "pause")}
                     onClick={onClose}
@@ -175,29 +161,6 @@ export function BusinessTypeDialog({
                   </ButtonLink>
                 </div>
               )}
-            </div>
-          )}
-
-          {/* Pausing from in here skips the confirmation on the Themes screen,
-              and with it the offer to write the holding page. A merchant who
-              takes the quick route must still be told the page exists, or the
-              quick route is how it goes unedited. */}
-          {mode === "switch" && paused && (
-            <div className="notice-in mb-3 rounded-xl border border-green/30 bg-green-bg px-3.5 py-2.5">
-              <p className="text-sm leading-snug text-ink">
-                Your store is paused, and customers now see your holding page. Pick a type below —
-                and reopen it from Themes › Opening and closing when you are ready.
-              </p>
-              <ButtonLink
-                variant="ghost"
-                size="sm"
-                className="mt-2"
-                href="/admin/maintenance"
-                onClick={onClose}
-              >
-                Change what that page says
-                <ArrowUpRight className="h-3.5 w-3.5" />
-              </ButtonLink>
             </div>
           )}
 

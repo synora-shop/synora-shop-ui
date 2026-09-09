@@ -534,7 +534,21 @@ check(
   !/prisma\.shop\.update/.test(settingsSwitch)
 );
 const typeDialog = readFileSync(join(ROOT, "components/admin/business-type-dialog.tsx"), "utf8");
-check("the dialog says why, and offers the one thing that helps", /Pause my store/.test(typeDialog));
+check(
+  "the dialog says why, and offers the one thing that helps",
+  /Show me where/.test(typeDialog),
+  "a refusal that names no cure is a dead end"
+);
+// It used to offer two: pause from inside the dialog, or go and see the
+// control. The first is gone deliberately. Pausing a live storefront in
+// passing, from a dialog about something else, teaches the merchant nothing
+// about where the control lives and skips the confirmation that offers to
+// write the holding page their customers are about to be shown.
+check(
+  "and does not pause a live storefront from inside a dialog about something else",
+  !/Pause my store/.test(typeDialog) && !/pauseStore/.test(typeDialog),
+  "the cure is being shown where it is, not having it done to you"
+);
 const typeForm = readFileSync(join(ROOT, "components/admin/business-type-form.tsx"), "utf8");
 check("settings says the same thing", /typeSwitchGate\(/.test(typeForm));
 
