@@ -378,6 +378,41 @@ Only the merchant's **differences** are stored, in `ThemeSettings.layout`.
 Writing a resolved layout would freeze today's theme defaults into their row, so
 switching theme later would change the colours and silently keep the old header.
 
+### Sections
+
+A page is an ordered list of sections, and there are **thirty-four kinds**, up
+from twelve. Each declares its settings as data; nothing in the customizer is
+written per section type.
+
+A section type has to exist in **three** places, and each absence fails
+differently:
+
+| Missing | What happens |
+| --- | --- |
+| The `SectionType` enum | The picker offers it, the panel opens, **saving fails** |
+| The schema registry | Nobody can configure it |
+| The renderer's switch | It saves, and the page shows nothing where it sits |
+
+The first is not hypothetical: twenty-two sections were written, type-checked
+and rendered before anyone noticed none of them could be added to a page,
+because the database column is an enum and nothing had told it. `check:sections`
+asserts the three lists agree.
+
+**An unconfigured section takes up no room.** Every renderer returns nothing
+when it has nothing to show, but the frame around it still drew its own
+padding — so a section added and not yet filled in left a 96px gap on the live
+storefront, with no element to inspect because the gap *was* the element. The
+stylesheet now collapses a section whose body came out empty, and the customizer
+keeps showing it, named, so a merchant can still find the one they just added.
+
+**Column classes are never built from a setting.** Tailwind ships only the
+classes it can see in the source, so `` `sm:grid-cols-${n}` `` yields a class
+that exists in the HTML and in no stylesheet — the section renders as one column
+and the build says nothing. `sections/grid-classes.ts` is the shared answer, and
+a check holds every section to it.
+
+---
+
 ### The preview is a preview
 
 The customizer shows the storefront in an iframe, and an iframe pointed at a

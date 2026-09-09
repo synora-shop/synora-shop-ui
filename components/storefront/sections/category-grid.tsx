@@ -3,7 +3,14 @@ import { ImagePlaceholder } from "@/components/storefront/image-placeholder";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 
-export type CategoryTile = { id: string; name: string; slug: string; image: string | null };
+export type CategoryTile = {
+  id: string;
+  name: string;
+  slug: string;
+  image: string | null;
+  /** How many products sit in it, for the sections that offer to show it. */
+  productCount?: number;
+};
 
 // Literal class strings so Tailwind's scanner can see them (a template literal
 // built from the `columns` setting would be stripped from the CSS bundle).

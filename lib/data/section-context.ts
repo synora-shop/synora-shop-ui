@@ -2,6 +2,7 @@ import { cache } from "react";
 import { db, requireShop } from "@/lib/data/shop";
 import { getFeaturedProducts } from "@/lib/data/products";
 import { getStoreSettings } from "@/lib/data/settings";
+import { getThemeLayout } from "@/lib/data/theme";
 import { getSiteText, text } from "@/lib/site-text";
 import { toGlobalEdits } from "@/lib/global-edits";
 import { formatMoney } from "@/lib/money";
@@ -23,6 +24,7 @@ export const getSectionContext = cache(async (): Promise<SectionContext> => {
   // or an opening-hours section — its themes do not offer them — so three
   // extra queries on every one of its pages would buy nothing. This is the
   // whole reason the business type is on the shop rather than inferred.
+  const layout = await getThemeLayout();
   const wantsArticles = shop.businessType === "BLOG";
   const wantsPlace = shop.businessType === "RESTAURANT";
 
@@ -30,7 +32,16 @@ export const getSectionContext = cache(async (): Promise<SectionContext> => {
     await Promise.all([
     (await db()).category.findMany({
       orderBy: { name: "asc" },
-      select: { id: true, name: true, slug: true, image: true },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        image: true,
+        // For the sections that offer to show it. One join, on a list that is
+        // already being fetched — cheaper than a setting that does nothing,
+        // which is what "show how many products" would otherwise have been.
+        _count: { select: { products: true } },
+      },
     }),
     getFeaturedProducts(),
     getSiteText(),
@@ -97,11 +108,20 @@ export const getSectionContext = cache(async (): Promise<SectionContext> => {
   const { currency } = resolveStoreDefaults(settings);
 
   return {
-    categories,
+    categories: categories.map((c) => ({
+      id: c.id,
+      name: c.name,
+      slug: c.slug,
+      image: c.image,
+      productCount: c._count.products,
+    })),
     featuredProducts,
     saleBadgeLabel: text(siteText, "product.saleBadge"),
     currency,
     edits: toGlobalEdits(settings),
+    // The theme's card shape, resolved once for the page rather than per card.
+    cardLayout: layout.productCard,
+    cardFeatures: layout,
     // Dates are serialised, because this snapshot is handed to the client-side
     // preview and a Date does not survive that crossing.
     articles: articles.map((a) => ({

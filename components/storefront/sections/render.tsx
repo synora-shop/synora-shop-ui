@@ -11,7 +11,28 @@ import { ArticleList, type ArticleCard } from "./article-list";
 import { MenuList, type MenuGroup } from "./menu-list";
 import { OpeningHours, type DayHours } from "./opening-hours";
 import { LocationInfo, type LocationCard } from "./location-info";
-import { resolveSectionData, resolveSectionStyle } from "@/lib/section-schema";
+import { VideoSection } from "./video";
+import { ImageComparison } from "./image-comparison";
+import { Gallery } from "./gallery";
+import { Marquee } from "./marquee";
+import { Collage } from "./collage";
+import { LogoList } from "./logo-list";
+import { ProductCarousel } from "./product-carousel";
+import { CollectionShowcase } from "./collection-showcase";
+import { CategoryList } from "./category-list";
+import { ComparisonTable } from "./comparison-table";
+import { Countdown } from "./countdown";
+import { TrustBadges } from "./trust-badges";
+import { Testimonials } from "./testimonials";
+import { Multicolumn } from "./multicolumn";
+import { Steps } from "./steps";
+import { Timeline } from "./timeline";
+import { Stats } from "./stats";
+import { HighlightText } from "./highlight-text";
+import { Team } from "./team";
+import { ButtonRow, Divider, Spacer } from "./layout-bits";
+import type { CardLayout } from "@/lib/theme-layout";
+import { resolveSectionData, resolveSectionStyle, sectionLabel } from "@/lib/section-schema";
 import type { ProductCardProduct } from "@/components/storefront/product-card";
 import type { GlobalEdits } from "@/lib/global-edits";
 
@@ -49,10 +70,26 @@ export type SectionContext = {
   menu?: MenuGroup[];
   hours?: DayHours[];
   locations?: LocationCard[];
+  /**
+   * How the active theme wants a product card to look.
+   *
+   * Carried on the context rather than read inside each section, because three
+   * different sections render product cards and a page renders them thirty at a
+   * time — a lookup per card is thirty lookups for one answer that cannot
+   * change mid-page.
+   */
+  cardLayout?: CardLayout;
+  cardFeatures?: { hoverSwapImage?: boolean; quickAdd?: boolean; swatchesOnCard?: boolean };
 };
 
 /** Sections that own their full-bleed shell and opt out of SectionFrame. */
-const UNFRAMED = new Set(["HERO_SLIDESHOW"]);
+/**
+ * Sections that own their full-bleed shell and opt out of SectionFrame.
+ *
+ * A spacer is here because the frame's own padding would be added to the gap
+ * it exists to create, so "48px of space" would silently be 144.
+ */
+const UNFRAMED = new Set(["HERO_SLIDESHOW", "SPACER", "MARQUEE"]);
 
 function body(type: string, d: Record<string, unknown>, ctx: SectionContext) {
   switch (type) {
@@ -163,6 +200,221 @@ function body(type: string, d: Record<string, unknown>, ctx: SectionContext) {
       return (
         <FaqList heading={d.heading as string} items={d.items as { question: string; answer: string }[]} />
       );
+
+    /* ----------------------------------------------------------- media -- */
+    case "VIDEO":
+      return (
+        <VideoSection
+          url={d.url as string}
+          poster={d.poster as string}
+          heading={d.heading as string}
+          body={d.body as string}
+          height={d.height as string}
+          overlayOpacity={d.overlayOpacity as number}
+          ctaLabel={d.ctaLabel as string}
+          ctaHref={d.ctaHref as string}
+        />
+      );
+    case "IMAGE_COMPARISON":
+      return (
+        <ImageComparison
+          heading={d.heading as string}
+          beforeImage={d.beforeImage as string}
+          afterImage={d.afterImage as string}
+          beforeLabel={d.beforeLabel as string}
+          afterLabel={d.afterLabel as string}
+          startAt={d.startAt as number}
+        />
+      );
+    case "GALLERY":
+      return (
+        <Gallery
+          heading={d.heading as string}
+          columns={d.columns as number}
+          shape={d.shape as string}
+          images={d.images as { image?: string; caption?: string; href?: string }[]}
+        />
+      );
+    case "MARQUEE":
+      return (
+        <Marquee
+          text={d.text as string}
+          separator={d.separator as string}
+          speed={d.speed as number}
+          size={d.size as string}
+        />
+      );
+    case "COLLAGE":
+      return (
+        <Collage
+          heading={d.heading as string}
+          layout={d.layout as string}
+          tiles={d.tiles as { image?: string; label?: string; href?: string }[]}
+        />
+      );
+    case "LOGO_LIST":
+      return (
+        <LogoList
+          heading={d.heading as string}
+          logos={d.logos as { image?: string; alt?: string; href?: string }[]}
+          grayscale={d.grayscale as boolean}
+          logoHeight={d.logoHeight as number}
+        />
+      );
+
+    /* -------------------------------------------------------- commerce -- */
+    case "PRODUCT_CAROUSEL":
+      return (
+        <ProductCarousel
+          heading={d.heading as string}
+          products={ctx.featuredProducts}
+          limit={d.limit as number}
+          cardWidth={d.cardWidth as string}
+          ctaLabel={d.ctaLabel as string}
+          ctaHref={d.ctaHref as string}
+          currency={ctx.currency}
+          saleBadgeLabel={ctx.saleBadgeLabel}
+          edits={ctx.edits}
+          cardLayout={ctx.cardLayout}
+          features={ctx.cardFeatures}
+        />
+      );
+    case "COLLECTION_SHOWCASE":
+      return (
+        <CollectionShowcase
+          collection={d.collection as string}
+          categories={ctx.categories}
+          heading={d.heading as string}
+          body={d.body as string}
+          products={ctx.featuredProducts}
+          limit={d.limit as number}
+          imagePosition={d.imagePosition as string}
+          currency={ctx.currency}
+          saleBadgeLabel={ctx.saleBadgeLabel}
+          edits={ctx.edits}
+          cardLayout={ctx.cardLayout}
+          features={ctx.cardFeatures}
+        />
+      );
+    case "CATEGORY_LIST":
+      return (
+        <CategoryList
+          heading={d.heading as string}
+          categories={ctx.categories}
+          align={d.align as string}
+          showCount={d.showCount as boolean}
+        />
+      );
+    case "COMPARISON_TABLE":
+      return (
+        <ComparisonTable
+          heading={d.heading as string}
+          body={d.body as string}
+          rows={d.rows as { label?: string; a?: string; b?: string; c?: string; d?: string }[]}
+          highlightColumn={d.highlightColumn as number}
+        />
+      );
+    case "COUNTDOWN":
+      return (
+        <Countdown
+          heading={d.heading as string}
+          endsAt={d.endsAt as string}
+          finishedText={d.finishedText as string}
+          hideWhenFinished={d.hideWhenFinished as boolean}
+          ctaLabel={d.ctaLabel as string}
+          ctaHref={d.ctaHref as string}
+        />
+      );
+    case "TRUST_BADGES":
+      return (
+        <TrustBadges
+          heading={d.heading as string}
+          badges={d.badges as { icon?: string; title?: string; text?: string }[]}
+          columns={d.columns as number}
+        />
+      );
+
+    /* --------------------------------------------------------- content -- */
+    case "TESTIMONIALS":
+      return (
+        <Testimonials
+          heading={d.heading as string}
+          quotes={d.quotes as { quote?: string; name?: string; rating?: number; image?: string }[]}
+          columns={d.columns as number}
+          showRating={d.showRating as boolean}
+        />
+      );
+    case "MULTICOLUMN":
+      return (
+        <Multicolumn
+          heading={d.heading as string}
+          columnsList={d.columnsList as { image?: string; title?: string; text?: string; ctaLabel?: string; ctaHref?: string }[]}
+          columns={d.columns as number}
+          align={d.align as string}
+        />
+      );
+    case "STEPS":
+      return (
+        <Steps
+          heading={d.heading as string}
+          steps={d.steps as { title?: string; text?: string }[]}
+          direction={d.direction as string}
+        />
+      );
+    case "TIMELINE":
+      return (
+        <Timeline
+          heading={d.heading as string}
+          events={d.events as { date?: string; title?: string; text?: string }[]}
+        />
+      );
+    case "STATS":
+      return (
+        <Stats
+          heading={d.heading as string}
+          stats={d.stats as { value?: string; label?: string }[]}
+          columns={d.columns as number}
+        />
+      );
+    case "HIGHLIGHT_TEXT":
+      return (
+        <HighlightText
+          text={d.text as string}
+          size={d.size as string}
+          align={d.align as string}
+          ctaLabel={d.ctaLabel as string}
+          ctaHref={d.ctaHref as string}
+        />
+      );
+    case "TEAM":
+      return (
+        <Team
+          heading={d.heading as string}
+          people={d.people as { image?: string; name?: string; role?: string; text?: string }[]}
+          columns={d.columns as number}
+          shape={d.shape as string}
+        />
+      );
+
+    /* ---------------------------------------------------------- layout -- */
+    case "DIVIDER":
+      return (
+        <Divider
+          style={d.style as string}
+          thickness={d.thickness as number}
+          widthPercent={d.widthPercent as number}
+        />
+      );
+    case "SPACER":
+      return <Spacer height={d.height as number} showOnMobile={d.showOnMobile as boolean} />;
+    case "BUTTON_ROW":
+      return (
+        <ButtonRow
+          heading={d.heading as string}
+          buttons={d.buttons as { label?: string; href?: string; style?: string }[]}
+          align={d.align as string}
+        />
+      );
     default:
       return null;
   }
@@ -190,7 +442,11 @@ export function RenderSection({ section, ctx }: { section: RenderableSection; ct
       {UNFRAMED.has(section.type) ? (
         inner
       ) : (
-        <SectionFrame style={resolveSectionStyle(section.data)}>{inner}</SectionFrame>
+        // The label rides on the frame so the customizer's placeholder can name
+        // an empty section without this component knowing it is in a preview.
+        <SectionFrame style={resolveSectionStyle(section.data)} label={sectionLabel(section.type)}>
+          {inner}
+        </SectionFrame>
       )}
     </div>
   );

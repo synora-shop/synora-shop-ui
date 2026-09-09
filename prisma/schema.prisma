@@ -263,6 +263,64 @@ enum SectionType {
   OPENING_HOURS
   /// Restaurant. Where the shop is.
   LOCATION_INFO
+
+  // --- Added 10 September 2026 -------------------------------------------
+  // The set a merchant can build a page out of, widened from twelve to
+  // thirty-four. The order here is the order the "Add section" picker offers
+  // them, grouped the way lib/section-schema.ts groups them.
+  //
+  // A value here without a schema entry is a section nobody can configure, and
+  // a schema entry without a value here is a section nobody can add — the
+  // second is what this enum being missed would have caused. `check:sections`
+  // asserts the three lists agree.
+
+  /// Media. A video from a YouTube, Vimeo or direct link.
+  VIDEO
+  /// Media. Two photos with a slider between them.
+  IMAGE_COMPARISON
+  /// Media. A grid of photos.
+  GALLERY
+  /// Media. A band of text sliding across the page.
+  MARQUEE
+  /// Media. Images at different sizes, each linking somewhere.
+  COLLAGE
+  /// Media. A row of brand, press or partner logos.
+  LOGO_LIST
+
+  /// Commerce. Products in one row that scrolls sideways.
+  PRODUCT_CAROUSEL
+  /// Commerce. One category given the full width, with its products.
+  COLLECTION_SHOWCASE
+  /// Commerce. Categories as plain text links.
+  CATEGORY_LIST
+  /// Commerce. A table comparing options side by side.
+  COMPARISON_TABLE
+  /// Commerce. A timer counting down to a date.
+  COUNTDOWN
+  /// Commerce. Short promises with an icon.
+  TRUST_BADGES
+
+  /// Content. What customers said.
+  TESTIMONIALS
+  /// Content. Columns of icon, heading and text.
+  MULTICOLUMN
+  /// Content. Numbered steps in order.
+  STEPS
+  /// Content. Dated milestones.
+  TIMELINE
+  /// Content. A few figures stated plainly.
+  STATS
+  /// Content. One line, set large.
+  HIGHLIGHT_TEXT
+  /// Content. The people behind the shop.
+  TEAM
+
+  /// Layout. A line across the page.
+  DIVIDER
+  /// Layout. Empty room between two sections.
+  SPACER
+  /// Layout. A row of buttons on their own.
+  BUTTON_ROW
 }
 
 // A store. The tenant root: almost everything else in this file belongs to one.

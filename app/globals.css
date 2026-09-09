@@ -741,6 +741,71 @@ body {
 }
 
 /*
+ * A section that came out empty takes up no room.
+ *
+ * Every section renderer returns nothing when it has nothing to show, but the
+ * frame around it still drew its own padding — so a section a merchant added
+ * and had not filled in yet left a 96px gap on the live storefront. Invisible
+ * and inexplicable: there is no element to inspect, because the gap *is* the
+ * element.
+ *
+ * `:empty` is exact here — it matches an element with no children and no text,
+ * which is precisely what a renderer returning null leaves behind.
+ */
+section:has(> .section-body:empty) {
+  display: none;
+}
+
+/*
+ * Except in the customizer, where it has to stay findable.
+ *
+ * A merchant adds a section, it is empty by definition, and if it vanished
+ * they would have nothing to click on and no way to fill it in. So inside the
+ * preview it keeps its space and says what it is.
+ */
+body.in-preview section:has(> .section-body:empty) {
+  display: block;
+  outline: 1px dashed var(--color-border);
+  outline-offset: -1px;
+}
+
+body.in-preview section:has(> .section-body:empty) .section-body::after {
+  content: attr(data-section-label);
+  display: block;
+  padding: 0.75rem 0;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--color-ink-faint, #8a8a8a);
+}
+
+/*
+ * A band of text sliding across the page.
+ *
+ * Moves by exactly half the track's width, because the track holds two copies
+ * of the same strip — at -50% the second copy is precisely where the first
+ * started, so the loop has no seam.
+ *
+ * The duration comes from the section's own setting, inline. Everything else
+ * is here, including the thing that matters most: it stops. Text that never
+ * stops moving is unreadable to some people and unbearable to others, which
+ * makes this the clearest case in the product for a still answer.
+ */
+@keyframes shp-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-track {
+  animation-name: shp-marquee;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+/*
  * Look here.
  *
  * Played on the one control that is standing between a merchant and what they
@@ -822,6 +887,7 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .shake,
+  .marquee-track,
   .pulse-brand,
   .rise,
   .bulk-rise,
@@ -854,6 +920,13 @@ body {
      go, not sit there faded. */
   .toast-out {
     display: none;
+  }
+
+  /* A scrolling band that cannot scroll is simply a line of text, which is
+     what it was always saying. Nothing is lost but the movement. */
+  .marquee-track {
+    animation: none;
+    transform: none;
   }
 
   /* "Look here" still has to answer the question, and the held ring already

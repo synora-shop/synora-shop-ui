@@ -42,6 +42,11 @@ export function PreviewGuard() {
     html.style.overflow = "hidden";
     body.style.overflow = "hidden";
 
+    // Marks the document as the customizer's, which globals.css reads to keep
+    // an empty section visible and named. On a live storefront the same section
+    // takes up no room at all.
+    body.classList.add("in-preview");
+
     /**
      * Capture phase, and `preventDefault` without `stopPropagation`.
      *
@@ -69,6 +74,7 @@ export function PreviewGuard() {
     return () => {
       html.style.overflow = previousHtml;
       body.style.overflow = previousBody;
+      body.classList.remove("in-preview");
       document.removeEventListener("click", blockNavigation, true);
       document.removeEventListener("submit", blockSubmit, true);
     };
