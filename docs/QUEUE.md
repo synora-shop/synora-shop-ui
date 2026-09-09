@@ -670,13 +670,39 @@ figure. An amount that *is* reported is still held to exactly, and a
 confirmation that went through without one is recorded as
 `amount-not-reported` so it stays answerable.
 
-**Still open, and the reason the checkout half is not yet corrected:** which
-flow this merchant account is enabled for. PayFast documents an API-based
-integration where the merchant collects card details — which this platform must
-never do, since it puts a shop inside PCI scope — alongside the hosted redirect
-the SDKs use. The **Hashed Parameters** and **Scenarios** pages decide it, and
-Hashed Parameters is also where the anti-tamper story for the redirect form
-lives. Not guessed a second time.
+### The whole reference is the wrong integration, 9 September
+
+Thirty-three screenshots of PayFast's API reference, read end to end. The
+sidebar is complete and there is **no hosted checkout in it at all**: token,
+refresh, banks, instruments, customer validation, initiate transaction, temp
+token, tokenized transaction, permanent instruments, OTP, recurring, refund,
+status. That is the whole of it.
+
+Every path that takes money in that list requires the merchant's own server to
+send `card_number`, `expiry_month`, `expiry_year` and `cvv` — or an account
+number and a CNIC. **Hashed Parameters** confirms it from the other direction:
+every hash it defines is built out of card or account numbers, HMAC-SHA256 with
+a key PayFast issues separately, sent as `secured_hash`.
+
+**This platform must not build that.** A shop whose checkout page touches a card
+number is inside PCI-DSS scope, and putting a merchant there without them
+understanding it is not a technical trade-off to weigh — it is a liability they
+did not agree to. The point of the redirect model is that the card is only ever
+typed on the provider's own page.
+
+So the account needs PayFast's **hosted checkout** product, which exists — their
+WooCommerce plugin uses it, and `PostTransaction` answers a GET with 405 on the
+same UAT host, which is the reply of an endpoint that is there. It is simply
+not in this reference, because this reference is for the other product.
+
+**What survives from this reference, and is now in the code:** the error codes
+(`00` and `79` success, `001` pending, `002` timeout) and the Get Transaction
+Status call. Those belong to the account, not to the integration style, so
+verification works either way.
+
+**Still needed:** the `<BASE_URL>` — every example in the reference says exactly
+that, and the real value lives in Preface / Integration Prerequisites, which was
+not captured.
 
 Also seen in their sidebar: **Refund Transaction Request**. Refunds are
 possible, and are the first thing worth building after this works.
