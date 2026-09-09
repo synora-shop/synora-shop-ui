@@ -132,7 +132,12 @@ export async function verifyPayment(
 
   let answer;
   try {
-    answer = await adapterFor(provider).lookup(openCredentials(gateway), payment.mode, reference);
+    answer = await adapterFor(provider).lookup(openCredentials(gateway), payment.mode, reference, {
+      // Read off the attempt, not reconstructed. See the Payment model for why
+      // a re-derived order date is not the same value.
+      customerIp: payment.customerIp,
+      orderDate: payment.orderDate,
+    });
   } catch (err) {
     await record({
       payment,
@@ -154,13 +159,41 @@ export async function verifyPayment(
 
   if (answer.state === "PAID") {
     // Everything below has to hold before a single rupee is called received.
-    if (!amountsMatch(payment.amount, answer.amount)) {
-      return mismatch(
+    //
+    // The amount, when the provider gives one. PayFast's documented status
+    // response does not — it returns status, basket id and transaction id and
+    // nothing about money. That is not a hole to shrug at, so what stands in
+    // its place is written down here rather than assumed:
+    //
+    // The amount is bound when the payment is *started*, not when it is
+    // checked. The token that lets a customer reach the payment page is minted
+    // for one basket id and one amount, server-side, with the merchant's
+    // secured key. A shopper editing the form they are handed cannot mint a
+    // token for a different figure, so the amount PayFast charges is the one
+    // this row already holds.
+    //
+    // A provider that does report an amount is still held to it exactly. And
+    // the fact that a confirmation went through unchecked is recorded, so
+    // "was this one actually compared" is answerable later rather than being
+    // a matter of reading this comment.
+    if (answer.amount !== null) {
+      if (!amountsMatch(payment.amount, answer.amount)) {
+        return mismatch(
+          payment,
+          source,
+          `Expected ${payment.amount} ${payment.currency}, provider reported ${answer.amount}`,
+          ip
+        );
+      }
+    } else {
+      await record({
         payment,
+        provider,
         source,
-        `Expected ${payment.amount} ${payment.currency}, provider reported ${answer.amount ?? "nothing"}`,
-        ip
-      );
+        outcome: "amount-not-reported",
+        detail: `Provider gave no amount; relying on the ${payment.amount} ${payment.currency} bound when the payment was started`,
+        ip,
+      });
     }
     if (!currenciesMatch(payment.currency, answer.currency)) {
       return mismatch(

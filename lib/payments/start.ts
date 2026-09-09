@@ -24,6 +24,13 @@ export type StartPaymentResult =
 
 export type StartPaymentArgs = {
   orderId: string;
+  /**
+   * The shopper's address, as this request saw it.
+   *
+   * Recorded on the attempt because the provider wants it back before it will
+   * say what happened — and by then the browser it belonged to is long gone.
+   */
+  customerIp: string | null;
   shopId: string;
   provider: GatewayProviderValue;
   /** Whole currency units, matching Order.total. */
@@ -47,6 +54,19 @@ export type StartPaymentArgs = {
    */
   allowTestMode: boolean;
 };
+
+/**
+ * The order date, in the one format that must match on both calls.
+ *
+ * Formatted here rather than inside the adapter, and stored, because the value
+ * sent when the customer left and the value sent when we ask what happened
+ * have to be the same string. Deriving it twice from a timestamp is how they
+ * end up a second apart and the provider stops recognising the request.
+ */
+function gatewayOrderDate(now = new Date()): string {
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${now.getUTCFullYear()}-${p(now.getUTCMonth() + 1)}-${p(now.getUTCDate())}`;
+}
 
 /**
  * A reference that is safe to hand to a third party and to put in a URL.
@@ -98,6 +118,8 @@ export async function startPayment(args: StartPaymentArgs): Promise<StartPayment
       amount: args.amount,
       currency: args.currency,
       status: "INITIATED",
+      customerIp: args.customerIp,
+      orderDate: gatewayOrderDate(),
       expiresAt,
     },
   });

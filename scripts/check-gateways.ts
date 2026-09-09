@@ -193,6 +193,7 @@ check("and a manual method is not", !isGatewayProvider("COD"));
 // ---------------------------------------------------------------------------
 
 const verify = read("lib/payments/verify.ts");
+const adapter = read("lib/payments/payfast.ts");
 
 // A merchant may still mark their own order paid by hand — a bank transfer is
 // confirmed by looking at a bank statement, and a card that succeeded but
@@ -278,8 +279,57 @@ check(
 );
 check(
   "an unrecognised provider status is never read as paid",
-  /return "UNKNOWN"/.test(read("lib/payments/payfast.ts")),
+  /return "UNKNOWN"/.test(adapter),
   "the optimistic guess is the one that ships goods"
+);
+check(
+  "the success codes come from PayFast's own table, including 79",
+  /paid: new Set\(\[[^\]]*"79"/.test(adapter),
+  "Alternate Success — the one a guess misses, leaving a paid order unpaid"
+);
+check(
+  "a timeout is pending, not failed",
+  /pending: new Set\(\[[^\]]*"002"/.test(adapter),
+  "its outcome is unknown, and calling it failed cancels an order somebody may have paid for"
+);
+check(
+  "declines are listed rather than assumed",
+  /failed: new Set\(/.test(adapter) && /"9000"/.test(adapter),
+  "so a code PayFast adds later lands in UNKNOWN instead of being read as paid"
+);
+check(
+  "the status endpoint is the documented one",
+  /transaction\/basket_id\/\$\{encodeURIComponent\(reference\)\}/.test(adapter),
+  "not the query-string path the community SDKs use"
+);
+check(
+  "it authenticates with a bearer token, not the raw key",
+  /Authorization: `Bearer \$\{token\}`/.test(adapter) && !/Basic \$\{Buffer/.test(adapter)
+);
+check(
+  "the token request uses PayFast's documented parameter names",
+  /merchant_id: credentials\.merchantId/.test(adapter) &&
+    /secured_key: credentials\.securedKey/.test(adapter) &&
+    /customer_ip: customerIp/.test(adapter),
+  "lowercase, and customer_ip is required"
+);
+check(
+  "a payment with no recorded context is refused, not checked wrongly",
+  /!context\?\.customerIp \|\| !context\?\.orderDate/.test(adapter)
+);
+check(
+  "the order date is formatted once and stored",
+  /orderDate: gatewayOrderDate\(\)/.test(read("lib/payments/start.ts")),
+  "deriving it twice is how the two calls end up a second apart"
+);
+check(
+  "an amount the provider does report is still held to exactly",
+  /if \(answer\.amount !== null\) \{[\s\S]{0,200}amountsMatch/.test(verify)
+);
+check(
+  "and one it does not report is recorded rather than passed over quietly",
+  /outcome: "amount-not-reported"/.test(verify),
+  "so 'was this one actually compared' is answerable later"
 );
 check(
   "a duplicate provider transaction is refused, not confirmed twice",
@@ -518,7 +568,6 @@ const leaks = ALL.filter((f) => {
 });
 check("no credential is ever logged", leaks.length === 0, leaks.join(", "));
 
-const adapter = read("lib/payments/payfast.ts");
 check(
   "every gateway endpoint is checked against an allowlist",
   (adapter.match(/assertAllowedHost\(/g) ?? []).length >= 3,

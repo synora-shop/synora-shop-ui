@@ -19,6 +19,7 @@ import { startPayment } from "@/lib/payments/start";
 import { releaseExpiredForShop, releaseOrder } from "@/lib/payments/reservations";
 import { RESERVATION_MS, isGatewayProvider } from "@/lib/payments/providers";
 import { canonicalUrl } from "@/lib/data/shop";
+import { clientIp } from "@/lib/rate-limit";
 import { isEnquiryOnly, PRODUCT_KIND_META } from "@/lib/product-kind";
 
 // Full set the DB/type system supports. Which of these a given shop actually
@@ -373,6 +374,9 @@ export async function POST(request: Request) {
         // between the order and the callback, and the notification would then
         // arrive nowhere.
         callbackOrigin: await canonicalUrl(sid),
+        // Captured now, because PayFast wants it back before it will say what
+        // happened and the browser will be gone by then.
+        customerIp: await clientIp(),
         allowTestMode: isStaff,
       });
 

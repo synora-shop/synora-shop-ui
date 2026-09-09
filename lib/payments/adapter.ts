@@ -73,6 +73,19 @@ export type StartArgs = {
   callbackUrl: string;
 };
 
+/**
+ * What a provider needs back before it will answer a question about a payment.
+ *
+ * Recorded when the customer is sent to pay, because none of it can be
+ * recovered afterwards: the IP belonged to a browser that has gone, and the
+ * order date has to be the exact string that was sent, not a re-derivation of
+ * it. PayFast requires both to return a transaction's status.
+ */
+export type LookupContext = {
+  customerIp: string | null;
+  orderDate: string | null;
+};
+
 export type GatewayAdapter = {
   provider: GatewayProviderValue;
   /**
@@ -94,7 +107,8 @@ export type GatewayAdapter = {
   lookup(
     credentials: GatewayCredentials,
     mode: GatewayModeValue,
-    reference: string
+    reference: string,
+    context: LookupContext
   ): Promise<LookupResult>;
 };
 

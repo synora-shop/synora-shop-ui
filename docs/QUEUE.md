@@ -644,6 +644,43 @@ screen says card payments are not configured and refuses to accept a key, and
     printf '1:%s' "$(node -e "console.log(require('crypto').randomBytes(32).toString('base64'))")" \
       | npx vercel env add PAYMENT_KEYS production
 
+### The real API reference, 9 September
+
+The merchant opened a PayFast account, and their documentation — which returns
+403 to anyone without one — settled three things this integration had guessed
+wrong from the public SDKs.
+
+| | Guessed from SDKs | PayFast's own docs |
+| --- | --- | --- |
+| Token | `GetAccessToken`, uppercase params, reads `ACCESS_TOKEN` | `POST /token`, lowercase, **`customer_ip` required**, reads `token` |
+| Status | Basic auth, `?basket_id=` | `GET /transaction/basket_id/<id>`, **Bearer**, needs `order_date` + `customer_ip` |
+| Success | `00` / `SUCCESS` / `PAID` | `00` Processed OK **and `79` Alternate Success**; `001` Pending, `002` Time Out |
+
+**Code 79 is the one that mattered.** A guess that misses it reads a genuinely
+paid order as unrecognised and leaves it unpaid — the failure mode that costs a
+merchant a real sale rather than a support message.
+
+Two consequences beyond a find-and-replace. `order_date` and `customer_ip` have
+to be **recorded when the customer is sent to pay**, because neither can be
+recovered afterwards — hence the `20261022000000_payment_lookup_context`
+migration. And PayFast's status response carries **no amount at all**, so the
+rupee-exact comparison cannot run on it; what stands in its place is that the
+amount is bound when the token is minted, server-side, for one basket and one
+figure. An amount that *is* reported is still held to exactly, and a
+confirmation that went through without one is recorded as
+`amount-not-reported` so it stays answerable.
+
+**Still open, and the reason the checkout half is not yet corrected:** which
+flow this merchant account is enabled for. PayFast documents an API-based
+integration where the merchant collects card details — which this platform must
+never do, since it puts a shop inside PCI scope — alongside the hosted redirect
+the SDKs use. The **Hashed Parameters** and **Scenarios** pages decide it, and
+Hashed Parameters is also where the anti-tamper story for the redirect form
+lives. Not guessed a second time.
+
+Also seen in their sidebar: **Refund Transaction Request**. Refunds are
+possible, and are the first thing worth building after this works.
+
 **What is not proven yet, and cannot be from here:**
 
 - **A real PayFast account.** Everything is testable alone except the wire

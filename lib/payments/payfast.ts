@@ -145,7 +145,50 @@ function field(source: unknown, ...names: string[]): string | null {
   return null;
 }
 
-/** Fetch a one-time access token. Also serves as the credential probe. */
+/**
+ * A bearer token for PayFast's REST API, per their documented `POST /token`.
+ *
+ * Lowercase parameters, `customer_ip` required, and the token comes back as
+ * `token` — all three different from what the community SDKs do, which is why
+ * an earlier version of this file asked the wrong endpoint for the wrong field.
+ *
+ * The response also carries `refresh_token` and `expiry`. Neither is kept: a
+ * status check mints a token, uses it once and drops it. Caching a credential
+ * to save a round trip is not a trade worth making here.
+ */
+async function restToken(
+  credentials: GatewayCredentials,
+  mode: GatewayModeValue,
+  customerIp: string
+): Promise<string> {
+  const { verifyBase } = endpoints(mode);
+  if (!verifyBase) throw new Error("No PayFast API address is configured");
+
+  const payload = await postForm(new URL("token", verifyBase).toString(), {
+    merchant_id: credentials.merchantId,
+    secured_key: credentials.securedKey,
+    grant_type: "client_credentials",
+    customer_ip: customerIp,
+  });
+
+  const value = field(payload, "token", "ACCESS_TOKEN");
+  if (!value) {
+    const why = field(payload, "message", "MESSAGE") ?? "no token returned";
+    throw new Error(`PayFast refused the credentials (${why})`);
+  }
+  return value;
+}
+
+/**
+ * The token for the hosted checkout redirect.
+ *
+ * Deliberately still on the older endpoint the public SDKs use. The hosted
+ * flow — mint a token, POST a form to PostTransaction, customer pays on
+ * PayFast's page — is a different API from the REST one above, and which of
+ * them a given merchant account is enabled for is not something to guess at.
+ * See docs/QUEUE.md: confirming this against PayFast's "Scenarios" and
+ * "Hashed Parameters" pages is the one piece of the integration still open.
+ */
 async function accessToken(
   credentials: GatewayCredentials,
   mode: GatewayModeValue,
@@ -171,7 +214,54 @@ async function accessToken(
 }
 
 /**
- * How PayFast's own words map onto the four states the engine understands.
+ * PayFast's response codes, taken from their own Error Codes table.
+ *
+ * Not guessed. An earlier version of this file inferred the success values
+ * from the community SDKs and had "00", "SUCCESS", "PAID" — which would have
+ * read **79, Alternate Success, as unrecognised** and left a genuinely paid
+ * order unpaid. Guessing which codes mean paid is how an integration either
+ * ships goods for free or refuses money it has taken.
+ *
+ * Two codes deserve their reasoning written down:
+ *
+ *   79  is a success. It is not obvious from the number and it is the one a
+ *       guess misses.
+ *   002 is "Time Out", which sounds like a failure and is not one: the
+ *       transaction's outcome is simply unknown to PayFast at that moment.
+ *       Treated as pending so it is asked about again, rather than as failed,
+ *       which would cancel an order somebody may have paid for.
+ */
+const PAYFAST_CODES = {
+  /** Processed OK, and the alternate success response. */
+  paid: new Set(["00", "000", "0", "79"]),
+  /** Not settled yet. Asked about again rather than decided. */
+  pending: new Set(["001", "01", "1", "002", "02", "2"]),
+  /**
+   * Declined, and why. Listed rather than treated as "anything else", so a
+   * code PayFast adds later lands in UNKNOWN and is never read as paid.
+   */
+  failed: new Set([
+    "97", // insufficient balance
+    "106", // transaction limit exceeded
+    "3", // inactive account
+    "14", // incorrect details / inactive card
+    "15", // inactive card
+    "55", // invalid OTP or PIN
+    "54", // card expired
+    "13", // invalid amount
+    "126", // invalid account details
+    "75", // maximum PIN retries exceeded
+    "42", // invalid CNIC
+    "423", // unable to process, try later
+    "41", // details mismatched
+    "806", // OTP could not be verified
+    "807", // too many attempts
+    "9000", // rejected by fraud management
+  ]),
+} as const;
+
+/**
+ * How PayFast's codes map onto the four states the engine understands.
  *
  * Anything unrecognised is UNKNOWN, and UNKNOWN never pays for an order. That
  * is the important half: a status this list has not seen must not be guessed
@@ -179,22 +269,10 @@ async function accessToken(
  */
 function readState(raw: string | null): "PAID" | "FAILED" | "PENDING" | "UNKNOWN" {
   if (!raw) return "UNKNOWN";
-  const value = raw.trim().toUpperCase();
-  // "00" is PayFast's success response code across its APIs.
-  if (value === "00" || value === "0" || value === "PAID" || value === "SUCCESS" || value === "COMPLETED") {
-    return "PAID";
-  }
-  if (
-    value === "FAILED" ||
-    value === "DECLINED" ||
-    value === "CANCELLED" ||
-    value === "CANCELED" ||
-    value === "REVERSED" ||
-    value === "EXPIRED"
-  ) {
-    return "FAILED";
-  }
-  if (value === "PENDING" || value === "IN_PROGRESS" || value === "INITIATED") return "PENDING";
+  const code = raw.trim().toUpperCase();
+  if (PAYFAST_CODES.paid.has(code)) return "PAID";
+  if (PAYFAST_CODES.pending.has(code)) return "PENDING";
+  if (PAYFAST_CODES.failed.has(code)) return "FAILED";
   return "UNKNOWN";
 }
 
@@ -256,7 +334,7 @@ export const payfast: GatewayAdapter = {
     }
   },
 
-  async lookup(credentials, mode, reference): Promise<LookupResult> {
+  async lookup(credentials, mode, reference, context): Promise<LookupResult> {
     try {
       const { verifyBase } = endpoints(mode);
       if (!verifyBase) {
@@ -269,19 +347,31 @@ export const payfast: GatewayAdapter = {
             "This platform has not been told where to check PayFast payments. Nothing can be confirmed until PAYFAST_SANDBOX_VERIFY_BASE / PAYFAST_LIVE_VERIFY_BASE is set from your PayFast onboarding pack.",
         };
       }
-      const url = new URL("transaction/view/basket/id", verifyBase);
-      url.searchParams.set("basket_id", reference);
+
+      // Both of these were recorded when the customer was sent to pay, because
+      // PayFast requires them to answer and they are not derivable afterwards:
+      // the IP belonged to a browser that has long gone, and the order date has
+      // to be the exact string that was sent.
+      if (!context?.customerIp || !context?.orderDate) {
+        return {
+          ok: false,
+          error: "This payment was started before we recorded what PayFast needs to check it.",
+        };
+      }
+
+      // The status API is authenticated with a bearer token, not with the
+      // merchant's key directly — so a check costs two calls, one to mint a
+      // token and one to ask.
+      const token = await restToken(credentials, mode, context.customerIp);
+
+      const url = new URL(`transaction/basket_id/${encodeURIComponent(reference)}`, verifyBase);
+      url.searchParams.set("order_date", context.orderDate);
+      url.searchParams.set("customer_ip", context.customerIp);
       assertAllowedHost(url.toString(), ALLOWED_HOSTS);
 
       const res = await fetch(url, {
         method: "GET",
-        headers: {
-          Accept: "application/json",
-          // The merchant's own credentials, over the wire to PayFast alone.
-          Authorization: `Basic ${Buffer.from(
-            `${credentials.merchantId}:${credentials.securedKey}`
-          ).toString("base64")}`,
-        },
+        headers: { Accept: "application/json", Authorization: `Bearer ${token}` },
         signal: AbortSignal.timeout(GATEWAY_TIMEOUT_MS),
         cache: "no-store",
       });
@@ -307,16 +397,22 @@ export const payfast: GatewayAdapter = {
         return { ok: true, state: "UNKNOWN", amount: null, currency: null, providerRef: null, detail: "No transaction found" };
       }
 
-      const rawAmount = field(row, "transaction_amount", "TXNAMT", "amount", "txnamt");
+      // PayFast's documented status response carries no amount:
+      //   { status_code, status_msg, rdv_message_key, basket_id, transaction_id, code }
+      // It is still read, because a response richer than the documented one is
+      // common and an amount we can check is worth having. When it is absent
+      // the engine is told so explicitly rather than being handed a zero — see
+      // how `amount: null` is treated in lib/payments/verify.ts.
+      const rawAmount = field(row, "transaction_amount", "amount", "txnamt", "TXNAMT");
       const parsedAmount = rawAmount == null ? null : Number(rawAmount);
 
       return {
         ok: true,
-        state: readState(field(row, "err_code", "ERR_CODE", "status", "STATUS", "transaction_status", "code")),
+        state: readState(field(row, "status_code", "code", "err_code", "status")),
         amount: parsedAmount != null && Number.isFinite(parsedAmount) ? parsedAmount : null,
         currency: field(row, "currency", "CURRENCY_CODE", "currency_code"),
-        providerRef: field(row, "transaction_id", "TRANSACTION_ID", "retrieval_ref", "RETRIEVAL_REF"),
-        detail: (field(row, "err_msg", "ERR_MSG", "message", "MESSAGE") ?? "").slice(0, 200),
+        providerRef: field(row, "transaction_id", "TRANSACTION_ID", "retrieval_ref"),
+        detail: (field(row, "status_msg", "message", "err_msg", "rdv_message_key") ?? "").slice(0, 200),
       };
     } catch (err) {
       const timedOut = err instanceof Error && err.name === "TimeoutError";

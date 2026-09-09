@@ -88,6 +88,9 @@ export async function retryPayment(orderId: string, reference: string): Promise<
     customerPhone: order.customerPhone,
     origin: host ? `https://${host}` : await canonicalUrl(sid),
     callbackOrigin: await canonicalUrl(sid),
+    // Captured now, because PayFast wants it back before it will say what
+    // happened and the browser will be gone by then.
+    customerIp: await clientIp(),
     allowTestMode: !!staff && staff.shop.id === sid,
   });
 

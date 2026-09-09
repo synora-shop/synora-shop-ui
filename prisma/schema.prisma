@@ -952,6 +952,19 @@ model Payment {
   amount   Int
   currency String
 
+  /// What the provider needs back before it will answer a question about this
+  /// payment, recorded when the customer was sent to pay.
+  ///
+  /// Neither is recoverable afterwards. The IP belonged to a browser that has
+  /// gone, and the order date must be the exact string that was sent rather
+  /// than a re-derivation of it — a second's difference in formatting and the
+  /// provider does not recognise the request. PayFast requires both to return
+  /// a transaction's status, so a payment written without them cannot be
+  /// verified at all, which is why they are captured at the start and never
+  /// computed at the end.
+  customerIp String?
+  orderDate  String?
+
   status        PaymentAttemptStatus @default(INITIATED)
   /// The provider's own transaction id, once known. Unique per provider, which
   /// is what makes a replayed callback a no-op rather than a second payment.
