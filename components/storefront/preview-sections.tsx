@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { RenderSection, type RenderableSection, type SectionContext } from "./sections/render";
 import { PreviewInspector } from "./preview-inspector";
+import { PreviewGuard } from "./preview-guard";
 import {
   PREVIEW_MESSAGE,
   PREVIEW_READY,
@@ -91,6 +92,9 @@ export function PreviewSections({
 
   return (
     <>
+      {/* A preview is not a browser: nothing navigates, nothing scrolls by
+          hand. See preview-guard.tsx. */}
+      <PreviewGuard />
       {/* Right-click to edit. Mounted only here, so it exists inside the
           customizer's preview and nowhere a customer can reach. */}
       <PreviewInspector sections={list} />

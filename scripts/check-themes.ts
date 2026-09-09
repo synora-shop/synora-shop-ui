@@ -300,5 +300,43 @@ check(
   "otherwise a preview of Atlas wears the header you chose on Aurora, and is a preview of neither"
 );
 
+// ---------------------------------------------------------------------------
+console.log("\nTHE PREVIEW IS A PREVIEW, NOT A BROWSER");
+// ---------------------------------------------------------------------------
+
+/*
+ * Here rather than in a script of its own because this is how a merchant looks
+ * at a theme, and both faults were found while looking at one.
+ *
+ * An iframe pointed at the storefront is a working browser window. A merchant
+ * could scroll it away from what they were editing, and could click a link and
+ * leave the preview — clicking the shop's logo went to `/`, which on the
+ * application host redirects to `/admin`, so the admin panel loaded inside the
+ * preview pane on the very screen where logos are changed. It read as "the
+ * customizer sends you to settings", and it was an anchor doing what anchors do.
+ */
+const guard = read("components/storefront/preview-guard.tsx");
+check("the preview stops the page being scrolled by hand", /overflow = "hidden"/.test(guard));
+check(
+  "and restores it on the way out",
+  /previousHtml/.test(guard) && /previousBody/.test(guard),
+  "the guard unmounts on a client navigation; leaving the document locked would be worse than the bug"
+);
+check("links do not navigate", /event\.preventDefault\(\)/.test(guard) && /a\[href\]/.test(guard));
+check("forms do not submit", /"submit"/.test(guard));
+check(
+  "but selecting a section by clicking still works",
+  // The call, not the word: this file's own comment explains why it does not
+  // stop propagation, and the first version of this check matched that prose.
+  !/\.stopPropagation\(/.test(guard),
+  "PreviewSections listens on the same capture phase; stopping propagation would kill selection"
+);
+check(
+  "the guard runs only inside the preview",
+  /<PreviewGuard \/>/.test(read("components/storefront/preview-sections.tsx")) &&
+    !/PreviewGuard/.test(read("app/(storefront)/layout.tsx")),
+  "mounted from PreviewSections, which a customer never renders"
+);
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);

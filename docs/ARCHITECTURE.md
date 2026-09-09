@@ -378,6 +378,32 @@ Only the merchant's **differences** are stored, in `ThemeSettings.layout`.
 Writing a resolved layout would freeze today's theme defaults into their row, so
 switching theme later would change the colours and silently keep the old header.
 
+### The preview is a preview
+
+The customizer shows the storefront in an iframe, and an iframe pointed at a
+real site is a working browser window. Two things followed from that and both
+were wrong:
+
+- A merchant could **scroll it away** from the section they were editing.
+- A merchant could **click a link and leave**. Clicking the shop's logo went to
+  `/`, and the preview is served from the application host, where `/` redirects
+  to `/admin` — so the admin panel loaded inside the preview pane, on the Home
+  screen, which is where logos are changed. It read as "the customizer sends you
+  to settings when you click the logo". It was an anchor doing what anchors do.
+
+`components/storefront/preview-guard.tsx` closes both, and only inside the
+preview: `overflow: hidden` on the document, links neutered, forms inert.
+
+Two things it deliberately leaves alone. **Programmatic scrolling still works**,
+because `overflow: hidden` does not stop it — so the customizer still brings the
+section being edited into view, which is the only movement that is *about*
+something. And **everything inside a section keeps working** — slideshow arrows,
+accordions, tabs — because a merchant judging a section has to be able to
+operate it. Only leaving is prevented, not using.
+
+It does not `stopPropagation`, which is load-bearing: `PreviewSections` listens
+on the same capture phase to tell the panel which section was clicked.
+
 ---
 
 ## 9. What runs on a schedule
