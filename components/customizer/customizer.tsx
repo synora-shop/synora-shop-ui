@@ -270,6 +270,10 @@ export function Customizer({
     const [moved] = next.splice(from, 1);
     next.splice(to, 0, moved);
     commit(next);
+    // Follow it. Moving a section is the one operation whose whole point is
+    // where it ends up, and watching the list reorder while the preview stays
+    // put tells the merchant nothing about what they just did.
+    setChanged({ sectionId: moved.id, seq: ++seqRef.current });
   }
 
   function toggleVisible(id: string) {
@@ -297,6 +301,10 @@ export function Customizer({
     };
     commit([...sections, created]);
     setSelectedId(created.id);
+    // Bring it into view. Selecting a section is not enough — the preview
+    // scrolls on `changed`, and adding one changes no settings, so a section
+    // added below the fold used to land somewhere the merchant never saw.
+    setChanged({ sectionId: created.id, seq: ++seqRef.current });
     setAdding(false);
   }
 
@@ -315,6 +323,7 @@ export function Customizer({
     next.splice(index + 1, 0, copy);
     commit(next);
     setSelectedId(copy.id);
+    setChanged({ sectionId: copy.id, seq: ++seqRef.current });
     toast.success(`${sectionLabel(source.type)} duplicated.`);
   }
 

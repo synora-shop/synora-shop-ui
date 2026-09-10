@@ -490,15 +490,26 @@ were wrong:
   screen, which is where logos are changed. It read as "the customizer sends you
   to settings when you click the logo". It was an anchor doing what anchors do.
 
-`components/storefront/preview-guard.tsx` closes both, and only inside the
-preview: `overflow: hidden` on the document, links neutered, forms inert.
+`components/storefront/preview-guard.tsx` closes the navigation half, and only
+inside the preview: links neutered, forms inert.
 
-Two things it deliberately leaves alone. **Programmatic scrolling still works**,
-because `overflow: hidden` does not stop it — so the customizer still brings the
-section being edited into view, which is the only movement that is *about*
-something. And **everything inside a section keeps working** — slideshow arrows,
-accordions, tabs — because a merchant judging a section has to be able to
-operate it. Only leaving is prevented, not using.
+**Scrolling is deliberately not locked, and it was once.** The reasoning was
+that the customizer already brings the section being edited into view, so
+scrolling by hand was never the movement that mattered. Only using it showed the
+gap: that auto-scroll fires when a section's *settings change*, and adding one
+changes no settings — so a merchant added a section, it landed below the fold,
+and the preview would not move. A page 3,039px tall in an 867px window with
+2,172 of it unreachable. Two faults compounding: a gap in the auto-scroll, and a
+lock that removed the only way around it.
+
+Fixed at both ends. Adding, duplicating and moving a section now bring it into
+view, the same as editing one — a check counts all four operations. And
+scrolling stays available, because a working surface should not have exactly one
+way to reach things.
+
+**Everything inside a section keeps working** — slideshow arrows, accordions,
+tabs — because a merchant judging a section has to be able to operate it. Only
+leaving is prevented, not using or looking.
 
 It does not `stopPropagation`, which is load-bearing: `PreviewSections` listens
 on the same capture phase to tell the panel which section was clicked.

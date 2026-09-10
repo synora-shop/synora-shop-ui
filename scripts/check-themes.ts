@@ -418,11 +418,33 @@ console.log("\nTHE PREVIEW IS A PREVIEW, NOT A BROWSER");
  * customizer sends you to settings", and it was an anchor doing what anchors do.
  */
 const guard = read("components/storefront/preview-guard.tsx");
-check("the preview stops the page being scrolled by hand", /overflow = "hidden"/.test(guard));
+/*
+ * The preview must NOT lock scrolling, and that is the assertion.
+ *
+ * It did, briefly. The reasoning was that the customizer already brings the
+ * section being edited into view, so scrolling by hand was never the movement
+ * that mattered. Only using it showed the gap: the auto-scroll fires when a
+ * section's settings change, and *adding* one changes no settings — so a new
+ * section landed below the fold and the preview would not move. A page 3,039px
+ * tall in an 867px window, 2,172 of it unreachable.
+ *
+ * The auto-scroll is fixed at its own end. Scrolling stays as the fallback,
+ * because a working surface should not have exactly one way to reach things.
+ */
 check(
-  "and restores it on the way out",
-  /previousHtml/.test(guard) && /previousBody/.test(guard),
-  "the guard unmounts on a client navigation; leaving the document locked would be worse than the bug"
+  "the preview does not lock scrolling",
+  !/overflow = "hidden"/.test(guard),
+  "locking it left a merchant unable to reach a section they had just added"
+);
+check(
+  "every section operation brings the result into view",
+  (() => {
+    const cust = read("components/customizer/customizer.tsx");
+    // Editing, adding, duplicating and moving. All four, or the fallback that
+    // scrolling provides is doing work the tool should be doing itself.
+    return (cust.match(/setChanged\(\{ sectionId/g) ?? []).length >= 4;
+  })(),
+  "adding a section used to select it without ever showing it"
 );
 check("links do not navigate", /event\.preventDefault\(\)/.test(guard) && /a\[href\]/.test(guard));
 check("forms do not submit", /"submit"/.test(guard));

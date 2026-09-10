@@ -5,42 +5,40 @@ import { useEffect } from "react";
 /**
  * Keeps the customizer's preview a preview.
  *
- * An iframe pointed at the storefront is a working browser window, and that is
- * the problem: a merchant can scroll it away from what they are editing, and
- * they can click a link and leave the preview entirely. Both happened.
- *
- * The link one was the worse of the two, and it looked like something else.
- * Clicking the shop's logo goes to `/`, and the preview is served from the
- * application host, where `/` redirects to `/admin` — so the *admin panel*
+ * An iframe pointed at the storefront is a working browser window, and one half
+ * of that is a real problem: a merchant can click a link and leave the preview
+ * entirely. Clicking the shop's logo goes to `/`, and the preview is served from
+ * the application host, where `/` redirects to `/admin` — so the *admin panel*
  * loaded inside the preview pane, on the Home screen, which is where logos are
  * changed. It read as "the customizer sends you to settings when you click the
  * logo". It was a plain anchor doing what anchors do.
  *
- * So, inside the preview only:
+ * So nothing navigates: links are neutered, forms do not submit.
  *
- *   Nothing navigates. Links are neutered, forms do not submit. A preview that
- *   can be browsed away from is a browser with a settings panel bolted on.
+ * **Scrolling is deliberately left alone**, and it was not always. This file
+ * used to lock it, on the reasoning that the customizer already brings the
+ * section being edited into view, so scrolling by hand was never the movement
+ * that mattered. That reasoning was wrong in a way only using it reveals: the
+ * auto-scroll fires when a section's *settings change*, and adding one does not
+ * change any settings. A merchant added a section, it landed below the fold, and
+ * the preview would not move — a page 3,039px tall in an 867px window with 2,172
+ * of it unreachable. The lock removed the only way out of a gap in the
+ * auto-scroll, so the two faults together made the tool unusable.
  *
- *   Nothing scrolls by hand. The customizer already brings the section being
- *   edited into view, which is the movement that is *about* something. Setting
- *   overflow hidden stops a person scrolling while leaving `scrollIntoView`
- *   working, because programmatic scrolling is unaffected by it.
+ * The auto-scroll is fixed at its own end — adding, duplicating and moving a
+ * section now bring it into view, the same as editing one. Scrolling stays as a
+ * fallback, because a working surface should not have one way to reach things.
  *
  * What deliberately still works: everything inside a section. Slideshow arrows,
  * accordions, tabs — a merchant judging a section has to be able to operate it.
- * Only leaving is prevented, not using.
+ * Only leaving is prevented, not using or looking.
  *
  * Mounted from PreviewSections, so it exists inside the customizer's iframe and
  * nowhere a customer can reach.
  */
 export function PreviewGuard() {
   useEffect(() => {
-    const html = document.documentElement;
     const body = document.body;
-    const previousHtml = html.style.overflow;
-    const previousBody = body.style.overflow;
-    html.style.overflow = "hidden";
-    body.style.overflow = "hidden";
 
     // Marks the document as the customizer's, which globals.css reads to keep
     // an empty section visible and named. On a live storefront the same section
@@ -72,8 +70,6 @@ export function PreviewGuard() {
     document.addEventListener("submit", blockSubmit, true);
 
     return () => {
-      html.style.overflow = previousHtml;
-      body.style.overflow = previousBody;
       body.classList.remove("in-preview");
       document.removeEventListener("click", blockNavigation, true);
       document.removeEventListener("submit", blockSubmit, true);
