@@ -1,6 +1,6 @@
 # The guards
 
-Twenty-seven scripts, **3,066 assertions as of 10 September 2026**, all of them
+Twenty-seven scripts, **3,048 assertions as of 10 September 2026**, all of them
 dependency-free, all exiting non-zero on failure. `npm run check` runs the lot.
 
 The per-script counts below are a snapshot and will drift as assertions are

@@ -1456,6 +1456,21 @@ model InstalledTheme {
   /// merchant tells two half-tried designs apart.
   installedAt DateTime @default(now())
 
+  /// This copy's own colours and arrangement.
+  ///
+  /// Here rather than on ThemeSettings, which is where they used to live, and
+  /// the move is what makes an unpublished theme editable at all. Edits kept
+  /// per shop applied to whichever theme happened to be live, so there was
+  /// exactly one set of colours and no way to work on a second design without
+  /// changing the first — or the storefront.
+  ///
+  /// Now each added theme carries its own, so a merchant can spend a week on
+  /// Atlas while Aurora keeps serving customers, and switching between them is
+  /// lossless in both directions. Only the merchant's *differences* are stored;
+  /// the theme's own defaults stay in the registry.
+  tokens Json @default("{}")
+  layout Json @default("{}")
+
   @@unique([shopId, themeKey])
   @@index([shopId])
 }
@@ -1469,6 +1484,10 @@ model ThemeSettings {
   /// worth, and lib/themes/registry.ts falls back on an unknown key rather than
   /// letting a retired theme take a storefront offline.
   themeKey  String   @default("aurora")
+  /// Legacy. Read by nothing since 10 September — a theme's colours and
+  /// arrangement moved to InstalledTheme so an unpublished one could be
+  /// edited. Kept rather than dropped: they are the only copy of what a shop
+  /// looked like before the move, and dropping a column is not reversible.
   tokens    Json
   /// What this storefront *arranges*, as opposed to what it paints: which
   /// header, product card, grid and footer it uses, and which of the theme's

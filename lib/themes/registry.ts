@@ -104,51 +104,6 @@ const aurora: ThemeDefinition = {
 };
 
 /**
- * Meridian — the same sections, a completely different shop.
- *
- * Registered second on purpose. One theme does not prove a registry: until a
- * second one exists there is no evidence that a theme is data rather than a
- * special case, and no way to tell which of Aurora's choices were the
- * platform's and which were Aurora's.
- *
- * It shares every section with Aurora and overlaps in none of the decisions
- * that make a shop look like itself — serif against sans, cream against white,
- * pill buttons against square, a light footer against a black one. That is the
- * whole difference, and it is nineteen lines.
- */
-const meridian: ThemeDefinition = {
-  key: "meridian",
-  preview: "/themes/meridian.jpg",
-  name: "Meridian",
-  description: "Monochrome and sharp-edged, with a wide grid. For a modern label.",
-  businessTypes: ["ecommerce"],
-  sections: [...SECTION_TYPES],
-  tokens: {
-    accent: "#111111",
-    secondary: "#8a8a8a",
-    accentContrast: "#ffffff",
-    pageBackground: "#ffffff",
-    surface: "#fafafa",
-    textPrimary: "#0a0a0a",
-    textMuted: "#6b6b6b",
-    border: "#e5e5e5",
-    headerBackground: "#ffffff",
-    footerBackground: "#0a0a0a",
-    // Sans headings at a heavier weight and negative tracking: the single
-    // change that most separates it from Aurora's serif.
-    headingFont: "inter",
-    bodyFont: "inter",
-    headingWeight: 700,
-    headingLetterSpacing: -2,
-    // Nothing is rounded. Aurora's pill buttons are the other half of its
-    // character, so squaring them here is deliberate rather than plain.
-    cornerRadius: 0,
-    buttonRadius: 0,
-    containerWidth: 1440,
-  },
-};
-
-/**
  * Atlas — the first theme that is more than a palette.
  *
  * Aurora and Meridian differ in colour, type and corner radius, and in nothing
@@ -208,161 +163,31 @@ const atlas: ThemeDefinition = {
   },
 };
 
-/* ------------------------------------------------------------------ blog -- */
+/* -------------------------------------------------------------------------- */
 
-/**
- * Which sections a blog is built from.
+/*
+ * Meridian, Quill, Column, Hearth and Service were here.
  *
- * Named rather than "all of them": a blog offering a category grid and a
- * featured-products row would be offering a merchant sections that render
- * nothing, which is the frustrating interface we said we would not ship.
- */
-const BLOG_SECTIONS = ["ARTICLE_LIST", "TEXT_BLOCK", "IMAGE_TEXT", "BANNER", "STORY", "FAQ_LIST"];
-
-const quill: ThemeDefinition = {
-  key: "quill",
-  name: "Quill",
-  description: "Serif and unhurried, built around long reading.",
-  businessTypes: ["blog"],
-  sections: BLOG_SECTIONS,
-  tokens: {
-    accent: "#1c2b24",
-    secondary: "#8f9d94",
-    accentContrast: "#ffffff",
-    pageBackground: "#fbfaf7",
-    surface: "#ffffff",
-    textPrimary: "#1a1a17",
-    textMuted: "#5a5a52",
-    border: "#e6e2d8",
-    headerBackground: "#fbfaf7",
-    footerBackground: "#f1eee6",
-    headingFont: "cormorant",
-    bodyFont: "georgia",
-    // Larger body text than a shop would use. A storefront is scanned; an
-    // article is read, and 17px is the difference between the two.
-    baseFontSize: 17,
-    headingWeight: 600,
-    cornerRadius: 4,
-    buttonRadius: 4,
-    // Narrow on purpose. A line of text longer than about 75 characters is
-    // measurably harder to read, and a blog is nothing but lines of text.
-    containerWidth: 1120,
-  },
-};
-
-const column: ThemeDefinition = {
-  key: "column",
-  name: "Column",
-  description: "Tight and newsy, for publishing often.",
-  businessTypes: ["blog"],
-  sections: BLOG_SECTIONS,
-  tokens: {
-    accent: "#0f4c81",
-    secondary: "#7a8b99",
-    accentContrast: "#ffffff",
-    pageBackground: "#ffffff",
-    surface: "#f7f9fb",
-    textPrimary: "#101418",
-    textMuted: "#5b6670",
-    border: "#dde3e9",
-    headerBackground: "#ffffff",
-    footerBackground: "#101418",
-    headingFont: "inter",
-    bodyFont: "inter",
-    baseFontSize: 16,
-    headingWeight: 700,
-    headingLetterSpacing: -1,
-    cornerRadius: 2,
-    buttonRadius: 2,
-    containerWidth: 1200,
-  },
-};
-
-/* ------------------------------------------------------------ restaurant -- */
-
-/**
- * A restaurant's sections.
+ * Removed 10 September. All five were palettes — the same HTML in different
+ * colours — and keeping five of those alongside two real themes made the picker
+ * look full while offering one genuine choice. Aurora is what every shop is
+ * already running; Atlas is the one that actually arranges the storefront
+ * differently.
  *
- * The menu, the hours and the address are the three things somebody standing
- * outside on a phone is looking for, so they lead. Featured products is here
- * too, for a kitchen that does sell online.
+ * Their consequence, written down because it is not obvious: **there are no
+ * blog or restaurant themes any more.** Those business types now have an empty
+ * picker, which is honest — the platform is an e-commerce panel, and a
+ * restaurant deserves a design built for restaurants rather than a shop's
+ * design with the words changed. Until one exists, saying so is better than
+ * offering five recolours of a product grid.
+ *
+ * A shop still on a removed key does not break: themeFor() falls back to
+ * Aurora rather than letting a retired string take a storefront offline.
  */
-const RESTAURANT_SECTIONS = [
-  "MENU_LIST",
-  "OPENING_HOURS",
-  "LOCATION_INFO",
-  "HERO_SLIDESHOW",
-  "IMAGE_TEXT",
-  "STORY",
-  "FEATURED_PRODUCTS",
-  "FAQ_LIST",
-];
-
-const hearth: ThemeDefinition = {
-  key: "hearth",
-  name: "Hearth",
-  description: "Warm and traditional, with the menu front and centre.",
-  businessTypes: ["restaurant"],
-  sections: RESTAURANT_SECTIONS,
-  tokens: {
-    accent: "#7a2e1f",
-    secondary: "#c9a227",
-    accentContrast: "#fffaf3",
-    pageBackground: "#fdf8f1",
-    surface: "#ffffff",
-    textPrimary: "#241a14",
-    textMuted: "#5d4b3f",
-    border: "#e9dcc9",
-    headerBackground: "#fdf8f1",
-    footerBackground: "#241a14",
-    headingFont: "cormorant",
-    bodyFont: "inter",
-    baseFontSize: 16,
-    headingWeight: 600,
-    cornerRadius: 10,
-    buttonRadius: 999,
-    containerWidth: 1180,
-  },
-};
-
-const service: ThemeDefinition = {
-  key: "service",
-  name: "Service",
-  description: "Dark and modern, for evenings and bookings.",
-  businessTypes: ["restaurant"],
-  sections: RESTAURANT_SECTIONS,
-  tokens: {
-    accent: "#c8a24a",
-    secondary: "#6f6a60",
-    accentContrast: "#14120f",
-    // The one theme that starts dark. A restaurant page is most often opened
-    // in the evening, on a phone, outside.
-    pageBackground: "#14120f",
-    surface: "#1c1a16",
-    textPrimary: "#f4f1ea",
-    textMuted: "#a9a396",
-    border: "#2c2822",
-    headerBackground: "#14120f",
-    footerBackground: "#0d0b09",
-    headingFont: "inter",
-    bodyFont: "inter",
-    baseFontSize: 16,
-    headingWeight: 600,
-    headingLetterSpacing: 4,
-    cornerRadius: 2,
-    buttonRadius: 2,
-    containerWidth: 1180,
-  },
-};
 
 export const THEMES: Record<string, ThemeDefinition> = {
   aurora,
-  meridian,
   atlas,
-  quill,
-  column,
-  hearth,
-  service,
 };
 
 /** The theme a shop gets when it has not chosen one and we know nothing else. */

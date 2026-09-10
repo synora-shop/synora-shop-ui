@@ -289,15 +289,36 @@ check(
 );
 check(
   "and returns the theme's own look, not the platform's",
-  /themeTokens\(row\?\.themeKey\)/.test(actions)
+  /themeTokens\(key\)/.test(actions) && /themeLayout\(key\)/.test(actions)
+);
+check(
+  "and clears only the theme being reset",
+  /installedTheme\.updateMany\(\{[\s\S]{0,120}where: \{ themeKey: key \}/.test(actions),
+  "resetting a draft must not strip the colours off the design customers are seeing"
+);
+check(
+  "saving writes to the theme, not to the shop",
+  /installedTheme\.updateMany/.test(actions) && !/themeSettings\.upsert[\s\S]{0,200}tokens: clean/.test(actions),
+  "while edits were per shop, editing a draft meant editing the live storefront"
+);
+check(
+  "and refuses when the theme is no longer in the library",
+  /updated\.count === 0/.test(actions),
+  "a customizer left open on a theme removed in another tab"
 );
 
 const data = read("lib/data/theme.ts");
 check("the storefront resolves a layout per request", /getThemeLayout/.test(data));
 check(
-  "a previewed theme shows its own arrangement",
-  /preview \? \{\} :/.test(data),
-  "otherwise a preview of Atlas wears the header you chose on Aurora, and is a preview of neither"
+  "a previewed theme shows its own arrangement and its own edits",
+  /themeForRequest\(shop\.id, shop\.businessType\)/.test(data) &&
+    /installed\.find\(\(r\) => r\.themeKey === key\)/.test(data),
+  "a preview of Atlas wearing the header you chose on Aurora is a preview of neither"
+);
+check(
+  "and a preview outranks the live theme for that request only",
+  /const key = preview \?\? settings\?\.themeKey \?\? null/.test(data),
+  "nothing is stored, so no cached page can be left wearing somebody's preview"
 );
 
 // ---------------------------------------------------------------------------

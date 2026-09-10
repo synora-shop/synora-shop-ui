@@ -407,6 +407,33 @@ The screen is three zones in the order a merchant thinks about them: what is
 live, what this shop owns, and what exists. Publishing a theme moves the
 previously live one **into** the library rather than losing it.
 
+**A theme's edits belong to the theme, not to the shop.** They lived on
+`ThemeSettings`, which is one row per shop per business type — so a merchant's
+colours applied to whichever theme was live, and there was no way to work on a
+second design without changing the first or the storefront. They now live on
+`InstalledTheme`, which is what makes an unpublished theme editable: Atlas can
+be worked on for a week while Aurora keeps serving customers, and switching
+between them loses nothing either way. `?theme=<key>` on the customizer names
+which one, checked against the shop's own library — a key nobody added falls
+back to the live theme rather than quietly editing it.
+
+**Only two themes ship.** Aurora, which every shop already runs, and Atlas, the
+one that actually arranges the storefront differently. Meridian, Quill, Column,
+Hearth and Service were removed on 10 September: all five were palettes, and
+five recolours beside two real themes made the picker look full while offering
+one genuine choice. The consequence, stated because it is not obvious — **there
+are no blog or restaurant themes**, and those business types now see an honest
+empty state. A restaurant deserves a design built for restaurants rather than a
+shop's with the words changed.
+
+**One cached read.** `cachedForShop` keys on the shop and the *kind* and nothing
+else, so two calls under `"theme"` with different callbacks are the same cache
+entry — whichever runs first wins and the second is handed the wrong shape. That
+was harmless while the tokens and the layout used identical callbacks, and threw
+`rows.find is not a function` on every request the moment one of them asked a
+different question. There is one callback now, it returns both halves, and a
+check counts the call sites.
+
 Theme pictures live in `public/themes` and are shot from the **shop** page, not
 the home page: the header, the card shape, the grid density and the colour are
 the four things that differ between themes and are all on it, while a home page

@@ -383,7 +383,25 @@ check("the tick is square", /rounded-\[5px\]/.test(list));
 // said "only the layout changes".
 const themeData = readFileSync(join(ROOT, "lib/data/theme.ts"), "utf8");
 check("the chosen theme reaches the storefront", /themeFor\(/.test(themeData));
-check("and the merchant's own colours still win", /\.\.\.themeFor\([\s\S]{0,80}\.\.\.\(\(row\?\.tokens/.test(themeData));
+// Weakest first: the theme's own look, then whatever the merchant changed on
+// *that theme*. The merchant's edits used to be per shop and are now per theme —
+// which is what lets an unpublished one be edited — so the source of the second
+// spread moved from the settings row to the theme's own. The order is the rule,
+// and the order is what is asserted.
+check(
+  "and the merchant's own colours still win",
+  /\.\.\.themeFor\([\s\S]{0,120}\.\.\.\(\(edits\?\.tokens/.test(themeData),
+  "a colour set by hand must outrank the theme it came from"
+);
+check(
+  "the same holds for the arrangement",
+  /\.\.\.themeFor\([\s\S]{0,120}\.\.\.\(\(edits\?\.layout/.test(themeData)
+);
+check(
+  "and the edits belong to a theme, not to the shop",
+  /installedTheme\.findMany/.test(themeData),
+  "while they were per shop, editing a draft meant editing the live storefront"
+);
 // Every link to a theme preview carried ?__theme= long before anything read it,
 // so "View full" showed the theme you already had.
 check("a theme can be previewed without activating it", /__theme/.test(themeData));

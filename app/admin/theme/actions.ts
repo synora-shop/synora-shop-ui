@@ -17,7 +17,17 @@ import type { Prisma } from "@/lib/generated/prisma/client";
 /**
  * Saves the store's theme tokens.
  */
-export async function saveThemeTokens(tokens: Partial<ThemeTokens & ThemeLayout>) {
+export async function saveThemeTokens(
+  tokens: Partial<ThemeTokens & ThemeLayout>,
+  /**
+   * Which theme these edits belong to.
+   *
+   * Required in practice, defaulted for safety: an omitted key means the live
+   * one, which is what every caller meant before a theme could be edited
+   * without being published.
+   */
+  themeKey?: string
+) {
   await requireRole("STAFF");
 
   // Re-resolved against the defaults so an unknown or missing key can never
@@ -25,35 +35,57 @@ export async function saveThemeTokens(tokens: Partial<ThemeTokens & ThemeLayout>
   const clean = resolveThemeTokens(tokens) as unknown as Prisma.InputJsonValue;
 
   /**
-   * The panel carries one object; the database keeps two columns.
+   * The panel carries one object; the row keeps two columns.
    *
    * The Theme panel edits colour, type and arrangement in one list, because
    * that is one decision to a merchant. Underneath they are different things —
    * a token is a CSS value, a layout choice picks a component — so each is
-   * resolved by its own validator and stored in its own column, and a key
-   * belonging to neither is dropped by both.
+   * resolved by its own validator, and a key belonging to neither is dropped by
+   * both.
    *
    * Only the merchant's *differences* are stored. Writing the whole resolved
-   * layout would freeze today's theme defaults into the row, so switching
-   * theme later would change the colours and silently keep the old header.
+   * layout would freeze today's theme defaults into the row, so a later change
+   * to the theme would be silently ignored.
    */
   const layout = layoutChanges(resolveThemeLayout(tokens)) as unknown as Prisma.InputJsonValue;
 
-  // Keyed on the pair, because these settings belong to one business type
-  // rather than to the shop. The scoped client supplies the type on create.
   const shop = await requireShop();
-  await (await db()).themeSettings.upsert({
-    where: { shopId_businessType: { shopId: shop.id, businessType: shop.businessType } },
-    update: { tokens: clean, layout },
-    create: { shopId: shop.id, businessType: shop.businessType, tokens: clean, layout },
+  const key = themeKey ?? (await liveThemeKey(shop.id, shop.businessType));
+
+  /*
+   * Written to the theme, not to the shop.
+   *
+   * This is the whole of what makes an unpublished theme editable. While these
+   * lived on ThemeSettings there was one set of colours per shop, applied to
+   * whichever theme was live — so editing a draft meant editing the storefront.
+   */
+  const updated = await (await db()).installedTheme.updateMany({
+    where: { themeKey: key },
+    data: { tokens: clean, layout },
   });
+
+  // Nothing to write to means the theme is not in this shop's library, which a
+  // customizer pointed at a theme the merchant removed in another tab can be.
+  if (updated.count === 0) {
+    throw new Error("That theme is not in your library. Add it again to keep editing.");
+  }
 
   invalidateShop(await currentShopId(), "theme");
   revalidatePath("/admin/theme");
   revalidatePath("/", "layout");
+
   // Both halves back, so the panel's state after a save is exactly what the
   // storefront will render — including any value the validators corrected.
   return { ...resolveThemeTokens(tokens), ...resolveThemeLayout(tokens) };
+}
+
+/** Which theme this shop is actually serving, for the callers that need it. */
+async function liveThemeKey(shopId: string, businessType: string): Promise<string> {
+  const row = await (await db()).themeSettings.findFirst({
+    where: { businessType: businessType as never },
+    select: { themeKey: true },
+  });
+  return row?.themeKey ?? "aurora";
 }
 
 /**
@@ -132,17 +164,16 @@ async function storeIcon(
  * So the overrides are cleared and the choice is kept, and what comes back is
  * the theme's own defaults rather than the platform's.
  */
-export async function resetThemeTokens() {
+export async function resetThemeTokens(themeKey?: string) {
   await requireRole("STAFF");
 
   const shop = await requireShop();
-  const row = await (await db()).themeSettings.findFirst({
-    where: { businessType: shop.businessType },
-    select: { themeKey: true },
-  });
+  const key = themeKey ?? (await liveThemeKey(shop.id, shop.businessType));
 
-  await (await db()).themeSettings.updateMany({
-    where: { businessType: shop.businessType },
+  // Clears this theme's edits and nobody else's. A merchant resetting a draft
+  // must not find the colours gone from the design their customers are seeing.
+  await (await db()).installedTheme.updateMany({
+    where: { themeKey: key },
     data: { tokens: {}, layout: {} },
   });
 
@@ -152,5 +183,5 @@ export async function resetThemeTokens() {
 
   // The theme's starting point, not the platform's — which is what the screen
   // said it would be, and what a merchant who picked Atlas expects to see.
-  return { ...themeTokens(row?.themeKey), ...themeLayout(row?.themeKey) };
+  return { ...themeTokens(key), ...themeLayout(key) };
 }

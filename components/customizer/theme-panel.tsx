@@ -41,7 +41,14 @@ type DeviceKey = (typeof DEVICES)[number]["key"];
  */
 export type ThemePanelState = ThemeTokens & ThemeLayout;
 
-export function ThemePanel({ initialTokens }: { initialTokens: ThemePanelState }) {
+export function ThemePanel({
+  initialTokens,
+  themeKey,
+}: {
+  initialTokens: ThemePanelState;
+  /** Which theme these edits belong to. Its absence means the live one. */
+  themeKey?: string;
+}) {
   const [tokens, setTokens] = useState<ThemePanelState>(initialTokens);
   const [saved, setSaved] = useState<ThemePanelState>(initialTokens);
   const [saveState, setSaveState] = useState<SaveState>("idle");
@@ -130,7 +137,7 @@ export function ThemePanel({ initialTokens }: { initialTokens: ThemePanelState }
     }
     setSaveState("saving");
     try {
-      const result = await saveThemeTokens(tokens);
+      const result = await saveThemeTokens(tokens, themeKey);
       setSaved(result);
       setTokens(result);
       setSaveState("saved");
@@ -155,7 +162,7 @@ export function ThemePanel({ initialTokens }: { initialTokens: ThemePanelState }
       danger: true,
     });
     if (!ok) return;
-    const defaults = await resetThemeTokens();
+    const defaults = await resetThemeTokens(themeKey);
     setTokens(defaults);
     setSaved(defaults);
     setSaveState("idle");

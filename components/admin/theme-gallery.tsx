@@ -83,12 +83,12 @@ export function ThemeGallery({
   }
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-14">
       {dialog}
 
       {/* ------------------------------------------------- 1. what is live -- */}
       <section className="overflow-hidden rounded-xl border border-border bg-surface">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-4">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border px-6 py-5">
           <div className="min-w-0">
             {/* A div, not a p. CardTitle renders an h2, and an h2 inside a p
                 is invalid HTML — the browser reparents it, so the server tree
@@ -118,22 +118,22 @@ export function ThemeGallery({
       </section>
 
       {/* ---------------------------------------------- 2. what it owns -- */}
-      <section className="space-y-4">
+      <section className="space-y-5">
         <SectionDivider
           title="Your themes"
-          description="Added to this store but not published. Customise one for as long as you like — nobody sees it until you publish it."
+          description="Added to this store but not published. Customise one for as long as you like — it keeps its own colours, and nobody sees it until you publish it."
         />
 
         {library.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-border px-5 py-8 text-center text-sm text-ink-soft">
-            Nothing here yet. Add a theme from below to try it without changing your store.
+          <p className="rounded-xl border border-dashed border-border px-6 py-12 text-center text-sm text-ink-soft">
+            Nothing here yet. Add a theme below to try it without changing your store.
           </p>
         ) : (
           <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface">
             {library.map((theme) => {
               const busy = busyKey === theme.key;
               return (
-                <li key={theme.key} className="flex flex-wrap items-center gap-4 p-4">
+                <li key={theme.key} className="flex flex-wrap items-center gap-5 p-5">
                   <ThemeThumb theme={theme} className="h-16 w-28 flex-shrink-0" />
 
                   <div className="min-w-0 flex-1">
@@ -153,6 +153,17 @@ export function ThemeGallery({
                       Preview
                       <ExternalLink className="h-3 w-3 opacity-60" />
                     </a>
+                    {/* A draft is edited exactly like the live one — same panel,
+                        same controls. Its edits are kept on the theme, so a week
+                        spent on this one changes nothing a customer can see. */}
+                    <ButtonLink
+                      href={`/admin/customize/theme?theme=${theme.key}`}
+                      variant="secondary"
+                      size="sm"
+                    >
+                      <Sparkles className="h-3.5 w-3.5" />
+                      Customize
+                    </ButtonLink>
                     <Button
                       variant="primary"
                       size="sm"
@@ -180,14 +191,32 @@ export function ThemeGallery({
       </section>
 
       {/* ------------------------------------------------- 3. what exists -- */}
+      {discover.length === 0 && library.length === 0 && (
+        /*
+         * No designs at all for this kind of store.
+         *
+         * Reachable since the blog and restaurant themes were removed: they
+         * were recolours of a product grid, and a restaurant deserves a design
+         * built for restaurants rather than a shop's with the words changed.
+         * Saying so is better than offering five of the wrong thing.
+         */
+        <section className="rounded-xl border border-dashed border-border px-6 py-12 text-center">
+          <CardTitle as="h3">No designs for this kind of store yet</CardTitle>
+          <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-ink-soft">
+            Your storefront still works and still uses your colours. Designs built for this kind of
+            business are on the way.
+          </p>
+        </section>
+      )}
+
       {discover.length > 0 && (
-        <section className="space-y-4">
+        <section className="space-y-5">
           <SectionDivider
             title="Discover themes"
             description="Adding one puts it in your themes above. It does not change your store — publishing is a separate step."
           />
 
-          <ul className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+          <ul className="grid gap-x-6 gap-y-8 sm:grid-cols-2 xl:grid-cols-3">
             {discover.map((theme) => {
               const busy = busyKey === theme.key;
               return (

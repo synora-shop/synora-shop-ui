@@ -60,7 +60,13 @@ export function StorefrontStill({
             height: Math.ceil(height / scale),
             transform: `scale(${scale})`,
           }}
-          className="pointer-events-none absolute left-0 top-0 origin-top-left border-0"
+          // `scrolling="no"` as well as pointer-events, and both are needed.
+          // pointer-events stops a click reaching it; it does not stop the frame
+          // showing its own scrollbar down the right-hand edge, and it does not
+          // stop the page inside scrolling by other means. This is a
+          // photograph — it should have no scrollbar to look at.
+          scrolling="no"
+          className="pointer-events-none absolute left-0 top-0 origin-top-left overflow-hidden border-0"
         />
       )}
     </div>

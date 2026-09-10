@@ -119,7 +119,23 @@ check(
 const themeData = readFileSync(join(ROOT, "lib/data/theme.ts"), "utf8");
 check(
   "the theme is read for the shop's own business type",
-  /businessType: shop\.businessType/.test(themeData)
+  // The type is passed in rather than read inline now, because both the tokens
+  // and the layout need the same answer and a cached function may not read
+  // headers. What matters is unchanged: the settings row is never looked up
+  // without it.
+  /themeSettings\.findFirst\([\s\S]{0,160}businessType/.test(themeData) &&
+    /themeForRequest\(shop\.id, shop\.businessType\)/.test(themeData),
+  "reading it without the type served a restaurant's colours to a shop that used to be one"
+);
+check(
+  "the theme's settings and its edits come from one cached read",
+  (themeData.match(/cachedForShop\(shopId, "theme"/g) ?? []).length === 1,
+  "cachedForShop keys on shop and kind alone, so two callbacks under one kind collide and the second gets the wrong shape"
+);
+check(
+  "and a theme's edits are read for that theme alone",
+  /installed\.find\(\(r\) => r\.themeKey === key\)/.test(themeData),
+  "otherwise a draft's colours would leak onto the live storefront"
 );
 
 console.log(`\n${pass} passed, ${fail} failed`);
