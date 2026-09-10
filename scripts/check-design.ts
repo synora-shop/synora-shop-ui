@@ -249,5 +249,32 @@ check("there is still no renaming layer", !existsSync(join(ROOT, "lib/themes/voc
   );
 }
 
+/*
+ * A heading inside a paragraph.
+ *
+ * `CardTitle` renders an `<h2>`, and an `<h2>` inside a `<p>` is invalid HTML.
+ * The browser reparents it, so the server's tree and the client's stop matching
+ * and React throws a hydration error on every load — which is invisible until
+ * somebody opens the console, and then breaks the whole screen's interactivity.
+ * Cost one screen a day to find; costs one regex to keep out.
+ */
+{
+  const offenders = walk(join(ROOT, "components"))
+    .concat(walk(join(ROOT, "app")))
+    .filter((f) => /\.tsx$/.test(f))
+    .filter((f) => {
+      const src = readFileSync(f, "utf8");
+      // A <p ...> whose next non-blank line opens a CardTitle or a heading tag.
+      return /<p[^>]*>\s*\n\s*<(CardTitle|h[1-6])\b/.test(src);
+    })
+    .map((f) => f.replace(ROOT + "/", ""));
+
+  check(
+    "no heading is nested inside a paragraph",
+    offenders.length === 0,
+    offenders.join(", ") || "an h2 inside a p is a hydration error on every load"
+  );
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);

@@ -90,13 +90,17 @@ export function ThemeGallery({
       <section className="overflow-hidden rounded-xl border border-border bg-surface">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-4">
           <div className="min-w-0">
-            <p className="flex items-center gap-2">
+            {/* A div, not a p. CardTitle renders an h2, and an h2 inside a p
+                is invalid HTML — the browser reparents it, so the server tree
+                and the client tree stop matching and React throws a hydration
+                error on every load of this screen. */}
+            <div className="flex items-center gap-2">
               <CardTitle>{live?.name ?? "Your store"}</CardTitle>
               <Badge tone="good">
                 <Check className="h-3 w-3" />
                 Live
               </Badge>
-            </p>
+            </div>
             <p className="mt-1 truncate text-xs text-ink-soft">{storeUrl}</p>
           </div>
           <div className="flex flex-shrink-0 items-center gap-2">

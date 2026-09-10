@@ -1,6 +1,6 @@
 # The guards
 
-Twenty-seven scripts, **3,065 assertions as of 10 September 2026**, all of them
+Twenty-seven scripts, **3,066 assertions as of 10 September 2026**, all of them
 dependency-free, all exiting non-zero on failure. `npm run check` runs the lot.
 
 The per-script counts below are a snapshot and will drift as assertions are
@@ -25,7 +25,7 @@ and that going live is refused until a test payment has really been through.
 | Script | Asserts | Exists because |
 | --- | --- | --- |
 | `check:sections` **472** | A section a merchant can pick is one that stores, configures and draws; every setting is explained; an empty section takes up no room | Twenty-two sections were written and could not be added to a page at all — the schema and the renderer existed, the database enum did not |
-| `check:design` **524** | Colour, type, shape, one way to name a section, one gap between them | Four styles were naming the same thing, two of them a few hundred pixels apart on one screen |
+| `check:design` **552** | Colour, type, shape, one way to name a section, one gap between them | Four styles were naming the same thing, two of them a few hundred pixels apart on one screen |
 | `check:motion` **303** | Every animation is off under reduced motion and nothing is hidden by that; errors go through `FieldError`; the toast's two durations agree | Nineteen screens hand-wrote their error line and most carried no `role`, so a screen reader announced nothing |
 | `check:csv` **201** | Column names, formula defusal, the round trip | An exported product title could run a command on whoever opened the file |
 | `check:brand` **182** | Logo fallback order, favicon formats, one place that writes a mark | Logos were per business type, so switching type lost them — twice |
