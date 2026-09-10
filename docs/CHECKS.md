@@ -1,6 +1,6 @@
 # The guards
 
-Twenty-seven scripts, **3,050 assertions as of 10 September 2026**, all of them
+Twenty-seven scripts, **3,065 assertions as of 10 September 2026**, all of them
 dependency-free, all exiting non-zero on failure. `npm run check` runs the lot.
 
 The per-script counts below are a snapshot and will drift as assertions are
@@ -43,7 +43,7 @@ and that going live is refused until a test payment has really been through.
 | `check:paging` **37** | Page counts, bounds, the last page | — |
 | `check:spotlight` **31** | The refusal points at the cure; `.attention` has exactly one user | "Pause it first" named a cure without saying where it was kept |
 | `check:address` **48** | Renaming a shop moves its address without touching a custom domain, breaking shared links, or taking a name somebody holds | A store's public URL is derived from its name, so a rename is three dangerous things at once |
-| `check:themes` **98** | A theme arranges the storefront, not only paints it; every variant a theme names is drawn; an untouched shop is untouched | `ThemeDefinition` had tokens and nothing else, so Aurora and Meridian rendered byte-identical HTML and differed only in CSS variables |
+| `check:themes` **113** | A theme arranges the storefront, not only paints it; every variant a theme names is drawn; an untouched shop is untouched | `ThemeDefinition` had tokens and nothing else, so Aurora and Meridian rendered byte-identical HTML and differed only in CSS variables |
 | `check:gateways` **118** | Sealed credentials really seal; only the verification path pays for an order, and only by asking the provider; test mode never reaches a customer; an unpaid order gives back everything it took | The most-used PayFast library marks an order paid on any POST carrying a transaction id, and the field PayFast calls SIGNATURE is random hex |
 | `check:payments` **32** | A merchant chooses how they get paid; a method with no details is not offered; the server refuses one the shop does not take | Which methods existed was a constant in source, while Settings offered account details for methods no customer could pick |
 | `check:editor` **29** | Discard and Save exist wherever there is unsaved work | — |

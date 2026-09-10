@@ -378,6 +378,7 @@ model Shop {
   fonts             FontAsset[]
   stickyButtons     StickyButton[]
   redirects         Redirect[]
+  installedThemes   InstalledTheme[]
   paymentGateways   PaymentGateway[]
   payments          Payment[]
   paymentEvents     PaymentEvent[]
@@ -1427,6 +1428,38 @@ model StickyButton {
 // defaults, and the narrowing — same "defaults + merge" pattern as
 // lib/global-edits.ts and lib/site-text.ts, so a missing or partial row is
 // never a broken storefront.
+/// A theme a shop has added to its own library.
+///
+/// Themes ship with the platform, so "adding" one copies nothing and downloads
+/// nothing — it is a shop saying *this one is mine now*. That distinction is
+/// the point: a merchant browsing six designs is not choosing, and a storefront
+/// should not change because somebody clicked to look.
+///
+/// So there are two acts. Adding puts a theme in the shop's library, where it
+/// can be previewed and customised without a customer seeing any of it.
+/// Publishing is the separate, deliberate one that changes the live store — and
+/// `ThemeSettings.themeKey` remains the single answer to "which is live".
+///
+/// Keyed per shop rather than per business type, unlike ThemeSettings: a
+/// library is a list of things you own, and owning Atlas does not stop being
+/// true because you switched to a blog for an afternoon.
+model InstalledTheme {
+  id       String @id @default(cuid())
+  shop     Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId   String
+  /// Matches a key in lib/themes/registry.ts. A string for the same reason
+  /// ThemeSettings.themeKey is one: themes ship and retire faster than
+  /// migrations are worth.
+  themeKey String
+
+  /// When it was added. Shown on the card, because "Added: 28 Aug" is how a
+  /// merchant tells two half-tried designs apart.
+  installedAt DateTime @default(now())
+
+  @@unique([shopId, themeKey])
+  @@index([shopId])
+}
+
 model ThemeSettings {
   id        String   @id @default(cuid())
   shop      Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)

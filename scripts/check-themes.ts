@@ -23,7 +23,7 @@
  *
  * Dependency-free; exits non-zero on failure.
  */
-import { readFileSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 import { SECTION_TYPES } from "../lib/section-schema";
 import { THEME_GROUPS } from "../lib/theme-schema";
@@ -298,6 +298,87 @@ check(
   "a previewed theme shows its own arrangement",
   /preview \? \{\} :/.test(data),
   "otherwise a preview of Atlas wears the header you chose on Aurora, and is a preview of neither"
+);
+
+// ---------------------------------------------------------------------------
+console.log("\nADDING AND PUBLISHING ARE TWO ACTS");
+// ---------------------------------------------------------------------------
+
+/*
+ * The screen used to have one button, and it changed the live storefront.
+ * Browsing six designs was one click away from putting an untried one in front
+ * of customers, and there was nowhere to keep a design being worked on.
+ */
+const choice = read("app/admin/theme/actions-theme-choice.ts");
+check("a theme can be added to a shop's library", /export async function installTheme/.test(choice));
+check("and removed from it", /export async function removeTheme/.test(choice));
+check(
+  "publishing is refused for a theme that was never added",
+  /if \(!installed\)/.test(choice),
+  "otherwise the library is decoration and one click still changes the live store"
+);
+check(
+  "removing the live theme is refused",
+  /This is the theme your store is using/.test(choice),
+  "a shop rendering a theme it does not have is a state with no honest screen"
+);
+check(
+  "adding a theme meant for another kind of store is refused",
+  /is not made for this kind of store/.test(choice),
+  "a blog theme on a shop renders sections the shop has no content for"
+);
+check(
+  "re-adding does not reset when it was added",
+  /update: \{\},/.test(choice),
+  "'Added 3 weeks ago' is how a merchant tells two half-tried designs apart"
+);
+check(
+  "adding changes nothing a customer can see",
+  !/invalidateShop[\s\S]{0,80}installTheme/.test(choice) &&
+    /revalidatePath\("\/admin\/theme"\);\n  return \{ ok: true, message: `\$\{theme\.name\} was added/.test(choice),
+  "it refreshes the admin screen and nothing else"
+);
+
+const gallery = read("components/admin/theme-gallery.tsx");
+check(
+  "the screen separates what is live, what is owned, and what exists",
+  /Your themes/.test(gallery) && /Discover themes/.test(gallery) && /Live/.test(gallery)
+);
+check(
+  "nothing in the catalogue can go live in one press",
+  !/Discover[\s\S]{0,900}chooseTheme/.test(gallery),
+  "the Discover cards offer Add, and Add is not Publish"
+);
+check(
+  "an empty library says what to do rather than nothing",
+  /Nothing here yet/.test(gallery)
+);
+
+/*
+ * A theme's own picture.
+ *
+ * Shot from the shop page rather than the home page: the header, the card
+ * shape, the grid density and the colour are the four things that differ
+ * between themes and they are all on it, while a home page in a shop without
+ * photography is mostly grey rectangles.
+ */
+for (const theme of Object.values(THEMES)) {
+  if (!theme.preview) continue;
+  check(
+    `${theme.key}'s picture is a file that exists`,
+    existsSync(join(ROOT, "public", theme.preview.replace(/^\//, ""))),
+    theme.preview
+  );
+}
+check(
+  "every ecommerce theme has one",
+  ecom.every((t) => !!t.preview),
+  ecom.filter((t) => !t.preview).map((t) => t.key).join(", ")
+);
+check(
+  "and a theme without one still shows something",
+  /StorefrontStill url=\{theme\.previewUrl\}/.test(gallery),
+  "a live frame of the merchant's own storefront, which is what every theme had before"
 );
 
 // ---------------------------------------------------------------------------

@@ -62,6 +62,18 @@ export type ThemeDefinition = {
    */
   tokens: Partial<ThemeTokens>;
   /**
+   * A picture of this theme, in `public/themes`.
+   *
+   * A photograph of the shop page rather than the home page, deliberately: the
+   * four things that actually differ between themes — the header, the shape of
+   * a product card, the density of the grid and the colour — are all on it, and
+   * a home page in a shop without photography is mostly grey rectangles.
+   *
+   * Optional. A theme without one falls back to a live frame of the merchant's
+   * own storefront, which is what every theme did before these existed.
+   */
+  preview?: string;
+  /**
    * How this theme *arranges* the storefront, and what it switches on.
    *
    * The half that was missing. A theme with only tokens is a palette: Aurora
@@ -83,6 +95,7 @@ export type ThemeDefinition = {
  */
 const aurora: ThemeDefinition = {
   key: "aurora",
+  preview: "/themes/aurora.jpg",
   name: "Aurora",
   description: "Clean and roomy, with large imagery. A safe first choice.",
   businessTypes: ["ecommerce"],
@@ -105,6 +118,7 @@ const aurora: ThemeDefinition = {
  */
 const meridian: ThemeDefinition = {
   key: "meridian",
+  preview: "/themes/meridian.jpg",
   name: "Meridian",
   description: "Monochrome and sharp-edged, with a wide grid. For a modern label.",
   businessTypes: ["ecommerce"],
@@ -155,6 +169,7 @@ const meridian: ThemeDefinition = {
  */
 const atlas: ThemeDefinition = {
   key: "atlas",
+  preview: "/themes/atlas.jpg",
   name: "Atlas",
   description: "Photography-led, with a tight grid and quick buying. For a shop with a look.",
   businessTypes: ["ecommerce"],

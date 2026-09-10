@@ -81,6 +81,7 @@ export const TENANT_MODELS: ReadonlySet<string> = new Set([
   // the shop itself. Listed anyway: the day something does reach for one of
   // these through the tenant client, it must be scoped by default rather than
   // by whoever remembers.
+  "InstalledTheme",
   "PaymentGateway",
   "Payment",
   "PaymentEvent",

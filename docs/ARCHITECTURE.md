@@ -378,6 +378,43 @@ Only the merchant's **differences** are stored, in `ThemeSettings.layout`.
 Writing a resolved layout would freeze today's theme defaults into their row, so
 switching theme later would change the colours and silently keep the old header.
 
+### Adding a theme, and publishing it
+
+Two acts, not one. The picker used to have a single button that changed the live
+storefront, so browsing six designs was one click away from putting an untried
+one in front of customers — and there was nowhere to keep a design being worked
+on but not ready to show.
+
+**Adding** puts a theme in the shop's library (`InstalledTheme`). Nothing is
+copied and nothing is downloaded — every theme ships with the platform — so the
+row records a merchant saying *this one is mine now*. It can then be previewed
+and customised indefinitely without a customer seeing any of it.
+
+**Publishing** is the separate act that changes the live store, and
+`ThemeSettings.themeKey` remains the single answer to "which is live".
+
+The guards, each of which is a state with no honest screen to show for it:
+
+- A theme that was never added **cannot be published**, or the library is
+  decoration and one click still changes the live store.
+- The **live theme cannot be removed** — a shop rendering a theme it does not
+  have.
+- A theme for another business type cannot be added at all.
+- Re-adding does not reset `installedAt`, because "Added 3 weeks ago" is how a
+  merchant tells two half-tried designs apart.
+
+The screen is three zones in the order a merchant thinks about them: what is
+live, what this shop owns, and what exists. Publishing a theme moves the
+previously live one **into** the library rather than losing it.
+
+Theme pictures live in `public/themes` and are shot from the **shop** page, not
+the home page: the header, the card shape, the grid density and the colour are
+the four things that differ between themes and are all on it, while a home page
+in a shop without photography is mostly grey rectangles. A theme without a
+picture falls back to a live frame of the merchant's own storefront.
+
+---
+
 ### Sections
 
 A page is an ordered list of sections, and there are **thirty-four kinds**, up

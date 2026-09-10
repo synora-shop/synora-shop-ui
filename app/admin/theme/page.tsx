@@ -37,6 +37,23 @@ export default async function ThemePage() {
 
   const canOpenAndClose = me ? roleAtLeast(me.role, "ADMIN") : false;
 
+  /**
+   * What this shop has added.
+   *
+   * Read here rather than inside the gallery because the gallery is a client
+   * component: it decides what to show, and the server decides what is true.
+   */
+  const rows = await (await db()).installedTheme.findMany({ orderBy: { installedAt: "desc" } });
+  const installed = new Set(rows.map((r) => r.themeKey));
+  const installedAt = new Map(
+    rows.map((r) => [
+      r.themeKey,
+      // "Added 28 August" rather than a timestamp: the only question it answers
+      // is which of two half-tried designs came first.
+      new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long" }).format(r.installedAt),
+    ])
+  );
+
   return (
     <div className="space-y-2.5">
       {/* Whether customers can see the shop, pinned to the top of the page that
@@ -60,6 +77,9 @@ export default async function ThemePage() {
           key: t.key,
           name: t.name,
           description: t.description,
+          preview: t.preview,
+          installed: installed.has(t.key),
+          installedAt: installedAt.get(t.key),
           // Each theme can be seen running on the merchant's own content
           // rather than on a stock screenshot, which is the only preview that
           // answers "what would MY shop look like".
