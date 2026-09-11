@@ -181,8 +181,27 @@ check("the compact size is declared once", /\.input-sm \{[^}]*height:/.test(css)
 /* -------------------------------------------------------------------------- */
 
 const side = readFileSync(join(ROOT, "components/admin/admin-sidebar.tsx"), "utf8");
-// Six links that never change should not take a sixth of the screen.
-check("the sidebar rows are 40px, not 48", /"h-10"/.test(side) && !/"h-12"/.test(side));
+// Links that never change should not take a sixth of the screen.
+//
+// This used to pin the row to h-10 and forbid h-12. The row has no fixed height
+// any more — it is padding around its own text, which is the point: at 40px
+// tall around 13.5px of text every row was mostly air, and ten of them in a
+// column was the complaint. A number written here again would be the same
+// mistake in a different size, so what is held is the shape of the rule: the
+// row is sized by what is in it, and the padding that does the sizing is small.
+// Only the nav itself — the drawer's own header bar above it is a fixed 56px
+// on purpose, and reading the whole file caught that instead.
+const sideNav = side.slice(side.indexOf("<nav"), side.indexOf("</nav>"));
+check(
+  "a sidebar row has no fixed height",
+  !/\bh-(?:9|10|11|12|14|16)\b/.test(sideNav),
+  "the row is padding around its label; a fixed height is how it got too tall before"
+);
+check(
+  "and the padding around the label stays small",
+  /py-(?:1|1\.5|2)\b/.test(sideNav) && !/py-(?:4|5|6|8|10)\b/.test(sideNav),
+  "vertical padding is what decides the row height now"
+);
 check("the sidebar is narrower than 15rem", /lg:w-\[13rem\]/.test(side));
 
 // Twenty-five different buttons shipped while a Button primitive sat unused in

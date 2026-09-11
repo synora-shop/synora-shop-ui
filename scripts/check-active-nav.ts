@@ -158,14 +158,30 @@ check(
   `order was ${groups.join(",")}`
 );
 
-// The bands are drawn as space and nothing else. A heading or a rule creeping
-// into the sidebar is the old collapsible groups starting to grow back.
+// A band is a container holding its rows — not a labelled section, and not a
+// list chopped up by rules. Either of those is the old collapsible groups
+// starting to grow back, one visual step at a time.
 {
   const sidebar = readFileSync(join(process.cwd(), "components/admin/admin-sidebar.tsx"), "utf8");
   check(
-    "a band is a gap, not a heading",
-    !/border-t|<hr|role="separator"|uppercase/.test(sidebar),
-    "groups are spacing; a label or a rule is a different decision and needs making on purpose"
+    "a band carries no heading and no rule",
+    !/<hr|role="separator"|uppercase|border-t-/.test(sidebar),
+    "a band is a container; a label or a divider inside it is a different decision and needs making on purpose"
+  );
+  // Three containers, not ten. The rows lost their own outlines when the bands
+  // gained one, and a border creeping back onto the row is the pill returning.
+  check(
+    "the rows are rows, not pills",
+    !/border border-control-line/.test(sidebar),
+    "ten outlined pills is what the bands replaced"
+  );
+  // Recessed and coloured, never filled. A solid brand slab behind the label is
+  // what this deliberately stopped being.
+  check(
+    "the selected row is recessed, not filled",
+    /bg-control[^"]*text-brand-500|text-brand-500[^"]*bg-control/.test(sidebar) &&
+      !/bg-brand-500 font-medium text-white/.test(sidebar),
+    "the selected row is #f5f5f5 with #6666ff text, not a #6666ff slab"
   );
 }
 check("the sidebar has more than one section", all.length > 1);

@@ -20,19 +20,25 @@ import { cn } from "@/lib/utils";
  *
  * The bands are not that mistake returning. Nothing here collapses, nothing is
  * hidden, and no click is added — every destination is on screen at all times.
- * The only thing a band does is put a gap between runs of pills that answer
- * different questions: running the shop, how the shop looks, and the account
- * underneath it.
+ * A band groups the runs that answer different questions: running the shop, how
+ * the shop looks, and the account underneath it.
  *
- * Drawn as space and nothing else — no headings, no rules. A heading would add
- * three lines of text to a list whose whole virtue is that it can be taken in
- * at a glance, and it would need three names that are hard to get right and
- * worse than silence when wrong. Grouping is in lib/admin-nav.ts; this file
- * only spaces what it is given, so the order and the bands cannot disagree.
+ * Each band is one container rather than a run of separate ones. Every
+ * destination used to be its own outlined pill — ten of them, each 40px tall
+ * around 13.5px of text, so every row was mostly air with a line drawn round
+ * it, and the ten lines competed with the one that mattered. The outline
+ * belongs to the band now and a row inside it is just a row.
  *
- * The pills float on the page rather than sitting in a panel of their own. That
- * is APP.ai's arrangement and it is doing real work: with no container edge, the
- * only lit thing on the left is the page you are on.
+ * No headings and no rules. A heading would add three lines of text to a list
+ * whose whole virtue is that it can be taken in at a glance, and it would need
+ * three names that are hard to get right and worse than silence when wrong.
+ * Grouping is in lib/admin-nav.ts; this file only draws what it is given, so
+ * the order and the bands cannot disagree.
+ *
+ * The selected row is recessed rather than filled: #f5f5f5 cut into the white
+ * container, with #6666ff carried by the glyph and the label. It is the same
+ * move as a field inside a card — the page's own tone, pressed in — and it
+ * means the one saturated thing on the left is a colour, not a slab.
  */
 export function AdminSidebar() {
   const open = useAdminNav((s) => s.open);
@@ -40,6 +46,16 @@ export function AdminSidebar() {
   const pathname = usePathname();
 
   const { sections, section } = resolveNav(pathname);
+
+  // Grouped by band, in order, without assuming how many bands there are or
+  // that they are numbered 1..n — lib/admin-nav.ts owns that, and check:nav
+  // already holds each band to one unbroken run.
+  const bands = sections.reduce<(typeof sections)[]>((acc, item) => {
+    const last = acc[acc.length - 1];
+    if (last && last[0].group === item.group) last.push(item);
+    else acc.push([item]);
+    return acc;
+  }, []);
 
   return (
     <>
@@ -76,41 +92,53 @@ export function AdminSidebar() {
           </button>
         </div>
 
-        <nav className="flex flex-col gap-1 px-2.5 py-2.5">
-          {sections.map((item, i) => {
-            const active = item.key === section.key;
-            const Icon = item.icon;
-            // The gap goes above the first pill of a band rather than below the
-            // last, so a band that ever empties takes its own space with it
-            // instead of leaving a hole. Never above the very first pill.
-            const startsBand = i > 0 && item.group !== sections[i - 1].group;
-            return (
-              <Link
-                key={item.key}
-                href={item.href}
-                onClick={() => setOpen(false)}
-                aria-current={active ? "page" : undefined}
-                className={cn(
-                  "flex items-center gap-2.5 rounded-pill px-3.5 text-[13.5px] transition-colors",
-                  // One pill's height of air between bands. Less reads as an
-                  // uneven list rather than a deliberate break; more and the
-                  // last band drifts away from the panel on a short screen.
-                  startsBand && "mt-4",
-                  // 40px. APP.ai draws these at 70px on a 1920x1080 artboard,
-                  // which is a sixth of the height of a laptop screen for six
-                  // links that never change. The proportion is the drawing's;
-                  // the absolute size is not.
-                  "h-10",
-                  active
-                    ? "bg-brand-500 font-medium text-white"
-                    : "border border-control-line bg-panel text-control-ink hover:bg-control"
-                )}
-              >
-                <Icon className="h-4 w-4" />
-                <span className="truncate">{item.label}</span>
-              </Link>
-            );
-          })}
+        {/* One container per band, and the rows live inside it.
+            
+            Each destination used to be its own outlined pill, ten of them, and
+            at 40px tall for 13.5px of text every one was mostly air with a line
+            drawn round it. The outline is the band's now: three containers, and
+            a row inside one is just a row. */}
+        <nav className="flex flex-col gap-5 overflow-y-auto px-2.5 py-2.5">
+          {bands.map((band) => (
+            <div
+              key={band[0].group}
+              className="rounded-2xl border border-border bg-panel p-2"
+            >
+              <ul className="flex flex-col gap-8">
+                {band.map((item) => {
+                  const active = item.key === section.key;
+                  const Icon = item.icon;
+                  return (
+                    <li key={item.key}>
+                      <Link
+                        href={item.href}
+                        onClick={() => setOpen(false)}
+                        aria-current={active ? "page" : undefined}
+                        className={cn(
+                          "flex items-center gap-2.5 rounded-xl px-3 py-1.5 text-[18px] transition-colors",
+                          // The selected row is *recessed*, not filled: the
+                          // page's own tone cut into the white container, with
+                          // the colour carried by the text and the glyph. It is
+                          // the same move as a field inside a card, and it
+                          // leaves #6666ff meaning one thing on this screen.
+                          //
+                          // Hover borrows the plate and keeps its text black,
+                          // so the plate reads as "this row" and the colour as
+                          // "you are here" — two signals, not two shapes.
+                          active
+                            ? "bg-control font-medium text-brand-500"
+                            : "text-control-ink hover:bg-control"
+                        )}
+                      >
+                        <Icon className="h-5 w-5" />
+                        <span className="truncate">{item.label}</span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
         </nav>
       </aside>
     </>
