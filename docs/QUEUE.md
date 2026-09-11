@@ -781,3 +781,34 @@ Two things that fixed on the way:
 Still not built, and deliberately: the **history list** and the **release
 control** from the fuller model. The doc update will say whether they are
 wanted.
+
+---
+
+## The sitemap advertises draft products
+
+*Found 11 September 2026 while verifying an unrelated deploy. Not fixed — it is
+its own change and it touches what search engines see.*
+
+`app/sitemap.ts` selects products with `where: { isActive: true }`. A product is
+kept off the storefront by **two** switches, not one: `isActive`, and
+`status: DRAFT` — the schema comment on `ProductStatus` says so outright
+("hidden from storefront regardless of isActive"). `getProductBySlug` checks
+`isActive`, `status: "PUBLISHED"` *and* `deletedAt: null`. The sitemap checks
+the first only.
+
+Measured on the development shop: the sitemap lists **41** products; **30** are
+published; the drafts screen counts **11**. 30 + 11 = 41.
+
+Two consequences, the second worse than the first:
+
+1. Every draft's URL is handed to a crawler and returns "not found".
+2. **A merchant preparing a launch has the product's address published to Google
+   before they launch it.** The page stays hidden — it is the address that
+   leaks, and the slug usually carries the product's name.
+
+The fix is to select what the storefront selects. Worth a guard that holds the
+sitemap's filter against `getProductBySlug`'s, so the two cannot drift again —
+that drift is the whole bug, and a second copy of a `where` clause is exactly
+the shape it took.
+
+`deletedAt: null` is missing from the same query and should go in with it.

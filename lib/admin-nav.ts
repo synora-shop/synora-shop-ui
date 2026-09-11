@@ -1,6 +1,9 @@
 import {
+  AccountIcon,
   AnalyticsIcon,
   CustomersIcon,
+  DataIcon,
+  DiscountsIcon,
   HomeIcon,
   PreferencesIcon,
   ProductIcon,
@@ -49,32 +52,65 @@ export type NavTab = {
 
 export type NavIcon = (props: { className?: string; title?: string }) => React.ReactElement;
 
+/**
+ * Which band of the sidebar a section sits in.
+ *
+ * 1 — running the shop: what you sell, who bought it, and how it went.
+ * 2 — how the shop looks and behaves.
+ * 3 — the account underneath it all.
+ *
+ * A number rather than a name because the groups are drawn as space, not as
+ * headings. Naming them would put three more words on every screen and invite
+ * an argument about the names; the gap says the same thing and says it quietly.
+ * If they are ever labelled, the label belongs here and nowhere else.
+ */
+export type NavGroup = 1 | 2 | 3;
+
 export type NavSection = {
   key: string;
   label: string;
   labels?: Partial<Record<BusinessType, string>>;
   /** The drawn glyph for this section — see components/admin/nav-icons.tsx. */
   icon: NavIcon;
+  group: NavGroup;
   tabs: NavTab[];
 };
 
 /**
- * The seven, in the order they are drawn.
+ * The ten, in the order they are drawn, in three groups.
  *
  * Order is not alphabetical and not by importance — it is the order a merchant
- * meets them. Who you are, what you sell, what it looks like, how it behaves,
- * who bought from you, how it is doing, and the account underneath all of it.
+ * meets them, and the groups are the three questions they are answering.
  *
- * Customers sits between Preferences and Analytics rather than under Products,
- * where it used to live. Filed under the catalogue it read as a property of
- * what you sell; it is not. It is the people, and it belongs next to the
- * numbers about them.
+ * Group 1 is running the shop: who you are, what you sell, the records of it,
+ * what you are offering, who bought, and how it went. Group 2 is how the shop
+ * looks and how it behaves. Group 3 is the account underneath all of it.
+ *
+ * Three sections here used to be tabs, and were promoted when the groups were
+ * drawn:
+ *
+ *   Data and Discounts were buried under Your App, between Themes and Site
+ *   text — filed with the storefront's appearance, which neither is. A CSV
+ *   import is not a look, and a discount code is not either. Both were already
+ *   drawn as sidebar glyphs in the design file, which is its own evidence that
+ *   they were never meant to be tabs.
+ *
+ *   Account was the fourth tab under Settings, behind General, Payments and
+ *   Domains. Everything else under Settings is about the *shop*; Account is
+ *   about the person signed in. Sharing a section made "delete my account" look
+ *   like a setting of the store.
+ *
+ * Customers stays where it was put — between Discounts and Analytics rather
+ * than under Products. Filed under the catalogue it read as a property of what
+ * you sell; it is not. It is the people, and it belongs next to the numbers
+ * about them.
  */
 export const NAV_SECTIONS: readonly NavSection[] = [
   {
     key: "home",
     label: "Home",
     icon: HomeIcon,
+    group: 1,
     // What this business *is*: its name, its address, its marks — and the
     // defaults everything else is expressed in. Store defaults moved here from
     // Settings, because "what currency do I charge in" is the same kind of
@@ -89,6 +125,7 @@ export const NAV_SECTIONS: readonly NavSection[] = [
     key: "products",
     label: "Products",
     icon: ProductIcon,
+    group: 1,
     // Everything about selling: the catalogue, and what happens to it.
     tabs: [
       { href: "/admin/products", label: "Products" },
@@ -101,19 +138,59 @@ export const NAV_SECTIONS: readonly NavSection[] = [
       // Customers is deliberately not here. It was, and it read as a property
       // of the catalogue — but a customer is a person who bought, not a thing
       // you sell, and a merchant looking for one does not think "products
-      // first". It is its own sidebar section now, between Preferences and
-      // Analytics: the people, then the numbers about them.
+      // first". It is its own sidebar section, further down this same group.
       { href: "/admin/enquiries", label: "Enquiries" },
       { href: "/admin/bin", label: "Bin" },
     ],
   },
   {
+    key: "data",
+    label: "Data",
+    icon: DataIcon,
+    group: 1,
+    // One screen, so no navigation bar is drawn — the same shape as Customers
+    // and Analytics. Was a tab under Your App; getting the catalogue in and out
+    // of the shop is not a question about how the shop looks.
+    tabs: [{ href: "/admin/data", label: "Data" }],
+  },
+  {
+    key: "discounts",
+    label: "Discounts",
+    icon: DiscountsIcon,
+    group: 1,
+    // Also promoted out of Your App. A discount is an offer made to a customer,
+    // which puts it beside the catalogue and the orders, not beside Themes.
+    tabs: [{ href: "/admin/discounts", label: "Discounts" }],
+  },
+  {
+    key: "customers",
+    label: "Customers",
+    icon: CustomersIcon,
+    group: 1,
+    // One screen, so no navigation bar is drawn for it — the same shape as
+    // Home and Analytics. The detail page at /admin/customers/[id] resolves
+    // here too, because the active match is the longest href covering the
+    // path.
+    tabs: [{ href: "/admin/customers", label: "Customers" }],
+  },
+  {
+    key: "analytics",
+    label: "Analytics",
+    icon: AnalyticsIcon,
+    group: 1,
+    // Last in the group, and deliberately: everything above it is a thing you
+    // do, and this is how those things went.
+    tabs: [{ href: "/admin/analytics", label: "Analytics" }],
+  },
+  {
     key: "shop",
     label: "Your App",
     icon: YourAppIcon,
-    // The storefront as a visitor meets it. Pages, Themes, Data, Menus and
-    // Discounts are the five named in the documentation, in that order; Site
-    // text is the sixth because it is the same job — words on the shop.
+    group: 2,
+    // The storefront as a visitor meets it. Data and Discounts used to sit in
+    // this list and no longer do — they are sections of their own in group 1.
+    // What is left is genuinely one job: the pages of the shop, what they look
+    // like, and the words on them.
     tabs: [
       { href: "/admin/pages", label: "Pages" },
       // The same idea as Products' Drafts, for pages: everything written and
@@ -125,9 +202,7 @@ export const NAV_SECTIONS: readonly NavSection[] = [
       // Next to Themes rather than at the end: closing the shop and what it
       // looks like closed are the same thought.
       { href: "/admin/maintenance", label: "Maintenance" },
-      { href: "/admin/data", label: "Data" },
       { href: "/admin/menus", label: "Menus" },
-      { href: "/admin/discounts", label: "Discounts" },
       { href: "/admin/site-text", label: "Site text" },
     ],
   },
@@ -135,6 +210,7 @@ export const NAV_SECTIONS: readonly NavSection[] = [
     key: "preferences",
     label: "Preferences",
     icon: PreferencesIcon,
+    group: 2,
     // How the shop behaves, as opposed to how it looks. Whether it is open to
     // customers at all is the first question, so it is the first tab.
     tabs: [
@@ -146,25 +222,12 @@ export const NAV_SECTIONS: readonly NavSection[] = [
     ],
   },
   {
-    key: "customers",
-    label: "Customers",
-    icon: CustomersIcon,
-    // One screen, so no navigation bar is drawn for it — the same shape as
-    // Home and Analytics. The detail page at /admin/customers/[id] resolves
-    // here too, because the active match is the longest href covering the
-    // path.
-    tabs: [{ href: "/admin/customers", label: "Customers" }],
-  },
-  {
-    key: "analytics",
-    label: "Analytics",
-    icon: AnalyticsIcon,
-    tabs: [{ href: "/admin/analytics", label: "Analytics" }],
-  },
-  {
     key: "settings",
     label: "Settings",
     icon: SettingsIcon,
+    group: 3,
+    // The shop's own arrangements — as opposed to Account below, which is the
+    // person's. Account used to be the fourth tab here and is not any more.
     tabs: [
       { href: "/admin/settings", label: "General" },
       // How the merchant takes money from their customers. Billing — what the
@@ -173,8 +236,17 @@ export const NAV_SECTIONS: readonly NavSection[] = [
       // rather than a tab that explains why it is empty.
       { href: "/admin/payments", label: "Payments" },
       { href: "/admin/domains", label: "Domains" },
-      { href: "/admin/account", label: "Account" },
     ],
+  },
+  {
+    key: "account",
+    label: "Account",
+    icon: AccountIcon,
+    group: 3,
+    // You, not the shop: who is signed in, the password, and leaving. It was a
+    // tab under Settings, where "delete my account" sat in a row with "domains"
+    // and read as one more setting of the store.
+    tabs: [{ href: "/admin/account", label: "Account" }],
   },
 ];
 
@@ -184,6 +256,7 @@ export type ResolvedSection = {
   label: string;
   icon: NavIcon;
   href: string;
+  group: NavGroup;
   tabs: { href: string; label: string }[];
 };
 
@@ -199,6 +272,7 @@ export function sections(): ResolvedSection[] {
     key: section.key,
     label: section.label,
     icon: section.icon,
+    group: section.group,
     // A section is a link as well as a heading — clicking it lands on its first
     // tab. Computed rather than written down so the two cannot disagree.
     href: section.tabs[0].href,

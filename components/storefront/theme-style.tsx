@@ -3,9 +3,11 @@ import { themeTokensToCss, type CustomFont, type ThemeTokens } from "@/lib/theme
 /**
  * Emits the theme's CSS-variable overrides.
  *
- * Rendered after AccentTheme so a Theme-panel accent colour wins over the
- * simpler Global Edits one when both are set. Emits nothing for an untouched
- * default theme.
+ * The only place the storefront's colours come from. There were two — this and
+ * an AccentTheme block emitting a second brand ramp from the shop's settings —
+ * and which one a merchant got depended on whether this one emitted anything at
+ * all. Emits nothing for an untouched default theme, which is what made the
+ * other one work sometimes and not others.
  */
 export function ThemeStyle({ tokens, fonts = [] }: { tokens: ThemeTokens; fonts?: CustomFont[] }) {
   const css = themeTokensToCss(tokens, fonts);

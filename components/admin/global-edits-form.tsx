@@ -204,16 +204,23 @@ export function GlobalEditsForm({ settings }: { settings: GlobalEdits }) {
         />
       </Fieldset>
 
+      {/* The accent colour picker was here, and it is deliberately gone.
+          
+          The shop's colour was settable twice — here, and in the customizer as
+          the theme's accent — and which one a merchant got depended on whether
+          they had ever touched a theme token. Two controls for one colour, one
+          of which stopped working without saying so. The theme's accent is the
+          only one now; see withLegacyAccent in lib/data/theme.ts for what keeps
+          an existing shop's colour on its storefront.
+          
+          It is not replaced by a link to the customizer: Themes is one pill
+          down the sidebar, and a field whose only job is to say "not here"
+          is worse than the space. */}
       <Fieldset
         title="Branding"
-        description="The accent colour is used for buttons and links on your storefront. It does not change this panel."
+        description="How headings and the footer read on your storefront. Colours and fonts live in the theme — open Themes, then Customize."
       >
         <Pair>
-          <ColorField
-            label="Accent colour"
-            value={fields.accentColor}
-            onChange={(v) => set("accentColor", v)}
-          />
           <Field label="Heading style">
             <select
               value={fields.headingStyle}

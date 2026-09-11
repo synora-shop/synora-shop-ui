@@ -82,6 +82,28 @@ The store's own accent never leaks into the panel: `.admin-shell` pins the
 brand ramp so a merchant who picks a lime-green storefront still gets a panel
 that reads.
 
+**A store's accent is set in exactly one place — the theme.** It was settable
+in two: the theme's `accent` token in the customizer, and an `accentColor`
+picker on Settings → General. Both meant the same thing and both defaulted to
+the same value, and which one a merchant actually got depended on something
+they had no way to see — the storefront emitted the Settings one from its own
+`<style>` block, and the theme's overrode it, but only once *any* theme token
+differed from its default. So the Settings picker worked on an untouched store
+and silently stopped the first time the merchant changed a font.
+
+The picker is gone and the second `<style>` block with it. `withLegacyAccent`
+in `lib/data/theme.ts` is what kept that from repainting live shops: where a
+theme's accent has never been set and the old Settings value has, the old value
+*is* what the shop is wearing, so it is handed back as the theme's accent. The
+first time the merchant sets an accent in the customizer it is written to the
+theme and the fallback stops applying — the value migrates itself, at the only
+moment that is safe. The column stays; dropping it would take a merchant's
+colour with it on a rollback.
+
+The general rule this is an instance of: **a setting has one screen.** Two
+controls over one value is not a convenience, because one of them is always the
+one that loses, and nothing on screen says which.
+
 ---
 
 ## 2. Type and labels

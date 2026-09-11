@@ -129,7 +129,45 @@ const all = sections();
 // has thought about whether the new section earns a permanent row.
 //
 // Raised from 6 to 7 on 8 September 2026, when Customers left Products.
-check("the sidebar stays short", all.length <= 7, `found ${all.length}`);
+// Raised from 7 to 10 on 11 September 2026, when Data, Discounts and Account
+// were promoted out of tab rows and the list was split into three bands. Ten
+// is the whole panel on screen at once with nothing nested — the bands are
+// spacing, not folders, so none of the cost the old groups had came back.
+check("the sidebar stays short", all.length <= 10, `found ${all.length}`);
+
+/* -------------------------------------------------------------------------- */
+/* The bands                                                                  */
+/* -------------------------------------------------------------------------- */
+
+// Three, and every section in one of them. A fourth band, or a section with no
+// band, would draw a gap nobody decided on.
+const groups = all.map((s) => s.group);
+check("every section is in a band", groups.every((g) => g === 1 || g === 2 || g === 3));
+check("there are three bands", new Set(groups).size === 3);
+
+// Contiguous, or the sidebar draws the same band twice with a gap through the
+// middle of it. The renderer starts a new gap wherever the band changes from
+// the row above, so an out-of-order section does not sort itself — it splits.
+check(
+  "each band is one unbroken run",
+  (() => {
+    const seen: number[] = [];
+    for (const g of groups) if (seen[seen.length - 1] !== g) seen.push(g);
+    return seen.length === new Set(seen).size;
+  })(),
+  `order was ${groups.join(",")}`
+);
+
+// The bands are drawn as space and nothing else. A heading or a rule creeping
+// into the sidebar is the old collapsible groups starting to grow back.
+{
+  const sidebar = readFileSync(join(process.cwd(), "components/admin/admin-sidebar.tsx"), "utf8");
+  check(
+    "a band is a gap, not a heading",
+    !/border-t|<hr|role="separator"|uppercase/.test(sidebar),
+    "groups are spacing; a label or a rule is a different decision and needs making on purpose"
+  );
+}
 check("the sidebar has more than one section", all.length > 1);
 
 for (const section of all) {

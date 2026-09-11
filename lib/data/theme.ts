@@ -5,7 +5,8 @@ import { cachedForShop } from "@/lib/data/cached";
 import { SHOP_PATH_HEADER } from "@/lib/shop-context";
 import { THEMES, themeFor } from "@/lib/themes/registry";
 import { resolveThemeLayout, type ThemeLayout } from "@/lib/theme-layout";
-import { resolveThemeTokens, type ThemeTokens } from "@/lib/theme-tokens";
+import { resolveThemeTokens, THEME_TOKEN_DEFAULTS, type ThemeTokens } from "@/lib/theme-tokens";
+import { getStoreSettings } from "@/lib/data/settings";
 
 /**
  * A theme to render this one request in, instead of the shop's own.
@@ -97,11 +98,48 @@ export const getThemeTokens = cache(async (): Promise<ThemeTokens> => {
   const { key, edits } = await themeForRequest(shop.id, shop.businessType);
   if (!key) return resolveThemeTokens(undefined);
 
-  return resolveThemeTokens({
+  const tokens = resolveThemeTokens({
     ...themeFor(key).tokens,
     ...((edits?.tokens ?? {}) as Record<string, unknown>),
   });
+
+  return withLegacyAccent(tokens);
 });
+
+/**
+ * The accent a merchant set on Settings, before there was only one place to set
+ * it.
+ *
+ * There were two accent colours: this theme token, and `accentColor` on the
+ * shop's settings, edited by a picker on Settings → General. Both meant "the
+ * shop's colour", both defaulted to the same value, and which one a merchant
+ * actually got depended on something they had no way to know — the storefront
+ * emitted the settings one from its own <style>, and the theme's overrode it,
+ * but *only once any theme token differed from its default*. So the Settings
+ * picker worked on an untouched store and silently stopped the first time the
+ * merchant changed a font in the customizer.
+ *
+ * The picker is gone and the theme's accent is the only one. This is what keeps
+ * that from repainting a live shop: where the theme's accent has never been
+ * changed and the old settings value has, the old value is what the shop is
+ * wearing today, so it is handed back as the theme's accent. Nothing changes
+ * colour, and the moment the merchant touches accent in the customizer their
+ * choice is written to the theme and this stops applying — the value migrates
+ * itself, at the only moment it is safe to.
+ *
+ * The column stays. Dropping it would take a merchant's colour with it if this
+ * ever had to be rolled back, and it costs a string per shop to keep.
+ */
+async function withLegacyAccent(tokens: ThemeTokens): Promise<ThemeTokens> {
+  // Only when the theme itself has no opinion. A theme accent that has been
+  // set — by the theme's own design or by the merchant — always wins.
+  if (tokens.accent !== THEME_TOKEN_DEFAULTS.accent) return tokens;
+
+  const legacy = (await getStoreSettings())?.accentColor;
+  if (!legacy || legacy === THEME_TOKEN_DEFAULTS.accent) return tokens;
+
+  return { ...tokens, accent: legacy };
+}
 
 /**
  * How this storefront is arranged, for the request being rendered.

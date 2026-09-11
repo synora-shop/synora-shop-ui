@@ -9,14 +9,26 @@ import { SynoraAppMark } from "@/components/ui/synora-marks";
 import { cn } from "@/lib/utils";
 
 /**
- * Six destinations, flat, in a fixed order.
+ * Ten destinations, flat, in a fixed order, in three bands.
  *
  * The sidebar used to be seven collapsible groups holding twenty-odd links, and
  * it was the panel's worst screen: finding Orders meant guessing which group
  * owned it, opening that group, and reading past its siblings — three decisions
- * for one destination. Everything below the first level now lives in the
- * navigation bar at the top of the page instead, so this list never changes
- * shape, never scrolls, and can be learned once.
+ * for one destination. Everything below the first level lives in the navigation
+ * bar at the top of the page instead, so this list never changes shape, never
+ * scrolls, and can be learned once.
+ *
+ * The bands are not that mistake returning. Nothing here collapses, nothing is
+ * hidden, and no click is added — every destination is on screen at all times.
+ * The only thing a band does is put a gap between runs of pills that answer
+ * different questions: running the shop, how the shop looks, and the account
+ * underneath it.
+ *
+ * Drawn as space and nothing else — no headings, no rules. A heading would add
+ * three lines of text to a list whose whole virtue is that it can be taken in
+ * at a glance, and it would need three names that are hard to get right and
+ * worse than silence when wrong. Grouping is in lib/admin-nav.ts; this file
+ * only spaces what it is given, so the order and the bands cannot disagree.
  *
  * The pills float on the page rather than sitting in a panel of their own. That
  * is APP.ai's arrangement and it is doing real work: with no container edge, the
@@ -65,9 +77,13 @@ export function AdminSidebar() {
         </div>
 
         <nav className="flex flex-col gap-1 px-2.5 py-2.5">
-          {sections.map((item) => {
+          {sections.map((item, i) => {
             const active = item.key === section.key;
             const Icon = item.icon;
+            // The gap goes above the first pill of a band rather than below the
+            // last, so a band that ever empties takes its own space with it
+            // instead of leaving a hole. Never above the very first pill.
+            const startsBand = i > 0 && item.group !== sections[i - 1].group;
             return (
               <Link
                 key={item.key}
@@ -76,6 +92,10 @@ export function AdminSidebar() {
                 aria-current={active ? "page" : undefined}
                 className={cn(
                   "flex items-center gap-2.5 rounded-pill px-3.5 text-[13.5px] transition-colors",
+                  // One pill's height of air between bands. Less reads as an
+                  // uneven list rather than a deliberate break; more and the
+                  // last band drifts away from the panel on a short screen.
+                  startsBand && "mt-4",
                   // 40px. APP.ai draws these at 70px on a 1920x1080 artboard,
                   // which is a sixth of the height of a laptop screen for six
                   // links that never change. The proportion is the drawing's;

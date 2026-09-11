@@ -18,20 +18,36 @@ Catalogue, collections, product pages (`/p/[slug]`), cart, checkout, customer
 accounts and order confirmation.
 
 **Admin panel** — `app/admin`
-Two levels of navigation and no more. Seven flat sidebar sections that never
+Two levels of navigation and no more. Ten flat sidebar sections that never
 change shape, and a navigation bar whose tabs are decided entirely by which
 sidebar section is selected. Both come from `lib/admin-nav.ts`, which is the
 single source of truth for every address in the panel.
 
-| Sidebar | Tabs |
-| --- | --- |
-| Home | Home · Store defaults |
-| Products | Products · Drafts · Categories · Orders · Enquiries · Bin |
-| Your App | Pages · Drafts · Themes · Maintenance · Data · Menus · Discounts · Site text |
-| Preferences | Visibility · Fonts · Sticky buttons · Links & redirects · Custom fields |
-| Customers | *(one screen)* |
-| Analytics | *(one screen)* |
-| Settings | General · Payments · Domains · Account |
+The sidebar is drawn in three bands, separated by space and nothing else — no
+headings, no rules, nothing that collapses. A band is a gap between runs of
+pills that answer different questions; every destination is on screen at all
+times.
+
+| | Sidebar | Tabs |
+| --- | --- | --- |
+| **Running the shop** | Home | Home · Store defaults |
+| | Products | Products · Drafts · Categories · Orders · Enquiries · Bin |
+| | Data | *(one screen)* |
+| | Discounts | *(one screen)* |
+| | Customers | *(one screen)* |
+| | Analytics | *(one screen)* |
+| **How it looks** | Your App | Pages · Drafts · Themes · Maintenance · Menus · Site text |
+| | Preferences | Visibility · Fonts · Sticky buttons · Links & redirects · Custom fields |
+| **The account** | Settings | General · Payments · Domains |
+| | Account | *(one screen)* |
+
+Data, Discounts and Account were tabs until the bands were drawn. Data and
+Discounts sat under Your App, filed with the storefront's appearance, which
+neither is — a CSV import is not a look and a discount code is not either, and
+both were already drawn as sidebar glyphs in the design file. Account was the
+fourth tab under Settings, where everything else is about the *shop* and this
+one is about the person signed in, so "delete my account" read as a setting of
+the store.
 
 **Live customizer** — `app/(fullscreen)/admin/customize`
 Split-screen visual editor with a postMessage protocol
@@ -219,7 +235,7 @@ check:design  check:motion  check:holding  check:spotlight
 check:brand  check:address  check:payments
 ```
 
-Twenty-seven scripts, **3,064 assertions** at the last count. Those are static: they read the
+Twenty-seven scripts, **3,076 assertions** at the last count. Those are static: they read the
 source. `scripts/sweep/` is the other half — a hundred probes against a running
 shop, for the faults reading the source cannot find. It found a CSV that could
 run a formula on the merchant's computer and twenty-two controls a screen

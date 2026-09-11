@@ -2,7 +2,6 @@ import { SiteHeader } from "@/components/storefront/site-header";
 import { SiteFooter } from "@/components/storefront/site-footer";
 import { WhatsAppButton } from "@/components/storefront/whatsapp-button";
 import { StickyButtons } from "@/components/storefront/sticky-buttons";
-import { AccentTheme } from "@/components/storefront/accent-theme";
 import { ThemeStyle } from "@/components/storefront/theme-style";
 import { AnnouncementBar } from "@/components/storefront/announcement-bar";
 import { getStoreSettings } from "@/lib/data/settings";
@@ -166,7 +165,11 @@ export default async function StorefrontLayout({ children }: LayoutProps<"/">) {
     // half of this bug a customer would have seen.
     <CurrencyProvider currency={resolveStoreDefaults(settings).currency}>
     <div data-heading-style={edits.headingStyle} className="contents">
-      <AccentTheme accentColor={edits.accentColor} />
+      {/* AccentTheme used to sit here, emitting a brand ramp from the shop's
+          `accentColor` so that ThemeStyle below could override it. Two style
+          blocks fighting over one colour, decided by which happened to emit
+          anything — see withLegacyAccent in lib/data/theme.ts. One block now,
+          and the accent inside it is already the right one. */}
       <ThemeStyle tokens={tokens} fonts={fonts} />
       <AnnouncementBar text={announcementText} bgColor={announcementBgColor} />
       {/* The theme asks brand-marks for a mark that suits this header — its

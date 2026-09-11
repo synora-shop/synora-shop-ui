@@ -68,7 +68,22 @@ export async function updateGlobalEdits(formData: FormData) {
     return (allowed.has(raw) ? raw : fallback) as T;
   }
 
-  const data: GlobalEdits = {
+  /**
+   * Every field this form still owns — and `accentColor` is not one of them.
+   *
+   * The picker moved to the theme, and this is the same trap the payment
+   * details and the maintenance toggle both sprang before it: a form that
+   * writes every field it knows about, after one of them stopped being its to
+   * write. Left in, `str("accentColor", DEFAULT)` would read an input that is
+   * no longer rendered, get nothing, fall back to the default, and quietly
+   * repaint the storefront of every merchant who had set a colour — the first
+   * time they saved anything at all on this screen.
+   *
+   * Omit rather than deletion from the type: the column is still read by
+   * withLegacyAccent in lib/data/theme.ts, which is what keeps those merchants
+   * their colour.
+   */
+  const data: Omit<GlobalEdits, "accentColor"> = {
     showInventoryCount: bool("showInventoryCount"),
     lowStockThreshold: Math.max(0, int("lowStockThreshold", GLOBAL_EDITS_DEFAULTS.lowStockThreshold)),
     lowStockBadgeText: str("lowStockBadgeText", GLOBAL_EDITS_DEFAULTS.lowStockBadgeText),
@@ -79,7 +94,6 @@ export async function updateGlobalEdits(formData: FormData) {
     saleBadge: bool("saleBadge"),
     defaultShopSort: enumValue("defaultShopSort", SHOP_SORT_VALUES, GLOBAL_EDITS_DEFAULTS.defaultShopSort),
     shopGridColumns: [3, 4, 5].includes(int("shopGridColumns", 4)) ? int("shopGridColumns", 4) : 4,
-    accentColor: str("accentColor", GLOBAL_EDITS_DEFAULTS.accentColor),
     headingStyle: enumValue("headingStyle", HEADING_STYLE_VALUES, GLOBAL_EDITS_DEFAULTS.headingStyle),
     footerCopyrightText: str("footerCopyrightText", GLOBAL_EDITS_DEFAULTS.footerCopyrightText),
     announcementText: str("announcementText", GLOBAL_EDITS_DEFAULTS.announcementText),
