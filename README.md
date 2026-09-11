@@ -18,20 +18,28 @@ Catalogue, collections, product pages (`/p/[slug]`), cart, checkout, customer
 accounts and order confirmation.
 
 **Admin panel** — `app/admin`
-Two levels of navigation and no more. Ten flat sidebar sections that never
-change shape, and a navigation bar whose tabs are decided entirely by which
-sidebar section is selected. Both come from `lib/admin-nav.ts`, which is the
-single source of truth for every address in the panel.
+Two levels of navigation and no more, both in the same column. Ten sidebar
+sections that never change order, and beneath whichever one you are standing in,
+the list of its screens. It all comes from `lib/admin-nav.ts`, the single source
+of truth for every address in the panel.
 
-The sidebar is drawn in three bands, separated by space and nothing else — no
-headings, no rules, nothing that collapses. A band is a gap between runs of
-pills that answer different questions; every destination is on screen at all
-times.
+There is no navigation bar. The second level used to be a row of tabs across the
+top of the page, so reading "where am I" meant looking left for the section and
+up for the screen. The screens are listed under their own section now, and a
+line leaves the section's glyph and turns into the one you are on.
 
-| | Sidebar | Tabs |
+The sidebar is drawn in three containers — running the shop, how it looks, and
+the account underneath. Nothing collapses and nothing is hidden: every section
+is visible at all times, and only the section you are in shows its screens.
+
+A section with one screen lists nothing, and a screen named after its own
+section is not listed twice — Products' first tab was called "Products", and
+the section already goes there.
+
+| | Section | Screens listed under it |
 | --- | --- | --- |
-| **Running the shop** | Home | Home · Store defaults |
-| | Products | Products · Drafts · Categories · Orders · Enquiries · Bin |
+| **Running the shop** | Home | Store defaults |
+| | Products | Drafts · Categories · Orders · Enquiries · Bin |
 | | Data | *(one screen)* |
 | | Discounts | *(one screen)* |
 | | Customers | *(one screen)* |

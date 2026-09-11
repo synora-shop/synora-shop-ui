@@ -309,9 +309,23 @@ export function resolveNav(pathname: string) {
     crumbs.push({ label: tab.label, href: tab.href });
   }
 
+  // The section's screens, as the sidebar lists them beneath it.
+  //
+  // A tab named after its own section is dropped: Products' first tab is
+  // "Products" and Home's is "Home", and the section itself already links
+  // there, so listing it again is a row that looks like it goes somewhere new
+  // and does not. The breadcrumb has always done this — same rule, same reason.
+  //
+  // A section left with nothing has no list at all, which is most of them:
+  // Data, Discounts, Customers, Analytics and Account are one screen each.
+  const children = section.tabs.length > 1
+    ? section.tabs.filter((t) => t.label !== section.label)
+    : [];
+
   return {
     sections: all,
     section,
+    children,
     current,
     // One crumb is not a trail — it is the heading again. The breadcrumb only
     // earns its line once there is somewhere above you to go back to.

@@ -93,14 +93,16 @@ for (const path of hrefs) {
   check(`${path} activates itself and nothing longer`, winner === path, `activated ${winner}`);
 }
 
-// Nothing in the sidebar or the navigation bar may prefix-match per link: that
-// is the rule that lit two links at once.
-for (const file of ["components/admin/admin-sidebar.tsx", "components/admin/admin-navbar.tsx"]) {
-  check(
-    `${file} does not prefix-match per link`,
-    !/pathname\.startsWith/.test(readFileSync(join(process.cwd(), file), "utf8"))
-  );
-}
+// The sidebar may not prefix-match per link: that is the rule that lit two
+// links at once. It used to be checked here for the navigation bar too, and
+// there is no navigation bar — the section's screens are listed in the sidebar
+// now, so both levels are this one file's problem.
+check(
+  "the sidebar does not prefix-match per link",
+  !/pathname\.startsWith/.test(
+    readFileSync(join(process.cwd(), "components/admin/admin-sidebar.tsx"), "utf8")
+  )
+);
 
 /* -------------------------------------------------------------------------- */
 /* Every tab is a real screen                                                 */

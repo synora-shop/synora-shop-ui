@@ -31,7 +31,6 @@ const check = (name: string, ok: boolean, detail = "") => {
 
 const sidebar = sourceOf("components", "admin", "admin-sidebar.tsx");
 const topbar = sourceOf("components", "admin", "admin-topbar.tsx");
-const navbar = sourceOf("components", "admin", "admin-navbar.tsx");
 const layout = sourceOf("app", "admin", "layout.tsx");
 const css = sourceOf("app", "globals.css");
 const store = sourceOf("lib", "admin-nav-store.ts");
@@ -74,17 +73,20 @@ check("both read the same state", /useAdminNav/.test(topbar) && /useAdminNav/.te
 console.log("\nTHE TAB ROW SCROLLS RATHER THAN WRAPPING");
 // A wrapped tab row changes height as you move between sections, and
 // everything below it jumps by a line.
-check("the navigation bar scrolls sideways", /overflow-x-auto/.test(navbar));
-check("its tabs do not break mid-label", /whitespace-nowrap/.test(navbar));
-check("and it draws nothing for a section of one", /tabs\.length === 0/.test(navbar));
+// The navigation bar is gone — the section's screens drop under it in the
+// sidebar instead of running across the top of the page. What those three
+// checks were protecting still needs protecting, in its new place: a label that
+// cannot wrap, and nothing drawn for a section that has only one screen.
+check("a child label does not break mid-word", /truncate/.test(sidebar));
+check("a section of one screen lists nothing", /children\.length > 0/.test(sidebar));
+check("and the sidebar can scroll if the tree outgrows the screen", /overflow-y-auto/.test(sidebar));
 
 console.log("\nBOTH LEVELS COME FROM ONE PLACE");
 check("the sidebar reads the navigation model", /@\/lib\/admin-nav"/.test(sidebar));
-check("so does the navigation bar", /@\/lib\/admin-nav"/.test(navbar));
 check("so does the heading bar", /@\/lib\/admin-nav"/.test(topbar));
 // A hardcoded href here is how the sidebar and the bar came to disagree about
 // where a section starts.
-check("no screen hardcodes an admin address", !/href="\/admin\//.test(sidebar) && !/href="\/admin\//.test(navbar));
+check("no screen hardcodes an admin address", !/href="\/admin\//.test(sidebar));
 
 console.log("\nTHE PANEL'S GREYS ARE DEFINED ONCE");
 check("the shell tokens exist", /\.admin-shell\s*\{[\s\S]*?--color-panel/.test(css));

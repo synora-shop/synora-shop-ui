@@ -36,6 +36,8 @@ height. A single hard shadow at this lightness reads as a badly drawn border.
 
 **There are two outlines and there is no third.** An element at rest is
 outlined `#86868b`; the same element focused or active is outlined `#6666ff`.
+The sidebar's connector line obeys the same pair: it is only ever drawn to the
+screen you are on, so it is only ever `#6666ff`.
 The pair is the whole system, which is what lets a merchant read the state of a
 control off its edge without first having to know what the control is. A
 `border-gray-200` or a one-off hex is a third state nobody asked for, and
@@ -103,6 +105,41 @@ colour with it on a rollback.
 The general rule this is an instance of: **a setting has one screen.** Two
 controls over one value is not a convenience, because one of them is always the
 one that loses, and nothing on screen says which.
+
+
+### The sidebar is both levels
+
+There is no navigation bar. A section's screens are listed underneath it, in the
+same column, and a line leaves the middle of the section's glyph and turns into
+the one you are on.
+
+It was a row of tabs across the top of the page. Two levels in two places meant
+answering "where am I" by looking left for the section and up for the screen,
+and the tab row was the only part of the chrome whose height changed as you
+moved — a section with one screen drew nothing, so everything below it jumped.
+
+Three numbers, drawn rather than chosen: a band holds six sections at 18px in
+180px of content with 10px of padding, which makes a row exactly 30px and a
+container exactly 200px square-ish. 200px of container inside 10px of nav
+padding either side is a 220px sidebar. `check:naming` asserts each of them,
+because they are a specification now and not a judgement call.
+
+**Only one line is drawn, and only to where you are.** A line beside every
+child would draw the shape of the list six times over to say one thing about one
+row. The arrowhead is the half that says *which* — a plain corner would only say
+"these belong to that", which the indent already says.
+
+**A child's label sits in the same column as its section's.** The glyph column
+is where the line lives, so a child has no glyph and 38px of left padding
+instead: 10px of container, 10px of row, a 20px glyph and an 8px gap.
+
+**A section with one screen lists nothing**, and a screen named after its own
+section is not listed at all — Products' first tab was "Products" and the
+section already goes there. The breadcrumb has always dropped a crumb that
+repeats the heading above it; same rule, same reason. `aria-current="page"` goes
+on the deepest thing that matches, so it lands on the section itself when the
+screen you are on is the one that was dropped — exactly one per sidebar, which
+is what a screen reader counts.
 
 ---
 

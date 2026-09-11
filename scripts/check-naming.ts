@@ -189,20 +189,32 @@ const side = readFileSync(join(ROOT, "components/admin/admin-sidebar.tsx"), "utf
 // column was the complaint. A number written here again would be the same
 // mistake in a different size, so what is held is the shape of the rule: the
 // row is sized by what is in it, and the padding that does the sizing is small.
-// Only the nav itself — the drawer's own header bar above it is a fixed 56px
-// on purpose, and reading the whole file caught that instead.
+// The sidebar's measurements are drawn, not chosen here, so they are asserted
+// as the numbers they are rather than as a rule about them.
+//
+// A band holds six sections at 18px in 180px of content with 10px of padding —
+// which makes a row exactly 30px and the container exactly 200px tall and 200px
+// wide. 200px of container inside 10px of nav padding either side is a 220px
+// sidebar. Earlier versions of this check held a *ceiling* on the row height
+// instead, and that was the right shape of rule while the height was a
+// judgement call; it is a specification now.
 const sideNav = side.slice(side.indexOf("<nav"), side.indexOf("</nav>"));
 check(
-  "a sidebar row has no fixed height",
-  !/\bh-(?:9|10|11|12|14|16)\b/.test(sideNav),
-  "the row is padding around its label; a fixed height is how it got too tall before"
+  "the sidebar is 220px, so a band container is 200px",
+  /lg:w-\[13\.75rem\]/.test(side),
+  "200px of container plus 10px of nav padding either side"
 );
+check("a band container pads 10px", /p-2\.5/.test(sideNav));
+check("a row is 30px", /h-\[30px\]/.test(sideNav), "180px of content for six of them");
+check("a section reads at 18px", /text-\[18px\]/.test(sideNav));
+check("and the screens under it at 16px", /text-\[16px\]/.test(sideNav));
+// The label column is one column: a child has no glyph, so its padding has to
+// put its text exactly where the section's text sits above it.
 check(
-  "and the padding around the label stays small",
-  /py-(?:1|1\.5|2)\b/.test(sideNav) && !/py-(?:4|5|6|8|10)\b/.test(sideNav),
-  "vertical padding is what decides the row height now"
+  "a child's label lines up under its section's",
+  /pl-\[38px\]/.test(sideNav),
+  "10px container + 10px row + 20px glyph + 8px gap = 48px, and the row starts at 10"
 );
-check("the sidebar is narrower than 15rem", /lg:w-\[13rem\]/.test(side));
 
 // Twenty-five different buttons shipped while a Button primitive sat unused in
 // half the panel — five paddings for the primary alone. A button built out of

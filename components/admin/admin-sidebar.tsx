@@ -45,7 +45,7 @@ export function AdminSidebar() {
   const setOpen = useAdminNav((s) => s.setOpen);
   const pathname = usePathname();
 
-  const { sections, section } = resolveNav(pathname);
+  const { sections, section, children, current } = resolveNav(pathname);
 
   // Grouped by band, in order, without assuming how many bands there are or
   // that they are numbered 1..n — lib/admin-nav.ts owns that, and check:nav
@@ -72,7 +72,7 @@ export function AdminSidebar() {
         id="admin-nav"
         className={cn(
           "fixed inset-y-0 left-0 z-30 flex w-64 flex-col bg-shell shadow-lg transition-transform duration-200",
-          "lg:sticky lg:top-0 lg:h-screen lg:w-[13rem] lg:flex-shrink-0 lg:translate-x-0 lg:bg-transparent lg:shadow-none lg:transition-none",
+          "lg:sticky lg:top-0 lg:h-screen lg:w-[13.75rem] lg:flex-shrink-0 lg:translate-x-0 lg:bg-transparent lg:shadow-none lg:transition-none",
           open ? "translate-x-0" : "-translate-x-full"
         )}
       >
@@ -92,40 +92,33 @@ export function AdminSidebar() {
           </button>
         </div>
 
-        {/* One container per band, and the rows live inside it.
+        {/* One container per band, and a band's rows are its sections.
             
-            Each destination used to be its own outlined pill, ten of them, and
-            at 40px tall for 13.5px of text every one was mostly air with a line
-            drawn round it. The outline is the band's now: three containers, and
-            a row inside one is just a row. */}
-        <nav className="flex flex-col gap-5 overflow-y-auto px-2.5 py-2.5">
+            A section that has more than one screen drops its list underneath
+            itself while you are standing in it — which is where the navigation
+            bar used to put them, across the top of the page. */}
+        <nav className="flex flex-col gap-2 overflow-y-auto px-2.5 py-2.5">
           {bands.map((band) => (
-            <div
-              key={band[0].group}
-              className="rounded-2xl border border-border bg-panel p-2"
-            >
-              <ul className="flex flex-col gap-8">
+            <div key={band[0].group} className="rounded-2xl border border-border bg-panel p-2.5">
+              <ul>
                 {band.map((item) => {
-                  const active = item.key === section.key;
+                  const here = item.key === section.key;
                   const Icon = item.icon;
+                  // The screen you are on is the deepest thing that matches, so
+                  // it is a child when one of them is it and the section itself
+                  // otherwise — including when the child naming the section was
+                  // dropped as a repeat. Exactly one aria-current per sidebar,
+                  // which is what a screen reader is counting.
+                  const childIndex = here ? children.findIndex((c) => c.href === current) : -1;
                   return (
                     <li key={item.key}>
                       <Link
                         href={item.href}
                         onClick={() => setOpen(false)}
-                        aria-current={active ? "page" : undefined}
+                        aria-current={here && childIndex === -1 ? "page" : undefined}
                         className={cn(
-                          "flex items-center gap-2.5 rounded-xl px-3 py-1.5 text-[18px] transition-colors",
-                          // The selected row is *recessed*, not filled: the
-                          // page's own tone cut into the white container, with
-                          // the colour carried by the text and the glyph. It is
-                          // the same move as a field inside a card, and it
-                          // leaves #6666ff meaning one thing on this screen.
-                          //
-                          // Hover borrows the plate and keeps its text black,
-                          // so the plate reads as "this row" and the colour as
-                          // "you are here" — two signals, not two shapes.
-                          active
+                          "flex h-[30px] items-center gap-2 rounded-lg px-2.5 text-[18px] transition-colors",
+                          here
                             ? "bg-control font-medium text-brand-500"
                             : "text-control-ink hover:bg-control"
                         )}
@@ -133,6 +126,43 @@ export function AdminSidebar() {
                         <Icon className="h-5 w-5" />
                         <span className="truncate">{item.label}</span>
                       </Link>
+
+                      {here && children.length > 0 && (
+                        <div className="relative">
+                          {/* One line, drawn only to the screen you are on.
+                              
+                              It leaves the middle of the section's own glyph and
+                              turns into the label beneath it, so the arrow says
+                              which of the list you are looking at. The others
+                              carry nothing: a line beside every child would draw
+                              the shape of the list six times over to say one
+                              thing about one row. */}
+                          {childIndex >= 0 && <Elbow rows={childIndex} />}
+                          <ul>
+                            {children.map((tab, i) => (
+                              <li key={tab.href}>
+                                <Link
+                                  href={tab.href}
+                                  onClick={() => setOpen(false)}
+                                  aria-current={i === childIndex ? "page" : undefined}
+                                  className={cn(
+                                    // Left padding, not an indent on the text:
+                                    // the label lines up under the section's own
+                                    // label, and the glyph column is where the
+                                    // line lives.
+                                    "flex h-[30px] items-center rounded-lg pl-[38px] pr-2.5 text-[16px] transition-colors",
+                                    i === childIndex
+                                      ? "font-medium text-brand-500"
+                                      : "text-control-ink hover:bg-control"
+                                  )}
+                                >
+                                  <span className="truncate">{tab.label}</span>
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                     </li>
                   );
                 })}
@@ -142,5 +172,44 @@ export function AdminSidebar() {
         </nav>
       </aside>
     </>
+  );
+}
+
+/**
+ * The line from a section to the one screen of its you are on.
+ *
+ * `rows` is how many children sit above it, and a row is 30px, so the turn
+ * happens at the middle of that row. Drawn rather than built from borders
+ * because a border cannot be given an arrowhead, and the arrow is the half that
+ * says *which* — a plain corner would only say "these belong to that".
+ *
+ * Left 20px puts the stroke through the centre of the glyph column: the
+ * container pads 10, the row pads another 10, and the glyph is 20 wide.
+ */
+function Elbow({ rows }: { rows: number }) {
+  const y = rows * 30 + 15;
+  return (
+    <svg
+      aria-hidden="true"
+      width={24}
+      height={y + 6}
+      viewBox={`0 0 24 ${y + 6}`}
+      fill="none"
+      className="pointer-events-none absolute left-[20px] top-0 text-brand-500"
+    >
+      <path
+        d={`M1 0 V ${y - 6} a 6 6 0 0 0 6 6 H 19`}
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <path
+        d={`M15 ${y - 4} L 19 ${y} L 15 ${y + 4}`}
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }
