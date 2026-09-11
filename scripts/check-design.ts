@@ -75,10 +75,114 @@ for (const path of [
 }
 
 /* The four colours are the four colours. A fifth in .admin-shell would make the
-   document wrong before anybody noticed the screen had changed. */
+   document wrong before anybody noticed the screen had changed.
+   
+   Asserted against the *declarations*, not the file text. The first version
+   searched the whole stylesheet, so when the palette was lightened it went on
+   passing — the old values were still there, in a comment explaining that they
+   had been replaced. A check that a colour is mentioned is not a check that it
+   is used. */
 const css = readFileSync(join(ROOT, "app/globals.css"), "utf8");
-for (const colour of ["#d2d2d2", "#e0e0e0", "#fafafa", "#6666ff"]) {
-  check(`${colour} is still one of the four`, css.includes(colour) && design.includes(colour));
+const PANEL_COLOURS: [string, string][] = [
+  ["--color-shell", "#f5f5f5"],
+  ["--color-panel", "#ffffff"],
+  ["--color-control", "#f5f5f5"],
+  ["--color-brand-500", "#6666ff"],
+];
+for (const [token, colour] of PANEL_COLOURS) {
+  check(
+    `${token} is ${colour}`,
+    new RegExp(`${token}:\\s*${colour};`).test(css),
+    "the panel's palette and the document have to say the same thing"
+  );
+  check(`${colour} is named in the design document`, design.includes(colour));
+}
+
+/* Containers are white on a near-white page, so tone cannot separate them and
+   a shadow has to. Without this the panel is one flat sheet. */
+check(
+  "a container is lifted off the page",
+  /--shadow-panel:/.test(css),
+  "the page and the containers are a hair apart now; light carries the depth that tone used to"
+);
+check(
+  "and the chrome actually uses it",
+  (() => {
+    const users = walk(join(ROOT, "components"))
+      .concat(walk(join(ROOT, "app")))
+      .filter((f) => /\.tsx$/.test(f) && readFileSync(f, "utf8").includes("shadow-panel"));
+    return users.length >= 5;
+  })(),
+  "a token nothing applies is a token that does nothing"
+);
+
+/* Two outlines, and only two: #86868b at rest and #6666ff active. The panel
+   reads its own state off the edge of a control, so a third grey creeping in
+   anywhere — a Tailwind border-gray-200, a one-off hex — breaks that reading
+   without breaking anything a test would otherwise notice. */
+const RGB_86868B = "134 134 139";
+check(
+  "the inactive outline is #86868b",
+  new RegExp(`--color-border:\\s*rgb\\(${RGB_86868B}`).test(css.slice(css.indexOf(".admin-shell {"))),
+  "an element at rest is outlined #86868b; that is half of how a control says what it is"
+);
+check(
+  "a control's own edge is the same grey, held harder",
+  new RegExp(`--color-control-line:\\s*rgb\\(${RGB_86868B}`).test(css),
+  "a control is the thing you aim at, so its edge is firmer — but it is not a different colour"
+);
+check(
+  "the outline is a hairline, not a drawn border",
+  (() => {
+    const m = css.match(/--color-border:\s*rgb\([\d ]+\/\s*([\d.]+)\)/g) ?? [];
+    return m.some((d) => {
+      const a = Number(d.match(/\/\s*([\d.]+)\)/)?.[1] ?? 1);
+      return a > 0 && a < 0.5;
+    });
+  })(),
+  "depth is the shadow's job; an outline at full strength gives a container two depth cues and it reads as neither"
+);
+check(
+  "#86868b is named in the design document",
+  design.includes("#86868b")
+);
+check(
+  "nothing outlines itself with a colour of its own",
+  (() => {
+    const files = walk(join(ROOT, "app/admin"))
+      .concat(walk(join(ROOT, "components/admin")))
+      .filter((f) => /\.tsx$/.test(f));
+    return files.every((f) => {
+      const src = readFileSync(f, "utf8");
+      return !/border-(?:gray|slate|zinc|neutral|stone)-\d{2,3}|border-\[#/.test(src)
+        && !/outline-(?:gray|slate|zinc|neutral|stone)-\d{2,3}|outline-\[#/.test(src);
+    });
+  })(),
+  "the two outline colours are tokens; a hardcoded one is a third state nobody asked for"
+);
+check(
+  "the active outline is one colour everywhere",
+  (() => {
+    const files = walk(join(ROOT, "app/admin"))
+      .concat(walk(join(ROOT, "components/admin")))
+      .filter((f) => /\.tsx$/.test(f));
+    // brand-700 was used on the refresh button because its *fill* is brand-500;
+    // the outline sits 2px outside it, on the page, where brand-500 is visible.
+    return files.every((f) => !/outline-brand-(?!500)/.test(readFileSync(f, "utf8")));
+  })(),
+  "focus is #6666ff; a second shade of it is a second meaning"
+);
+
+/* Text is black now, and the greys under it are neutral. Against true black a
+   navy-tinted grey reads as purple rather than as quieter text. */
+check("body text is black", /--color-ink:\s*#000000;/.test(css));
+check("and the panel's own text matches it", /--color-control-ink:\s*#000000;/.test(css));
+for (const [token, colour] of [["--color-ink-soft", "#454545"], ["--color-ink-faint", "#707070"]] as [string, string][]) {
+  check(
+    `${token} is a neutral grey`,
+    new RegExp(`${token}:\\s*${colour};`).test(css),
+    "a tinted grey beside pure black reads as a colour, not as quieter text"
+  );
 }
 
 /* Named components and helpers the document leans on. */

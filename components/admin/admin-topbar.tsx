@@ -176,7 +176,7 @@ export function AdminTopbar({
         </div>
 
         {/* Search, notifications, account. One pill, as drawn. */}
-        <div className="relative flex flex-shrink-0 items-center gap-1 rounded-pill bg-panel px-1.5 py-1.5">
+        <div className="relative flex flex-shrink-0 items-center gap-1 rounded-pill bg-panel px-1.5 py-1.5 shadow-panel">
           <IconButton
             label="Search the admin"
             active={searching}

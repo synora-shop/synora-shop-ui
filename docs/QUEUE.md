@@ -109,7 +109,7 @@ look like is decided and written down in code that a check keeps honest.
 **One mismatch with APP.ai to fix in this pass**
 
 The layout wraps every page in one panel container, and each page then draws its
-action bar inside it. Both are `#e0e0e0`, so they merge into a single block.
+action bar inside it. Both are `#ffffff`, so they merge into a single block.
 APP.ai draws them as *separate* rounded containers with the page colour showing
 between them — navigation bar, action bar, content, each its own shape. Fixing
 it means the layout stops wrapping and each screen supplies its own containers,
@@ -117,7 +117,7 @@ which touches all 22 screens, so it belongs here rather than in a passing edit.
 
 **The rules that do not move**
 
-- Four colours: `#d2d2d2` page, `#e0e0e0` container, `#fafafa` control,
+- Four colours: `#f5f5f5` page, `#ffffff` container, `#f5f5f5` control,
   `#6666ff` active and nothing else.
 - The references use five pastel tints because they have five accents. We have
   one — tint with `#6666ff` at low opacity on `#fafafa`, never a second hue.

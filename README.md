@@ -140,15 +140,37 @@ moves, and each keeps the date it happened.
 
 ## The panel's palette
 
-Four colours, defined once in `.admin-shell` in `app/globals.css` and used for
+Five colours, defined once in `.admin-shell` in `app/globals.css` and used for
 everything:
 
 | | |
 | --- | --- |
-| `#d2d2d2` | the page |
-| `#e0e0e0` | containers — nav bar, action bar, content, sidebar items |
-| `#fafafa` | controls — anything you type into or press |
+| `#f5f5f5` | the page — and anything recessed into a container |
+| `#ffffff` | containers — nav bar, action bar, content, sidebar items |
+| `#f5f5f5` | controls — anything you type into or press |
+| `#86868b` | the outline of anything at rest |
 | `#6666ff` | the active state, and only the active state |
+
+**Depth is carried by light, not by tone.** It used to be the other way: the
+page was `#d2d2d2`, containers `#e0e0e0`, controls `#fafafa` — each step
+lighter than the one behind it. With containers at white there is no lighter
+left, so the order inverted. A container is now the lightest thing on screen
+and a field inside it is *cut back* to the page's own tone, which is why the
+page and the control share a value.
+
+Two greys that close cannot separate themselves, so a container is lifted by
+`--shadow-panel` — two very soft layers, one tight for contact and one wide for
+height. A single hard shadow at this lightness reads as a badly drawn border.
+
+The last two colours are a pair: at rest an element is outlined `#86868b`,
+focused or active it is outlined `#6666ff`, and nothing else outlines anything.
+That is what lets the edge of a control tell you its state. The outline is a
+hairline rather than a drawn border — depth is the shadow's job, and an
+element carrying both reads as neither.
+
+All of it is scoped to `.admin-shell`. **A merchant's storefront does not wear
+the panel's colours**; a store opened on Shopify does not look like Shopify's
+admin, and one opened here does not look like APP's.
 
 The sidebar glyphs are the drawn ones from the design source, in
 `components/admin/nav-icons.tsx` — not a general-purpose icon set.
@@ -197,7 +219,7 @@ check:design  check:motion  check:holding  check:spotlight
 check:brand  check:address  check:payments
 ```
 
-Twenty-four scripts, **2,295 assertions** at the last count. Those are static: they read the
+Twenty-seven scripts, **3,064 assertions** at the last count. Those are static: they read the
 source. `scripts/sweep/` is the other half — a hundred probes against a running
 shop, for the faults reading the source cannot find. It found a CSV that could
 run a formula on the merchant's computer and twenty-two controls a screen

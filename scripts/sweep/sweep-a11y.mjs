@@ -32,6 +32,9 @@ for (const path of ROUTES) {
       const t = (b.textContent||'').trim();
       if (t || b.getAttribute('aria-label') || b.getAttribute('title')) return false;
       // A link whose only child is a labelled graphic is named by that graphic.
+      // An <img> with real alt text is exactly that — it was missing here, and
+      // the theme gallery's preview links were reported unnamed for it.
+      if ([...b.querySelectorAll('img[alt]')].some(i => i.getAttribute('alt').trim())) return false;
       return !b.querySelector('[aria-label],[role=img][aria-label],title');
     }).length;
     const unlabelled = [...document.querySelectorAll('input:not([type=hidden]),select,textarea')].filter(f=>{

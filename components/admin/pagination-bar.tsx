@@ -38,7 +38,7 @@ export function PaginationBar({
   return (
     <nav
       aria-label="Pages"
-      className="inline-flex items-center gap-1.5 rounded-pill bg-panel p-2"
+      className="inline-flex items-center gap-1.5 rounded-pill bg-panel p-2 shadow-panel"
     >
       <Step
         href={pageHref(basePath, searchParams, page - 1)}

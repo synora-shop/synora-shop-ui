@@ -76,7 +76,7 @@ export function EditorBar() {
   return (
     <>
       {dialog}
-      <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-panel p-2">
+      <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-panel p-2 shadow-panel">
         {dirty ? (
           <p className="flex items-center gap-1.5 px-1 text-xs font-medium text-amber">
             <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0" aria-hidden />

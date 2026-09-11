@@ -77,7 +77,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
                 screen with nothing to save, so a list page keeps its own action
                 bar and a form page gets one without building it. */}
             <EditorBar />
-            <div className="rounded-2xl bg-panel p-3 sm:p-4">{children}</div>
+            <div className="rounded-2xl bg-panel p-3 shadow-panel sm:p-4">{children}</div>
           </main>
         </div>
       </div>

@@ -13,14 +13,60 @@ went wrong the first time.
 
 ## 1. Colour
 
-Four, and nothing else. Defined once in `.admin-shell` in `app/globals.css`.
+Five, and nothing else. Defined once in `.admin-shell` in `app/globals.css`.
 
 | | |
 | --- | --- |
-| `#d2d2d2` | the page |
-| `#e0e0e0` | containers — nav bar, action bar, content, sidebar items |
-| `#fafafa` | controls — anything you type into or press |
+| `#f5f5f5` | the page — and anything recessed into a container |
+| `#ffffff` | containers — nav bar, action bar, content, sidebar items |
+| `#f5f5f5` | controls — anything you type into or press |
+| `#86868b` | the outline of anything at rest |
 | `#6666ff` | the active state, **and only** the active state |
+
+**Depth is carried by light, not by tone.** It used to be the other way: the
+page was `#d2d2d2`, containers `#e0e0e0`, controls `#fafafa` — each step
+lighter than the one behind it. With containers at white there is no lighter
+left, so the order inverted. A container is now the lightest thing on screen
+and a field inside it is *cut back* to the page's own tone, which is why the
+page and the control share a value.
+
+Two greys that close cannot separate themselves, so a container is lifted by
+`--shadow-panel` — two very soft layers, one tight for contact and one wide for
+height. A single hard shadow at this lightness reads as a badly drawn border.
+
+**There are two outlines and there is no third.** An element at rest is
+outlined `#86868b`; the same element focused or active is outlined `#6666ff`.
+The pair is the whole system, which is what lets a merchant read the state of a
+control off its edge without first having to know what the control is. A
+`border-gray-200` or a one-off hex is a third state nobody asked for, and
+`check:design` fails on one.
+
+The outline changed hue, not weight. It is drawn as a hairline — `#86868b` held
+back by its alpha — because depth is the shadow's job now. Drawn at full
+strength a container would carry two depth cues at once and read as neither. A
+control's edge is held harder than a container's, on the grounds that a control
+is the thing you are aiming at.
+
+**The panel's palette stops at the panel.** It is scoped to `.admin-shell`,
+because a shop is not a smaller copy of the tool that built it — a store opened
+on Shopify does not wear Shopify's admin chrome, and one opened here does not
+wear APP's. The storefront's own outline stays `#dcdcea` in `:root`, tuned to
+the cooler canvas it sits on.
+
+The text ladder below is the one deliberate exception, and it is in `:root` for
+a reason that does not apply to anything else here: black is not a decision
+about how APP looks, it is the absence of one. A shop that has never chosen a
+text colour should get the most readable default there is, not a navy the
+platform happened to like. *Check: `check:design`, "the
+inactive outline is #86868b" asserts the declaration inside `.admin-shell`
+specifically, so moving it up to `:root` fails.*
+
+**Text is black.** `--color-ink` was `#0c0c1e`, a near-black navy, with
+`#4a4a66` and `#6e6e8c` tinted to agree with it. Against true black those tints
+read as purple rather than as quieter text, so the ladder is neutral now:
+`#000000`, `#454545`, `#707070`. This lives in `:root`, so it reaches the
+storefront as well — a shop that has never chosen its own text colour gets
+black, and a shop that has chosen one is untouched.
 
 **Colour means "selected".** It never means "this one is the orange one". The
 top bar used to be painted by business type — maroon for a shop, purple for a

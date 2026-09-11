@@ -45,10 +45,22 @@
   --color-night: #0c0c1e;
   --color-night-soft: #17173a;
 
-  /* Ink */
-  --color-ink: #0c0c1e;
-  --color-ink-soft: #4a4a66;
-  --color-ink-faint: #6e6e8c;
+  /* Ink
+   *
+   * Pure black, and the two below it neutral greys to match. They used to be
+   * #0c0c1e with #4a4a66 and #6e6e8c under it — a near-black navy and two
+   * greys tinted to agree with it. Against true black those tints read as
+   * purple rather than as quieter text, so the whole ladder is neutral now.
+   *
+   * This is :root, so it reaches the storefront as well as the panel: a shop
+   * that has never set its own text colour gets black. A shop that has set one
+   * is untouched, because a merchant's choice outranks the default. */
+  --color-ink: #000000;
+  /* Defined here as well as in .admin-shell so the utility never resolves to
+     nothing on a screen outside the panel. */
+  --shadow-panel: 0 1px 2px rgb(0 0 0 / 0.04), 0 4px 16px rgb(0 0 0 / 0.06);
+  --color-ink-soft: #454545;
+  --color-ink-faint: #707070;
 
   /* Semantic. Off the brand hue so state never reads as branding. */
   --color-rose: #c02040;
@@ -93,13 +105,30 @@
 
 /* The admin panel's own surfaces — APP.ai, exactly.
  *
- * Three greys and one accent, and nothing in the panel is painted with
- * anything else:
+ * Three greys, an outline grey and one accent, and nothing in the panel is
+ * painted with anything else:
  *
- *   #d2d2d2  shell     the page itself, behind everything
- *   #e0e0e0  panel     containers — nav bar, action bar, content, sidebar items
- *   #fafafa  control   things you type in or press that sit on a container
+ *   #f5f5f5  shell     the page itself, behind everything
+ *   #ffffff  panel     containers — nav bar, action bar, content, sidebar items
+ *   #f5f5f5  control   things you type in or press that sit on a container
+ *   #86868b  border    the outline of anything at rest
  *   #6666ff  brand-500 the active state, and only the active state
+ *
+ * The last two are a pair: an element at rest is outlined #86868b, and the
+ * same element active or focused is outlined #6666ff. Nothing else outlines
+ * anything, so a merchant can read the state of a control from its edge alone
+ * without having to know what the control is.
+ *
+ * The greys were darker: #d2d2d2 page, #e0e0e0 container, #fafafa control, in
+ * that order lightest-forward. The panel is near-white now, and that inverts
+ * the relationship — a container is the lightest thing on the screen, and a
+ * field inside it is *recessed* rather than raised. Which is why the shell and
+ * the control share a value: a white card on a light page, with the inputs in
+ * it cut back to the page's own tone.
+ *
+ * Two greys that close together cannot carry depth on their own, so containers
+ * are lifted by a shadow instead — see --shadow-panel below. Tone separated
+ * them before; light does now.
  *
  * The four per-business-type palettes that used to live here are gone. A shop,
  * a restaurant and a blog now look identical in the panel, because the drawing
@@ -124,27 +153,53 @@
   --color-brand-700: #3f3fbe;
   --color-brand-900: #24246b;
 
-  --color-shell: #d2d2d2;
-  --color-panel: #e0e0e0;
-  --color-control: #fafafa;
+  --color-shell: #f5f5f5;
+  --color-panel: #ffffff;
+  /* The page's own tone, so a field reads as cut into a white card rather than
+     floating on it. It was #fafafa — lighter than the container it sat on,
+     which was right when containers were grey and is wrong now. */
+  --color-control: #f5f5f5;
   /* Text and icons on a control. The document says #808080; the drawing shows
      near-black, and near-black is what a merchant can actually read at 13px.
-     #808080 stays as the outline and as secondary text, which is the job it
-     does well. */
-  --color-control-ink: #333333;
+     Black now rather than #333333, to match the ink above — at 13px on a white
+     container the difference between the two is the difference between crisp
+     and slightly smudged. #808080 stays as secondary text, which is the job it
+     does well. The outline is its own colour now — see --color-border. */
+  --color-control-ink: #000000;
   --color-control-soft: #808080;
   /* "0.1px outline" is a hairline. A device pixel is the thinnest a browser
-     will draw, so the weight is carried by the alpha instead. */
-  --color-control-line: rgb(128 128 128 / 0.28);
+     will draw, so the weight is carried by the alpha instead. A control is the
+     thing you aim at, so its edge is held a little harder than a container's. */
+  --color-control-line: rgb(134 134 139 / 0.38);
 
   /* The panel's three depths, from the back forward: the page, the containers
-     drawn on it, and the cards and controls inside those. A card has to be
-     lighter than the container holding it or the two read as one flat area,
-     which is what the drawing shows and what these three greys give. */
-  --color-canvas: #d2d2d2;
-  --color-surface: #fafafa;
-  --color-subtle: #ececec;
-  --color-border: rgb(128 128 128 / 0.28);
+     drawn on it, and the cards and controls inside those.
+     
+     The order used to be carried by tone — each step lighter than the one
+     behind it. With containers at white there is no lighter left, so depth is
+     carried by shadow forward and by a faint grey backward: the page and the
+     recessed things share #f5f5f5, and anything raised is white with a lift. */
+  --color-canvas: #f5f5f5;
+  --color-surface: #ffffff;
+  --color-subtle: #f0f0f0;
+  /* The inactive outline: #86868b, held to a hairline by its alpha. Two
+     outlines exist in the panel and only two — this one for everything at
+     rest, and --color-brand-500 for whatever is active or focused. A grey
+     that has to be argued about is a grey that gets used for the wrong
+     thing, so there is no third.
+     
+     It is the hue that changed, not the weight. Depth is still the shadow's
+     job; if the outline had been drawn at full strength a container would
+     carry two depth cues at once and read as neither. */
+  --color-border: rgb(134 134 139 / 0.22);
+
+  /* What lifts a container off the page.
+   *
+   * Two layers, both very soft: a tight one that reads as contact, and a wide
+   * diffuse one that reads as height. A single hard shadow at this lightness
+   * looks like a border drawn badly; two soft ones read as a card sitting on a
+   * surface, which is the whole job now that tone cannot do it. */
+  --shadow-panel: 0 1px 2px rgb(0 0 0 / 0.04), 0 4px 16px rgb(0 0 0 / 0.06);
 }
 
 /* Anything you type into is a control, not a surface. Without this every input
@@ -203,6 +258,9 @@
   --shadow-md: var(--shadow-md);
   --shadow-lg: var(--shadow-lg);
   --shadow-brand: var(--shadow-brand);
+  /* Exposed so a container can say `shadow-panel` rather than each one
+     hand-writing the same two layers. */
+  --shadow-panel: var(--shadow-panel);
 
   --ease-out: var(--ease-out);
   --ease-spring: var(--ease-spring);
