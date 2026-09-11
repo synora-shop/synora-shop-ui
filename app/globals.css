@@ -405,8 +405,9 @@ body {
 /* Form controls, globally.
    ---------------------------------------------------------------------------
    Browsers give inputs a `normal` line-height that is tighter than the one the
-   page uses, and IBM Plex has deep descenders — so a "g" or a "y" was being
-   clipped at the bottom of every text box in the app. Fixing it per-component
+   page uses — so a "g" or a "y" was being clipped at the bottom of every text
+   box in the app. It was found with IBM Plex, whose descenders are deep, and
+   the fix is not specific to it: the browser's own line-height is the fault. Fixing it per-component
    would mean finding all of them and remembering it for the next one, so it is
    set once here, on the elements themselves, where no call site can miss it.
 

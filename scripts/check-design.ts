@@ -173,6 +173,39 @@ check(
   "focus is #6666ff; a second shade of it is a second meaning"
 );
 
+/* One typeface, loaded one way.
+   
+   DM Sans, because the design files are drawn in it — the panel and the
+   drawings have to measure the same or a number taken off one does not apply
+   to the other.
+   
+   Loaded through next/font rather than a <link> to a font CDN: next fetches it
+   at build time and serves it from this app's own domain, so no request leaves
+   for someone else's server and nothing about a merchant's visit is told to
+   one. A stylesheet link to fonts.googleapis.com would undo that quietly. */
+{
+  const layout = readFileSync(join(ROOT, "app/layout.tsx"), "utf8");
+  check("the typeface is DM Sans", /DM_Sans\(/.test(layout));
+  check("and the figures are DM Mono", /DM_Mono\(/.test(layout));
+  check(
+    "the whole variable font is loaded, not a few cut weights",
+    /weight:\s*"variable"/.test(layout),
+    "the panel asks for 500 in 278 places and 600 in 136; a packaged subset is how one of those gets synthesised"
+  );
+  check(
+    "with the optical size axis",
+    /axes:\s*\["opsz"\]/.test(layout),
+    "13px labels and 30px headings want different drawings of the same face"
+  );
+  check(
+    "no font is fetched from somebody else's server",
+    !/fonts\.googleapis\.com|fonts\.gstatic\.com/.test(
+      readFileSync(join(ROOT, "app/globals.css"), "utf8") + layout
+    ),
+    "next/font serves it from this domain; a CDN link tells a third party who visited a merchant's shop"
+  );
+}
+
 /* Text is black now, and the greys under it are neutral. Against true black a
    navy-tinted grey reads as purple rather than as quieter text. */
 check("body text is black", /--color-ink:\s*#000000;/.test(css));

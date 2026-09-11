@@ -1,27 +1,50 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
+import { DM_Sans, DM_Mono } from "next/font/google";
 import { AuthSessionProvider } from "@/components/providers/session-provider";
 import { NavProgress } from "@/components/ui/nav-progress";
 import { ToastProvider } from "@/components/ui/toast";
 import "./globals.css";
 
-// IBM Plex, not Inter. Plex was drawn for a company that makes instruments, and
-// it has actual character — the flat-topped 'a', the angled terminals — where
-// the usual product-sans choices are deliberately characterless. The mono cut
-// carries every number this product shows: contrast ratios, pixel sizes, counts,
-// hex values. Those are the readings on the dial, and they should look like it.
-const sans = IBM_Plex_Sans({
+/**
+ * DM Sans, the app's typeface, and DM Mono for the figures.
+ *
+ * It replaces IBM Plex, which was chosen here for its character and was fine —
+ * the reason for moving is that the design files are drawn in this one, so the
+ * panel and the drawings now measure the same.
+ *
+ * `weight: "variable"` is the whole variable font rather than a handful of cut
+ * weights, which is one file for every weight instead of four files for four of
+ * them. It also means a weight that was never packaged can no longer fall back
+ * to a heavier one or get synthesised — the panel asks for 500 in 278 places
+ * and 600 in 136, and both are now real.
+ *
+ * `axes: ["opsz"]` carries the optical size axis. The face is drawn differently
+ * for small text than for large — wider spacing, more open apertures — and with
+ * the axis present the browser picks the right drawing from the font-size on its
+ * own. This panel runs from 13px labels to 30px headings, which is exactly the
+ * range that axis exists for.
+ *
+ * Served from this app's own domain: next/font fetches at build time, so no
+ * request leaves for a font CDN and nothing about a merchant's visit is told to
+ * one.
+ */
+const sans = DM_Sans({
   variable: "--font-sans-brand",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: "variable",
+  axes: ["opsz"],
   display: "swap",
 });
 
-const mono = IBM_Plex_Mono({
+// Every number this product shows — contrast ratios, pixel sizes, counts, hex
+// values, addresses. Those are the readings on the dial and they should look
+// like it. DM Mono rather than a leftover Plex: it is the same family's
+// monospace, so a figure in a table and the label above it belong together.
+const mono = DM_Mono({
   variable: "--font-mono-brand",
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: ["400", "500"],
   display: "swap",
 });
 

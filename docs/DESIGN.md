@@ -145,6 +145,23 @@ is what a screen reader counts.
 
 ## 2. Type and labels
 
+**The typeface is DM Sans, and the figures are DM Mono.** It replaced IBM Plex,
+which was chosen for its character and was fine — the reason for moving is that
+the design files are drawn in DM Sans, and a measurement taken off a drawing
+has to apply to the screen.
+
+The whole variable font is loaded rather than a few packaged weights. The panel
+asks for 500 in 278 places and 600 in 136; with cut weights a missing one falls
+to the next heaviest or gets synthesised by the browser, and with the variable
+font every weight is drawn. The optical size axis comes with it, so the face is
+drawn differently for a 13px label than for a 30px heading without anything
+asking it to.
+
+It is loaded through `next/font`, which fetches at build time and serves from
+this app's own domain. A `<link>` to a font CDN would tell a third party who
+visited which merchant's shop, on every page load. *Check: `check:design`, "no
+font is fetched from somebody else's server".*
+
 **One label style.** `Field` wraps its control and needs no id. `FieldLabel` is
 for the two cases it cannot wrap: a control with an info popover beside its
 label (a button inside a `<label>` steals the click meant for the input), and a

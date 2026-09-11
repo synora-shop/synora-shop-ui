@@ -203,7 +203,7 @@ The sidebar glyphs are the drawn ones from the design source, in
 
 ## Tech
 
-Next.js 16 (App Router) · React 19 · TypeScript · Tailwind v4 ·
+Next.js 16 (App Router) · React 19 · TypeScript · Tailwind v4 · DM Sans ·
 Prisma 7 on Neon Postgres · NextAuth 5 · Zustand · Vercel Blob · Resend
 
 ---
@@ -243,7 +243,7 @@ check:design  check:motion  check:holding  check:spotlight
 check:brand  check:address  check:payments
 ```
 
-Twenty-seven scripts, **3,076 assertions** at the last count. Those are static: they read the
+Twenty-seven scripts, **3,081 assertions** at the last count. Those are static: they read the
 source. `scripts/sweep/` is the other half — a hundred probes against a running
 shop, for the faults reading the source cannot find. It found a CSV that could
 run a formula on the merchant's computer and twenty-two controls a screen

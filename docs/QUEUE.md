@@ -812,3 +812,36 @@ that drift is the whole bug, and a second copy of a `where` clause is exactly
 the shape it took.
 
 `deletedAt: null` is missing from the same query and should go in with it.
+
+---
+
+## The storefront's two named fonts do not load
+
+*Found 11 September 2026 while moving the app to DM Sans. Pre-existing, and
+untouched by that change.*
+
+`lib/theme-tokens.ts` offers a merchant two built-in typefaces:
+
+```
+inter:     stack "var(--font-inter), system-ui, sans-serif"
+cormorant: stack "var(--font-heading), Georgia, serif"
+```
+
+**Neither `--font-inter` nor `--font-heading` is defined anywhere in the
+codebase.** Both resolve to nothing, so a merchant who picks "Inter (clean
+sans)" gets `system-ui` and one who picks "Cormorant Garamond (serif)" gets
+Georgia. The picker appears to work, saves, and shows the right label — the
+shop simply never wears the font.
+
+`bodyFont` defaults to `inter` and `headingFont` to `cormorant`, so this is the
+default path rather than an unusual one. It is hidden by `themeTokensToCss`
+returning `""` for an untouched theme: a shop that has changed nothing inherits
+the platform's own face and looks fine, and the fault only appears once the
+merchant changes any theme token at all — at which point the font silently
+becomes the system one.
+
+The fix is to load both through `next/font` in the storefront layout and define
+the two variables, the way `app/layout.tsx` does for the panel. Worth a guard
+that every stack in `THEME_FONTS` names a variable that is actually defined —
+that is the whole bug, and it is the kind a type checker cannot see because the
+stack is a string.
