@@ -3,10 +3,10 @@ import { cn } from "@/lib/utils";
 /**
  * The sidebar's icons, drawn for this product.
  *
- * Eight of these are the shapes from Assestz/SVG — the same file the rest of
+ * Nine of these are the shapes from Assestz/SVG — the same file the rest of
  * the panel was drawn in — not a general-purpose icon set standing in for them.
  * A stock library gets you a house and a gear; it does not get you *those*
- * eight, at these weights, sized against each other the way a designer sized
+ * nine, at these weights, sized against each other the way a designer sized
  * them.
  *
  * Data and Discounts joined the sidebar when the three groups were introduced,
@@ -14,11 +14,12 @@ import { cn } from "@/lib/utils";
  * glyph all along, which is its own evidence that they were meant to be
  * sidebar destinations rather than tabs buried under Your App.
  *
- * CustomersIcon and AccountIcon are the two exceptions and are marked as such
- * below: Assestz has neither, because the sidebar had six sections when it was
- * drawn. They are drawn here to match the set — same fill, same optical weight,
- * same construction — and should be replaced by real ones when the design file
- * gains them.
+ * CustomersIcon is the one exception and is marked as such below: Assestz has
+ * no customers glyph, because the sidebar had six sections when it was drawn.
+ * It is drawn here to match the set — same fill, same optical weight, same
+ * construction — and should be replaced by a real one when the design file
+ * gains it. AccountIcon was that way for about half an hour and is not any
+ * more; the drawn one arrived and replaced it.
  *
  * Each arrives with its own viewBox and its own proportions, which is the point
  * and also the catch: Analytics is tall and narrow, Products is square. They
@@ -156,19 +157,12 @@ export function DiscountsIcon(props: IconProps) {
   );
 }
 
-/**
- * Account — not in Assestz.
- *
- * The same exception as CustomersIcon: the design file was drawn when Account
- * was a tab under Settings, so it has no glyph for it. Drawn here to sit in the
- * set — a head and shoulders inside a ring, which separates it from the
- * two-person CustomersIcon at a glance: that one is the people who buy from
- * you, this one is you. Replace it when the design file gains a real one.
- */
+/** Account — Assestz/SVG/Account icon.svg */
 export function AccountIcon(props: IconProps) {
   return (
-    <Glyph viewBox="0 0 21 21" {...props}>
-      <path d="M10.5,0C4.7,0,0,4.7,0,10.5S4.7,21,10.5,21s10.5-4.7,10.5-10.5S16.3,0,10.5,0ZM10.5,1.85c4.78,0,8.65,3.87,8.65,8.65,0,2.03-.7,3.89-1.87,5.36-.53-1.19-1.5-2.14-2.72-2.62l-1.18-.47c-.3-.12-.64-.03-.85.22-.5.6-1.24.95-2.03.95s-1.53-.35-2.03-.95c-.21-.25-.55-.34-.85-.22l-1.18.47c-1.22.49-2.19,1.43-2.72,2.62-1.16-1.47-1.87-3.33-1.87-5.36C1.85,5.72,5.72,1.85,10.5,1.85ZM10.5,4.32c-1.96,0-3.55,1.59-3.55,3.55s1.59,3.55,3.55,3.55,3.55-1.59,3.55-3.55-1.59-3.55-3.55-3.55ZM10.5,6.17c.94,0,1.7.76,1.7,1.7s-.76,1.7-1.7,1.7-1.7-.76-1.7-1.7.76-1.7,1.7-1.7ZM8.16,14.86c.68.51,1.5.79,2.34.79s1.67-.28,2.34-.79l.6.24c1.03.41,1.76,1.32,1.96,2.39-1.38.96-3.05,1.52-4.86,1.52s-3.48-.56-4.86-1.52c.2-1.07.93-1.98,1.96-2.39l.6-.24Z" />
+    <Glyph viewBox="0 0 19.03 20.94" {...props}>
+      {/* evenodd, or the ring around the head fills in solid. */}
+      <path fillRule="evenodd" d="M9.52,0c-2.89,0-5.23,2.34-5.23,5.23s2.34,5.23,5.23,5.23,5.23-2.34,5.23-5.23S12.41,0,9.52,0ZM6.19,5.23c0-1.84,1.49-3.33,3.33-3.33s3.33,1.49,3.33,3.33-1.49,3.33-3.33,3.33-3.33-1.49-3.33-3.33ZM5.71,12.37c-3.15,0-5.71,2.56-5.71,5.71v1.9c0,.53.43.95.95.95s.95-.43.95-.95v-1.9c0-2.1,1.7-3.81,3.81-3.81h7.61c2.1,0,3.81,1.7,3.81,3.81v1.9c0,.53.43.95.95.95s.95-.43.95-.95v-1.9c0-3.15-2.56-5.71-5.71-5.71h-7.61Z" />
     </Glyph>
   );
 }

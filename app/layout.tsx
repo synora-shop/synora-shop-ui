@@ -44,7 +44,15 @@ export const metadata: Metadata = {
   // it exists for. Config-based icons inherit and override down the tree the
   // way the rest of the metadata does.
   icons: {
-    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    // Two, and the PNG is not decoration. Only the SVG was declared here, and
+    // a search engine that will not rasterise SVG had nothing to show for
+    // app.synoradigitals.com at all — no icon beside the result rather than a
+    // wrong one. The PNG is the same 192 the manifest already serves, so this
+    // adds a declaration rather than a file.
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icons/icon-192.png", type: "image/png", sizes: "192x192" },
+    ],
     apple: [{ url: "/apple-icon.png", sizes: "180x180" }],
   },
   openGraph: {
