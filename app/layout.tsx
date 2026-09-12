@@ -72,11 +72,18 @@ export const metadata: Metadata = {
     // app.synoradigitals.com at all — no icon beside the result rather than a
     // wrong one. The PNG is the same 192 the manifest already serves, so this
     // adds a declaration rather than a file.
+    // ?v=2 is a cache-buster, and it is doing real work. A browser keeps
+    // favicons in a store of their own, separate from the page cache, and it
+    // survives a reload and usually a hard reload too — so a merchant who had
+    // the panel open before the mark changed kept seeing the old one no matter
+    // what the server sent. The query changes the URL without moving the file,
+    // so every browser fetches it again and the paths stay exactly where they
+    // are. Bump it if the artwork changes again.
     icon: [
-      { url: "/icon.svg", type: "image/svg+xml" },
-      { url: "/icons/icon-192.png", type: "image/png", sizes: "192x192" },
+      { url: "/icon.svg?v=2", type: "image/svg+xml" },
+      { url: "/icons/icon-192.png?v=2", type: "image/png", sizes: "192x192" },
     ],
-    apple: [{ url: "/apple-icon.png", sizes: "180x180" }],
+    apple: [{ url: "/apple-icon.png?v=2", sizes: "180x180" }],
   },
   openGraph: {
     type: "website",
