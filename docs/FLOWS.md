@@ -58,6 +58,26 @@ domain was primary, the free address takes over in the same transaction — a
 shop is never left with no working address. The free address itself cannot be
 removed.
 
+**Going live makes it the main address.** The moment a domain starts serving it
+becomes the shop's canonical one, and the address it replaces keeps working and
+redirects here. This used to be a separate button, and the state in between was
+one nobody chose: the domain was reachable but not canonical, so search results
+and shared links kept naming an address the merchant had already stopped using.
+The merchants who never found the button were exactly the ones it mattered most
+for.
+
+It happens in `verifyDomain`, which is where the status is written — so it holds
+for the hourly sweep as well as for a merchant pressing *Check now*. A domain
+that goes live at three in the morning is the main address by the time anybody
+looks.
+
+The screen then says so, with a switch to undo it, already set to the state that
+is now true. Closing the notice without touching anything leaves the domain
+main, which is the whole design: not reading it has to end somewhere sensible,
+and that place is the address you just spent an afternoon connecting. Turning
+the switch off puts the previous address back. *Check: `check:domains`, "a
+domain that goes live becomes the main address".*
+
 **Claiming a hostname somebody else has.** A `PENDING` row belonging to another
 shop is released — anyone can type any domain into a box, and letting an
 unverified row block a real owner would make squatting trivial. A `VERIFIED` or

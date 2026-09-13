@@ -207,5 +207,43 @@ for (const host of ["Example.COM", "example.com.", "example.com:3000", "  exampl
     normaliseHost(host));
 }
 
+console.log("\nA DOMAIN THAT GOES LIVE BECOMES THE MAIN ADDRESS");
+// Connecting your own domain and still being on the free one is not a state
+// anybody chose: it was reachable but not canonical, and the step that fixed it
+// was a button nobody knew to press. The merchants who never pressed it were
+// the ones who most needed it pressed.
+{
+  const data = sourceOf("lib", "data", "domains.ts");
+  check(
+    "verifyDomain promotes a domain when it starts serving",
+    /serving && domain\.status !== "ACTIVE" && !domain\.isPrimary/.test(data),
+    "only on the transition, and never over a domain that is already primary"
+  );
+  // In verifyDomain rather than in the screen's action, because the hourly
+  // sweep calls it too: a domain that goes live at three in the morning has to
+  // be main by the time anybody looks.
+  check(
+    "and does it where the sweep runs, not only where the merchant clicks",
+    /let promoted: VerifyOutcome\["promoted"\]/.test(data),
+    "putting it in checkDomain would only promote domains a merchant watched go live"
+  );
+  check("the outcome says it happened", /promoted\?:\s*\{\s*previousPrimaryId/.test(data));
+
+  const ui = sourceOf("components", "admin", "domain-manager.tsx");
+  check(
+    "the screen offers the way back",
+    /previousPrimaryId/.test(ui),
+    "a notice with an undo; the promotion is already applied"
+  );
+  // The switch shows the state that is already true, so closing the notice
+  // without touching it leaves the domain main. Defaulting it off would make
+  // not reading the dialog undo the thing it is announcing.
+  check(
+    "the switch starts on",
+    /setMainOn\(true\);/.test(ui) && /useState\(true\)/.test(ui),
+    "not reading has to end somewhere sensible, and that is: it is your main address"
+  );
+}
+
 console.log(`\n${pass} passed, ${fail} failed\n`);
 if (fail > 0) process.exitCode = 1;

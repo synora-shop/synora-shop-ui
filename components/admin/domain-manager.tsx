@@ -18,6 +18,7 @@ import { domainProblem, isFormerAddress, type DnsRecord } from "@/lib/domains";
 import { Badge, Button, Card, CardTitle, FieldError } from "@/components/ui/primitives";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast";
+import { ToggleSwitch } from "@/components/ui/toggle-switch";
 
 export type DomainRow = {
   id: string;
@@ -53,6 +54,19 @@ export function DomainManager({
   const [adding, setAdding] = useState(false);
   const [draft, setDraft] = useState("");
   const [expanded, setExpanded] = useState<string | null>(null);
+  /**
+   * The notice shown when a domain going live made it the main address.
+   *
+   * It is a notice, not a question: verifyDomain has already promoted it by the
+   * time this renders, and closing this without touching anything leaves it
+   * promoted. The switch is the way back out, defaulted to the state that is
+   * already true — a merchant who reads nothing gets the outcome they almost
+   * certainly wanted, and a merchant who did not want it has one switch to flip.
+   */
+  const [promoted, setPromoted] = useState<
+    { domainId: string; hostname: string; previousPrimaryId: string | null } | null
+  >(null);
+  const [mainOn, setMainOn] = useState(true);
 
   // Live feedback while typing, from the same function the server enforces —
   // so the form never accepts something the server is about to refuse.
@@ -82,6 +96,69 @@ export function DomainManager({
   return (
     <div className="space-y-2.5">
       {dialog}
+
+      {promoted && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="domain-live-title"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4"
+          onClick={(e) => {
+            // Clicking the backdrop closes it, and closing changes nothing:
+            // the domain is already the main address. That is the point.
+            if (e.target === e.currentTarget) setPromoted(null);
+          }}
+        >
+          <Card className="w-full max-w-md p-5 shadow-panel">
+            {/* The heading is the dialog's accessible name, so it carries the
+                id rather than CardTitle — which takes no id of its own. */}
+            {/* Sans, not serif. The panel has one face — a serif heading here
+                would read as a different product wearing the same colours, and
+                check:naming holds the line. */}
+            <h2 id="domain-live-title" className="text-lg font-semibold text-ink">
+              {promoted.hostname} is live
+            </h2>
+            <p className="mt-1.5 text-sm leading-snug text-ink-soft">
+              Your store now answers on it, and it has been made your main address — the one
+              search engines are told is the real one. Your other addresses redirect here, and
+              links people have already shared keep working.
+            </p>
+
+            <div className="mt-4 rounded-lg border border-border p-3">
+              <ToggleSwitch
+                checked={mainOn}
+                disabled={pending}
+                label="Make this my main address"
+                description={
+                  mainOn
+                    ? "On. Turn it off to keep the address you were using before."
+                    : "Off. Your previous address is the main one again."
+                }
+                onChange={(next) => {
+                  setMainOn(next);
+                  // Applied as it is flipped rather than on the way out, so the
+                  // switch is never showing something that is not true yet.
+                  startTransition(async () => {
+                    const target = next ? promoted.domainId : promoted.previousPrimaryId;
+                    if (!target) return;
+                    const result = await makePrimary(target);
+                    if (!result.ok) {
+                      setMainOn(!next);
+                      toast.error(result.error, { blocking: true });
+                    }
+                  });
+                }}
+              />
+            </div>
+
+            <div className="mt-4 flex justify-end">
+              <Button variant="primary" onClick={() => setPromoted(null)} disabled={pending}>
+                Done
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
 
       {!canIssueCertificates && (
         <Card className="border-amber/30 bg-amber-bg p-4">
@@ -172,26 +249,35 @@ export function DomainManager({
 
           return (
             <div key={domain.id} className="p-4">
-              <div className="flex flex-wrap items-center gap-3">
-                <Globe className="h-4 w-4 flex-shrink-0 text-ink-faint" />
+              {/* Three lines, in the order the questions get asked: which
+                  address is this, what is it doing, what can I do about it.
+                  
+                  It was one line carrying up to four badges and four buttons,
+                  which wrapped differently for every row — so no two rows in
+                  the list had their controls in the same place, and the one
+                  that mattered was wherever the wrapping put it. */}
+              <div className="flex items-start gap-3">
+                <Globe className="mt-1 h-4 w-4 flex-shrink-0 text-ink-faint" />
                 <div className="min-w-0 flex-1">
                   <p className="flex flex-wrap items-center gap-2">
                     <a
                       href={`https://${domain.hostname}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="truncate text-sm font-medium text-ink hover:text-brand-600"
+                      className="truncate text-[15px] font-medium text-ink hover:text-brand-600"
                     >
                       {domain.hostname}
                     </a>
+                    {/* Two badges at most, and only for the two things that
+                        change: whether it is the main one, and whether it is
+                        working. What *kind* of address it is does not change,
+                        so it reads as a sentence below instead of a chip. */}
                     {domain.isPrimary && (
                       <Badge tone="brand">
                         <Star className="h-3 w-3" />
                         main address
                       </Badge>
                     )}
-                    {domain.isPlatform && <Badge>free address</Badge>}
-                    {former && <Badge>previous address</Badge>}
                     <Badge tone={status.tone}>
                       <StatusIcon
                         className={`h-3 w-3 ${domain.status === "VERIFIED" ? "animate-spin" : ""}`}
@@ -199,12 +285,51 @@ export function DomainManager({
                       {status.label}
                     </Badge>
                   </p>
+                  <p className="mt-1 text-xs text-ink-faint">
+                    {domain.isPlatform
+                      ? "Your free address. It always works and can't be removed."
+                      : former
+                        ? "An address you used before. It still forwards here."
+                        : "Your own domain."}
+                    {domain.lastCheckedAt &&
+                      ` Last checked ${new Date(domain.lastCheckedAt).toLocaleString()}.`}
+                  </p>
                   {domain.lastError && (
-                    <FieldError size="xs" className="mt-1">{domain.lastError}</FieldError>
+                    <FieldError size="xs" className="mt-1.5">{domain.lastError}</FieldError>
                   )}
                 </div>
 
-                <div className="flex flex-shrink-0 flex-wrap items-center gap-2">
+                {/* Removal sits apart from the rest, alone on the right. It was
+                    the last of four buttons in a wrapping row, which put it
+                    under the pointer heading for "Make main" often enough to
+                    matter. */}
+                {!domain.isPlatform && (
+                  <Button
+                    size="sm"
+                    variant="danger"
+                    disabled={pending}
+                    aria-label={`Remove ${domain.hostname}`}
+                    onClick={async () => {
+                      const ok = await confirm({
+                        title: `Remove ${domain.hostname}?`,
+                        description: domain.isPrimary
+                          ? "This is your main address. Your store will go back to using its free address, and links to this domain will stop working."
+                          : "Your store will stop answering on this domain. You can add it again later.",
+                        confirmLabel: "Remove",
+                        danger: true,
+                      });
+                      if (ok) run(() => disconnectDomain(domain.id));
+                    }}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                )}
+              </div>
+
+              {/* Every row's actions start in the same place, indented under
+                  the hostname rather than floated after whatever the badges
+                  left over. */}
+              <div className="mt-3 flex flex-wrap items-center gap-2 pl-7">
                   {/* Live domains too. A domain that has stopped working shows
                       its error here, and the merchant who has just fixed it
                       should not have to wait for the hourly checker. */}
@@ -214,7 +339,22 @@ export function DomainManager({
                       disabled={pending}
                       onClick={() => {
                         setExpanded(domain.id);
-                        run(() => checkDomain(domain.id));
+                        startTransition(async () => {
+                          const result = await checkDomain(domain.id);
+                          if (!result.ok) {
+                            toast.error(result.error, { blocking: true });
+                            return;
+                          }
+                          toast.success(result.message ?? "Done.");
+                          if (result.promoted) {
+                            setMainOn(true);
+                            setPromoted({
+                              domainId: domain.id,
+                              hostname: domain.hostname,
+                              previousPrimaryId: result.promoted.previousPrimaryId,
+                            });
+                          }
+                        });
                       }}
                     >
                       {pending ? "Checking…" : "Check now"}
@@ -273,77 +413,55 @@ export function DomainManager({
                     </Button>
                   )}
 
-                  {!domain.isPlatform && (
-                    <Button
-                      size="sm"
-                      variant="danger"
-                      disabled={pending}
-                      aria-label={`Remove ${domain.hostname}`}
-                      onClick={async () => {
-                        const ok = await confirm({
-                          title: `Remove ${domain.hostname}?`,
-                          description: domain.isPrimary
-                            ? "This is your main address. Your store will go back to using its free address, and links to this domain will stop working."
-                            : "Your store will stop answering on this domain. You can add it again later.",
-                          confirmLabel: "Remove",
-                          danger: true,
-                        });
-                        if (ok) run(() => disconnectDomain(domain.id));
-                      }}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  )}
                 </div>
-              </div>
 
               {showRecords && (
-                <div className="mt-4 rounded-lg border border-border bg-subtle p-3">
+                <div className="mt-3 ml-7 rounded-xl border border-border p-4">
                   <p className="text-xs leading-snug text-ink-soft">
                     Add these at whoever you bought {domain.hostname} from. Changes usually take a
                     few minutes, occasionally up to an hour.
                   </p>
-                  <div className="mt-3 space-y-3">
-                    {domain.records.map((record) => (
-                      <div key={`${record.type}-${record.name}`} className="text-xs">
-                        <p className="font-medium text-ink">
-                          {record.type} record, {record.purpose}
-                        </p>
-                        <dl className="mt-1.5 grid grid-cols-[auto_1fr_auto] items-center gap-x-3 gap-y-1">
-                          <dt className="text-ink-faint">Name</dt>
-                          <dd className="overflow-x-auto whitespace-nowrap font-mono text-ink">
-                            {record.name}
-                          </dd>
-                          <button
-                            type="button"
-                            onClick={() => copy(record.name)}
-                            aria-label={`Copy the name for the ${record.type} record`}
-                            className="rounded p-1 text-ink-faint transition-colors hover:bg-black/5 hover:text-ink"
-                          >
-                            <Copy className="h-3 w-3" />
-                          </button>
 
-                          <dt className="text-ink-faint">Value</dt>
-                          <dd className="overflow-x-auto whitespace-nowrap font-mono text-ink">
-                            {record.value}
-                          </dd>
-                          <button
-                            type="button"
-                            onClick={() => copy(record.value)}
-                            aria-label={`Copy the value for the ${record.type} record`}
-                            className="rounded p-1 text-ink-faint transition-colors hover:bg-black/5 hover:text-ink"
-                          >
-                            <Copy className="h-3 w-3" />
-                          </button>
-                        </dl>
+                  {/* Each value in a recessed field with its own copy button.
+                      
+                      It was a three-column grid of label, value and icon, twice
+                      per record — so a record read as six loose cells and the
+                      thing you actually need to select was the one part with no
+                      edge around it. A field is the shape a merchant already
+                      knows how to copy out of. */}
+                  <div className="mt-3 space-y-4">
+                    {domain.records.map((record) => (
+                      <div key={`${record.type}-${record.name}`}>
+                        <p className="text-xs font-medium text-ink">
+                          {record.type} record
+                          <span className="font-normal text-ink-faint"> — {record.purpose}</span>
+                        </p>
+                        <div className="mt-2 space-y-1.5">
+                          {[
+                            { label: "Name", value: record.name },
+                            { label: "Value", value: record.value },
+                          ].map((field) => (
+                            <div key={field.label} className="flex items-center gap-2">
+                              <span className="w-11 flex-shrink-0 text-xs text-ink-faint">
+                                {field.label}
+                              </span>
+                              <code className="min-w-0 flex-1 overflow-x-auto whitespace-nowrap rounded-lg bg-control px-2.5 py-1.5 font-mono text-xs text-ink">
+                                {field.value}
+                              </code>
+                              <button
+                                type="button"
+                                onClick={() => copy(field.value)}
+                                aria-label={`Copy the ${field.label.toLowerCase()} for the ${record.type} record`}
+                                className="flex-shrink-0 rounded-lg p-1.5 text-ink-faint transition-colors hover:bg-control hover:text-ink"
+                              >
+                                <Copy className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     ))}
                   </div>
-                  {domain.lastCheckedAt && (
-                    <p className="mt-3 text-[11px] text-ink-faint">
-                      Last checked {new Date(domain.lastCheckedAt).toLocaleString()}
-                    </p>
-                  )}
                 </div>
               )}
             </div>

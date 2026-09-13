@@ -24,6 +24,17 @@ import {
 
 export type Result = { ok: true; message?: string } | { ok: false; error: string };
 
+/**
+ * What a check returns.
+ *
+ * `promoted` is present when this check is what made the domain the shop's main
+ * address — see verifyDomain. It carries what the main address was before, so
+ * the screen can offer to put it back.
+ */
+export type CheckResult =
+  | { ok: true; message?: string; promoted?: { previousPrimaryId: string | null } }
+  | { ok: false; error: string };
+
 export async function connectDomain(hostname: string): Promise<Result> {
   const me = await requireRole("ADMIN");
 
@@ -66,7 +77,7 @@ export async function connectDomain(hostname: string): Promise<Result> {
 }
 
 /** The merchant pressing "check now", having just changed their DNS. */
-export async function checkDomain(domainId: string): Promise<Result> {
+export async function checkDomain(domainId: string): Promise<CheckResult> {
   const me = await requireRole("ADMIN");
 
   const limited = await rateLimit("domainCheck", `${me.shop.id}:${domainId}`);
@@ -86,6 +97,23 @@ export async function checkDomain(domainId: string): Promise<Result> {
   revalidatePath("/admin/domains");
 
   if (outcome.status === "ACTIVE") {
+    // The promotion already happened in verifyDomain. This hands the screen
+    // enough to say so and to offer the way back — a notice, not a question.
+    if (outcome.promoted) {
+      await audit({
+        shopId: me.shop.id,
+        action: "domain.primary",
+        userId: me.userId,
+        actorEmail: me.email,
+        entity: "Domain",
+        entityId: domainId,
+      });
+      return {
+        ok: true,
+        message: "That domain is live.",
+        promoted: { previousPrimaryId: outcome.promoted.previousPrimaryId },
+      };
+    }
     return { ok: true, message: "That domain is live." };
   }
   if (outcome.status === "VERIFIED") {

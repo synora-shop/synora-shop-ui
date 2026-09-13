@@ -109,6 +109,13 @@ export type VerifyOutcome = {
   status: "PENDING" | "VERIFIED" | "ACTIVE" | "FAILED";
   /** What to tell the merchant. Null when it is serving. */
   message: string | null;
+  /**
+   * Set when this check is what made the domain the shop's main address.
+   *
+   * `previousPrimaryId` is what it was before, so the screen can offer to put
+   * it back. Null there means the shop had no main address at all.
+   */
+  promoted?: { previousPrimaryId: string | null };
 };
 
 /**
@@ -223,9 +230,44 @@ export async function verifyDomain(
     },
   });
 
+  /*
+   * A domain that has just started serving becomes the main address.
+   *
+   * Connecting your own domain and then still being on the free one is not a
+   * state anybody wants to be in — it was reachable but not canonical, so links
+   * and search results kept naming an address the merchant had stopped using.
+   * The step that fixed it was a button nobody knew to press, and the merchants
+   * who never pressed it were exactly the ones who most needed it pressed.
+   *
+   * Done here rather than on the screen because this runs from the hourly sweep
+   * too. A domain that goes live at three in the morning is main by the time
+   * anybody looks, which is the whole point: not reading is the common case and
+   * it has to end somewhere sensible.
+   *
+   * `promoted` is returned so the screen can say what happened and offer the
+   * way back. It is a notice and an undo, not a question — the answer is
+   * already applied.
+   */
+  let promoted: VerifyOutcome["promoted"];
+  if (serving && domain.status !== "ACTIVE" && !domain.isPrimary) {
+    const previous = await prisma.domain.findFirst({
+      where: { shopId: domain.shopId, isPrimary: true },
+      select: { id: true },
+    });
+    await prisma.$transaction([
+      prisma.domain.updateMany({
+        where: { shopId: domain.shopId, isPrimary: true },
+        data: { isPrimary: false },
+      }),
+      prisma.domain.update({ where: { id: domain.id }, data: { isPrimary: true } }),
+    ]);
+    promoted = { previousPrimaryId: previous?.id ?? null };
+  }
+
   return {
     status: serving ? "ACTIVE" : "VERIFIED",
     message: serving ? null : (state?.problem ?? "Waiting for the certificate."),
+    promoted,
   };
 }
 
