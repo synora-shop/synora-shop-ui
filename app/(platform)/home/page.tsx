@@ -20,12 +20,6 @@ export const metadata: Metadata = {
  * it on a line.
  */
 
-const START = [
-  { n: "01", title: "Pick a name", body: "Your shop is live on its free address straight away." },
-  { n: "02", title: "Add your products", body: "Or bring the whole catalogue over from Shopify." },
-  { n: "03", title: "Connect your domain", body: "Whenever you're ready. Not before." },
-];
-
 const COMPARISON = [
   { them: "Paying per app to finish the basics", us: "The basics are the product" },
   { them: "A theme that costs more than the platform", us: "Every theme included, all of them" },
@@ -48,7 +42,7 @@ export default function PlatformHome() {
           }}
         />
 
-        <div className="relative mx-auto max-w-6xl px-5 pb-16 pt-14 sm:pb-20 sm:pt-20">
+        <div className="relative mx-auto max-w-[84rem] px-5 pb-16 pt-14 sm:pb-20 sm:pt-20">
           <p className="inline-flex items-center gap-2 rounded-pill border border-white/15 bg-white/5 px-3 py-1 text-xs font-medium text-white/80 backdrop-blur">
             <span className="h-1.5 w-1.5 rounded-full bg-brand-300" />
             Open a shop today. Use your own domain this afternoon.
@@ -107,7 +101,7 @@ export default function PlatformHome() {
           with a tall band that starts at the hero's exact colour and arrives at
           its own, so the two are one continuous surface. Content begins below
           the band. */}
-      <section className="relative bg-surface">
+      <section className="relative -mt-px bg-surface pt-px">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-x-0 top-0 h-64"
@@ -117,7 +111,7 @@ export default function PlatformHome() {
           }}
         />
 
-        <div className="relative mx-auto max-w-6xl px-5 pb-20 pt-40 sm:pb-28 sm:pt-48">
+        <div className="relative mx-auto max-w-[84rem] px-5 pb-20 pt-40 sm:pb-28 sm:pt-48">
           <p className="inline-flex items-center gap-2 rounded-pill border border-border bg-surface px-3 py-1 text-[11px] font-medium uppercase tracking-[0.09em] text-ink-soft">
             <span className="h-1 w-1 rounded-full bg-brand-500" />
             What makes it different
@@ -193,7 +187,7 @@ export default function PlatformHome() {
           is a strip with nowhere to put what a tile might reveal. Here they
           are the control for the panel beneath them. */}
       <section id="showcase" className="relative bg-surface pb-20 sm:pb-28">
-        <div className="showcase relative mx-auto max-w-6xl px-5">
+        <div className="showcase relative mx-auto max-w-[84rem] px-5">
           <input type="radio" name="sc" id="sc-a" defaultChecked className="sr-only" />
           <input type="radio" name="sc" id="sc-b" className="sr-only" />
           <input type="radio" name="sc" id="sc-c" className="sr-only" />
@@ -288,35 +282,10 @@ export default function PlatformHome() {
         </div>
       </section>
 
-      {/* =============================================================== start */}
-      <section className="relative bg-surface pb-24">
-        <div className="mx-auto max-w-6xl px-5">
-          <div className="overflow-hidden rounded-3xl border border-border">
-            <div className="grid sm:grid-cols-3">
-              {START.map(({ n, title, body }, i) => (
-                <div
-                  key={n}
-                  className={`group relative px-7 py-9 transition-colors hover:bg-brand-50 ${
-                    i > 0 ? "sm:border-l sm:border-border" : ""
-                  } ${i > 0 ? "border-t border-border sm:border-t-0" : ""}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="font-mono text-xs tracking-widest text-brand-500">{n}</span>
-                    <span className="h-px flex-1 bg-border transition-colors group-hover:bg-brand-300" />
-                  </div>
-                  <h3 className="mt-4 text-lg font-semibold text-ink">{title}</h3>
-                  <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">{body}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* ========================================================= close
           The argument and the ask, on one dark surface. They belong together:
           the comparison earns the button directly above it. */}
-      <section className="relative isolate overflow-hidden bg-night">
+      <section className="relative isolate -mt-px overflow-hidden bg-night pt-px">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0"
@@ -336,7 +305,7 @@ export default function PlatformHome() {
           }}
         />
 
-        <div className="relative mx-auto max-w-6xl px-5 pb-20 pt-32 sm:pb-28 sm:pt-40">
+        <div className="relative mx-auto max-w-[84rem] px-5 pb-20 pt-32 sm:pb-28 sm:pt-40">
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.75fr)] lg:items-end">
             <h2 className="text-3xl font-semibold leading-[1.1] tracking-tight text-balance text-white sm:text-5xl">
               Coming from
