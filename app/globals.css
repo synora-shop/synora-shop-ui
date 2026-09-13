@@ -207,21 +207,40 @@
    it — the drawing puts a light field inside a grey bar for exactly this
    reason. Scoped to the panel, and only where a component has not already
    said otherwise. */
-/* The Synora Digitals mark in the footer, breathing.
+/* The Synora Digitals mark in the footer, catching the light.
  *
- * A slow, shallow pulse on the glow rather than on the mark itself: the shape
- * stays put and only the light around it moves, which catches the eye at the
- * edge of vision without pulling it away from whatever is being read. Six
- * seconds, because anything faster reads as a notification demanding something.
+ * It pulsed a drop-shadow before, which is why it dragged: `filter` repaints
+ * the element on every frame of the animation, forever, on a page that is
+ * otherwise still. The glow is static now and what moves is a band of light
+ * swept through the mark — animated on `transform` alone, which the compositor
+ * handles without repainting anything.
+ *
+ * The band is clipped to the letterform rather than laid over its box, so the
+ * light travels through the mark instead of across a rectangle around it. Same
+ * idea as the sheen on synoradigitals.com's own buttons, with two differences:
+ * theirs runs on hover and animates background-position, this one runs
+ * continuously and cannot afford to repaint.
+ *
+ * It spends most of the cycle parked off the left edge — 2.6 seconds still for
+ * every 1.4 sweeping — so it reads as an occasional glint rather than a thing
+ * demanding to be looked at.
  */
-@keyframes sd-breathe {
-  0%, 100% { filter: drop-shadow(0 0 3px rgb(102 102 255 / 0.35)); opacity: 0.82; }
-  50%      { filter: drop-shadow(0 0 11px rgb(102 102 255 / 0.85)); opacity: 1; }
+.sd-mark {
+  filter: drop-shadow(0 0 7px rgb(102 102 255 / 0.45));
 }
-.sd-mark { animation: sd-breathe 6s ease-in-out infinite; }
-.sd-mark:hover { animation-duration: 2.4s; }
+.sd-sheen {
+  animation: sd-sheen 4s linear infinite;
+  will-change: transform;
+}
+@keyframes sd-sheen {
+  0%, 65%  { transform: translateX(-40px) skewX(-16deg); }
+  100%     { transform: translateX(74px) skewX(-16deg); }
+}
+.sd-mark:hover .sd-sheen,
+a:hover .sd-sheen { animation-duration: 1.6s; }
+
 @media (prefers-reduced-motion: reduce) {
-  .sd-mark { animation: none; filter: drop-shadow(0 0 6px rgb(102 102 255 / 0.5)); }
+  .sd-sheen { animation: none; opacity: 0; }
 }
 
 /* A tab set with no JavaScript.
