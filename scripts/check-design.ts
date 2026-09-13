@@ -206,6 +206,48 @@ check(
   );
 }
 
+/* What colour a phone paints around the status bar.
+   
+   The manifest decides it, and nothing on any screen does — which is how it
+   went unnoticed that it was still #4c100f, a maroon from a palette this
+   product stopped using and one that belongs to a different business. Every
+   check passed and every screen was right; the strip above the page was
+   maroon on a phone for as long as nobody opened it on one.
+   
+   Held to the panel's own ground, because the manifest's start_url is the
+   panel. A site that wants different chrome declares its own themeColor —
+   see app/(platform)/layout.tsx. */
+{
+  const manifest = readFileSync(join(ROOT, "app/manifest.ts"), "utf8");
+  check(
+    "the installed app is painted in the panel's own colour",
+    /theme_color:\s*"#f5f5f5"/.test(manifest) && /background_color:\s*"#f5f5f5"/.test(manifest),
+    "a phone paints its chrome from this, and no screen shows it"
+  );
+  // Declarations, not file text. The first version searched the whole file
+  // and failed on the comment that explains why #4c100f is banned — the same
+  // trap the panel's palette check fell into, and for the same reason: a
+  // colour being *mentioned* is not a colour being used.
+  check(
+    "no retired palette declared in the manifest",
+    !/(?:theme_color|background_color):\s*"(?:#4c100f|#f8f5f1)"/.test(manifest),
+    "#4c100f is not this product's colour"
+  );
+  check(
+    "and it calls the product by its name",
+    /name:\s*"APP by Synora Digitals"/.test(manifest) && !/Shop Admin/.test(manifest),
+    "it said Shop Admin, which the naming guard never looked at"
+  );
+  // The marketing site opens and closes on night, so a light strip above it
+  // reads as a different page bolted on top.
+  const platform = readFileSync(join(ROOT, "app/(platform)/layout.tsx"), "utf8");
+  check(
+    "the front page declares its own chrome colour",
+    /themeColor:\s*"#0c0c1e"/.test(platform),
+    "otherwise it inherits the panel's light one from the manifest"
+  );
+}
+
 /* Text is black now, and the greys under it are neutral. Against true black a
    navy-tinted grey reads as purple rather than as quieter text. */
 check("body text is black", /--color-ink:\s*#000000;/.test(css));

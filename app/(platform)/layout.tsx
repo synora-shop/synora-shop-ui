@@ -1,3 +1,4 @@
+import type { Viewport } from "next";
 import Link from "next/link";
 import { appUrl } from "@/lib/shop-context";
 import { SynoraAppMark } from "@/components/ui/synora-marks";
@@ -17,6 +18,18 @@ import { SynoraAppMark } from "@/components/ui/synora-marks";
  * consequence is that this site cannot tell whether you are signed in, so the
  * header always offers to sign you in rather than guessing.
  */
+/**
+ * What colour a phone paints around the status bar on this site.
+ *
+ * Declared here rather than left to the manifest, because the manifest belongs
+ * to the panel — its start_url is /admin and its colour is the panel's ground.
+ * This site opens and closes on night, so a light strip above it reads as a
+ * different page bolted on top.
+ */
+export const viewport: Viewport = {
+  themeColor: "#0c0c1e",
+};
+
 export default function PlatformLayout({ children }: LayoutProps<"/">) {
   return (
     <div className="platform-shell flex min-h-dvh flex-col bg-night font-sans text-ink">
