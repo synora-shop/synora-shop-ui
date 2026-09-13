@@ -207,6 +207,45 @@
    it — the drawing puts a light field inside a grey bar for exactly this
    reason. Scoped to the panel, and only where a component has not already
    said otherwise. */
+/* A tab set with no JavaScript.
+ *
+ * Three radios carry the state, the labels switch them, and :has() on the
+ * wrapper lights the chosen tile and reveals its panel. The front page is a
+ * server component and stays one: a marketing page that ships a bundle to
+ * switch between three panels has spent a merchant's first two seconds on
+ * something a radio button has done since 1995.
+ *
+ * Every panel is in the markup, so the page reads correctly with CSS disabled
+ * and a screen reader meets a labelled radio group rather than a widget.
+ */
+.showcase [data-panel] { display: none; }
+.showcase:has(#sc-a:checked) [data-panel="a"],
+.showcase:has(#sc-b:checked) [data-panel="b"],
+.showcase:has(#sc-c:checked) [data-panel="c"] { display: block; }
+
+.showcase:has(#sc-a:checked) [data-tile="a"],
+.showcase:has(#sc-b:checked) [data-tile="b"],
+.showcase:has(#sc-c:checked) [data-tile="c"] {
+  transform: translateY(-6px);
+  filter: saturate(1.35) brightness(1.12);
+}
+/* The chosen tile keeps a ring the others do not have, so the state survives
+   for somebody who cannot see the lift. */
+.showcase:has(#sc-a:checked) [data-tile="a"]::after,
+.showcase:has(#sc-b:checked) [data-tile="b"]::after,
+.showcase:has(#sc-c:checked) [data-tile="c"]::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border-radius: 30px;
+  border: 1px solid rgb(255 255 255 / 0.42);
+}
+.showcase label:focus-within {
+  outline: 2px solid rgb(255 255 255 / 0.7);
+  outline-offset: 6px;
+  border-radius: 28px;
+}
+
 /* The product's own site, in the product's own colours.
  *
  * Scoped rather than set on :root for the same reason the panel is: :root is

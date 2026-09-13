@@ -27,11 +27,11 @@ const START = [
 ];
 
 const COMPARISON = [
-  { them: "Editing a live theme and hoping", us: "See the real page as you change it" },
-  { them: "Deletes that quietly break other pages", us: "Warned first, undone after" },
   { them: "Paying per app to finish the basics", us: "The basics are the product" },
-  { them: "Staff accounts behind a higher plan", us: "Your team, from day one" },
-  { them: "Domain setup that ends in a support chat", us: "Two copy-pastes, checked while you wait" },
+  { them: "A theme that costs more than the platform", us: "Every theme included, all of them" },
+  { them: "A paid add-on just for a WhatsApp button", us: "Chat buttons for any app, free" },
+  { them: "Choosing a plan before you know what you need", us: "One price. Get on with selling" },
+  { them: "The same dashboard whatever you sell", us: "A panel shaped to your business" },
 ];
 
 export default function PlatformHome() {
@@ -91,17 +91,13 @@ export default function PlatformHome() {
             <p className="text-sm text-white/60">
               No card to start. Your free address works the moment you sign up.
             </p>
-            <div className="flex gap-4">
-              <Glass hue={IRIS} label="Your catalogue">
-                <Layers hue={IRIS} />
-              </Glass>
-              <Glass hue={SKY} label="Your shop">
-                <Orb hue={SKY} />
-              </Glass>
-              <Glass hue={MINT} label="Your orders">
-                <Parcel hue={MINT} />
-              </Glass>
-            </div>
+            <a
+              href="#showcase"
+              className="group inline-flex items-center gap-2 text-sm font-medium text-white/70 transition-colors hover:text-white"
+            >
+              See what it actually does
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            </a>
           </div>
         </div>
       </section>
@@ -184,6 +180,106 @@ export default function PlatformHome() {
               <Point>Your packer sees orders, not your takings</Point>
               <Point>Sign everyone out of a lost phone at once</Point>
             </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================ showcase
+          The tiles, doing a job. They were decoration in the hero rail, which
+          is a strip with nowhere to put what a tile might reveal. Here they
+          are the control for the panel beneath them. */}
+      <section id="showcase" className="relative bg-surface pb-20 sm:pb-28">
+        <div className="showcase relative mx-auto max-w-6xl px-5">
+          <input type="radio" name="sc" id="sc-a" defaultChecked className="sr-only" />
+          <input type="radio" name="sc" id="sc-b" className="sr-only" />
+          <input type="radio" name="sc" id="sc-c" className="sr-only" />
+
+          <div className="rounded-3xl border border-border bg-night px-6 py-10 sm:px-10 sm:py-12">
+            <div className="flex flex-wrap items-start justify-center gap-5 sm:gap-7">
+              <Tile id="sc-a" tile="a" hue={IRIS} caption="Shaped to your business">
+                <Layers hue={IRIS} />
+              </Tile>
+              <Tile id="sc-b" tile="b" hue={SKY} caption="Themes, all included">
+                <Orb hue={SKY} />
+              </Tile>
+              <Tile id="sc-c" tile="c" hue={MINT} caption="Find any change">
+                <Parcel hue={MINT} />
+              </Tile>
+            </div>
+
+            <div className="mt-10 border-t border-white/10 pt-9">
+              <Panel
+                id="a"
+                title="Tell it what you sell, and the panel follows"
+                body="A fine-dining room, a portfolio of work, a rail of clothes — they do not need the same screens. You pick what you run when you sign up, and the dashboard arrives shaped for it instead of making you ignore half of it."
+              >
+                <div className="flex flex-wrap gap-2.5">
+                  {[
+                    ["Products to sell", true],
+                    ["A restaurant", false],
+                    ["A portfolio", false],
+                  ].map(([label, live]) => (
+                    <span
+                      key={label as string}
+                      className={`rounded-pill border px-3.5 py-1.5 text-sm ${
+                        live
+                          ? "border-white/40 bg-white/10 text-white"
+                          : "border-white/15 text-white/45"
+                      }`}
+                    >
+                      {label as string}
+                      {!live && <span className="ml-2 text-[11px] text-white/35">soon</span>}
+                    </span>
+                  ))}
+                </div>
+              </Panel>
+
+              <Panel
+                id="b"
+                title="Every theme, on the one price"
+                body="No theme store, no licence, no upgrade to unlock the good one. Each is built with the features already in it, so the only decision you make is which one suits what you sell — not which plan it sits behind."
+              >
+                <div className="grid gap-2.5 sm:grid-cols-2">
+                  {["Aurora", "Atlas"].map((t) => (
+                    <div
+                      key={t}
+                      className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3"
+                    >
+                      <span className="h-9 w-12 flex-shrink-0 rounded-md bg-white/15" />
+                      <span>
+                        <span className="block text-sm font-medium text-white">{t}</span>
+                        <span className="block text-xs text-white/45">Included</span>
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </Panel>
+
+              <Panel
+                id="c"
+                title="Changed something and cannot find it? It will take you there"
+                body="Turn a setting on and the shop can look identical, because whatever it changed is three screens away or below the fold. Here you press show me where, and it scrolls to the thing, holds a ring around it, and waits. The large platforms leave you hunting."
+              >
+                <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="text-sm text-white/70">Low stock badge</span>
+                    <span className="rounded-pill bg-white px-3 py-1 text-xs font-medium text-night">
+                      Show me where
+                    </span>
+                  </div>
+                  <div className="mt-4 flex items-center gap-3 rounded-lg p-2.5 ring-2 ring-brand-300">
+                    <span className="h-8 w-8 rounded bg-white/20" />
+                    <span className="flex-1 space-y-1.5">
+                      <span className="block h-1.5 w-28 rounded-full bg-white/25" />
+                      <span className="block h-1.5 w-16 rounded-full bg-white/15" />
+                    </span>
+                    <span className="rounded-pill bg-brand-300/20 px-2 py-0.5 text-[11px] text-brand-300">
+                      Only 3 left
+                    </span>
+                  </div>
+                </div>
+              </Panel>
+            </div>
           </div>
         </div>
       </section>
@@ -545,27 +641,61 @@ const IRIS = "183,185,255";
 const SKY = "200,231,255";
 const MINT = "184,239,214";
 
-function Glass({
+/** A tile that selects a panel. The input is its own, so the label toggles it
+    and keyboard focus lands somewhere real. */
+function Tile({
+  id,
+  tile,
   hue,
-  label,
+  caption,
   children,
 }: {
+  id: string;
+  tile: string;
   hue: string;
-  label: string;
+  caption: string;
   children: React.ReactNode;
 }) {
   return (
-    <div
-      role="img"
-      aria-label={label}
-      className="grid h-[112px] w-[112px] flex-shrink-0 place-items-center rounded-[26px] backdrop-blur-md transition-transform duration-300 hover:-translate-y-1.5 sm:h-[140px] sm:w-[140px]"
-      style={{
-        background: `linear-gradient(148deg, rgba(${hue},0.40) 0%, rgba(${hue},0.12) 46%, rgba(${hue},0.22) 100%)`,
-        border: `1px solid rgba(${hue},0.58)`,
-        boxShadow: `0 0 64px rgba(${hue},0.38), 0 0 22px rgba(${hue},0.28), 0 18px 44px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.45), inset 0 -24px 48px rgba(${hue},0.12)`,
-      }}
-    >
-      {children}
+    <label htmlFor={id} className="flex cursor-pointer flex-col items-center gap-3">
+      <span
+        data-tile={tile}
+        className="relative grid h-[104px] w-[104px] place-items-center rounded-[26px] backdrop-blur-md transition-all duration-300 sm:h-[128px] sm:w-[128px]"
+        style={{
+          background: `linear-gradient(148deg, rgba(${hue},0.40) 0%, rgba(${hue},0.12) 46%, rgba(${hue},0.22) 100%)`,
+          border: `1px solid rgba(${hue},0.58)`,
+          boxShadow: `0 0 64px rgba(${hue},0.38), 0 0 22px rgba(${hue},0.28), 0 18px 44px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.45), inset 0 -24px 48px rgba(${hue},0.12)`,
+        }}
+      >
+        {children}
+      </span>
+      <span className="max-w-[128px] text-center text-xs font-medium leading-snug text-white/70">
+        {caption}
+      </span>
+    </label>
+  );
+}
+
+function Panel({
+  id,
+  title,
+  body,
+  children,
+}: {
+  id: string;
+  title: string;
+  body: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div data-panel={id} className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.95fr)]">
+      <div>
+        <h3 className="text-2xl font-semibold leading-tight text-balance text-white sm:text-3xl">
+          {title}
+        </h3>
+        <p className="mt-3 max-w-md text-sm leading-relaxed text-white/60">{body}</p>
+      </div>
+      <div className="lg:pt-1">{children}</div>
     </div>
   );
 }
