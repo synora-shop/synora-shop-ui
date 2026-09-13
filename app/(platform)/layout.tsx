@@ -20,11 +20,11 @@ import { SynoraAppMark } from "@/components/ui/synora-marks";
 export default function PlatformLayout({ children }: LayoutProps<"/">) {
   return (
     <div className="platform-shell flex min-h-dvh flex-col bg-canvas font-sans text-ink">
-      <header className="sticky top-0 z-40 border-b border-border bg-canvas/85 backdrop-blur">
+      <header className="sticky top-0 z-40 border-b border-white/10 bg-night text-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3.5">
           <Link
             href="/"
-            className="rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-4"
+            className="rounded text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-4 focus-visible:ring-offset-night"
           >
             <SynoraAppMark />
           </Link>
@@ -32,13 +32,13 @@ export default function PlatformLayout({ children }: LayoutProps<"/">) {
           <nav className="flex items-center gap-1 text-sm">
             <a
               href={appUrl("/merchant/login")}
-              className="rounded-lg px-3 py-2 font-medium text-ink-soft transition-colors hover:bg-subtle hover:text-ink"
+              className="rounded-pill px-3 py-2 font-medium text-white/70 transition-colors hover:bg-white/10 hover:text-white"
             >
               Log in
             </a>
             <a
               href={appUrl("/merchant/signup")}
-              className="rounded-pill bg-brand-500 px-4 py-2 font-medium text-white transition-colors hover:bg-brand-600"
+              className="rounded-pill bg-white px-4 py-2 font-medium text-night transition-colors hover:bg-white/90"
             >
               Start free
             </a>

@@ -1,251 +1,211 @@
 import type { Metadata } from "next";
 import { appUrl } from "@/lib/shop-context";
-import { ArrowRight, Check, Copy } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 
-// No title here on purpose: this is the site's front page, so the root
-// layout's default is exactly right. Setting one would get "· APP"
-// appended by the root template and say the name twice.
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
 /**
- * The front door, and the application host's root.
+ * The front door.
  *
- * Two audiences meet here and want opposite things. Somebody who has never
- * heard of this needs to know what it is before being asked for an email
- * address; somebody who already has a store wants their panel. The page is
- * written for the first, because the second has a bookmark.
- *
- * On the numbers: every figure on this page is one that can be checked against
- * the product. There is no uptime percentage, no customer count, no "3.8x
- * efficiency". A young product quoting an invented number is making the one
- * promise it cannot keep, and the true numbers here — thirty-four sections,
- * two records, five ways to be paid — are more specific than an invented one
- * would have been.
+ * Copy rule for this file: say what a shop owner gets, in the words they would
+ * use, and stop. Not how it works. An earlier version of this page explained
+ * that stock is held while a payment is in flight and that credentials are
+ * sealed before storage — true, and nobody selling clothes has ever wanted to
+ * know it. If a line could appear in the architecture document, it does not
+ * belong here.
  */
 
-/** The figures under the hero. All of them countable in the product. */
-const PROOF = [
-  { figure: "34", label: "kinds of section to build a page from" },
-  { figure: "2", label: "DNS records to connect your own domain" },
-  { figure: "5", label: "ways to take money, cash to card" },
-  { figure: "0", label: "apps to install before it works" },
-];
-
-/** What you get, grouped the way the panel itself is grouped. */
-const OFFERS: { kicker: string; title: string; body: string; points: string[] }[] = [
+/** What you get. Four words where four words will do. */
+const GROUPS: { kicker: string; title: string; points: string[] }[] = [
   {
-    kicker: "Selling",
-    title: "A catalogue that understands how you sell",
-    body: "Not everything is bought by clicking add-to-cart, so a product can be one of three things.",
+    kicker: "Your products",
+    title: "However you sell it",
     points: [
-      "Priced and stocked, straight into the cart",
-      "Sold in bulk, with a minimum quantity and tiered prices",
-      "Made to order, taking an enquiry instead of a checkout",
-      "Sizes and colours with their own stock and prices",
-      "Profit and margin worked out as you type the cost",
+      "Sizes and colours, each with its own stock",
+      "Bulk orders with tiered prices",
+      "Made-to-order pieces that take enquiries",
+      "Your profit on every item, as you price it",
     ],
   },
   {
-    kicker: "Running it",
-    title: "Orders, customers and the numbers",
-    body: "Everything that happens after somebody buys, in one place and in plain words.",
+    kicker: "Your orders",
+    title: "Know where everything is",
     points: [
-      "Orders from pending through to delivered",
-      "Enquiries tracked from new to won or lost",
-      "Customers, their orders, addresses and totals",
-      "Revenue, profit, best sellers, where visitors came from",
-      "A notification on your phone the moment an order lands",
+      "Every order from new to delivered",
+      "Your phone buzzes the moment one lands",
+      "Quotes tracked until they're won",
+      "Customers, and what they've spent",
     ],
   },
   {
-    kicker: "Looking right",
-    title: "Build the shop while it is open",
-    body: "Lay out any page from thirty-four kinds of section, with your real storefront beside you as you work.",
+    kicker: "Your shop",
+    title: "Build it while it's open",
     points: [
-      "Slideshows, galleries, comparisons, testimonials, countdowns",
-      "Two themes, each with its own arrangement and features",
-      "Try a theme for as long as you like without publishing it",
-      "Menus, wording and fonts, all editable",
-      "Your own uploaded fonts, checked before they are accepted",
+      "Thirty-four blocks — sliders, galleries, reviews",
+      "Watch the real page change as you type",
+      "Try a new look before anyone sees it",
+      "Your own fonts and colours",
     ],
   },
   {
-    kicker: "Being found",
-    title: "Your own address, working properly",
-    body: "Paste your domain, copy two records at your registrar, and the panel checks them while you wait.",
+    kicker: "Your address",
+    title: "Be easy to find",
     points: [
-      "A free address that works the moment you sign up",
-      "One address is the real one and the rest redirect to it",
-      "The moment your domain goes live it becomes the main one",
-      "Old links keep working when a page moves",
-      "Search engines told which address is the real one",
+      "A free web address the day you sign up",
+      "Use the domain you already own",
+      "One address people find you at",
+      "Old links keep working",
     ],
   },
   {
-    kicker: "Getting paid",
-    title: "The money goes to your bank",
-    body: "You connect your own gateway account. We are never a party to the payment — no cut, no float, nothing passing through us.",
+    kicker: "Your money",
+    title: "Paid the way your customers pay",
     points: [
-      "Card payments through PayFast",
-      "Cash on delivery, bank transfer, JazzCash, Easypaisa",
-      "An order is only marked paid after asking the provider",
-      "Stock is held while a payment is in flight, released if it fails",
-      "Your keys are sealed before they are stored",
+      "Cash on delivery, bank transfer, card",
+      "JazzCash and Easypaisa",
+      "Straight into your bank, never ours",
+      "Never ship against a payment that failed",
     ],
   },
   {
-    kicker: "Working together",
-    title: "Your team, at the level they need",
-    body: "Invite people by email; they keep their own sign-in and you choose what they can reach.",
+    kicker: "Your team",
+    title: "Bring in help safely",
     points: [
-      "Four levels, from owner down to look-but-don't-touch",
-      "Domains and payments need admin, not staff",
-      "An invitation only works for the address you sent it to",
-      "Sign out everywhere, for when you signed in somewhere you shouldn't",
-      "A record of who changed what",
+      "Give each person only what they need",
+      "Your packer sees orders, not your takings",
+      "Sign everyone out of a lost phone at once",
     ],
   },
 ];
 
-/**
- * The domain records, shown rather than described.
- *
- * The reference this page is shaped after put a fake product simulator here,
- * with a play button and an invented stream of events. The honest version of
- * that section is showing a real artefact: these are the two records the panel
- * actually gives you, in the format it actually gives them, and the value is a
- * real one in shape — it is what the TXT record looks like.
- */
-const RECORDS = [
-  {
-    type: "TXT",
-    purpose: "Proves the domain is yours",
-    name: "_synora-verify",
-    value: "synora-verify=0mM5kp_t2Y2…",
-  },
-  {
-    type: "A",
-    purpose: "Sends visitors to your store",
-    name: "@",
-    value: "216.198.79.1",
-  },
-];
-
-/**
- * Comparisons, kept honest.
- *
- * Every line is something this codebase actually does. A merchant who signs up
- * on the strength of a promise and finds it missing is worse than one who never
- * signed up at all.
- */
 const COMPARISON = [
-  { them: "Editing a live theme, hoping", us: "A live preview of the real page as you edit" },
-  { them: "Deletes that quietly break other pages", us: "Warned before, recoverable after" },
-  { them: "Per-app fees to complete the basics", us: "The basics are the product" },
-  { them: "Staff roles behind a higher plan", us: "Roles and invitations from day one" },
-  { them: "Domain setup that ends in support chat", us: "Two records, checked while you wait" },
+  { them: "Editing a live theme and hoping", us: "See the real page as you change it" },
+  { them: "Deletes that quietly break other pages", us: "Warned first, undone after" },
+  { them: "Paying per app to finish the basics", us: "The basics are the product" },
+  { them: "Staff accounts behind a higher plan", us: "Your team, from day one" },
+  { them: "Domain setup that ends in a support chat", us: "Two copy-pastes, checked while you wait" },
 ];
 
-/** Numbered because it is genuinely a sequence, not for decoration. */
 const START = [
-  { n: "1", title: "Pick a name", body: "Your store is live on its free address straight away, with nothing to configure." },
-  { n: "2", title: "Add a few products", body: "Or bring a whole catalogue in from a Shopify CSV — it loads column for column." },
-  { n: "3", title: "Connect your domain", body: "When you are ready, not before. Two records, and the panel watches for them." },
+  { n: "01", title: "Pick a name", body: "Your shop is live on its free address straight away." },
+  { n: "02", title: "Add your products", body: "Or bring the whole catalogue over from Shopify." },
+  { n: "03", title: "Connect your domain", body: "Whenever you're ready. Not before." },
 ];
 
 export default function PlatformHome() {
   return (
     <>
-      {/* --------------------------------------------------------------- hero
-          One accent, used once, on the thing you are meant to press. The page
-          this is shaped after ran three different purple-to-pink gradients
-          behind its hero; with no single strongest thing on the screen, the
-          button had nothing to stand out against. */}
-      <section className="mx-auto max-w-6xl px-5 pb-14 pt-16 sm:pt-24">
-        <div className="max-w-3xl">
-          <p className="inline-flex items-center gap-2 rounded-pill border border-border bg-surface px-3 py-1 text-xs font-medium text-ink-soft">
-            <span className="h-1.5 w-1.5 rounded-full bg-brand-500" />
-            Open a store today, connect your domain the same afternoon
+      {/* ================================================================ hero
+          Dark, with one soft pool of the brand colour behind the headline.
+          A single hue at low opacity: it lights the type rather than competing
+          with it, which is the job the reference's three stacked purple-to-pink
+          ramps were trying and failing to do. */}
+      <section className="relative isolate overflow-hidden bg-night">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 -top-1/3 h-[130%]"
+          style={{
+            background:
+              "radial-gradient(75% 65% at 12% 22%, rgba(102,102,255,0.55) 0%, rgba(102,102,255,0.22) 38%, rgba(102,102,255,0.04) 62%, rgba(102,102,255,0) 78%)",
+          }}
+        />
+        {/* The glow spills over the edge into the section below, so the two do
+            not meet on a hard line. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-40"
+          style={{ background: "linear-gradient(to bottom, rgba(102,102,255,0) 0%, rgba(102,102,255,0.28) 100%)" }}
+        />
+
+        <div className="relative mx-auto max-w-6xl px-5 pb-16 pt-14 sm:pb-20 sm:pt-20">
+          <p className="inline-flex items-center gap-2 rounded-pill border border-white/15 bg-white/5 px-3 py-1 text-xs font-medium text-white/80 backdrop-blur">
+            <span className="h-1.5 w-1.5 rounded-full bg-brand-300" />
+            Open a shop today. Use your own domain this afternoon.
           </p>
 
-          <h1 className="mt-6 text-4xl font-semibold leading-[1.06] tracking-tight text-balance text-ink sm:text-6xl">
-            Commerce that catches
-            <br className="hidden sm:block" /> your mistakes
-          </h1>
+          <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:items-end">
+            <h1 className="text-[2.75rem] font-semibold leading-[1.02] tracking-tight text-white sm:text-6xl lg:text-7xl">
+              Sell online.
+              <br />
+              <span className="text-brand-300">Without the</span>
+              <br />
+              expensive mistakes.
+            </h1>
 
-          <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink-soft">
-            Everything you need to sell online — products, orders, pages, your own domain, your
-            team. Built so the expensive errors are hard to make and easy to undo.
-          </p>
+            <div className="lg:pb-3">
+              <p className="max-w-md text-base leading-relaxed text-white/70 sm:text-lg">
+                Products, orders, pages, your own domain and your team — in one place, and none of
+                it sold back to you as an add-on.
+              </p>
 
-          <div className="mt-8 flex flex-wrap items-center gap-3">
-            <a
-              href={appUrl("/merchant/signup")}
-              className="inline-flex items-center gap-2 rounded-pill bg-brand-500 px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
-            >
-              Create your store
-              <ArrowRight className="h-4 w-4" />
-            </a>
-            <a
-              href={appUrl("/merchant/login")}
-              className="inline-flex items-center gap-2 rounded-pill border border-border bg-surface px-5 py-3 text-sm font-medium text-ink transition-colors hover:bg-subtle"
-            >
-              I already have one
-            </a>
+              <div className="mt-7 flex flex-wrap items-center gap-3">
+                <a
+                  href={appUrl("/merchant/signup")}
+                  className="inline-flex items-center gap-2 rounded-pill bg-white px-5 py-3 text-sm font-medium text-night transition-colors hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-night"
+                >
+                  Create your shop
+                  <ArrowRight className="h-4 w-4" />
+                </a>
+                <a
+                  href={appUrl("/merchant/login")}
+                  className="inline-flex items-center gap-2 rounded-pill border border-white/20 px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-white/10"
+                >
+                  I already have one
+                </a>
+              </div>
+            </div>
           </div>
 
-          <p className="mt-4 text-xs text-ink-faint">
-            No card to start. Your free address works immediately.
-          </p>
+          {/* The rail under the hero: a promise on the left, and three
+              miniatures of the real screens on the right. The reference put
+              stock photography and a star rating here. These are the product. */}
+          <div className="mt-14 flex flex-col gap-8 border-t border-white/10 pt-8 lg:flex-row lg:items-center lg:justify-between">
+            <p className="text-sm text-white/60">
+              No card to start. Your free address works the moment you sign up.
+            </p>
+            <div className="flex gap-3">
+              <MiniCatalogue />
+              <MiniBuilder />
+              <MiniShop />
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* -------------------------------------------------------------- proof
-          Where the reference put uptime and a user count. Neither would be
-          true here, and a number that cannot be checked is worth less than no
-          number. These four can all be counted in the product. */}
-      <section className="mx-auto max-w-6xl px-5 pb-16 sm:pb-20">
-        <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border bg-border sm:grid-cols-4">
-          {PROOF.map(({ figure, label }) => (
-            <div key={label} className="bg-surface px-5 py-6">
-              <dt className="text-3xl font-semibold tracking-tight text-ink tabular-nums">
-                {figure}
-              </dt>
-              <dd className="mt-1 text-xs leading-snug text-ink-soft">{label}</dd>
-            </div>
-          ))}
-        </dl>
-      </section>
-
-      {/* ------------------------------------------------------------- offers */}
-      <section className="border-y border-border bg-surface">
-        <div className="mx-auto max-w-6xl px-5 py-16 sm:py-20">
-          <p className="text-[11px] font-medium uppercase tracking-[0.09em] text-brand-500">
+      {/* ============================================================== groups */}
+      <section className="border-b border-border bg-surface">
+        <div className="mx-auto max-w-6xl px-5 py-16 sm:py-24">
+          <p className="inline-flex items-center gap-2 rounded-pill border border-border px-3 py-1 text-[11px] font-medium uppercase tracking-[0.09em] text-ink-soft">
+            <span className="h-1 w-1 rounded-full bg-brand-500" />
             What you get
           </p>
-          <h2 className="mt-2 max-w-2xl text-3xl font-semibold tracking-tight text-balance text-ink sm:text-4xl">
-            Everything a shop needs, and none of it sold separately
-          </h2>
-          <p className="mt-3 max-w-xl text-sm leading-relaxed text-ink-soft">
-            All of it, on the free address, from the first day. There is no marketplace to shop in
-            before your store works.
-          </p>
 
-          <div className="mt-12 grid gap-x-8 gap-y-11 sm:grid-cols-2 lg:grid-cols-3">
-            {OFFERS.map(({ kicker, title, body, points }) => (
-              <div key={title} className="flex flex-col">
+          <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)] lg:items-end">
+            <h2 className="text-3xl font-semibold leading-[1.1] tracking-tight text-balance text-ink sm:text-5xl">
+              Everything a shop needs.
+              <br className="hidden sm:block" />{" "}
+              <span className="text-brand-500">Nothing sold separately.</span>
+            </h2>
+            <p className="text-sm leading-relaxed text-ink-soft lg:pb-2">
+              There is no marketplace to shop in before your shop works. What is listed here is
+              what you get on the first day, on the free address.
+            </p>
+          </div>
+
+          <div className="mt-14 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+            {GROUPS.map(({ kicker, title, points }) => (
+              <div key={title}>
                 <p className="text-[11px] font-medium uppercase tracking-[0.09em] text-ink-faint">
                   {kicker}
                 </p>
-                <h3 className="mt-2 text-base font-semibold leading-snug text-balance text-ink">
+                <h3 className="mt-2 text-xl font-semibold leading-snug text-balance text-ink">
                   {title}
                 </h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">{body}</p>
-                <ul className="mt-3.5 space-y-1.5">
+                <ul className="mt-4 space-y-2">
                   {points.map((point) => (
-                    <li key={point} className="flex gap-2 text-sm leading-snug text-ink-soft">
+                    <li key={point} className="flex gap-2.5 text-sm leading-snug text-ink-soft">
                       <Check className="mt-[3px] h-3.5 w-3.5 flex-shrink-0 text-brand-500" />
                       {point}
                     </li>
@@ -257,158 +217,166 @@ export default function PlatformHome() {
         </div>
       </section>
 
-      {/* ---------------------------------------------------------- the thing
-          The reference's showpiece was a fake simulator. This is the real
-          artefact instead: the two records the panel hands you, in the shape it
-          hands them over, next to the state it shows while it waits. */}
-      <section className="mx-auto max-w-6xl px-5 py-16 sm:py-20">
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-center">
-          <div>
-            <p className="text-[11px] font-medium uppercase tracking-[0.09em] text-brand-500">
-              Your own address
-            </p>
-            <h2 className="mt-2 text-3xl font-semibold tracking-tight text-balance text-ink sm:text-4xl">
-              The part that usually ends in a support chat
-            </h2>
-            <p className="mt-3 max-w-md text-sm leading-relaxed text-ink-soft">
-              Paste the domain you already own. The panel gives you exactly two records, with the
-              values ready to copy, and then watches for them — you do not have to come back and
-              guess whether it worked.
-            </p>
-            <p className="mt-3 max-w-md text-sm leading-relaxed text-ink-soft">
-              The moment it starts serving, it becomes your main address and everything else
-              redirects to it. Nothing anyone has already shared stops working.
-            </p>
-          </div>
-
-          {/* A quiet reproduction of the real panel row, not a screenshot —
-              it stays readable at any width and in any theme. */}
-          <div className="rounded-2xl border border-border bg-surface p-5 shadow-panel">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[15px] font-medium text-ink">yourshop.com</span>
-              <span className="inline-flex items-center gap-1.5 rounded-pill border border-border px-2.5 py-0.5 text-[11px] font-medium text-ink-soft">
-                <span className="h-1.5 w-1.5 rounded-full bg-amber" />
-                waiting for DNS
-              </span>
-            </div>
-            <p className="mt-1 text-xs text-ink-faint">
-              Add these at whoever you bought the domain from.
-            </p>
-
-            <div className="mt-4 space-y-4">
-              {RECORDS.map((record) => (
-                <div key={record.type}>
-                  <p className="text-xs font-medium text-ink">
-                    {record.type} record
-                    <span className="font-normal text-ink-faint"> — {record.purpose}</span>
-                  </p>
-                  <div className="mt-2 space-y-1.5">
-                    {[
-                      { label: "Name", value: record.name },
-                      { label: "Value", value: record.value },
-                    ].map((field) => (
-                      <div key={field.label} className="flex items-center gap-2">
-                        <span className="w-11 flex-shrink-0 text-xs text-ink-faint">
-                          {field.label}
-                        </span>
-                        <code className="min-w-0 flex-1 overflow-x-auto whitespace-nowrap rounded-lg bg-subtle px-2.5 py-1.5 font-mono text-xs text-ink">
-                          {field.value}
-                        </code>
-                        <Copy aria-hidden className="h-3.5 w-3.5 flex-shrink-0 text-ink-faint" />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+      {/* =============================================================== start */}
+      <section className="mx-auto max-w-6xl px-5 py-16 sm:py-24">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)] lg:items-end">
+          <h2 className="text-3xl font-semibold leading-[1.1] tracking-tight text-balance text-ink sm:text-5xl">
+            Open in the time it takes
+            <br className="hidden sm:block" /> to make lunch
+          </h2>
+          <p className="text-sm leading-relaxed text-ink-soft lg:pb-2">
+            You do not need the domain, the photographs or the final prices to begin. You need a
+            name.
+          </p>
         </div>
+
+        {/* Numbered because it is a sequence — you cannot point a domain at a
+            shop that does not exist yet. */}
+        <ol className="mt-12 grid gap-px overflow-hidden rounded-3xl border border-border bg-border sm:grid-cols-3">
+          {START.map(({ n, title, body }) => (
+            <li key={n} className="bg-surface px-6 py-8">
+              <span className="font-mono text-xs tracking-widest text-brand-500">{n}</span>
+              <h3 className="mt-3 text-lg font-semibold text-ink">{title}</h3>
+              <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">{body}</p>
+            </li>
+          ))}
+        </ol>
       </section>
 
-      {/* -------------------------------------------------------------- start */}
+      {/* ========================================================== comparison */}
       <section className="border-y border-border bg-surface">
-        <div className="mx-auto max-w-6xl px-5 py-16 sm:py-20">
-          <h2 className="text-3xl font-semibold tracking-tight text-balance text-ink sm:text-4xl">
-            What the first hour looks like
-          </h2>
-          <div className="mt-9 grid gap-6 sm:grid-cols-3">
-            {START.map(({ n, title, body }) => (
-              <div key={n}>
-                <span className="flex h-7 w-7 items-center justify-center rounded-full border border-border text-xs font-semibold text-ink">
-                  {n}
-                </span>
-                <h3 className="mt-3 text-sm font-semibold text-ink">{title}</h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">{body}</p>
+        <div className="mx-auto max-w-6xl px-5 py-16 sm:py-24">
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)] lg:items-end">
+            <h2 className="text-3xl font-semibold leading-[1.1] tracking-tight text-balance text-ink sm:text-5xl">
+              Coming from
+              <br className="hidden sm:block" /> somewhere else
+            </h2>
+            <p className="text-sm leading-relaxed text-ink-soft lg:pb-2">
+              The differences you notice in a working week, not the ones on a feature grid.
+            </p>
+          </div>
+
+          <dl className="mt-12 divide-y divide-border border-y border-border">
+            {COMPARISON.map((row) => (
+              <div key={row.us} className="grid gap-2 py-5 sm:grid-cols-2 sm:gap-8">
+                <dt className="text-sm text-ink-faint line-through decoration-ink-faint/40">
+                  {row.them}
+                </dt>
+                <dd className="flex gap-2.5 text-[15px] font-medium text-ink">
+                  <Check className="mt-[3px] h-4 w-4 flex-shrink-0 text-brand-500" />
+                  {row.us}
+                </dd>
               </div>
             ))}
-          </div>
+          </dl>
         </div>
       </section>
 
-      {/* --------------------------------------------------------- comparison */}
-      <section className="mx-auto max-w-6xl px-5 py-16 sm:py-20">
-        <h2 className="text-3xl font-semibold tracking-tight text-balance text-ink sm:text-4xl">
-          Coming from somewhere else
-        </h2>
-        <p className="mt-3 max-w-xl text-sm leading-relaxed text-ink-soft">
-          The differences that show up in a working week, not on a feature grid.
-        </p>
-
-        <div className="mt-8 overflow-x-auto">
-          <table className="w-full min-w-[34rem] border-collapse text-sm">
-            <caption className="sr-only">
-              How the usual way of working compares with APP
-            </caption>
-            <thead>
-              <tr className="border-b border-border text-left">
-                <th scope="col" className="w-1/2 pb-3 pr-6 font-medium text-ink-faint">
-                  The usual
-                </th>
-                <th scope="col" className="w-1/2 pb-3 font-medium text-ink">
-                  Here
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {COMPARISON.map((row) => (
-                <tr key={row.us} className="border-b border-border align-top">
-                  <td className="py-3.5 pr-6 text-ink-soft">{row.them}</td>
-                  <td className="py-3.5">
-                    <span className="flex gap-2 text-ink">
-                      <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-brand-500" />
-                      {row.us}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      {/* ---------------------------------------------------------------- cta
-          The one block that fills with the accent. A call to action is the
-          page's active state, and #6666ff means active everywhere else in this
-          product — so it is the same rule, not an exception to it. */}
-      <section className="mx-auto max-w-6xl px-5 pb-20">
-        <div className="rounded-3xl bg-brand-500 px-6 py-14 text-center sm:px-10 sm:py-16">
-          <h2 className="text-3xl font-semibold tracking-tight text-balance text-white sm:text-4xl">
-            Start selling this week
+      {/* ================================================================= cta
+          Closes on the same dark the page opened on, so it reads as one page
+          rather than a light page with a dark hat. */}
+      <section className="relative isolate overflow-hidden bg-night">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(55% 70% at 50% 110%, rgba(102,102,255,0.38) 0%, rgba(102,102,255,0) 70%)",
+          }}
+        />
+        <div className="relative mx-auto max-w-6xl px-5 py-20 text-center sm:py-28">
+          <h2 className="mx-auto max-w-2xl text-3xl font-semibold leading-[1.1] tracking-tight text-balance text-white sm:text-5xl">
+            Your shop could be open before dinner
           </h2>
-          <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-white/85">
-            Pick a name, add a few products, connect your domain when you&rsquo;re ready. You can
-            do the first two in the next ten minutes.
+          <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-white/65">
+            Pick a name and add a few things. Everything else can wait until you want it.
           </p>
           <a
             href={appUrl("/merchant/signup")}
-            className="mt-8 inline-flex items-center gap-2 rounded-pill bg-white px-5 py-3 text-sm font-medium text-brand-600 transition-colors hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-500"
+            className="mt-9 inline-flex items-center gap-2 rounded-pill bg-white px-6 py-3.5 text-sm font-medium text-night transition-colors hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-night"
           >
-            Create your store
+            Create your shop
             <ArrowRight className="h-4 w-4" />
           </a>
-          <p className="mt-4 text-xs text-white/70">No card to start.</p>
+          <p className="mt-4 text-xs text-white/45">No card to start.</p>
         </div>
       </section>
     </>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* The three miniatures                                                       */
+/*                                                                            */
+/* Drawn rather than screenshotted: they stay sharp at any density, they cost  */
+/* nothing to load, and they follow the product when it changes. Each one is   */
+/* the shape of a screen that actually exists.                                 */
+/* -------------------------------------------------------------------------- */
+
+function Tile({ children, tone }: { children: React.ReactNode; tone: string }) {
+  return (
+    <div
+      aria-hidden
+      className={`h-[104px] w-[104px] flex-shrink-0 overflow-hidden rounded-2xl border border-white/10 p-2.5 sm:h-[120px] sm:w-[120px] ${tone}`}
+    >
+      {children}
+    </div>
+  );
+}
+
+/** Your catalogue: rows of things with a price and a state. */
+function MiniCatalogue() {
+  return (
+    <Tile tone="bg-white/[0.07]">
+      <div className="space-y-1.5">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="flex items-center gap-1.5">
+            <span className="h-5 w-5 flex-shrink-0 rounded bg-white/25" />
+            <span className="flex-1 space-y-1">
+              <span className="block h-1 w-full rounded-full bg-white/30" />
+              <span className="block h-1 w-2/3 rounded-full bg-white/15" />
+            </span>
+            <span className="h-1.5 w-1.5 rounded-full bg-brand-300" />
+          </div>
+        ))}
+      </div>
+    </Tile>
+  );
+}
+
+/** Your pages: a stack of blocks you can reorder. */
+function MiniBuilder() {
+  return (
+    <Tile tone="bg-brand-500/25">
+      <div className="space-y-1.5">
+        <span className="block h-7 rounded bg-white/30" />
+        <div className="grid grid-cols-3 gap-1.5">
+          <span className="h-5 rounded bg-white/20" />
+          <span className="h-5 rounded bg-white/20" />
+          <span className="h-5 rounded bg-white/20" />
+        </div>
+        <span className="block h-3 w-3/4 rounded bg-white/15" />
+      </div>
+    </Tile>
+  );
+}
+
+/** Your shop, as a customer sees it. */
+function MiniShop() {
+  return (
+    <Tile tone="bg-white/[0.07]">
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between">
+          <span className="h-1 w-6 rounded-full bg-white/35" />
+          <span className="h-1.5 w-1.5 rounded-full bg-white/25" />
+        </div>
+        <div className="grid grid-cols-2 gap-1.5">
+          <span className="aspect-square rounded bg-white/25" />
+          <span className="aspect-square rounded bg-white/15" />
+          <span className="aspect-square rounded bg-white/15" />
+          <span className="aspect-square rounded bg-white/25" />
+        </div>
+      </div>
+    </Tile>
   );
 }
