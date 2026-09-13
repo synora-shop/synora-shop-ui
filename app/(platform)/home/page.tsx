@@ -201,13 +201,13 @@ export default function PlatformHome() {
           <div className="rounded-3xl border border-border bg-night px-6 py-10 sm:px-10 sm:py-12">
             <div className="flex flex-wrap items-start justify-center gap-5 sm:gap-7">
               <Tile id="sc-a" tile="a" hue={IRIS} caption="Shaped to your business">
-                <Layers hue={IRIS} />
+                <Storefront hue={IRIS} />
               </Tile>
               <Tile id="sc-b" tile="b" hue={SKY} caption="Themes, all included">
-                <Orb hue={SKY} />
+                <Swatches hue={SKY} />
               </Tile>
               <Tile id="sc-c" tile="c" hue={MINT} caption="Find any change">
-                <Parcel hue={MINT} />
+                <Finder hue={MINT} />
               </Tile>
             </div>
 
@@ -438,6 +438,110 @@ function Point({ children }: { children: React.ReactNode }) {
   );
 }
 
+/** A shop front. The label is "shaped to your business", so the object is a
+    business — an awning over a door, which reads as a shop at a glance and at
+    16px. An abstract solid would have been prettier and said nothing. */
+function Storefront({ hue }: { hue: string }) {
+  return (
+    <svg viewBox="0 0 120 120" className="h-[74px] w-[74px] sm:h-[88px] sm:w-[88px]" aria-hidden>
+      <defs>
+        <linearGradient id="sfAwn" x1="0" y1="0" x2="0.4" y2="1">
+          <stop offset="0%" stopColor="#ffffff" />
+          <stop offset="100%" stopColor={`rgba(${hue},0.72)`} />
+        </linearGradient>
+        <linearGradient id="sfBody" x1="0" y1="0" x2="0.6" y2="1">
+          <stop offset="0%" stopColor={`rgba(${hue},0.55)`} />
+          <stop offset="100%" stopColor={`rgba(${hue},0.20)`} />
+        </linearGradient>
+        <linearGradient id="sfDoor" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#ffffff" />
+          <stop offset="100%" stopColor={`rgba(${hue},0.55)`} />
+        </linearGradient>
+      </defs>
+      {/* body */}
+      <path d="M24 56 h72 a4 4 0 0 1 4 4 v42 a4 4 0 0 1 -4 4 h-72 a4 4 0 0 1 -4 -4 v-42 a4 4 0 0 1 4 -4 z" fill="url(#sfBody)" />
+      {/* awning, with a scalloped hem so it reads as fabric rather than a box */}
+      <path
+        d="M16 42 Q60 22 104 42 L104 50 q-5.5 7 -11 0 q-5.5 7 -11 0 q-5.5 7 -11 0 q-5.5 7 -11 0 q-5.5 7 -11 0 q-5.5 7 -11 0 q-5.5 7 -11 0 Z"
+        fill="url(#sfAwn)"
+      />
+      {/* door */}
+      <path d="M48 74 h24 v32 h-24 z" fill="url(#sfDoor)" opacity="0.9" />
+      <circle cx="67" cy="90" r="1.8" fill={`rgba(${hue},0.9)`} />
+    </svg>
+  );
+}
+
+/** Three looks, fanned. The label is "themes, all included", so the object is
+    a set of them — same shape, different skins, one on top of the other. */
+function Swatches({ hue }: { hue: string }) {
+  return (
+    <svg viewBox="0 0 120 120" className="h-[74px] w-[74px] sm:h-[88px] sm:w-[88px]" aria-hidden>
+      <defs>
+        <linearGradient id="swA" x1="0" y1="0" x2="0.5" y2="1">
+          <stop offset="0%" stopColor={`rgba(${hue},0.45)`} />
+          <stop offset="100%" stopColor={`rgba(${hue},0.18)`} />
+        </linearGradient>
+        <linearGradient id="swB" x1="0" y1="0" x2="0.5" y2="1">
+          <stop offset="0%" stopColor={`rgba(${hue},0.78)`} />
+          <stop offset="100%" stopColor={`rgba(${hue},0.38)`} />
+        </linearGradient>
+        <linearGradient id="swC" x1="0" y1="0" x2="0.5" y2="1">
+          <stop offset="0%" stopColor="#ffffff" />
+          <stop offset="100%" stopColor={`rgba(${hue},0.62)`} />
+        </linearGradient>
+      </defs>
+      <g transform="rotate(-18 60 64)">
+        <rect x="30" y="30" width="60" height="68" rx="8" fill="url(#swA)" />
+      </g>
+      <g transform="rotate(-7 60 64)">
+        <rect x="32" y="28" width="60" height="68" rx="8" fill="url(#swB)" />
+      </g>
+      <g transform="rotate(8 60 64)">
+        <rect x="34" y="26" width="60" height="68" rx="8" fill="url(#swC)" />
+        {/* a page, sketched on the top card, so the stack reads as layouts */}
+        <rect x="42" y="34" width="44" height="13" rx="3" fill="rgba(12,12,74,0.42)" />
+        <rect x="42" y="52" width="20" height="16" rx="3" fill="rgba(12,12,74,0.24)" />
+        <rect x="66" y="52" width="20" height="16" rx="3" fill="rgba(12,12,74,0.24)" />
+        <rect x="42" y="73" width="34" height="6" rx="3" fill="rgba(12,12,74,0.18)" />
+      </g>
+    </svg>
+  );
+}
+
+/** A lens over the thing it found, still ringed. The label is "find any
+    change", so the object is the act of finding — and the ring is the same
+    one the panel draws when it takes you there. */
+function Finder({ hue }: { hue: string }) {
+  return (
+    <svg viewBox="0 0 120 120" className="h-[74px] w-[74px] sm:h-[88px] sm:w-[88px]" aria-hidden>
+      <defs>
+        <linearGradient id="fdGlass" x1="0.2" y1="0.1" x2="0.8" y2="1">
+          <stop offset="0%" stopColor="rgba(255,255,255,0.85)" />
+          <stop offset="100%" stopColor={`rgba(${hue},0.30)`} />
+        </linearGradient>
+        <linearGradient id="fdRim" x1="0" y1="0" x2="0.6" y2="1">
+          <stop offset="0%" stopColor="#ffffff" />
+          <stop offset="100%" stopColor={`rgba(${hue},0.70)`} />
+        </linearGradient>
+      </defs>
+      {/* the thing that was found, underneath, wearing its ring */}
+      <rect x="20" y="28" width="58" height="30" rx="7" fill={`rgba(${hue},0.20)`} />
+      <rect
+        x="20" y="28" width="58" height="30" rx="7"
+        fill="none" stroke={`rgba(${hue},0.95)`} strokeWidth="2.5"
+      />
+      <rect x="28" y="37" width="26" height="4" rx="2" fill={`rgba(${hue},0.75)`} />
+      <rect x="28" y="46" width="16" height="4" rx="2" fill={`rgba(${hue},0.45)`} />
+      {/* the lens */}
+      <circle cx="70" cy="70" r="24" fill="url(#fdGlass)" />
+      <circle cx="70" cy="70" r="24" fill="none" stroke="url(#fdRim)" strokeWidth="5" />
+      <ellipse cx="62" cy="61" rx="7" ry="5" fill="rgba(255,255,255,0.75)" transform="rotate(-35 62 61)" />
+      <path d="M88 88 L100 100" stroke="url(#fdRim)" strokeWidth="8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 /* -------------------------------------------------------------------------- */
 /* The drawings                                                               */
 /*                                                                            */
@@ -590,7 +694,7 @@ function Tile({
     <label htmlFor={id} className="flex cursor-pointer flex-col items-center gap-3">
       <span
         data-tile={tile}
-        className="relative grid h-[104px] w-[104px] place-items-center rounded-[26px] backdrop-blur-md transition-all duration-300 sm:h-[128px] sm:w-[128px]"
+        className="relative grid h-[124px] w-[124px] place-items-center rounded-[30px] backdrop-blur-md transition-all duration-300 sm:h-[152px] sm:w-[152px]"
         style={{
           background: `linear-gradient(148deg, rgba(${hue},0.40) 0%, rgba(${hue},0.12) 46%, rgba(${hue},0.22) 100%)`,
           border: `1px solid rgba(${hue},0.58)`,
@@ -599,7 +703,7 @@ function Tile({
       >
         {children}
       </span>
-      <span className="max-w-[128px] text-center text-xs font-medium leading-snug text-white/70">
+      <span className="max-w-[152px] text-center text-xs font-medium leading-snug text-white/70">
         {caption}
       </span>
     </label>
@@ -634,82 +738,3 @@ function Panel({
    each hold a rounded, lit thing, and that is most of why they read as glass
    instead of as a coloured box. */
 
-/** A stack of plates: the catalogue, and the blocks a page is built from. */
-function Layers({ hue }: { hue: string }) {
-  return (
-    <svg viewBox="0 0 120 120" className="h-[58px] w-[58px] sm:h-[70px] sm:w-[70px]" aria-hidden>
-      <defs>
-        <linearGradient id="lyTop" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="100%" stopColor={`rgb(${hue})`} />
-        </linearGradient>
-        <linearGradient id="lyMid" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor={`rgba(${hue},0.95)`} />
-          <stop offset="100%" stopColor={`rgba(${hue},0.55)`} />
-        </linearGradient>
-        <linearGradient id="lyLow" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor={`rgba(${hue},0.6)`} />
-          <stop offset="100%" stopColor={`rgba(${hue},0.28)`} />
-        </linearGradient>
-      </defs>
-      <g>
-        <path d="M60 74 L102 92 L60 110 L18 92 Z" fill="url(#lyLow)" />
-        <path d="M60 50 L102 68 L60 86 L18 68 Z" fill="url(#lyMid)" />
-        <path d="M60 26 L102 44 L60 62 L18 44 Z" fill="url(#lyTop)" />
-      </g>
-    </svg>
-  );
-}
-
-/** A lit sphere: the shop itself, out in the world. */
-function Orb({ hue }: { hue: string }) {
-  return (
-    <svg viewBox="0 0 120 120" className="h-[56px] w-[56px] sm:h-[66px] sm:w-[66px]" aria-hidden>
-      <defs>
-        <radialGradient id="orbBody" cx="35%" cy="28%" r="78%">
-          <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="38%" stopColor={`rgba(${hue},0.98)`} />
-          <stop offset="100%" stopColor={`rgba(${hue},0.42)`} />
-        </radialGradient>
-        <radialGradient id="orbSpec" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="rgba(255,255,255,0.95)" />
-          <stop offset="100%" stopColor="rgba(255,255,255,0)" />
-        </radialGradient>
-      </defs>
-      <circle cx="60" cy="60" r="42" fill="url(#orbBody)" />
-      <ellipse cx="45" cy="41" rx="15" ry="11" fill="url(#orbSpec)" />
-      <path
-        d="M60 18a42 42 0 0 1 0 84"
-        fill="none"
-        stroke="rgba(255,255,255,0.35)"
-        strokeWidth="1.5"
-      />
-    </svg>
-  );
-}
-
-/** A parcel: an order, on its way. */
-function Parcel({ hue }: { hue: string }) {
-  return (
-    <svg viewBox="0 0 120 120" className="h-[58px] w-[58px] sm:h-[70px] sm:w-[70px]" aria-hidden>
-      <defs>
-        <linearGradient id="pcTop" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="100%" stopColor={`rgba(${hue},0.85)`} />
-        </linearGradient>
-        <linearGradient id="pcLeft" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={`rgba(${hue},0.88)`} />
-          <stop offset="100%" stopColor={`rgba(${hue},0.48)`} />
-        </linearGradient>
-        <linearGradient id="pcRight" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={`rgba(${hue},0.62)`} />
-          <stop offset="100%" stopColor={`rgba(${hue},0.30)`} />
-        </linearGradient>
-      </defs>
-      <path d="M60 22 L100 44 L60 66 L20 44 Z" fill="url(#pcTop)" />
-      <path d="M20 44 L60 66 L60 106 L20 84 Z" fill="url(#pcLeft)" />
-      <path d="M100 44 L60 66 L60 106 L100 84 Z" fill="url(#pcRight)" />
-      <path d="M60 66 L60 106" stroke="rgba(255,255,255,0.28)" strokeWidth="1.5" />
-    </svg>
-  );
-}
