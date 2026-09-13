@@ -50,6 +50,12 @@ const RETIRED: [RegExp, string][] = [
   [/bettershp/i, "bettershp is retired — not a brand, not a URL, not a storage key"],
   [/Your SHOP/, 'the section is "Your App"'],
   [/Shop by Synora Digitals/, "the product is APP by Synora Digitals"],
+  // The product was called Shop once, and the rename left it in the places
+  // nobody re-reads: a <caption class="sr-only">, an aria-label, a title
+  // attribute. The marketing page told screen-reader users it was comparing
+  // "the usual way of working" with Shop, months after the rename, and every
+  // check passed because nothing looks at the text only some readers get.
+  [/\bwith Shop\b/, "the product is APP — this one hid in an sr-only caption"],
   // Two marks means two products. There is one, and SynoraAppMark draws it.
   [/components\/ui\/wordmark/, "the wordmark is retired — use SynoraAppMark"],
 ];
@@ -64,6 +70,35 @@ for (const [pattern, why] of RETIRED) {
     `no "${pattern.source}" outside applied migrations — ${why}`,
     hits.length === 0,
     hits.map((f) => relative(ROOT, f)).join(", ")
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* The words only some readers get                                            */
+/* -------------------------------------------------------------------------- */
+
+// A caption, an aria-label and a title attribute are copy. They are also the
+// copy nobody re-reads, because nobody sees them — which is exactly why the old
+// product name survived there. Held to the same name as everything else.
+{
+  const spoken = files.flatMap((f) => {
+    if (f === join(ROOT, "scripts", "check-naming.ts")) return [];
+    const src = readFileSync(f, "utf8");
+    const found: string[] = [];
+    for (const m of src.matchAll(/(?:aria-label|title|alt)=["'`]([^"'`]{2,80})["'`]/g)) found.push(m[1]);
+    for (const m of src.matchAll(/className="sr-only"[^>]*>([^<]{2,120})</g)) found.push(m[1]);
+    for (const m of src.matchAll(/<caption[^>]*>([\s\S]{2,160}?)<\/caption>/g)) found.push(m[1]);
+    // "the Shop page" and "Shop All" are the storefront's own catalogue page,
+    // which is genuinely called that. The retired product name is a bare
+    // capitalised Shop standing on its own.
+    return found
+      .filter((t) => /\bShop\b(?!\s+(?:page|All|all))/.test(t))
+      .map((t) => `${relative(ROOT, f)}: ${t.trim().replace(/\s+/g, " ").slice(0, 60)}`);
+  });
+  check(
+    "no retired product name in a caption, label or alt text",
+    spoken.length === 0,
+    spoken.join(" | ")
   );
 }
 

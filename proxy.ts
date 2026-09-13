@@ -90,11 +90,16 @@ export default auth((req) => {
 
   // Our own hosts, which are two different things.
   //
-  // The application host is where people work: its root belongs in the
-  // dashboard, not on a page explaining what the product is to somebody who has
-  // already signed up.
+  // The application host's root is the page that explains what this is. It used
+  // to go straight to /admin on the reasoning that anyone typing this address
+  // has already signed up — which is only true of the people who already have a
+  // store. Somebody sent the link, or arriving from a search, met a login form
+  // with no explanation of what they were being asked to log in to.
+  //
+  // A merchant with a session loses nothing: every /admin address still works,
+  // the panel is one click away, and the browser remembers where they go.
   if (isAppHost(host) && pathname === "/" && !previewing) {
-    return NextResponse.redirect(new URL("/admin", req.nextUrl.origin));
+    return NextResponse.redirect(new URL("/home", req.nextUrl.origin));
   }
 
   // The product's own site. On a shop's address `/` is that shop's home page;

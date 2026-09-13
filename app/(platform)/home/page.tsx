@@ -1,63 +1,102 @@
 import type { Metadata } from "next";
 import { appUrl } from "@/lib/shop-context";
-import {
-  ArrowRight,
-  Check,
-  Eye,
-  Globe,
-  KeyRound,
-  Layers,
-  ShieldCheck,
-  Undo2,
-} from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 
 // No title here on purpose: this is the site's front page, so the root
-// layout's default is exactly right. Setting one would get "· Shop"
+// layout's default is exactly right. Setting one would get "· APP"
 // appended by the root template and say the name twice.
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
 /**
- * The front door.
+ * The front door, and now the application host's root as well.
+ *
+ * Two audiences meet here and they want opposite things. Somebody who has never
+ * heard of this needs to know what it is before they are asked for an email
+ * address. Somebody who already has a store wants their panel and nothing else.
+ * The page is written for the first, because the second has a bookmark.
  *
  * The pitch is deliberately narrow. Everyone in this market claims "easy" and
- * "powerful", so those words say nothing. What is actually different here is
- * that the software argues with you when you are about to do something you will
- * regret — and that is what the page leads with.
+ * "powerful", so those words say nothing. What is different here is that the
+ * software argues with you when you are about to do something you will regret,
+ * and that everything is in the box — so that is what it leads with, and every
+ * claim below is something that has actually been built.
  */
 
-/** What we do differently, stated as things that have actually been built. */
-const DIFFERENCES = [
+/** What you get, grouped the way the panel itself is. */
+const OFFERS: { kicker: string; title: string; body: string; points: string[] }[] = [
   {
-    icon: Undo2,
-    title: "It catches your mistakes",
-    body: "Delete a category that eight products rely on and it tells you, before it happens, not after. Deleted things go to a bin you can empty when you're sure, not into the void.",
+    kicker: "Selling",
+    title: "A catalogue that understands how you sell",
+    body: "Not everything is bought by clicking add-to-cart, so a product can be one of three things.",
+    points: [
+      "Priced and stocked, straight into the cart",
+      "Sold in bulk, with a minimum quantity and tiered prices",
+      "Made to order, taking an enquiry instead of a checkout",
+      "Sizes and colours with their own stock and prices",
+      "Profit and margin worked out as you type the cost",
+    ],
   },
   {
-    icon: Eye,
-    title: "Change the shop while it's open",
-    body: "Lay out every page section by section, with your real storefront in the panel beside you, updating as you type.",
+    kicker: "Running it",
+    title: "Orders, customers and the numbers",
+    body: "Everything that happens after somebody buys, in one place and in plain words.",
+    points: [
+      "Orders from pending through to delivered",
+      "Enquiries tracked from new to won or lost",
+      "Customers, their orders, addresses and totals",
+      "Revenue, profit, best sellers and where visitors came from",
+      "A push notification on your phone the moment an order lands",
+    ],
   },
   {
-    icon: Globe,
-    title: "Your domain, working properly",
-    body: "Paste your domain, copy two records, done. One address is the real one and the rest redirect to it, so you're never competing with yourself in search results.",
+    kicker: "Looking right",
+    title: "Build the shop while it is open",
+    body: "Lay out any page from thirty-four kinds of section, with your real storefront beside you as you work.",
+    points: [
+      "Slideshows, galleries, comparisons, testimonials, countdowns",
+      "Two themes, each with its own arrangement and features",
+      "Try a theme for as long as you like without publishing it",
+      "Menus, wording and fonts, all editable",
+      "Your own uploaded fonts, checked before they are accepted",
+    ],
   },
   {
-    icon: KeyRound,
-    title: "Bring your team in safely",
-    body: "Invite people at the level they need. An invitation only works for the address you sent it to, and your store always has exactly one owner.",
+    kicker: "Being found",
+    title: "Your own address, working properly",
+    body: "Paste your domain, copy two records at your registrar, and the panel checks them while you wait.",
+    points: [
+      "A free address that works the moment you sign up",
+      "One address is the real one and the rest redirect to it",
+      "The moment your domain goes live it becomes the main one",
+      "Old links keep working when a page moves",
+      "Search engines told which address is the real one",
+    ],
   },
   {
-    icon: ShieldCheck,
-    title: "Separate by construction",
-    body: "Every query for your shop carries your shop. Not by convention or a careful review, the data layer refuses to run without it.",
+    kicker: "Getting paid",
+    title: "The money goes to your bank",
+    body: "You connect your own gateway account. We are never a party to the payment — no cut, no float, nothing passing through us.",
+    points: [
+      "Card payments through PayFast",
+      "Cash on delivery, bank transfer, JazzCash, Easypaisa",
+      "An order is only marked paid after asking the provider",
+      "Stock is held while a payment is in flight, released if it fails",
+      "Your keys are sealed before they are stored",
+    ],
   },
   {
-    icon: Layers,
-    title: "Nothing is hidden behind an app",
-    body: "Pages, menus, wording, theme, redirects and staff are all in the box. No marketplace to shop in before your store works.",
+    kicker: "Working together",
+    title: "Your team, at the level they need",
+    body: "Invite people by email; they keep their own sign-in and you choose what they can reach.",
+    points: [
+      "Four levels, from owner down to look-but-don't-touch",
+      "Domains and payments need admin, not staff",
+      "An invitation only works for the address you sent it to",
+      "Sign out everywhere, for when you signed in somewhere you shouldn't",
+      "A record of who changed what",
+    ],
   },
 ];
 
@@ -76,6 +115,13 @@ const COMPARISON = [
   { them: "Domain setup that ends in support chat", us: "Two records, checked while you wait" },
 ];
 
+/** The three things that are true before you have done anything. */
+const START = [
+  { n: "1", title: "Pick a name", body: "Your store is live on its free address straight away, with nothing to configure." },
+  { n: "2", title: "Add a few products", body: "Or bring a whole catalogue in from a Shopify CSV — it loads column for column." },
+  { n: "3", title: "Connect your domain", body: "When you are ready, not before. Two records, and the panel watches for them." },
+];
+
 export default function PlatformHome() {
   return (
     <>
@@ -87,12 +133,12 @@ export default function PlatformHome() {
             Open a store today, connect your domain the same afternoon
           </p>
 
-          <h1 className="mt-6 font-serif text-4xl font-semibold leading-[1.08] tracking-tight text-balance text-ink sm:text-6xl">
+          <h1 className="mt-6 text-4xl font-semibold leading-[1.08] tracking-tight text-balance text-ink sm:text-6xl">
             Commerce that catches your&nbsp;mistakes
           </h1>
 
           <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink-soft">
-            Everything you need to sell online, products, orders, pages, your own domain, your
+            Everything you need to sell online — products, orders, pages, your own domain, your
             team. Built so the expensive errors are hard to make and easy to undo.
           </p>
 
@@ -118,89 +164,124 @@ export default function PlatformHome() {
         </div>
       </section>
 
-      {/* ------------------------------------------------------ differences */}
+      {/* ----------------------------------------------------------- offers
+          Six blocks, grouped the way the panel groups itself, so the shape of
+          the page is the shape of the thing being sold. Every bullet is a
+          feature that exists — this list is checked against the panel rather
+          than written to fill a grid. */}
       <section className="border-t border-border/60 bg-surface">
         <div className="mx-auto max-w-6xl px-5 py-16 sm:py-20">
-          <h2 className="font-serif text-3xl font-semibold tracking-tight text-balance text-ink">
-            What&rsquo;s actually different
+          <h2 className="text-3xl font-semibold tracking-tight text-balance text-ink">
+            What you get
           </h2>
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-soft">
-            Every platform says it&rsquo;s easy and powerful. Here is the specific list.
+            All of it, on the free address, from the first day. There is no marketplace to shop in
+            before your store works.
           </p>
 
-          <div className="mt-10 grid gap-x-8 gap-y-9 sm:grid-cols-2 lg:grid-cols-3">
-            {DIFFERENCES.map(({ icon: Icon, title, body }) => (
-              <div key={title}>
-                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
-                  <Icon className="h-4.5 w-4.5" />
-                </span>
-                <h3 className="mt-3.5 text-sm font-semibold text-ink">{title}</h3>
+          <div className="mt-10 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+            {OFFERS.map(({ kicker, title, body, points }) => (
+              <div key={title} className="flex flex-col">
+                <p className="text-[11px] font-medium uppercase tracking-[0.09em] text-brand-600">
+                  {kicker}
+                </p>
+                <h3 className="mt-2 text-base font-semibold leading-snug text-balance text-ink">
+                  {title}
+                </h3>
                 <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">{body}</p>
+                <ul className="mt-3.5 space-y-1.5">
+                  {points.map((point) => (
+                    <li key={point} className="flex gap-2 text-sm leading-snug text-ink-soft">
+                      <Check className="mt-[3px] h-3.5 w-3.5 flex-shrink-0 text-brand-500" />
+                      {point}
+                    </li>
+                  ))}
+                </ul>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ------------------------------------------------------- comparison */}
+      {/* ------------------------------------------------------------ start
+          Numbered because it genuinely is a sequence — you cannot connect a
+          domain to a store that does not exist yet. */}
       <section className="mx-auto max-w-6xl px-5 py-16 sm:py-20">
-        <h2 className="font-serif text-3xl font-semibold tracking-tight text-balance text-ink">
-          Coming from somewhere else
+        <h2 className="text-3xl font-semibold tracking-tight text-balance text-ink">
+          What the first hour looks like
         </h2>
-        <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-soft">
-          The differences that show up in a working week, not on a feature grid.
-        </p>
+        <div className="mt-8 grid gap-6 sm:grid-cols-3">
+          {START.map(({ n, title, body }) => (
+            <div key={n} className="rounded-xl border border-border bg-surface p-5">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-50 text-xs font-semibold text-brand-600">
+                {n}
+              </span>
+              <h3 className="mt-3 text-sm font-semibold text-ink">{title}</h3>
+              <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">{body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
 
-        <div className="mt-8 overflow-x-auto">
-          <table className="w-full min-w-[34rem] border-collapse text-sm">
-            <caption className="sr-only">
-              How the usual way of working compares with Shop
-            </caption>
-            <thead>
-              <tr className="border-b border-border text-left">
-                <th scope="col" className="w-1/2 pb-3 pr-6 font-medium text-ink-faint">
-                  The usual
-                </th>
-                <th scope="col" className="w-1/2 pb-3 font-medium text-ink">
-                  Here
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {COMPARISON.map((row) => (
-                <tr key={row.us} className="border-b border-border/60 align-top">
-                  <td className="py-3.5 pr-6 text-ink-soft">{row.them}</td>
-                  <td className="py-3.5">
-                    <span className="flex gap-2 text-ink">
-                      <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-green" />
-                      {row.us}
-                    </span>
-                  </td>
+      {/* ------------------------------------------------------- comparison */}
+      <section className="border-t border-border/60 bg-surface">
+        <div className="mx-auto max-w-6xl px-5 py-16 sm:py-20">
+          <h2 className="text-3xl font-semibold tracking-tight text-balance text-ink">
+            Coming from somewhere else
+          </h2>
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-soft">
+            The differences that show up in a working week, not on a feature grid.
+          </p>
+
+          <div className="mt-8 overflow-x-auto">
+            <table className="w-full min-w-[34rem] border-collapse text-sm">
+              <caption className="sr-only">
+                How the usual way of working compares with APP
+              </caption>
+              <thead>
+                <tr className="border-b border-border text-left">
+                  <th scope="col" className="w-1/2 pb-3 pr-6 font-medium text-ink-faint">
+                    The usual
+                  </th>
+                  <th scope="col" className="w-1/2 pb-3 font-medium text-ink">
+                    Here
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {COMPARISON.map((row) => (
+                  <tr key={row.us} className="border-b border-border/60 align-top">
+                    <td className="py-3.5 pr-6 text-ink-soft">{row.them}</td>
+                    <td className="py-3.5">
+                      <span className="flex gap-2 text-ink">
+                        <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-green" />
+                        {row.us}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 
       {/* -------------------------------------------------------------- cta */}
-      <section className="border-t border-border/60 bg-surface">
-        <div className="mx-auto max-w-6xl px-5 py-16 text-center sm:py-20">
-          <h2 className="font-serif text-3xl font-semibold tracking-tight text-balance text-ink">
-            Start selling this week
-          </h2>
-          <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-ink-soft">
-            Pick a name, add a few products, connect your domain when you&rsquo;re ready. You can
-            do the first two in the next ten minutes.
-          </p>
-          <a
-            href={appUrl("/merchant/signup")}
-            className="mt-7 inline-flex items-center gap-2 rounded-lg bg-brand-600 px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-brand-700"
-          >
-            Create your store
-            <ArrowRight className="h-4 w-4" />
-          </a>
-        </div>
+      <section className="mx-auto max-w-6xl px-5 py-16 text-center sm:py-20">
+        <h2 className="text-3xl font-semibold tracking-tight text-balance text-ink">
+          Start selling this week
+        </h2>
+        <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-ink-soft">
+          Pick a name, add a few products, connect your domain when you&rsquo;re ready. You can do
+          the first two in the next ten minutes.
+        </p>
+        <a
+          href={appUrl("/merchant/signup")}
+          className="mt-7 inline-flex items-center gap-2 rounded-lg bg-brand-600 px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-brand-700"
+        >
+          Create your store
+          <ArrowRight className="h-4 w-4" />
+        </a>
       </section>
     </>
   );
