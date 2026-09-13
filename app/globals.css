@@ -207,6 +207,27 @@
    it — the drawing puts a light field inside a grey bar for exactly this
    reason. Scoped to the panel, and only where a component has not already
    said otherwise. */
+/* The product's own site, in the product's own colours.
+ *
+ * Scoped rather than set on :root for the same reason the panel is: :root is
+ * the storefront's, and a merchant who has never chosen a colour inherits it.
+ * Repainting the marketing site must not repaint their shop.
+ *
+ * The same five the panel uses — #f5f5f5 behind, white in front, black text,
+ * #86868b at rest, #6666ff for the one thing that is active. A marketing page
+ * gets one more thing than the panel does: it may fill a whole block with the
+ * accent, because a call to action is the page's active state.
+ */
+.platform-shell {
+  --color-canvas: #f5f5f5;
+  --color-surface: #ffffff;
+  --color-subtle: #f0f0f0;
+  --color-border: rgb(134 134 139 / 0.22);
+  --color-ink: #000000;
+  --color-ink-soft: #454545;
+  --color-ink-faint: #707070;
+}
+
 .admin-shell :is(input, textarea, select):not([type="checkbox"]):not([type="radio"]):not([type="range"]) {
   background-color: var(--color-control);
 }

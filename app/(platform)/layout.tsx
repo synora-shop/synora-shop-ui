@@ -19,8 +19,8 @@ import { SynoraAppMark } from "@/components/ui/synora-marks";
  */
 export default function PlatformLayout({ children }: LayoutProps<"/">) {
   return (
-    <div className="flex min-h-dvh flex-col bg-canvas font-sans text-ink">
-      <header className="sticky top-0 z-40 border-b border-border/60 bg-canvas/85 backdrop-blur">
+    <div className="platform-shell flex min-h-dvh flex-col bg-canvas font-sans text-ink">
+      <header className="sticky top-0 z-40 border-b border-border bg-canvas/85 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3.5">
           <Link
             href="/"
@@ -38,7 +38,7 @@ export default function PlatformLayout({ children }: LayoutProps<"/">) {
             </a>
             <a
               href={appUrl("/merchant/signup")}
-              className="rounded-lg bg-brand-600 px-4 py-2 font-medium text-white transition-colors hover:bg-brand-700"
+              className="rounded-pill bg-brand-500 px-4 py-2 font-medium text-white transition-colors hover:bg-brand-600"
             >
               Start free
             </a>
@@ -48,7 +48,7 @@ export default function PlatformLayout({ children }: LayoutProps<"/">) {
 
       <main className="flex-1">{children}</main>
 
-      <footer className="border-t border-border/60">
+      <footer className="border-t border-border">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-8 text-xs text-ink-faint">
           <SynoraAppMark className="scale-90" />
           <p>Built for people who sell things.</p>
