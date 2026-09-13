@@ -303,18 +303,47 @@ export default function PlatformHome() {
             </p>
           </div>
 
-          <dl className="mt-12 space-y-px overflow-hidden rounded-2xl">
+          {/* A comparison, laid out as one.
+              
+              It was two equal columns eight units apart, so the left-hand text
+              stopped around a third of the way across and the right-hand text
+              began at the halfway mark with nothing in between holding the two
+              together — five pairs of statements that happened to share a row.
+              Nothing said which column was which, either: a reader had to work
+              out that struck-through meant everywhere else.
+              
+              Three columns now. The middle one is the arrow, which is both the
+              thing that was missing and the thing that makes the row a
+              sentence — this, becomes that. Headings name the sides once, at
+              the top, so no row has to explain itself. */}
+          <dl className="mt-12 overflow-hidden rounded-2xl border border-white/10">
+            <div className="grid grid-cols-[minmax(0,1fr)_2rem_minmax(0,1fr)] items-center gap-x-4 border-b border-white/10 bg-white/[0.03] px-5 py-3 sm:gap-x-6 sm:px-7">
+              <dt className="text-[11px] font-medium uppercase tracking-[0.09em] text-white/35">
+                Everywhere else
+              </dt>
+              <span aria-hidden />
+              <dd className="text-[11px] font-medium uppercase tracking-[0.09em] text-brand-300">
+                Here
+              </dd>
+            </div>
+
             {COMPARISON.map((row) => (
               <div
                 key={row.us}
-                className="grid gap-1 bg-white/[0.04] px-5 py-4 transition-colors hover:bg-white/[0.08] sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] sm:gap-8 sm:px-6"
+                className="group grid grid-cols-[minmax(0,1fr)_2rem_minmax(0,1fr)] items-center gap-x-4 border-b border-white/[0.07] px-5 py-4 transition-colors last:border-b-0 hover:bg-white/[0.04] sm:gap-x-6 sm:px-7"
               >
-                <dt className="text-sm text-white/35 line-through decoration-white/20">
+                <dt className="text-sm leading-snug text-white/40 line-through decoration-white/15">
                   {row.them}
                 </dt>
-                <dd className="flex gap-2.5 text-[15px] font-medium text-white">
+                {/* The turn. Dimmed until the row is under the cursor, so the
+                    column reads as a quiet rule and lights only where you are. */}
+                <ArrowRight
+                  aria-hidden
+                  className="h-4 w-4 justify-self-center text-white/20 transition-colors group-hover:text-brand-300"
+                />
+                <dd className="flex items-start gap-2.5 text-[15px] font-medium leading-snug text-white">
                   <Check className="mt-[3px] h-4 w-4 flex-shrink-0 text-brand-300" />
-                  {row.us}
+                  <span>{row.us}</span>
                 </dd>
               </div>
             ))}
