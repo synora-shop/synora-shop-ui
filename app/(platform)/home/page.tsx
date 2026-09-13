@@ -44,7 +44,7 @@ export default function PlatformHome() {
           className="pointer-events-none absolute inset-x-0 -top-1/3 h-[130%]"
           style={{
             background:
-              "radial-gradient(75% 65% at 12% 22%, rgba(102,102,255,0.55) 0%, rgba(102,102,255,0.22) 38%, rgba(102,102,255,0.04) 62%, rgba(102,102,255,0) 78%)",
+              "radial-gradient(78% 70% at 10% 18%, rgba(80,80,234,0.52) 0%, rgba(12,12,74,0.78) 34%, rgba(12,12,74,0.36) 58%, rgba(12,12,74,0) 80%), radial-gradient(50% 45% at 88% 8%, rgba(183,185,255,0.14) 0%, rgba(183,185,255,0) 70%)",
           }}
         />
 
@@ -91,10 +91,16 @@ export default function PlatformHome() {
             <p className="text-sm text-white/60">
               No card to start. Your free address works the moment you sign up.
             </p>
-            <div className="flex gap-3">
-              <HeroTile tone="bg-white/[0.07]"><TinyRows /></HeroTile>
-              <HeroTile tone="bg-brand-500/25"><TinyBlocks /></HeroTile>
-              <HeroTile tone="bg-white/[0.07]"><TinyGrid /></HeroTile>
+            <div className="flex gap-4">
+              <Glass hue={IRIS} label="Your catalogue">
+                <Layers hue={IRIS} />
+              </Glass>
+              <Glass hue={SKY} label="Your shop">
+                <Orb hue={SKY} />
+              </Glass>
+              <Glass hue={MINT} label="Your orders">
+                <Parcel hue={MINT} />
+              </Glass>
             </div>
           </div>
         </div>
@@ -111,7 +117,7 @@ export default function PlatformHome() {
           className="pointer-events-none absolute inset-x-0 top-0 h-64"
           style={{
             background:
-              "linear-gradient(to bottom, #0c0c1e 0%, rgba(23,23,58,0.72) 22%, rgba(102,102,255,0.16) 52%, rgba(102,102,255,0.05) 74%, rgba(255,255,255,0) 100%)",
+              "linear-gradient(to bottom, #0c0c1e 0%, rgba(12,12,74,0.82) 20%, rgba(80,80,234,0.22) 48%, rgba(183,185,255,0.14) 70%, rgba(255,255,255,0) 100%)",
           }}
         />
 
@@ -138,42 +144,42 @@ export default function PlatformHome() {
               what it will feel like, which is the question somebody choosing a
               platform is actually asking. */}
           <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            <Card kicker="Your products" title="However you sell it" art={<ArtProducts />}>
+            <Card kicker="Your products" title="However you sell it" art={<ArtProducts />} tint={IRIS}>
               <Point>Sizes and colours, each with its own stock</Point>
               <Point>Bulk orders with tiered prices</Point>
               <Point>Made-to-order pieces that take enquiries</Point>
               <Point>Your profit on every item, as you price it</Point>
             </Card>
 
-            <Card kicker="Your orders" title="Know where everything is" art={<ArtOrders />}>
+            <Card kicker="Your orders" title="Know where everything is" art={<ArtOrders />} tint={MINT}>
               <Point>Every order from new to delivered</Point>
               <Point>Your phone buzzes the moment one lands</Point>
               <Point>Quotes tracked until they&rsquo;re won</Point>
               <Point>Customers, and what they&rsquo;ve spent</Point>
             </Card>
 
-            <Card kicker="Your shop" title={<>Build it while it&rsquo;s open</>} art={<ArtBuilder />}>
+            <Card kicker="Your shop" title={<>Build it while it&rsquo;s open</>} art={<ArtBuilder />} tint={SKY}>
               <Point>Thirty-four blocks — sliders, galleries, reviews</Point>
               <Point>Watch the real page change as you type</Point>
               <Point>Try a new look before anyone sees it</Point>
               <Point>Your own fonts and colours</Point>
             </Card>
 
-            <Card kicker="Your address" title="Be easy to find" art={<ArtDomain />}>
+            <Card kicker="Your address" title="Be easy to find" art={<ArtDomain />} tint={SKY}>
               <Point>A free web address the day you sign up</Point>
               <Point>Use the domain you already own</Point>
               <Point>One address people find you at</Point>
               <Point>Old links keep working</Point>
             </Card>
 
-            <Card kicker="Your money" title="Paid the way your customers pay" art={<ArtMoney />}>
+            <Card kicker="Your money" title="Paid the way your customers pay" art={<ArtMoney />} tint={MINT}>
               <Point>Cash on delivery, bank transfer, card</Point>
               <Point>JazzCash and Easypaisa</Point>
               <Point>Straight into your bank, never ours</Point>
               <Point>Never ship against a payment that failed</Point>
             </Card>
 
-            <Card kicker="Your team" title="Bring in help safely" art={<ArtTeam />}>
+            <Card kicker="Your team" title="Bring in help safely" art={<ArtTeam />} tint={IRIS}>
               <Point>Give each person only what they need</Point>
               <Point>Your packer sees orders, not your takings</Point>
               <Point>Sign everyone out of a lost phone at once</Point>
@@ -216,7 +222,7 @@ export default function PlatformHome() {
           className="pointer-events-none absolute inset-0"
           style={{
             background:
-              "radial-gradient(60% 50% at 80% 0%, rgba(102,102,255,0.30) 0%, rgba(102,102,255,0) 65%), radial-gradient(55% 60% at 45% 115%, rgba(102,102,255,0.42) 0%, rgba(102,102,255,0) 70%)",
+              "radial-gradient(60% 50% at 82% 2%, rgba(80,80,234,0.34) 0%, rgba(12,12,74,0) 65%), radial-gradient(58% 62% at 45% 115%, rgba(80,80,234,0.44) 0%, rgba(12,12,74,0.30) 45%, rgba(12,12,74,0) 75%)",
           }}
         />
         {/* The other seam, blended the same way: the light above arrives here
@@ -288,11 +294,14 @@ function Card({
   kicker,
   title,
   art,
+  tint,
   children,
 }: {
   kicker: string;
   title: React.ReactNode;
   art: React.ReactNode;
+  /** One of the three accents, as "r,g,b". Washed at a few percent. */
+  tint: string;
   children: React.ReactNode;
 }) {
   return (
@@ -302,7 +311,10 @@ function Card({
     <div className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-surface transition-all duration-200 hover:-translate-y-1 hover:border-brand-300 hover:shadow-panel">
       <div
         aria-hidden
-        className="relative h-32 overflow-hidden border-b border-border bg-subtle px-5 pt-5"
+        className="relative h-32 overflow-hidden border-b border-border px-5 pt-5"
+        style={{
+          background: `linear-gradient(160deg, rgba(${tint},0.30) 0%, rgba(${tint},0.10) 60%, rgba(${tint},0.04) 100%)`,
+        }}
       >
         {art}
       </div>
@@ -513,64 +525,131 @@ function ArtTeam() {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Hero tiles                                                                 */
+/* Glass                                                                      */
+/*                                                                            */
+/* Synora's accent palette, which is wider than the one the panel uses. The    */
+/* panel needs exactly one accent so that #6666ff can mean "selected"; a       */
+/* marketing page has no such job for colour and can hold all three.           */
+/*                                                                            */
+/*   #b7b9ff  iris   the brand's own light                                    */
+/*   #c8e7ff  sky                                                             */
+/*   #b8efd6  mint                                                            */
+/*                                                                            */
+/* Each tile is a pane of glass rather than a filled square: a translucent     */
+/* wash lit from the top-left, a bright hairline edge, an inner highlight      */
+/* along the top, and the hue thrown outward as a glow so the tile sits in     */
+/* the dark rather than on top of it.                                         */
 /* -------------------------------------------------------------------------- */
 
-function HeroTile({ children, tone }: { children: React.ReactNode; tone: string }) {
+const IRIS = "183,185,255";
+const SKY = "200,231,255";
+const MINT = "184,239,214";
+
+function Glass({
+  hue,
+  label,
+  children,
+}: {
+  hue: string;
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <div
-      aria-hidden
-      className={`h-[104px] w-[104px] flex-shrink-0 overflow-hidden rounded-2xl border border-white/10 p-2.5 transition-transform duration-300 hover:-translate-y-1 sm:h-[120px] sm:w-[120px] ${tone}`}
+      role="img"
+      aria-label={label}
+      className="grid h-[112px] w-[112px] flex-shrink-0 place-items-center rounded-[26px] backdrop-blur-md transition-transform duration-300 hover:-translate-y-1.5 sm:h-[140px] sm:w-[140px]"
+      style={{
+        background: `linear-gradient(148deg, rgba(${hue},0.40) 0%, rgba(${hue},0.12) 46%, rgba(${hue},0.22) 100%)`,
+        border: `1px solid rgba(${hue},0.58)`,
+        boxShadow: `0 0 64px rgba(${hue},0.38), 0 0 22px rgba(${hue},0.28), 0 18px 44px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.45), inset 0 -24px 48px rgba(${hue},0.12)`,
+      }}
     >
       {children}
     </div>
   );
 }
 
-function TinyRows() {
+/* The objects. Soft-shaded SVG rather than flat icons — the reference's tiles
+   each hold a rounded, lit thing, and that is most of why they read as glass
+   instead of as a coloured box. */
+
+/** A stack of plates: the catalogue, and the blocks a page is built from. */
+function Layers({ hue }: { hue: string }) {
   return (
-    <div className="space-y-1.5">
-      {[0, 1, 2].map((i) => (
-        <div key={i} className="flex items-center gap-1.5">
-          <span className="h-5 w-5 flex-shrink-0 rounded bg-white/25" />
-          <span className="flex-1 space-y-1">
-            <span className="block h-1 w-full rounded-full bg-white/30" />
-            <span className="block h-1 w-2/3 rounded-full bg-white/15" />
-          </span>
-          <span className="h-1.5 w-1.5 rounded-full bg-brand-300" />
-        </div>
-      ))}
-    </div>
+    <svg viewBox="0 0 120 120" className="h-[58px] w-[58px] sm:h-[70px] sm:w-[70px]" aria-hidden>
+      <defs>
+        <linearGradient id="lyTop" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#ffffff" />
+          <stop offset="100%" stopColor={`rgb(${hue})`} />
+        </linearGradient>
+        <linearGradient id="lyMid" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor={`rgba(${hue},0.95)`} />
+          <stop offset="100%" stopColor={`rgba(${hue},0.55)`} />
+        </linearGradient>
+        <linearGradient id="lyLow" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor={`rgba(${hue},0.6)`} />
+          <stop offset="100%" stopColor={`rgba(${hue},0.28)`} />
+        </linearGradient>
+      </defs>
+      <g>
+        <path d="M60 74 L102 92 L60 110 L18 92 Z" fill="url(#lyLow)" />
+        <path d="M60 50 L102 68 L60 86 L18 68 Z" fill="url(#lyMid)" />
+        <path d="M60 26 L102 44 L60 62 L18 44 Z" fill="url(#lyTop)" />
+      </g>
+    </svg>
   );
 }
 
-function TinyBlocks() {
+/** A lit sphere: the shop itself, out in the world. */
+function Orb({ hue }: { hue: string }) {
   return (
-    <div className="space-y-1.5">
-      <span className="block h-7 rounded bg-white/30" />
-      <div className="grid grid-cols-3 gap-1.5">
-        <span className="h-5 rounded bg-white/20" />
-        <span className="h-5 rounded bg-white/20" />
-        <span className="h-5 rounded bg-white/20" />
-      </div>
-      <span className="block h-3 w-3/4 rounded bg-white/15" />
-    </div>
+    <svg viewBox="0 0 120 120" className="h-[56px] w-[56px] sm:h-[66px] sm:w-[66px]" aria-hidden>
+      <defs>
+        <radialGradient id="orbBody" cx="35%" cy="28%" r="78%">
+          <stop offset="0%" stopColor="#ffffff" />
+          <stop offset="38%" stopColor={`rgba(${hue},0.98)`} />
+          <stop offset="100%" stopColor={`rgba(${hue},0.42)`} />
+        </radialGradient>
+        <radialGradient id="orbSpec" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="rgba(255,255,255,0.95)" />
+          <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+        </radialGradient>
+      </defs>
+      <circle cx="60" cy="60" r="42" fill="url(#orbBody)" />
+      <ellipse cx="45" cy="41" rx="15" ry="11" fill="url(#orbSpec)" />
+      <path
+        d="M60 18a42 42 0 0 1 0 84"
+        fill="none"
+        stroke="rgba(255,255,255,0.35)"
+        strokeWidth="1.5"
+      />
+    </svg>
   );
 }
 
-function TinyGrid() {
+/** A parcel: an order, on its way. */
+function Parcel({ hue }: { hue: string }) {
   return (
-    <div className="space-y-1.5">
-      <div className="flex items-center justify-between">
-        <span className="h-1 w-6 rounded-full bg-white/35" />
-        <span className="h-1.5 w-1.5 rounded-full bg-white/25" />
-      </div>
-      <div className="grid grid-cols-2 gap-1.5">
-        <span className="aspect-square rounded bg-white/25" />
-        <span className="aspect-square rounded bg-white/15" />
-        <span className="aspect-square rounded bg-white/15" />
-        <span className="aspect-square rounded bg-white/25" />
-      </div>
-    </div>
+    <svg viewBox="0 0 120 120" className="h-[58px] w-[58px] sm:h-[70px] sm:w-[70px]" aria-hidden>
+      <defs>
+        <linearGradient id="pcTop" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#ffffff" />
+          <stop offset="100%" stopColor={`rgba(${hue},0.85)`} />
+        </linearGradient>
+        <linearGradient id="pcLeft" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={`rgba(${hue},0.88)`} />
+          <stop offset="100%" stopColor={`rgba(${hue},0.48)`} />
+        </linearGradient>
+        <linearGradient id="pcRight" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={`rgba(${hue},0.62)`} />
+          <stop offset="100%" stopColor={`rgba(${hue},0.30)`} />
+        </linearGradient>
+      </defs>
+      <path d="M60 22 L100 44 L60 66 L20 44 Z" fill="url(#pcTop)" />
+      <path d="M20 44 L60 66 L60 106 L20 84 Z" fill="url(#pcLeft)" />
+      <path d="M100 44 L60 66 L60 106 L100 84 Z" fill="url(#pcRight)" />
+      <path d="M60 66 L60 106" stroke="rgba(255,255,255,0.28)" strokeWidth="1.5" />
+    </svg>
   );
 }
