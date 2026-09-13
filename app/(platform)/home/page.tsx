@@ -120,65 +120,69 @@ export default function PlatformHome() {
         <div className="relative mx-auto max-w-6xl px-5 pb-20 pt-40 sm:pb-28 sm:pt-48">
           <p className="inline-flex items-center gap-2 rounded-pill border border-border bg-surface px-3 py-1 text-[11px] font-medium uppercase tracking-[0.09em] text-ink-soft">
             <span className="h-1 w-1 rounded-full bg-brand-500" />
-            What you get
+            What makes it different
           </p>
 
           <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.75fr)] lg:items-end">
             <h2 className="text-3xl font-semibold leading-[1.1] tracking-tight text-balance text-ink sm:text-5xl">
-              Everything a shop needs.
+              The parts that usually
               <br className="hidden sm:block" />{" "}
-              <span className="text-brand-500">Nothing sold separately.</span>
+              <span className="text-brand-500">cost extra, or go missing.</span>
             </h2>
             <p className="text-sm leading-relaxed text-ink-soft lg:pb-2">
-              No marketplace to shop in before your shop works. This is the first day, on the free
-              address.
+              Every platform lists products and takes payments — saying so would tell you nothing.
+              These are the parts that are normally an upgrade, an add-on, or simply absent.
             </p>
           </div>
 
-          {/* Each card carries a drawing of the thing it describes. A list of
-              ticks tells you a feature exists; a picture of the screen tells you
-              what it will feel like, which is the question somebody choosing a
-              platform is actually asking. */}
-          <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            <Card kicker="Your products" title="However you sell it" art={<ArtProducts />} tint={IRIS}>
-              <Point>Sizes and colours, each with its own stock</Point>
-              <Point>Bulk orders with tiered prices</Point>
-              <Point>Made-to-order pieces that take enquiries</Point>
-              <Point>Your profit on every item, as you price it</Point>
+          {/* Four, not six. The six before were sizes and colours, order
+              statuses, a page builder, a free subdomain and a list of payment
+              methods — every one of which every platform has, so naming them
+              said nothing except that we have caught up. These are the ones a
+              merchant cannot get by going somewhere else. */}
+          <div className="mt-14 grid gap-5 sm:grid-cols-2">
+            <Card
+              kicker="Before, not after"
+              title="It argues with you while there is still time"
+              art={<ArtWarns />}
+              tint={IRIS}
+            >
+              <Point>Tells you what a delete will break, before it breaks</Point>
+              <Point>Deleted things wait in a bin, not a void</Point>
+              <Point>Nothing reaches your customers until you publish it</Point>
             </Card>
 
-            <Card kicker="Your orders" title="Know where everything is" art={<ArtOrders />} tint={MINT}>
-              <Point>Every order from new to delivered</Point>
-              <Point>Your phone buzzes the moment one lands</Point>
-              <Point>Quotes tracked until they&rsquo;re won</Point>
-              <Point>Customers, and what they&rsquo;ve spent</Point>
-            </Card>
-
-            <Card kicker="Your shop" title={<>Build it while it&rsquo;s open</>} art={<ArtBuilder />} tint={SKY}>
-              <Point>Thirty-four blocks — sliders, galleries, reviews</Point>
-              <Point>Watch the real page change as you type</Point>
-              <Point>Try a new look before anyone sees it</Point>
-              <Point>Your own fonts and colours</Point>
-            </Card>
-
-            <Card kicker="Your address" title="Be easy to find" art={<ArtDomain />} tint={SKY}>
-              <Point>A free web address the day you sign up</Point>
-              <Point>Use the domain you already own</Point>
-              <Point>One address people find you at</Point>
-              <Point>Old links keep working</Point>
-            </Card>
-
-            <Card kicker="Your money" title="Paid the way your customers pay" art={<ArtMoney />} tint={MINT}>
-              <Point>Cash on delivery, bank transfer, card</Point>
-              <Point>JazzCash and Easypaisa</Point>
-              <Point>Straight into your bank, never ours</Point>
-              <Point>Never ship against a payment that failed</Point>
-            </Card>
-
-            <Card kicker="Your team" title="Bring in help safely" art={<ArtTeam />} tint={IRIS}>
+            <Card
+              kicker="Your team"
+              title="Bring in help without handing over the keys"
+              art={<ArtTeam />}
+              tint={SKY}
+            >
               <Point>Give each person only what they need</Point>
               <Point>Your packer sees orders, not your takings</Point>
               <Point>Sign everyone out of a lost phone at once</Point>
+            </Card>
+
+            <Card
+              kicker="Talking to customers"
+              title="Chat buttons that cost nothing"
+              art={<ArtChat />}
+              tint={MINT}
+            >
+              <Point>WhatsApp, a call, an email, any link at all</Point>
+              <Point>Your own icon, colour and opening message</Point>
+              <Point>Choose the pages each one shows on</Point>
+            </Card>
+
+            <Card
+              kicker="No lock-in"
+              title="Leave whenever you like"
+              art={<ArtPortable />}
+              tint={IRIS}
+            >
+              <Point>Your catalogue leaves as a Shopify CSV</Point>
+              <Point>And loads back in the same way, column for column</Point>
+              <Point>Customers and orders come with it</Point>
             </Card>
           </div>
         </div>
@@ -445,151 +449,77 @@ function Point({ children }: { children: React.ReactNode }) {
 const BAR = "rounded-full bg-ink/15";
 const CHIP = "rounded-md border border-border bg-surface";
 
-/** A product with its sizes and colours. */
-function ArtProducts() {
+/** The warning you get before a delete takes something with it. */
+function ArtWarns() {
   return (
-    <div className="space-y-2.5">
-      <div className="flex items-center gap-2.5">
-        <span className="h-10 w-10 rounded-lg bg-ink/15" />
-        <span className="flex-1 space-y-1.5">
-          <span className={`block h-1.5 w-24 ${BAR}`} />
-          <span className={`block h-1.5 w-14 ${BAR}`} />
+    <div className="rounded-xl border border-border bg-surface p-3 shadow-sm">
+      <p className="text-[11px] font-semibold text-ink">Delete “Shirts”?</p>
+      <p className="mt-1 text-[10px] leading-snug text-ink-soft">
+        8 products are in this category. They stay, but lose it.
+      </p>
+      <div className="mt-2.5 flex gap-1.5">
+        <span className="rounded-pill bg-ink px-2.5 py-1 text-[9px] font-medium text-surface">
+          Keep it
         </span>
-        <span className="rounded-pill bg-brand-500/15 px-2 py-0.5 text-[9px] font-medium text-brand-600">
-          Rs 5,500
+        <span className="rounded-pill border border-border px-2.5 py-1 text-[9px] text-ink-soft transition-colors duration-300 group-hover:border-rose group-hover:text-rose">
+          Delete anyway
         </span>
       </div>
-      <div className="flex gap-1.5">
-        {["S", "M", "L", "XL"].map((s, i) => (
+    </div>
+  );
+}
+
+/** The buttons a customer taps to reach you. */
+function ArtChat() {
+  const dots = [
+    { label: "W", tint: "bg-green text-white" },
+    { label: "@", tint: "bg-ink/80 text-white" },
+    { label: "?", tint: "bg-brand-500 text-white" },
+  ];
+  return (
+    <div className="relative h-full">
+      <div className="space-y-1.5">
+        <span className="block h-2 w-24 rounded-full bg-ink/10" />
+        <span className="block h-2 w-32 rounded-full bg-ink/[0.07]" />
+        <span className="block h-2 w-20 rounded-full bg-ink/[0.07]" />
+      </div>
+      <div className="absolute bottom-0 right-0 flex flex-col items-end gap-1.5">
+        {dots.map(({ label, tint }, i) => (
           <span
-            key={s}
-            className={`${CHIP} px-2 py-0.5 text-[9px] text-ink-soft transition-all duration-200 ${
-              i === 1 ? "border-brand-500 text-brand-600" : ""
-            } group-hover:delay-[var(--d)]`}
-            style={{ "--d": `${i * 40}ms` } as React.CSSProperties}
+            key={label}
+            className={`grid h-7 w-7 place-items-center rounded-full text-[10px] font-semibold shadow-sm transition-transform duration-300 group-hover:-translate-x-0.5 ${tint}`}
+            style={{ transitionDelay: `${i * 70}ms` }}
           >
-            {s}
+            {label}
           </span>
         ))}
-        <span className="ml-1 flex gap-1">
-          <span className="h-4 w-4 rounded-full bg-brand-500 ring-2 ring-brand-500/25" />
-          <span className="h-4 w-4 rounded-full bg-ink/25" />
-          <span className="h-4 w-4 rounded-full bg-ink/10" />
-        </span>
       </div>
     </div>
   );
 }
 
-/** An order moving along, and the step it is on. */
-function ArtOrders() {
-  const steps = ["New", "Packed", "Sent"];
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-1.5">
-        {steps.map((s, i) => (
-          <span key={s} className="flex flex-1 items-center gap-1.5">
-            <span
-              className={`h-2 w-2 flex-shrink-0 rounded-full transition-colors duration-300 ${
-                i === 0 ? "bg-brand-500" : "bg-ink/20 group-hover:bg-brand-500"
-              }`}
-              style={{ transitionDelay: `${i * 110}ms` }}
-            />
-            {i < steps.length - 1 && (
-              <span
-                className="h-px flex-1 origin-left bg-ink/15 transition-colors duration-300 group-hover:bg-brand-300"
-                style={{ transitionDelay: `${i * 110}ms` }}
-              />
-            )}
-          </span>
-        ))}
-      </div>
-      <div className="flex gap-2">
-        {steps.map((s) => (
-          <span key={s} className="flex-1 text-[9px] text-ink-faint">
-            {s}
-          </span>
-        ))}
-      </div>
-      <div className="rounded-lg border border-border bg-surface px-2.5 py-2">
-        <div className="flex items-center gap-2">
-          <span className="h-1.5 w-1.5 rounded-full bg-brand-500" />
-          <span className={`h-1.5 w-20 ${BAR}`} />
-          <span className={`ml-auto h-1.5 w-8 ${BAR}`} />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/** Blocks stacking into a page. */
-function ArtBuilder() {
-  return (
-    <div className="space-y-1.5">
-      <span className="block h-8 rounded-md bg-brand-500/20 transition-all duration-200 group-hover:bg-brand-500/30" />
-      <div className="grid grid-cols-3 gap-1.5">
-        {[0, 1, 2].map((i) => (
-          <span
-            key={i}
-            className="h-8 rounded-md bg-ink/10 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:bg-ink/[0.16]"
-            style={{ transitionDelay: `${i * 60}ms` }}
-          />
-        ))}
-      </div>
-      <span className="block h-4 w-2/3 rounded-md bg-ink/10" />
-    </div>
-  );
-}
-
-/** The domain, going live. */
-function ArtDomain() {
+/** Your catalogue, going out and coming back. */
+function ArtPortable() {
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-2">
-        <span className="text-[11px] font-medium text-ink">yourshop.com</span>
-        <span className="inline-flex items-center gap-1 rounded-pill border border-border bg-surface px-1.5 py-0.5 text-[9px] text-ink-soft">
-          <span className="h-1.5 w-1.5 rounded-full bg-amber transition-colors duration-300 group-hover:bg-green" />
-          <span className="group-hover:hidden">checking</span>
-          <span className="hidden group-hover:inline">live</span>
-        </span>
-      </div>
-      <div className="space-y-1.5">
-        {[
-          ["TXT", "_synora-verify"],
-          ["A", "216.198.79.1"],
-        ].map(([type, value]) => (
-          <div key={type} className="flex items-center gap-1.5">
-            <span className="w-7 flex-shrink-0 text-[9px] text-ink-faint">{type}</span>
-            <code className="flex-1 truncate rounded bg-ink/[0.06] px-1.5 py-1 font-mono text-[9px] text-ink-soft">
-              {value}
-            </code>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/** The ways a customer can pay. */
-function ArtMoney() {
-  const ways = ["Cash", "Card", "JazzCash", "Easypaisa", "Bank"];
-  return (
-    <div className="space-y-2.5">
-      <div className="flex flex-wrap gap-1.5">
-        {ways.map((w, i) => (
-          <span
-            key={w}
-            className={`${CHIP} px-2 py-1 text-[9px] text-ink-soft transition-all duration-300 group-hover:border-brand-300 group-hover:text-brand-600`}
-            style={{ transitionDelay: `${i * 50}ms` }}
-          >
-            {w}
+      {[
+        ["Export", "products.csv", "→"],
+        ["Import", "shopify.csv", "←"],
+      ].map(([action, file, arrow]) => (
+        <div
+          key={action}
+          className="flex items-center gap-2 rounded-lg border border-border bg-surface px-2.5 py-2"
+        >
+          <span className="w-11 flex-shrink-0 text-[9px] text-ink-faint">{action}</span>
+          <code className="flex-1 truncate rounded bg-ink/[0.06] px-1.5 py-1 font-mono text-[9px] text-ink-soft">
+            {file}
+          </code>
+          <span className="text-xs text-brand-500 transition-transform duration-300 group-hover:translate-x-0.5">
+            {arrow}
           </span>
-        ))}
-      </div>
-      <div className="flex items-center gap-2 rounded-lg border border-border bg-surface px-2.5 py-2">
-        <span className="text-[9px] text-ink-faint">Your bank</span>
-        <span className="ml-auto text-[11px] font-semibold text-ink">Rs 24,900</span>
-      </div>
+        </div>
+      ))}
+      <p className="text-[9px] text-ink-faint">Column for column, both ways.</p>
     </div>
   );
 }
