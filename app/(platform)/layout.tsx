@@ -133,9 +133,13 @@ export default function PlatformLayout({ children }: LayoutProps<"/">) {
             </div>
           </div>
 
-          <div className="mt-12 flex flex-col gap-3 border-t border-white/10 pt-6 text-xs text-white/35 sm:flex-row sm:items-center sm:justify-between">
+          {/* One line, centred. It was two held apart by justify-between, and
+              the second was a slogan doing no work — the page has already made
+              its case by the time anybody reaches here. With the slogan gone
+              the survivor has nothing to be balanced against, so it sits in
+              the middle rather than hugging the left edge. */}
+          <div className="mt-12 border-t border-white/10 pt-6 text-center text-xs text-white/35">
             <p>&copy; {new Date().getFullYear()} Synora Digitals. All rights reserved.</p>
-            <p>Built for people who sell things.</p>
           </div>
         </div>
       </footer>
