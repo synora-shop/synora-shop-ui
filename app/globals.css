@@ -207,6 +207,23 @@
    it — the drawing puts a light field inside a grey bar for exactly this
    reason. Scoped to the panel, and only where a component has not already
    said otherwise. */
+/* The Synora Digitals mark in the footer, breathing.
+ *
+ * A slow, shallow pulse on the glow rather than on the mark itself: the shape
+ * stays put and only the light around it moves, which catches the eye at the
+ * edge of vision without pulling it away from whatever is being read. Six
+ * seconds, because anything faster reads as a notification demanding something.
+ */
+@keyframes sd-breathe {
+  0%, 100% { filter: drop-shadow(0 0 3px rgb(102 102 255 / 0.35)); opacity: 0.82; }
+  50%      { filter: drop-shadow(0 0 11px rgb(102 102 255 / 0.85)); opacity: 1; }
+}
+.sd-mark { animation: sd-breathe 6s ease-in-out infinite; }
+.sd-mark:hover { animation-duration: 2.4s; }
+@media (prefers-reduced-motion: reduce) {
+  .sd-mark { animation: none; filter: drop-shadow(0 0 6px rgb(102 102 255 / 0.5)); }
+}
+
 /* A tab set with no JavaScript.
  *
  * Three radios carry the state, the labels switch them, and :has() on the

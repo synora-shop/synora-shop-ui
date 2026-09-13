@@ -101,17 +101,14 @@ export default function PlatformHome() {
           with a tall band that starts at the hero's exact colour and arrives at
           its own, so the two are one continuous surface. Content begins below
           the band. */}
-      <section className="relative -mt-px bg-surface pt-px">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 h-64"
-          style={{
-            background:
-              "linear-gradient(to bottom, #0c0c1e 0%, rgba(12,12,74,0.82) 20%, rgba(80,80,234,0.22) 48%, rgba(183,185,255,0.14) 70%, rgba(255,255,255,0) 100%)",
-          }}
-        />
-
-        <div className="relative mx-auto max-w-[78rem] px-5 pb-20 pt-40 sm:pb-28 sm:pt-48">
+      {/* A block, not a blend.
+          
+          Two flat colours fading into each other over 250px is a smear however
+          it is tuned — and the fade was doing the work a corner does better.
+          The light half is a rounded panel sitting on the dark ground now, so
+          the two sections are plainly two things. */}
+      <section className="px-4 pt-16 sm:px-6 sm:pt-20">
+        <div className="mx-auto max-w-[78rem] rounded-[2rem] bg-surface px-6 pb-20 pt-16 sm:px-10 sm:pb-24 sm:pt-20">
           <p className="inline-flex items-center gap-2 rounded-pill border border-border bg-surface px-3 py-1 text-[11px] font-medium uppercase tracking-[0.09em] text-ink-soft">
             <span className="h-1 w-1 rounded-full bg-brand-500" />
             What makes it different
@@ -186,13 +183,13 @@ export default function PlatformHome() {
           The tiles, doing a job. They were decoration in the hero rail, which
           is a strip with nowhere to put what a tile might reveal. Here they
           are the control for the panel beneath them. */}
-      <section id="showcase" className="relative bg-surface pb-20 sm:pb-28">
-        <div className="showcase relative mx-auto max-w-[78rem] px-5">
+      <section id="showcase" className="px-4 pt-14 sm:px-6 sm:pt-16">
+        <div className="showcase relative mx-auto max-w-[78rem]">
           <input type="radio" name="sc" id="sc-a" defaultChecked className="sr-only" />
           <input type="radio" name="sc" id="sc-b" className="sr-only" />
           <input type="radio" name="sc" id="sc-c" className="sr-only" />
 
-          <div className="rounded-3xl border border-border bg-night px-6 py-10 sm:px-10 sm:py-12">
+          <div className="rounded-[2rem] border border-white/10 bg-white/[0.03] px-6 py-10 sm:px-10 sm:py-12">
             <div className="flex flex-wrap items-start justify-center gap-5 sm:gap-7">
               <Tile id="sc-a" tile="a" hue={IRIS} caption="Shaped to your business">
                 <Storefront hue={IRIS} />
@@ -285,7 +282,7 @@ export default function PlatformHome() {
       {/* ========================================================= close
           The argument and the ask, on one dark surface. They belong together:
           the comparison earns the button directly above it. */}
-      <section className="relative isolate -mt-px overflow-hidden bg-night pt-px">
+      <section className="relative isolate overflow-hidden bg-night">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0"
@@ -294,18 +291,8 @@ export default function PlatformHome() {
               "radial-gradient(60% 50% at 82% 2%, rgba(80,80,234,0.34) 0%, rgba(12,12,74,0) 65%), radial-gradient(58% 62% at 45% 115%, rgba(80,80,234,0.44) 0%, rgba(12,12,74,0.30) 45%, rgba(12,12,74,0) 75%)",
           }}
         />
-        {/* The other seam, blended the same way: the light above arrives here
-            rather than stopping at a line. */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 h-40"
-          style={{
-            background:
-              "linear-gradient(to bottom, #ffffff 0%, rgba(240,240,245,0.55) 30%, rgba(23,23,58,0.35) 68%, rgba(12,12,30,0) 100%)",
-          }}
-        />
 
-        <div className="relative mx-auto max-w-[78rem] px-5 pb-20 pt-32 sm:pb-28 sm:pt-40">
+        <div className="relative mx-auto max-w-[78rem] px-5 pb-20 pt-24 sm:pb-28 sm:pt-28">
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.75fr)] lg:items-end">
             <h2 className="text-3xl font-semibold leading-[1.1] tracking-tight text-balance text-white sm:text-5xl">
               Coming from
@@ -407,36 +394,61 @@ function Point({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** A shop front. The label is "shaped to your business", so the object is a
-    business — an awning over a door, which reads as a shop at a glance and at
-    16px. An abstract solid would have been prettier and said nothing. */
+/** A shop front.
+ *
+ * The label is "shaped to your business", so the object is a business. The
+ * first attempt drew the awning as one hand-written path with seven scallops
+ * hung off its bottom edge — which came out lopsided, because the scallops
+ * were spaced along a straight line while the hem above them curved. The
+ * scallops are drawn as real circles on a computed pitch now, and the awning
+ * sits on a symmetric arc, so both halves match.
+ */
 function Storefront({ hue }: { hue: string }) {
+  const scallops = 6;
+  const left = 22;
+  const span = 76;
+  const r = span / (scallops * 2);
   return (
     <svg viewBox="0 0 120 120" className="h-[74px] w-[74px] sm:h-[88px] sm:w-[88px]" aria-hidden>
       <defs>
-        <linearGradient id="sfAwn" x1="0" y1="0" x2="0.4" y2="1">
+        <linearGradient id="sfAwn" x1="0" y1="0" x2="0.25" y2="1">
           <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="100%" stopColor={`rgba(${hue},0.72)`} />
+          <stop offset="100%" stopColor={`rgba(${hue},0.78)`} />
         </linearGradient>
-        <linearGradient id="sfBody" x1="0" y1="0" x2="0.6" y2="1">
-          <stop offset="0%" stopColor={`rgba(${hue},0.55)`} />
-          <stop offset="100%" stopColor={`rgba(${hue},0.20)`} />
+        <linearGradient id="sfWall" x1="0" y1="0" x2="0.55" y2="1">
+          <stop offset="0%" stopColor={`rgba(${hue},0.52)`} />
+          <stop offset="100%" stopColor={`rgba(${hue},0.22)`} />
         </linearGradient>
         <linearGradient id="sfDoor" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="100%" stopColor={`rgba(${hue},0.55)`} />
+          <stop offset="100%" stopColor={`rgba(${hue},0.62)`} />
         </linearGradient>
       </defs>
-      {/* body */}
-      <path d="M24 56 h72 a4 4 0 0 1 4 4 v42 a4 4 0 0 1 -4 4 h-72 a4 4 0 0 1 -4 -4 v-42 a4 4 0 0 1 4 -4 z" fill="url(#sfBody)" />
-      {/* awning, with a scalloped hem so it reads as fabric rather than a box */}
-      <path
-        d="M16 42 Q60 22 104 42 L104 50 q-5.5 7 -11 0 q-5.5 7 -11 0 q-5.5 7 -11 0 q-5.5 7 -11 0 q-5.5 7 -11 0 q-5.5 7 -11 0 q-5.5 7 -11 0 Z"
-        fill="url(#sfAwn)"
-      />
-      {/* door */}
-      <path d="M48 74 h24 v32 h-24 z" fill="url(#sfDoor)" opacity="0.9" />
-      <circle cx="67" cy="90" r="1.8" fill={`rgba(${hue},0.9)`} />
+
+      {/* wall, sitting under the awning's shadow line */}
+      <rect x={left} y="52" width={span} height="52" rx="5" fill="url(#sfWall)" />
+
+      {/* windows either side of the door, so the wall is not a blank slab */}
+      <rect x={left + 7} y="61" width="14" height="12" rx="2.5" fill={`rgba(${hue},0.42)`} />
+      <rect x={left + span - 21} y="61" width="14" height="12" rx="2.5" fill={`rgba(${hue},0.42)`} />
+
+      {/* door, centred on the building's own axis */}
+      <rect x={left + span / 2 - 10} y="72" width="20" height="32" rx="2.5" fill="url(#sfDoor)" />
+      <circle cx={left + span / 2 + 5} cy="89" r="1.6" fill={`rgba(${hue},0.85)`} />
+
+      {/* awning: a flat canopy, with the scallops as real circles on an even
+          pitch rather than a freehand wobble */}
+      <path d={`M${left - 4} 52 L${left + 2} 34 H${left + span - 2} L${left + span + 4} 52 Z`} fill="url(#sfAwn)" />
+      {Array.from({ length: scallops }).map((_, i) => (
+        <circle
+          key={i}
+          cx={left - 4 + r + i * (span + 8) / scallops}
+          cy="52"
+          r={(span + 8) / scallops / 2}
+          fill="url(#sfAwn)"
+        />
+      ))}
+      <rect x={left - 4} y="50" width={span + 8} height="2.5" fill={`rgba(${hue},0.55)`} />
     </svg>
   );
 }
