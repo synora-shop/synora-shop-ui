@@ -42,7 +42,7 @@ export default function PlatformHome() {
           }}
         />
 
-        <div className="relative mx-auto max-w-[84rem] px-5 pb-16 pt-14 sm:pb-20 sm:pt-20">
+        <div className="relative mx-auto max-w-[78rem] px-5 pb-16 pt-28 sm:pb-20 sm:pt-32">
           <p className="inline-flex items-center gap-2 rounded-pill border border-white/15 bg-white/5 px-3 py-1 text-xs font-medium text-white/80 backdrop-blur">
             <span className="h-1.5 w-1.5 rounded-full bg-brand-300" />
             Open a shop today. Use your own domain this afternoon.
@@ -111,7 +111,7 @@ export default function PlatformHome() {
           }}
         />
 
-        <div className="relative mx-auto max-w-[84rem] px-5 pb-20 pt-40 sm:pb-28 sm:pt-48">
+        <div className="relative mx-auto max-w-[78rem] px-5 pb-20 pt-40 sm:pb-28 sm:pt-48">
           <p className="inline-flex items-center gap-2 rounded-pill border border-border bg-surface px-3 py-1 text-[11px] font-medium uppercase tracking-[0.09em] text-ink-soft">
             <span className="h-1 w-1 rounded-full bg-brand-500" />
             What makes it different
@@ -187,7 +187,7 @@ export default function PlatformHome() {
           is a strip with nowhere to put what a tile might reveal. Here they
           are the control for the panel beneath them. */}
       <section id="showcase" className="relative bg-surface pb-20 sm:pb-28">
-        <div className="showcase relative mx-auto max-w-[84rem] px-5">
+        <div className="showcase relative mx-auto max-w-[78rem] px-5">
           <input type="radio" name="sc" id="sc-a" defaultChecked className="sr-only" />
           <input type="radio" name="sc" id="sc-b" className="sr-only" />
           <input type="radio" name="sc" id="sc-c" className="sr-only" />
@@ -305,7 +305,7 @@ export default function PlatformHome() {
           }}
         />
 
-        <div className="relative mx-auto max-w-[84rem] px-5 pb-20 pt-32 sm:pb-28 sm:pt-40">
+        <div className="relative mx-auto max-w-[78rem] px-5 pb-20 pt-32 sm:pb-28 sm:pt-40">
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.75fr)] lg:items-end">
             <h2 className="text-3xl font-semibold leading-[1.1] tracking-tight text-balance text-white sm:text-5xl">
               Coming from
