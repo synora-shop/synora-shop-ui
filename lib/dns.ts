@@ -136,8 +136,12 @@ async function checkRouting(
     lookup(() => r.resolve4(host)),
   ]);
 
-  const cnameTarget = normaliseHost(DNS_TARGET.cname);
-  const cnameOk = cnames.some((c) => normaliseHost(c) === cnameTarget);
+  // Every target that reaches us, not only the one the screen prints — see
+  // DNS_TARGET.cnameAccepts. The instructions changed when the product moved
+  // to one address; the records merchants set before that still route.
+  const cnameOk = cnames.some((c) =>
+    DNS_TARGET.cnameAccepts.includes(normaliseHost(c))
+  );
   // Any address the host answers on, not only the one we print. See
   // DNS_TARGET.accepts: a merchant whose apex already pointed at the host
   // before they found us has correct DNS and must not be told otherwise.

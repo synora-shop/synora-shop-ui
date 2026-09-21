@@ -6,6 +6,7 @@ import {
   SHOP_PATH_HEADER,
   classifyHost,
   isAppHost,
+  legacyStoreHost,
 } from "@/lib/shop-context";
 
 // Formerly `middleware.ts` — Next.js 16 renamed the file convention to `proxy.ts`.
@@ -20,6 +21,26 @@ import {
 export default auth((req) => {
   const { pathname } = req.nextUrl;
   const host = req.headers.get("host") ?? "";
+
+  // Stores moved from `shop.synoradigitals.com` to `app.synoradigitals.com`
+  // when the product settled on one name. Every old address keeps working, on
+  // the same path, permanently — someone's printed card, a shared link and a
+  // search result are all addresses we no longer control, and the only honest
+  // answer to one of them is the page it used to reach.
+  //
+  // First, before anything else looks at the host: the old name is not a shop
+  // any more and resolving it would find nothing.
+  const moved = legacyStoreHost(host);
+  if (moved) {
+    // 308 rather than 302: permanent, and it keeps the method, so a form
+    // posting to an old address still posts rather than silently becoming a
+    // GET and losing what was typed.
+    return NextResponse.redirect(
+      new URL(`${pathname}${req.nextUrl.search}`, `https://${moved}`),
+      308
+    );
+  }
+
   const kind = classifyHost(host);
 
   // The subdomain this request is addressed to, if any. A custom domain has no
@@ -88,25 +109,25 @@ export default auth((req) => {
   // with a session and a shop, and 404s otherwise.
   const previewing = req.nextUrl.searchParams.has(PREVIEW_PARAM);
 
-  // Our own hosts, which are two different things.
+  // Our own address, at the top of it.
   //
-  // The application host's root is the page that explains what this is. It used
-  // to go straight to /admin on the reasoning that anyone typing this address
-  // has already signed up — which is only true of the people who already have a
-  // store. Somebody sent the link, or arriving from a search, met a login form
-  // with no explanation of what they were being asked to log in to.
+  // On a shop's address `/` is that shop's home page; on ours it is the page
+  // that explains what this is and offers a way in. It used to go straight to
+  // /admin, on the reasoning that anyone typing this address has already
+  // signed up — which is only true of the people who already have a store.
+  // Somebody sent the link, or arriving from a search, met a login form with
+  // no explanation of what they were being asked to log in to.
   //
-  // A merchant with a session loses nothing: every /admin address still works,
-  // the panel is one click away, and the browser remembers where they go.
-  if (isAppHost(host) && pathname === "/" && !previewing) {
-    return NextResponse.redirect(new URL("/home", req.nextUrl.origin));
-  }
-
-  // The product's own site. On a shop's address `/` is that shop's home page;
-  // on ours it is the page that explains what this is and offers a way in.
-  // Rewritten rather than redirected so the site keeps the bare domain — a
-  // company site that bounces you to /home on every visit looks broken.
-  if (kind.kind === "platform" && pathname === "/" && !previewing) {
+  // Rewritten rather than redirected, and that is not cosmetic. The front page
+  // names `https://app.synoradigitals.com` as its canonical address and that is
+  // the address submitted to search engines; a root that redirects away is
+  // reported as "page with redirect" and the bare domain never gets indexed.
+  // This way the bare domain *is* the page. /home still works as its own
+  // address for anyone who has the link.
+  //
+  // A merchant with a session loses nothing: every /admin address still works
+  // and the browser remembers where they go.
+  if ((isAppHost(host) || kind.kind === "platform") && pathname === "/" && !previewing) {
     const url = req.nextUrl.clone();
     url.pathname = "/home";
     return NextResponse.rewrite(url, { request: { headers: withShopHeaders() } });

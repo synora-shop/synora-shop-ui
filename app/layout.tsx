@@ -4,6 +4,7 @@ import { DM_Sans, DM_Mono } from "next/font/google";
 import { AuthSessionProvider } from "@/components/providers/session-provider";
 import { NavProgress } from "@/components/ui/nav-progress";
 import { ToastProvider } from "@/components/ui/toast";
+import { appUrl } from "@/lib/shop-context";
 import "./globals.css";
 
 /**
@@ -48,7 +49,23 @@ const mono = DM_Mono({
   display: "swap",
 });
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+// The address relative metadata resolves against — og:image, og:url, and any
+// canonical written as a path.
+//
+// Built from APP_HOST rather than read from NEXT_PUBLIC_SITE_URL, which is how
+// it used to work and which quietly went wrong: that variable was set once, to
+// `shop.synoradigitals.com`, and stayed pointing there after the product moved
+// to one address. Nothing errored. The pages simply named a host they were no
+// longer served from, in the metadata search engines read. Deriving it from
+// the host setting the rest of the application already uses means it cannot
+// drift again, and there is no second copy of the answer to keep in step.
+//
+// A merchant's storefront does not use this: app/(storefront)/layout.tsx sets
+// its own metadataBase to that shop's canonical address.
+const SITE_URL =
+  process.env.NODE_ENV === "production"
+    ? appUrl("/")
+    : (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000");
 const DESCRIPTION =
   "Open an online store in minutes. Your own domain, your own team, and an app that stops you making the mistakes that cost sales.";
 

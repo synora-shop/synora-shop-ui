@@ -23,15 +23,21 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
     // domain — so without this the product's own site is offered to search
     // engines from several addresses at once, competing with itself.
     //
-    // That host is the application host. It used to be PLATFORM_DOMAIN, which
-    // was right while `/` on the application host went straight to the panel:
-    // an admin screen has no business in an index. It serves the front page
-    // now, so the address a merchant already types is the address that should
-    // be findable, and the bare platform domain became the duplicate.
+    // That host is the application host — which is now also where stores live,
+    // so it is the product's one address. It used to be PLATFORM_DOMAIN back
+    // when that was a second, separate domain; the test is written against
+    // APP_HOST because that is the name of the thing being invited, and the
+    // two settings can still be pointed apart in a preview or a self-hosted
+    // install.
     //
-    // PLATFORM_DOMAIN itself is untouched. It still decides which host is a
-    // shop — `<name>.shop.…` — and merchant storefronts are handled further
-    // down this file, not here.
+    // A store on that host is not this branch: `currentShop()` above found one
+    // and returned long before here. What reaches this point is the product's
+    // own site, and the only copy of it worth indexing is the one at the top
+    // of the address people are given.
+    //
+    // The retired `shop.synoradigitals.com` never reaches this file: the proxy
+    // redirects it permanently. If a crawler somehow asks it directly, it is
+    // not the application host and is turned away, which is also correct.
     const host = normaliseHost((await headers()).get("host") ?? "");
     const marketing =
       host === normaliseHost(APP_HOST) || host === `www.${normaliseHost(APP_HOST)}`;

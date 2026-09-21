@@ -221,7 +221,7 @@ export const db = cache(async (): Promise<TenantClient> => {
 /**
  * The one address a shop should be known by.
  *
- * A store reachable at `acme.shop.synoradigitals.com`, `acme.com` and
+ * A store reachable at `acme.app.synoradigitals.com`, `acme.com` and
  * `www.acme.com` is
  * three stores as far as a search engine is concerned, splitting its ranking
  * three ways and showing whichever it happened to crawl. The primary domain is

@@ -84,10 +84,38 @@ serving the old value for five minutes. Either go through the action, or delete
 
 ## 4. Storefront routing and the canonical address
 
+### The addresses that exist
+
+```
+app.synoradigitals.com         the product: what it is, sign-up, sign-in,
+                               the dashboard, the admin
+acme.app.synoradigitals.com    a shop's free address
+acme.com                       a shop's own domain, once it is verified
+```
+
+One address, not two. The product is called Synora App; `PLATFORM_DOMAIN` and
+`APP_HOST` both name `app.synoradigitals.com`. They remain separate settings so
+a preview or a self-hosted install can point them apart, and `classifyHost`
+handles that case, but nothing in production does.
+
+**`shop.synoradigitals.com` is retired.** It used to explain the product and
+hold every store address. `legacyStoreHost` maps any address under it to the
+same name under `app.` — `acme.shop.…` to `acme.app.…`, the bare domain to the
+bare domain — and the first thing `proxy.ts` does is answer with a **308** to
+that address on the same path. Permanent, and it keeps the method, so a form
+posted to an old address still posts. Stored addresses moved with the code, in
+`prisma/migrations/20261027000000_stores_move_to_app_host` — both a shop's
+current free address and the ones it kept after a rename.
+
+Set `LEGACY_STORE_DOMAIN=""` to switch the redirect off once nothing points at
+the old name. Nothing else in the application knows the old domain exists.
+
+### Which of a shop's addresses is real
+
 A shop can be reached at several hosts. Only one of them is real.
 
 ```
-acme.shop.synoradigitals.com   the free address, always works
+acme.app.synoradigitals.com    the free address, always works
 acme.com                       a custom domain, once VERIFIED or ACTIVE
 www.acme.com                   another custom domain
 ```
@@ -332,6 +360,10 @@ whether to believe it.
 
 ## 8c. Themes
 
+> **`docs/THEMES.md` is the full account** — the three layers a look resolves
+> through, every global setting group by group, the library and publishing, and
+> what is designed but not yet built. This section is the summary.
+
 A theme is data, not a folder of components. It has always been three things —
 which sections it offers, the colours it starts at, and who it is for — and it
 is now four.
@@ -556,6 +588,8 @@ check out the approved commit, copy `.vercel/` across, and deploy from there.
 ## Reading further
 
 - `docs/FLOWS.md` — the journeys a merchant actually walks.
+- `docs/THEMES.md` — what a theme decides, what the merchant decides, and the
+  global settings that sit between them.
 - `docs/DESIGN.md` — what a row, a field, a state and a colour mean here.
 - `docs/CHECKS.md` — every guard, and the bug each one exists because of.
 - `docs/QUEUE.md` — what is agreed and unbuilt.

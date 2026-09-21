@@ -4,7 +4,7 @@ import { appUrl } from "@/lib/shop-context";
 import { SynoraAppMark } from "@/components/ui/synora-marks";
 
 /**
- * The product's own site, at shop.synoradigitals.com.
+ * The product's own site, at app.synoradigitals.com.
  *
  * Not a storefront and not the admin — the front door: what this is, why it
  * exists, and the way in. It has its own chrome because a merchant's theme has

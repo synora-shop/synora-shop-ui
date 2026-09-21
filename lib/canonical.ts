@@ -9,7 +9,7 @@ import { SHOP_PATH_HEADER, classifyHost, normaliseHost } from "@/lib/shop-contex
  *
  * The platform host names no shop, but it can still resolve one: a signed-in
  * merchant picks a store for the dashboard and that choice lives in a cookie.
- * Left alone, shop.synoradigitals.com would quietly serve whichever shopfront the last
+ * Left alone, app.synoradigitals.com would quietly serve whichever shopfront the last
  * person to sign in happened to be working on.
  *
  * So the rule is not "never" but "only the people who work there". A merchant
@@ -33,7 +33,7 @@ export async function guardShopHost() {
 /**
  * Sends a storefront request to the shop's canonical address.
  *
- * A shop reachable at `acme.shop.synoradigitals.com`, `acme.com` and `www.acme.com` is
+ * A shop reachable at `acme.app.synoradigitals.com`, `acme.com` and `www.acme.com` is
  * three different sites to a search engine: the ranking splits three ways, and
  * whichever one gets crawled first is the one customers are shown. Worse, a
  * customer who adds something to a basket on one and returns via another finds

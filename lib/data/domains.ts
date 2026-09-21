@@ -342,7 +342,7 @@ export type AddressMove =
 /**
  * Moves a shop's free address, because its name changed.
  *
- * `<subdomain>.shop.synoradigitals.com` is derived from the shop's name, so
+ * `<subdomain>.app.synoradigitals.com` is derived from the shop's name, so
  * renaming a store leaves the old address pointing at a name nobody uses. This
  * moves it — and decides what happens to the address people have already
  * shared.

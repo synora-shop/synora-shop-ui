@@ -1,4 +1,5 @@
 import {
+  LEGACY_STORE_DOMAIN,
   PLATFORM_DOMAIN,
   RESERVED_SUBDOMAINS,
   classifyHost,
@@ -39,6 +40,24 @@ const APEX_ADDRESSES: readonly string[] = (
 export const DNS_TARGET = {
   /** For a subdomain like `shop.example.com` — a CNAME. */
   cname: process.env.DOMAIN_CNAME_TARGET ?? `cname.${PLATFORM_DOMAIN}`,
+  /**
+   * Every CNAME target that means "this domain reaches us".
+   *
+   * The same reasoning as `accepts` below, for the same reason it exists: this
+   * target moved when the product settled on one address, and a merchant who
+   * followed the old instructions has a CNAME pointing at
+   * `cname.shop.synoradigitals.com`. That record still routes — it resolves to
+   * the same host — so telling them their DNS is wrong would be both false and
+   * unfixable from their side.
+   */
+  cnameAccepts: [
+    ...new Set(
+      [
+        process.env.DOMAIN_CNAME_TARGET ?? `cname.${PLATFORM_DOMAIN}`,
+        ...(LEGACY_STORE_DOMAIN ? [`cname.${LEGACY_STORE_DOMAIN}`] : []),
+      ].map((h) => normaliseHost(h))
+    ),
+  ] as readonly string[],
   /**
    * For an apex like `example.com`, where CNAME is not allowed by the DNS spec.
    * An A record to a fixed address is the portable answer; registrars that

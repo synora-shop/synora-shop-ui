@@ -5,9 +5,15 @@ business signs up, picks the kind of business it runs, and gets a working store
 with a public address, a catalogue, orders, and an admin panel to run it from.
 
 The repository is named `synora-shop-ui` for historical reasons. The product is
-APP, the admin lives at `app.synoradigitals.com`, and a merchant's free store
-address is `<subdomain>.shop.synoradigitals.com`. No other brand name is in use —
+APP, it lives at `app.synoradigitals.com` — the page explaining it, sign-up,
+sign-in and the admin are all on that one address — and a merchant's free store
+address is `<subdomain>.app.synoradigitals.com`. No other brand name is in use —
 see the naming guard in `scripts/check-naming.ts`.
+
+`shop.synoradigitals.com` is retired. Every address under it redirects
+permanently to the same path on `app.synoradigitals.com`; see
+`legacyStoreHost` in `lib/shop-context.ts` and the redirect at the top of
+`proxy.ts`.
 
 ---
 
@@ -292,6 +298,9 @@ This README says what exists. These say how it holds together and why.
 - `docs/FLOWS.md` — the journeys a merchant actually walks: connecting a
   domain, changing what the store sells, closing the shop, setting its marks,
   importing a catalogue.
+- `docs/THEMES.md` — what a theme decides, what the merchant decides, and what
+  happens to each when the other changes. Every global setting, group by group,
+  and the catalogue that is still to be designed.
 - `docs/DESIGN.md` — what a row, a field, a state and a colour mean here, and
   which checks hold each rule up.
 - `docs/CHECKS.md` — all twenty-two guards, and the bug each one exists

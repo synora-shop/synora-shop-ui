@@ -8,8 +8,17 @@
  *
  * Dependency-free and offline.
  */
+import { readFileSync, readdirSync } from "node:fs";
+import { join } from "node:path";
 import { sourceOf } from "./source-text";
-import { APP_HOST, PLATFORM_DOMAIN, classifyHost, isAppHost } from "../lib/shop-context";
+import {
+  APP_HOST,
+  LEGACY_STORE_DOMAIN,
+  PLATFORM_DOMAIN,
+  classifyHost,
+  isAppHost,
+  legacyStoreHost,
+} from "../lib/shop-context";
 import { domainProblem } from "../lib/domains";
 import { SELECTED_SHOP_COOKIE, selectedShopCookieOptions } from "../lib/selected-shop";
 
@@ -144,21 +153,66 @@ check("the site has a description for search engines and link previews",
 check("that description is about the platform, not about one shop",
   rootLayout.includes("Open an online store"));
 const platformLayout = sourceOf("app", "(platform)", "layout.tsx");
-// The marketing site and the application are separate hosts and deliberately
-// share no session cookie — scoping one across the company domain would hand it
-// to every merchant storefront and to the automation business. The consequence
-// is that this site cannot know whether you are signed in, and must not try.
-check("the marketing site does not read a session it cannot see",
+// These pages sit on the same host as the application now, so a session cookie
+// is technically within reach — and they still must not reach for it. Reading
+// it would make the page that explains the product depend on who is asking,
+// which costs it its cache, and the page has nothing to say differently to
+// somebody signed in that the panel does not already say better.
+check("the page explaining the product does not depend on who is asking",
   !platformLayout.includes("auth()"));
 check("its doors point at the application host",
   platformLayout.includes("appUrl("));
 
-console.log("\nTHE APPLICATION HOST IS NOT THE MARKETING SITE");
+console.log("\nONE ADDRESS, NOT TWO");
+// The product is Synora App and lives at app.synoradigitals.com. It used to be
+// split: shop.synoradigitals.com explained the product and held every store
+// address, app. held the application. A merchant therefore never saw the
+// product's own name, and every store address carried a word it no longer goes
+// by. The two settings still exist separately so a preview or a self-hosted
+// install can point them apart — in this configuration they are the same.
 check("the app host is recognised", isAppHost(APP_HOST));
-check("the marketing host is not the app host", !isAppHost(PLATFORM_DOMAIN));
-// Somebody who has already signed up does not need the page explaining what
-// the product is.
-check("its root goes to the dashboard", proxy.includes("isAppHost(host)"));
+check("stores hang off the address the product is named after",
+  isAppHost(PLATFORM_DOMAIN));
+check("a store is still a store and not the product's own page",
+  !isAppHost(`acme.${PLATFORM_DOMAIN}`) &&
+    classifyHost(`acme.${PLATFORM_DOMAIN}`).kind === "subdomain");
+check("the root of it is handled", proxy.includes("isAppHost(host)"));
+
+console.log("\nEVERY OLD STORE ADDRESS STILL ARRIVES");
+// A moved store that 404s is worse than one that never moved: the addresses
+// are on printed cards, in other people's links and in search results, and
+// none of them can be edited by us.
+check("an old store address maps to the new one",
+  legacyStoreHost(`acme.${LEGACY_STORE_DOMAIN}`) === `acme.${PLATFORM_DOMAIN}`);
+check("the old bare domain maps to the product's page",
+  legacyStoreHost(LEGACY_STORE_DOMAIN) === PLATFORM_DOMAIN);
+check("www of it does too", legacyStoreHost(`www.${LEGACY_STORE_DOMAIN}`) === PLATFORM_DOMAIN);
+check("a name that was never a store is left alone",
+  legacyStoreHost(`a.b.${LEGACY_STORE_DOMAIN}`) === null);
+check("a merchant's own domain is left alone", legacyStoreHost("acme.com") === null);
+check("the new addresses are not themselves redirected",
+  legacyStoreHost(`acme.${PLATFORM_DOMAIN}`) === null &&
+    legacyStoreHost(PLATFORM_DOMAIN) === null);
+// Before classifyHost, deliberately: the old name resolves to no shop, so
+// anything that looks at it first answers with the wrong page.
+check("the redirect happens before the host is classified",
+  proxy.indexOf("legacyStoreHost(host)") < proxy.indexOf("classifyHost(host)"));
+check("and it is permanent, keeping the method", /\n\s*308\n/.test(proxy));
+
+// The stored addresses have to move with them, or a shop's own free address
+// points at a hostname nothing serves.
+{
+  const migrations = readdirSync(join(process.cwd(), "prisma", "migrations"));
+  const dir = migrations.find((m) => m.endsWith("_stores_move_to_app_host"));
+  check("there is a migration that moves the stored addresses", Boolean(dir));
+  const sql = dir
+    ? readFileSync(join(process.cwd(), "prisma", "migrations", dir, "migration.sql"), "utf8")
+    : "";
+  check("it rewrites the suffix rather than the whole hostname",
+    sql.includes("'.shop.synoradigitals.com'") && sql.includes("'.app.synoradigitals.com'"));
+  check("it refuses to run if a hostname would collide", sql.includes("RAISE EXCEPTION"));
+  check("it leaves the shop's own subdomain column alone", !/"Shop"/.test(sql));
+}
 check("cross-host links are absolute, since a relative one would stay put",
   sourceOf("lib", "shop-context.ts").includes("https://${APP_HOST}"));
 
@@ -175,10 +229,9 @@ console.log("\nEXCEPT WHEN THE CUSTOMIZER IS PREVIEWING");
   // Both rules, not one. Exempting only the /admin redirect let the request
   // fall through to the next rule and be answered with the marketing page —
   // a different wrong thing in the same pane.
-  check("the dashboard redirect makes way for the preview",
-    /isAppHost\(host\) && pathname === "\/" && !previewing/.test(proxy));
-  check("and so does the marketing rewrite",
-    /kind\.kind === "platform" && pathname === "\/" && !previewing/.test(proxy));
+  check("the front page rule makes way for the preview",
+    /\(isAppHost\(host\) \|\| kind\.kind === "platform"\) && pathname === "\/" && !previewing/
+      .test(proxy));
   check("both read the same flag", /const previewing = req\.nextUrl\.searchParams\.has\(PREVIEW_PARAM\)/.test(proxy));
 
   // The exception must not become an entrance. What it allows is a *render*;

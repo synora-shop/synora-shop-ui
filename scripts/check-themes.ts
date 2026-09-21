@@ -462,5 +462,38 @@ check(
   "mounted from PreviewSections, which a customer never renders"
 );
 
+console.log("\nTHE DOCUMENT STILL DESCRIBES THE CODE");
+// docs/THEMES.md is what gets read before anyone touches a theme, and a
+// document that has drifted is worse than none: it is confidently wrong about
+// a system nobody re-reads the source of. Same idea as check:design, narrower
+// subject — it must name what actually ships.
+{
+  const doc = read("docs/THEMES.md");
+  check("the document exists", doc.length > 0);
+  for (const group of THEME_GROUPS) {
+    check(`it names the "${group.title}" settings group`, doc.includes(group.title));
+  }
+  for (const theme of Object.values(THEMES)) {
+    check(`it names ${theme.name}`, doc.includes(theme.name));
+  }
+  check(
+    "it names the three layers a look resolves through",
+    doc.includes("THEME_TOKEN_DEFAULTS") &&
+      doc.includes("ThemeDefinition.tokens") &&
+      doc.includes("InstalledTheme.tokens")
+  );
+  check(
+    "it records that the platform floor is still another brand's palette",
+    doc.includes("#4c100f"),
+    "the fault is deliberately unfixed; an undocumented deliberate fault is just a bug"
+  );
+  check(
+    "the files it tells you to read further are there",
+    ["lib/themes/registry.ts", "lib/theme-tokens.ts", "lib/theme-schema.ts"].every(
+      (f) => doc.includes(f) && existsSync(join(process.cwd(), f))
+    )
+  );
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);

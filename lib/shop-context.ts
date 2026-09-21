@@ -1,26 +1,48 @@
 // Working out which shop a request is for.
 //
-// The host is the tenant key. `acme.shop.synoradigitals.com` and a merchant's
+// The host is the tenant key. `acme.app.synoradigitals.com` and a merchant's
 // own `shop.acme.com` both resolve to the same Shop; everything downstream
 // reads it from here rather than guessing, so there is exactly one place that
 // decides.
 //
-// Three kinds of host exist:
+// Two kinds of host are ours:
 //
-//   shop.synoradigitals.com    the product's own site — what it is, and sign-up
-//   app.synoradigitals.com     the application: sign-in, dashboard, admin
-//   acme.shop.synoradigitals.com   a merchant's free store address
+//   app.synoradigitals.com         the product — what it is, sign-up, sign-in,
+//                                  the dashboard and the admin
+//   acme.app.synoradigitals.com    a merchant's free store address
 //
-// Stores are namespaced under `shop.` deliberately. Hanging them off
-// synoradigitals.com directly would put every merchant into the same namespace
-// as the automation business, where a merchant claiming "blog" or "docs" takes
-// a name that side may want.
+// The product is called Synora App and lives at one address. It used to be
+// spread over two — `shop.synoradigitals.com` explained the product and held
+// the store namespace, `app.` held the application — which meant the product's
+// own name appeared nowhere a merchant looked and every store address carried
+// a word the product no longer goes by.
+//
+// Stores stay namespaced under a subdomain of ours rather than hanging off
+// synoradigitals.com directly: that apex is shared with the automation
+// business, and a merchant claiming "blog" or "docs" there would take a name
+// that side may want. Under `app.` the only names at stake are ours, and
+// RESERVED_SUBDOMAINS holds them back.
 //
 // Client-safe: pure string handling, no Prisma, no next/headers. The database
 // lookup lives in lib/data/shop.ts, which imports these.
 
 /** The apex this platform serves its free subdomains from. */
-export const PLATFORM_DOMAIN = process.env.PLATFORM_DOMAIN ?? "shop.synoradigitals.com";
+export const PLATFORM_DOMAIN = process.env.PLATFORM_DOMAIN ?? "app.synoradigitals.com";
+
+/**
+ * Where stores used to live, and where their old links still point.
+ *
+ * Every address ever printed, shared or indexed under `shop.synoradigitals.com`
+ * has to keep arriving somewhere correct — a moved store that 404s is worse
+ * than one that never moved. `legacyStoreHost` turns one of those addresses
+ * into its replacement and the proxy redirects there permanently; nothing else
+ * in the application knows this domain exists.
+ *
+ * Set LEGACY_STORE_DOMAIN to "" to switch the redirect off once the old
+ * addresses have stopped being used.
+ */
+export const LEGACY_STORE_DOMAIN =
+  process.env.LEGACY_STORE_DOMAIN ?? "shop.synoradigitals.com";
 
 /** Where the application lives: sign-in, the dashboard, the admin. */
 export const APP_HOST = process.env.APP_HOST ?? "app.synoradigitals.com";
@@ -30,7 +52,7 @@ export const APP_HOST = process.env.APP_HOST ?? "app.synoradigitals.com";
  *
  * Everything at or under it belongs to us — including the automation business,
  * which is a different product on the same name. The one exception is the store
- * namespace: `acme.shop.synoradigitals.com` is a merchant's, and is matched
+ * namespace: `acme.app.synoradigitals.com` is a merchant's, and is matched
  * before this rule applies.
  *
  * Without it, `synoradigitals.com` would classify as a merchant's own domain
@@ -42,10 +64,12 @@ export const PLATFORM_ROOT_DOMAIN =
 /**
  * Other hosts that are ours rather than a merchant's store.
  *
- * The application host is the important one. `app.synoradigitals.com` sits
- * outside PLATFORM_DOMAIN entirely — it is not under `shop.` — so without this
- * it would be read as a merchant's own domain, find no shop, and 404 the whole
- * application.
+ * The application host is in here for the case where it is *not* the store
+ * apex. They are the same address now, so PLATFORM_DOMAIN already covers it —
+ * but the two are separate settings and an environment that points them at
+ * different hosts (a preview, a self-hosted install) would otherwise read the
+ * application's own host as a merchant's domain, find no shop, and 404 the
+ * whole application.
  *
  * Deployment URLs are the other case. `.vercel.app` is treated as ours by
  * default: those hostnames are issued by the host, are never a merchant's own
@@ -58,9 +82,40 @@ const EXTRA_PLATFORM_HOSTS: ReadonlySet<string> = new Set(
     .filter(Boolean)
 );
 
-/** Whether this host is the application rather than the marketing site. */
+/**
+ * Whether this host is the application itself rather than a store on it.
+ *
+ * `app.synoradigitals.com` is true; `acme.app.synoradigitals.com` is false.
+ * It used to mean "the application rather than the marketing site", back when
+ * those were two addresses. They are one address now, and this is the test for
+ * being at the top of it.
+ */
 export function isAppHost(rawHost: string): boolean {
   return normaliseHost(rawHost) === normaliseHost(APP_HOST);
+}
+
+/**
+ * The address that replaces an old `shop.synoradigitals.com` one, or null.
+ *
+ * `acme.shop.…` becomes `acme.app.…` and the bare domain becomes the bare
+ * application host. Anything else — including a two-label name like
+ * `a.b.shop.…`, which was never a store — returns null and is left alone.
+ *
+ * Deliberately string-only and database-free: it runs in the proxy, on every
+ * request, before anything has been resolved.
+ */
+export function legacyStoreHost(rawHost: string): string | null {
+  const legacy = normaliseHost(LEGACY_STORE_DOMAIN);
+  if (!legacy) return null;
+
+  const host = normaliseHost(rawHost);
+  const apex = normaliseHost(PLATFORM_DOMAIN);
+  if (host === legacy || host === `www.${legacy}`) return apex;
+
+  if (!host.endsWith(`.${legacy}`)) return null;
+  const sub = host.slice(0, -(legacy.length + 1));
+  if (!sub || sub.includes(".")) return null;
+  return `${sub}.${apex}`;
 }
 
 /** Absolute URL on the application host, for links that cross from marketing. */
@@ -94,18 +149,18 @@ export const RESERVED_SUBDOMAINS: ReadonlySet<string> = new Set([
 ]);
 
 export type HostKind =
-  /** <sub>.shop.synoradigitals.com — the free address every shop gets. */
+  /** <sub>.app.synoradigitals.com — the free address every shop gets. */
   | { kind: "subdomain"; subdomain: string }
   /** A domain the merchant owns and pointed at us. */
   | { kind: "custom"; host: string }
-  /** The platform's own marketing site or dashboard. */
+  /** The product's own site: what it is, sign-up, sign-in, the dashboard. */
   | { kind: "platform" }
   /** Local development. */
   | { kind: "local"; subdomain: string | null };
 
 /**
  * Strips the port and lowercases. Hosts are case-insensitive and a port is
- * never part of the identity — `ACME.shop.synoradigitals.com:3000` is the
+ * never part of the identity — `ACME.app.synoradigitals.com:3000` is the
  * same shop.
  */
 export function normaliseHost(host: string): string {
@@ -141,7 +196,7 @@ export function classifyHost(rawHost: string): HostKind {
 
   if (host.endsWith(`.${PLATFORM_DOMAIN}`)) {
     const sub = host.slice(0, -(PLATFORM_DOMAIN.length + 1));
-    // Only a single label is a shop. "a.b.shop.synoradigitals.com" is not a
+    // Only a single label is a shop. "a.b.app.synoradigitals.com" is not a
     // shop; it is a mistake, and treating it as one would let someone squat a
     // lookalike of a real store.
     if (sub.includes(".")) return { kind: "platform" };

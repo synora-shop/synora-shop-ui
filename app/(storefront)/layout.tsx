@@ -93,7 +93,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function StorefrontLayout({ children }: LayoutProps<"/">) {
   // The product's own site is not a shop and has no storefront to show. Without
   // this, a merchant who had picked a store in the dashboard would find that
-  // store's shopfront served from shop.synoradigitals.com.
+  // store's shopfront served from app.synoradigitals.com.
   await guardShopHost();
 
   // A shop reachable at several addresses is several sites to a search engine,

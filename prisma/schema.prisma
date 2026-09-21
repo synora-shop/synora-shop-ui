@@ -327,7 +327,7 @@ enum SectionType {
 model Shop {
   id        String     @id @default(cuid())
   name      String
-  /// The address every shop gets for free: <subdomain>.shop.synoradigitals.com. Unique
+  /// The address every shop gets for free: <subdomain>.app.synoradigitals.com. Unique
   /// platform-wide, which is the one thing that genuinely must be.
   subdomain String     @unique
   status    ShopStatus @default(TRIAL)
@@ -451,7 +451,7 @@ model VerificationToken {
 // does not, and becomes one when accepted.
 /// A hostname that serves a shop.
 ///
-/// Every shop has one of these for its free `<subdomain>.shop.synoradigitals.com` address
+/// Every shop has one of these for its free `<subdomain>.app.synoradigitals.com` address
 /// and may add its own. Keeping both in one table means host resolution has a
 /// single path rather than "look here, and if that fails look there", and the
 /// primary-domain rule below applies to the free address too.

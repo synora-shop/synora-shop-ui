@@ -143,6 +143,37 @@ that both write `businessType` is two rules waiting to disagree.
 
 ---
 
+## The themes, and what a theme decides — 21 September
+
+Agreed and written down in full: **`docs/THEMES.md`**. The model is already
+built — a theme carries its own look, the merchant's edits are kept as
+differences on top of it, and adding a theme is separate from publishing it.
+What is missing is the catalogue and one thing that is backwards.
+
+- **A designed set of themes.** Genuinely different designs, not recolours.
+  Five palettes were removed on 10 September for exactly that reason. Each new
+  one arrives with its own complete global settings: palette, fonts, shape,
+  arrangement.
+- **The platform floor is another brand's palette.** `THEME_TOKEN_DEFAULTS` is
+  a maroon accent, a tan secondary and a cream page — the old business's
+  colours — and Aurora declares `tokens: {}`, so Aurora *is* that palette and a
+  brand-new shop opens in it. Layer 1 should be a neutral floor that guarantees
+  every field has a readable value; the colours a shop opens in should be the
+  theme's own declared choice. Two edits, deliberately held until the themes
+  are designed so it is done once.
+- **Primary, secondary, tertiary.** The colour settings are `accent` +
+  `secondary` today, which does not describe how a designed palette is used. A
+  third role, and names that say what each is for. A rename, one new token and
+  a migration that maps existing values — worth doing with the themes.
+- **Per-theme font pairings.** The tokens exist; the designed pairing shipping
+  with each theme does not. Picking a theme should pick its typography.
+- **A theme's own default colour is already how it works.** Recorded because it
+  keeps being asked: the storefront takes the theme's colours unless the
+  merchant changed them in the customizer's global settings. That resolution is
+  built and checked. It is the *values* at the bottom of it that are wrong.
+
+---
+
 ## Agreed, waiting
 
 - **Analytics**: real graphs and live figures, and its own action bar.
@@ -168,6 +199,8 @@ that both write `businessType` is two rules waiting to disagree.
   which check holds each rule up. `npm run check:design` asserts the document
   still describes the code: every check it names must exist and every file it
   points at must be there.
+- `docs/THEMES.md` — what a theme decides, what the merchant decides, and what
+  happens to each when the other changes. The global settings, group by group.
 - `README.md` — how the thing is put together and how to run it.
 - `scripts/sweep/README.md` — the hundred probes and what they caught.
 
@@ -340,7 +373,7 @@ Three faults, all three fixed the same day:
   `permanentRedirect`, measured at 308.
 
 Untested, because it needs a domain whose DNS can be changed: whether Vercel
-accepts a CNAME to `cname.shop.synoradigitals.com`, issues the certificate, and
+accepts a CNAME to `cname.app.synoradigitals.com`, issues the certificate, and
 flips the domain from VERIFIED to ACTIVE.
 
 ## Motion, 7 September — step 1 of three

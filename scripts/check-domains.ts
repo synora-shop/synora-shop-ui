@@ -20,7 +20,12 @@ import {
   parseDomain,
   requiredRecords,
 } from "../lib/domains";
-import { PLATFORM_DOMAIN, classifyHost, normaliseHost } from "../lib/shop-context";
+import {
+  LEGACY_STORE_DOMAIN,
+  PLATFORM_DOMAIN,
+  classifyHost,
+  normaliseHost,
+} from "../lib/shop-context";
 
 let pass = 0, fail = 0;
 const check = (name: string, ok: boolean, detail = "") => {
@@ -121,6 +126,18 @@ check("a subdomain gets a CNAME",
 check("its TXT record is scoped to that subdomain",
   subRecords.some((r) => r.type === "TXT" && r.name === `${VERIFICATION_RECORD}.shop`));
 
+// What we print and what we accept are two different lists, deliberately. The
+// CNAME target moved when the product settled on one address, and a merchant
+// who followed the old instructions has a record that still routes. Refusing
+// it would be a wrong answer they cannot act on.
+check("the printed CNAME target is one we accept",
+  DNS_TARGET.cnameAccepts.includes(DNS_TARGET.cname));
+check("the target merchants were given before the move is still accepted",
+  DNS_TARGET.cnameAccepts.includes(`cname.${LEGACY_STORE_DOMAIN}`),
+  "their DNS is correct and there is nothing they could change to fix it");
+check("the routing check reads the list rather than the printed one",
+  sourceOf("lib", "dns.ts").includes("DNS_TARGET.cnameAccepts.includes"));
+
 // The registrar's name field is relative to the zone. Taking only the first
 // label would put the record one level too high, where nothing would find it.
 const deepRecords = requiredRecords("eu.shop.example.com", "token-ghi");
@@ -207,13 +224,40 @@ check(
   "otherwise the front page is blocked on the address merchants actually type"
 );
 // And the page names its own address rather than resolving one from
-// metadataBase, which points somewhere else.
+// metadataBase.
 {
   const home = sourceOf("app", "(platform)", "home", "page.tsx");
   check(
     "the front page declares an absolute canonical",
     /canonical:\s*appUrl\("\/"\)/.test(home),
-    "a relative canonical resolves against metadataBase, which is a different host"
+    "a relative canonical resolves against metadataBase, which may be elsewhere"
+  );
+}
+// metadataBase itself is derived, not configured. It was read from
+// NEXT_PUBLIC_SITE_URL, a variable set once to a host the product has since
+// left; nothing errored, the pages simply named an address they were no longer
+// served from. A value that has to be kept in step by hand eventually is not.
+{
+  const rootLayout = sourceOf("app", "layout.tsx");
+  check(
+    "the address metadata resolves against comes from the host setting",
+    /metadataBase:\s*new URL\(SITE_URL\)/.test(rootLayout) &&
+      /SITE_URL\s*=[\s\S]{0,240}appUrl\("\/"\)/.test(rootLayout),
+    "a second copy of the site's address drifts the moment the address moves"
+  );
+}
+// The root of the product's address must serve the front page rather than send
+// visitors somewhere else. A root that redirects is reported as "page with
+// redirect" and never indexed — the bare domain is the address submitted to
+// search engines and the one the canonical names.
+{
+  const proxySource = sourceOf("proxy.ts");
+  check(
+    "the product's root serves the page rather than redirecting away",
+    /pathname === "\/" && !previewing\)\s*\{[\s\S]{0,200}NextResponse\.rewrite/.test(
+      proxySource
+    ),
+    "a redirect from the root leaves the canonical address unindexable"
   );
 }
 check("robots keeps crawlers out of a shut store", robots.includes("isServingCustomers"));

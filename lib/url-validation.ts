@@ -36,7 +36,7 @@ export type UrlOptions = {
 
 const DANGEROUS = /^\s*(javascript|data|vbscript|file|blob)\s*:/i;
 
-/** Looks like a domain someone typed without a scheme: "synoradigitals.com", "shop.synoradigitals.com/sale". */
+/** Looks like a domain someone typed without a scheme: "synoradigitals.com", "app.synoradigitals.com/sale". */
 const BARE_DOMAIN = /^[a-z0-9-]+(\.[a-z0-9-]+)+(\/.*)?$/i;
 
 export function validateUrl(raw: string, options: UrlOptions = {}): UrlCheck {
