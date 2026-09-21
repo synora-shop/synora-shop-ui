@@ -143,6 +143,24 @@ that both write `businessType` is two rules waiting to disagree.
 
 ---
 
+## The product's own pages are in no sitemap — 21 September
+
+`app.synoradigitals.com/sitemap.xml` returns an empty `<urlset>`, and
+`robots.txt` on that host names no sitemap at all. Both are correct code doing
+the wrong thing: `app/sitemap.ts` is written per shop, and on the product's own
+host there is no shop, so it has nothing to list.
+
+The consequence is that `/home`, `/documentation`, `/faq` and everything else
+the product's own site will have are offered to search engines only by being
+linked to. Nothing is broken and nothing is blocked — it is the difference
+between being findable and being told about.
+
+Found while verifying the move to one address. Not fixed in that change because
+it is a separate piece of work: the platform branch of `sitemap.ts` needs its
+own list of static pages, and `robots.ts` needs to name it on that host only.
+
+---
+
 ## The themes, and what a theme decides — 21 September
 
 Agreed and written down in full: **`docs/THEMES.md`**. The model is already
