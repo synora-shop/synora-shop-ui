@@ -196,6 +196,26 @@ check("a shut store publishes no sitemap", sitemap.includes("isServingCustomers"
 
 const robots = sourceOf("app", "robots.ts");
 check("robots keeps crawlers off non-canonical hosts", robots.includes("canonicalHost"));
+// Exactly one host is offered to search engines, and it is the one that serves
+// the front page. It was PLATFORM_DOMAIN, which was correct while `/` on the
+// application host went straight to the panel; once that address started
+// serving the front page, the rule was blocking the page it exists to protect
+// and Search Console said so.
+check(
+  "the host that serves the front page is the one crawlers are invited to",
+  robots.includes("APP_HOST") && !robots.includes("normaliseHost(PLATFORM_DOMAIN)"),
+  "otherwise the front page is blocked on the address merchants actually type"
+);
+// And the page names its own address rather than resolving one from
+// metadataBase, which points somewhere else.
+{
+  const home = sourceOf("app", "(platform)", "home", "page.tsx");
+  check(
+    "the front page declares an absolute canonical",
+    /canonical:\s*appUrl\("\/"\)/.test(home),
+    "a relative canonical resolves against metadataBase, which is a different host"
+  );
+}
 check("robots keeps crawlers out of a shut store", robots.includes("isServingCustomers"));
 check("robots hides the merchant sign-in", robots.includes("/merchant"));
 

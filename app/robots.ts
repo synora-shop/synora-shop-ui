@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { headers } from "next/headers";
 import { canonicalHost, canonicalUrl, currentShop, isServingCustomers } from "@/lib/data/shop";
 import { getStoreSettings } from "@/lib/data/settings";
-import { PLATFORM_DOMAIN, classifyHost, normaliseHost } from "@/lib/shop-context";
+import { APP_HOST, classifyHost, normaliseHost } from "@/lib/shop-context";
 
 // Per shop, per host — not one file for the whole platform.
 //
@@ -17,14 +17,24 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
 
   // The platform's own site, not a store.
   if (!shop) {
-    // Only the marketing domain invites crawlers. Every other host that
-    // classifies as ours serves the same pages — the application host, every
-    // deployment URL, and the .vercel.app name this project kept from before it
-    // was renamed — so without this the company site is offered to search
+    // Exactly one host invites crawlers. Every other host that classifies as
+    // ours serves the same pages — the deployment URLs, the .vercel.app name
+    // this project kept from before it was renamed, and the bare platform
+    // domain — so without this the product's own site is offered to search
     // engines from several addresses at once, competing with itself.
+    //
+    // That host is the application host. It used to be PLATFORM_DOMAIN, which
+    // was right while `/` on the application host went straight to the panel:
+    // an admin screen has no business in an index. It serves the front page
+    // now, so the address a merchant already types is the address that should
+    // be findable, and the bare platform domain became the duplicate.
+    //
+    // PLATFORM_DOMAIN itself is untouched. It still decides which host is a
+    // shop — `<name>.shop.…` — and merchant storefronts are handled further
+    // down this file, not here.
     const host = normaliseHost((await headers()).get("host") ?? "");
     const marketing =
-      host === normaliseHost(PLATFORM_DOMAIN) || host === `www.${normaliseHost(PLATFORM_DOMAIN)}`;
+      host === normaliseHost(APP_HOST) || host === `www.${normaliseHost(APP_HOST)}`;
     const isLocal = classifyHost(host).kind === "local";
     if (host && !isLocal && !marketing) {
       return { rules: { userAgent: "*", disallow: "/" } };

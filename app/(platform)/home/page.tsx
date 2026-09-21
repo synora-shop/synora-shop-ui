@@ -3,7 +3,11 @@ import { appUrl } from "@/lib/shop-context";
 import { ArrowRight, Check } from "lucide-react";
 
 export const metadata: Metadata = {
-  alternates: { canonical: "/" },
+  // Absolute, not "/". A relative canonical resolves against metadataBase,
+  // which points at the platform domain — so this page told Google its real
+  // address was a host it is no longer served from. Naming it outright means
+  // the canonical does not move when an environment variable does.
+  alternates: { canonical: appUrl("/") },
 };
 
 /**
