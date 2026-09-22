@@ -360,20 +360,62 @@ check(
   "it refreshes the admin screen and nothing else"
 );
 
-const gallery = read("components/admin/theme-gallery.tsx");
+// The screen, as drawn in APP themes.ai — see docs/PANEL.md §2. It replaced
+// theme-gallery.tsx on 22 September, and that file was deleted rather than
+// left: a component nothing renders, still held up by checks, is the worst of
+// both — it reads as covered and proves nothing about what a merchant sees.
+const gallery = read("components/admin/theme-manager.tsx");
 check(
   "the screen separates what is live, what is owned, and what exists",
-  /Your themes/.test(gallery) && /Discover themes/.test(gallery) && /Live/.test(gallery)
+  /"Active Theme"/.test(gallery) && /"All Themes"/.test(gallery) && /"Theme Store"/.test(gallery)
 );
 check(
-  "nothing in the catalogue can go live in one press",
-  !/Discover[\s\S]{0,900}chooseTheme/.test(gallery),
-  "the Discover cards offer Add, and Add is not Publish"
+  "nothing in the store can go live in one press",
+  !/Theme Store[\s\S]{0,2000}chooseTheme/.test(gallery),
+  "a store card offers Add, and Add is not Activate"
+);
+check(
+  "the live theme is not offered the button that would make it live",
+  /isLive \?[\s\S]{0,400}chooseTheme/.test(gallery) === false ||
+    /isLive \? \([\s\S]{0,200}Active/.test(gallery),
+  "Activate on the theme that is already active is a control that does nothing"
 );
 check(
   "an empty library says what to do rather than nothing",
-  /Nothing here yet/.test(gallery)
+  /have not added a theme yet/.test(gallery)
 );
+check(
+  "the update is offered only when there is one",
+  /outOfDate = theme\.version !== undefined && theme\.version !== theme\.latest/.test(gallery) &&
+    /outOfDate && \(/.test(gallery),
+  "an Update offered for nothing teaches a merchant to ignore the next one"
+);
+
+// Versions. The platform's is in the registry beside the theme; the shop's is
+// on its own row. Out of date is the two differing — a comparison, so nothing
+// has to be written to every shop when a design changes.
+for (const theme of Object.values(THEMES)) {
+  check(`${theme.key} declares a version`, /^\d+\.\d+\.\d+$/.test(theme.version), theme.version);
+}
+{
+  const schema = read("prisma/schema.prisma");
+  check(
+    "a shop records the version it has",
+    /model InstalledTheme[\s\S]*?version String @default/.test(schema)
+  );
+  const actions = read("app/admin/theme/actions-theme-choice.ts");
+  check("there is an action that moves it forward", /export async function updateTheme/.test(actions));
+  check(
+    "updating writes the version and nothing else",
+    /updateTheme[\s\S]*?data: \{ version: theme\.version \}/.test(actions),
+    "the merchant's edits are differences on top; rewriting them here would destroy them"
+  );
+  check(
+    "adding a theme you already have does not silently update it",
+    /update: \{\},/.test(actions),
+    "pressing Add is not asking to be moved onto a new design"
+  );
+}
 
 /*
  * A theme's own picture.
@@ -398,7 +440,7 @@ check(
 );
 check(
   "and a theme without one still shows something",
-  /StorefrontStill url=\{theme\.previewUrl\}/.test(gallery),
+  /StorefrontStill url=\{(?:theme|live)\.previewUrl\}/.test(gallery),
   "a live frame of the merchant's own storefront, which is what every theme had before"
 );
 

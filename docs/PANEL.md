@@ -232,18 +232,25 @@ the screens say *activate*, and the screens are what a merchant reads.
 
 ---
 
-## 3. What this screen needs that does not exist
+## 3. What this screen needed, and what is built
 
-| Needed | State today |
+Built 22 September:
+
+| | |
 | --- | --- |
-| A version on every theme | No theme has a version at all |
-| A shop holding one theme at two versions | A theme is installed once |
-| `Update` — move a theme to its newest version | Nothing to update to |
-| A Theme Store separate from the owned list | One gallery does both jobs |
-| A picture of the *live* storefront in section 1 | Stored screenshots only |
+| A version on every theme | `ThemeDefinition.version` in the registry |
+| The version a shop has | `InstalledTheme.version` — a theme is out of date when the two differ |
+| `Update` | `updateTheme` moves the shop's row to the version that ships |
+| A Theme Store separate from the owned list | Three sections, as drawn |
+| A picture of the live storefront in section 1 | The shipped picture, falling back to a live frame of the merchant's own shop |
 
-Versions and updating are **agreed and to be built properly** — schema,
-migration and behaviour, not a label. The hard part is not the button: it is
+**Not built: a shop holding the same theme at two versions at once.** The
+drawing shows KITE at v1.1.1 and v1.0.4 as separate rows. That needs the
+install to be keyed by version rather than by theme, which changes how the
+customizer, the activate path and the removal guard each find a theme — a
+larger change than the button, and a different feature: keeping an old copy to
+go back to. What is built is one install per theme, carrying its version, which
+is what `Update` acts on. The hard part is not the button: it is
 what happens to a merchant's edits when the theme underneath them updates.
 `docs/THEMES.md` §2 already answers the shape of it — a merchant's row holds
 only their *differences*, never a resolved copy, so an update changes

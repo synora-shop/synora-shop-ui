@@ -43,6 +43,21 @@ export type ThemeDefinition = {
   /** Stable across renames — this is what a storefront stores. */
   key: string;
   name: string;
+  /**
+   * What this theme is, now.
+   *
+   * The shop records the version it added, on InstalledTheme. A theme is out of
+   * date exactly when the two differ, which is why this lives here rather than
+   * being written to every shop's row when a design changes: publishing a new
+   * version is editing one line in this file, and nothing has to be kept in
+   * step with it.
+   *
+   * Raise it when the design changes in a way a merchant would see. Not for a
+   * typo in a description, and not for a fix that only restores what the theme
+   * already claimed to be — an Update offered for nothing teaches a merchant to
+   * ignore the next one.
+   */
+  version: string;
   /** One line, shown on the picker card. */
   description: string;
   /**
@@ -95,6 +110,7 @@ export type ThemeDefinition = {
  */
 const aurora: ThemeDefinition = {
   key: "aurora",
+  version: "1.0.0",
   preview: "/themes/aurora.jpg",
   name: "Aurora",
   description: "Clean and roomy, with large imagery. A safe first choice.",
@@ -124,6 +140,7 @@ const aurora: ThemeDefinition = {
  */
 const atlas: ThemeDefinition = {
   key: "atlas",
+  version: "1.0.0",
   preview: "/themes/atlas.jpg",
   name: "Atlas",
   description: "Photography-led, with a tight grid and quick buying. For a shop with a look.",

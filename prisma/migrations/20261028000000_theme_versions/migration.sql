@@ -1,0 +1,17 @@
+-- A theme has a version, and a shop records which one it added.
+--
+-- Themes had none. A merchant could not tell whether the design they added in
+-- August was the same design that ships today, and there was nothing for an
+-- "Update" to move them to — the Themes screen was drawn with both, so both
+-- have to exist.
+--
+-- The column is what the *shop* has, not what the platform ships. The platform's
+-- version lives in lib/themes/registry.ts beside the theme itself, because that
+-- is where the design it describes lives. A theme is out of date exactly when
+-- the two differ, which is a comparison rather than a flag — so nothing has to
+-- be written to every shop's row when a theme is published.
+--
+-- 1.0.0 for every existing row, and that is the honest value: every theme in
+-- the registry is at 1.0.0 today, so nothing installed is out of date and no
+-- merchant is shown an Update for a design that has not changed.
+ALTER TABLE "InstalledTheme" ADD COLUMN IF NOT EXISTS "version" TEXT NOT NULL DEFAULT '1.0.0';

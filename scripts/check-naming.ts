@@ -480,8 +480,8 @@ check(
 // Every link to a theme preview carried ?__theme= long before anything read it,
 // so "View full" showed the theme you already had.
 check("a theme can be previewed without activating it", /__theme/.test(themeData));
-const gallery = readFileSync(join(ROOT, "components/admin/theme-gallery.tsx"), "utf8");
-check("and each card shows the shop wearing it", /<StorefrontStill url={theme\.previewUrl}/.test(gallery));
+const gallery = readFileSync(join(ROOT, "components/admin/theme-manager.tsx"), "utf8");
+check("and every theme links to the shop wearing it", /previewUrl/.test(gallery));
 // A preview must never outlive the request that asked for it.
 check(
   "the preview is read from the request, and never written",

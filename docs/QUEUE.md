@@ -166,9 +166,17 @@ here.
 4. **The customizer learns to edit site text** — then, and only then, the Site
    text screen goes. See the warning below. `/admin/site-text` has left the
    navigation bar and is still reachable, which is the whole point.
-5. **Themes gains versions and an Update action** — schema, migration and
-   behaviour. Then the Themes screen is rebuilt as drawn: Active Theme, All
-   Themes, Theme Store.
+5. ~~**Themes gains versions and an Update action**~~ — **done 22 Sep.** A
+   theme declares its version in the registry; a shop records the version it
+   added; out of date is the two differing, so publishing a new design writes
+   nothing to anybody's row. `updateTheme` writes the version and nothing else,
+   which is safe only because the merchant's row holds differences rather than
+   a resolved copy. The screen is rebuilt as drawn: Active Theme, All Themes,
+   Theme Store, and the closing line.
+
+   **Still open:** a shop holding the same theme at two versions at once, which
+   the drawing shows. That needs the install keyed by version rather than by
+   theme and is a different feature — keeping an old copy to go back to.
 6. ~~**The header is painted**~~ — **done 22 Sep.** 80px of flat `#5050ea`
    across the whole window, mark at the left, a 50px search field and the
    account pill at the right. The page title and breadcrumb left it — the

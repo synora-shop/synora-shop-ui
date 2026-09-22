@@ -38,12 +38,69 @@ export async function installTheme(themeKey: string): Promise<ThemeResult> {
     where: { shopId_themeKey: { shopId: shop.id, themeKey } },
     // Already there. Re-adding is not an error and must not reset the date —
     // "Added 3 weeks ago" is how a merchant tells two half-tried designs apart.
+    // It must not silently update the version either: a merchant who presses
+    // Add on something they already have has not asked to be moved onto a new
+    // design, and doing it here would be an update nobody could see coming.
     update: {},
-    create: { shopId: shop.id, themeKey },
+    create: { shopId: shop.id, themeKey, version: theme.version },
   });
 
   revalidatePath("/admin/theme");
   return { ok: true, message: `${theme.name} was added to your themes.` };
+}
+
+/**
+ * Moves a theme the shop already has onto the version that ships now.
+ *
+ * What changes is which set of defaults the merchant's edits sit on top of —
+ * and that is the whole reason this is safe. Their row holds only their
+ * *differences*; the theme's own values stay in the registry. So an update
+ * changes everything they did not choose and nothing they did, and it cannot
+ * quietly overwrite a colour they picked in August.
+ *
+ * That property is load-bearing. If a resolved copy were ever written to
+ * InstalledTheme.tokens — which is what the 26 October migration deliberately
+ * moved away from — this action would become destructive overnight and nothing
+ * here would look any different.
+ *
+ * It does not touch the live theme's identity. Updating the theme a storefront
+ * is wearing changes how it looks, immediately and on purpose: that is what the
+ * merchant pressed.
+ */
+export async function updateTheme(themeKey: string): Promise<ThemeResult> {
+  await requireRole("ADMIN");
+  if (!(themeKey in THEMES)) return { ok: false, error: "That theme no longer exists." };
+
+  const shop = await requireShop();
+  const theme = THEMES[themeKey];
+  const prisma = await db();
+
+  const row = await prisma.installedTheme.findUnique({
+    where: { shopId_themeKey: { shopId: shop.id, themeKey } },
+    select: { version: true },
+  });
+  if (!row) return { ok: false, error: "Add this theme before updating it." };
+
+  // Already current. Not an error — a second tab, or two presses — but nothing
+  // should be written, and the merchant should be told the truth rather than
+  // shown a success for an update that did not happen.
+  if (row.version === theme.version) {
+    return { ok: true, message: `${theme.name} is already up to date.` };
+  }
+
+  await prisma.installedTheme.update({
+    where: { shopId_themeKey: { shopId: shop.id, themeKey } },
+    data: { version: theme.version },
+  });
+
+  // The storefront only changes if this is the theme it is wearing, but the
+  // cache cannot know that cheaply and dropping it is cheap.
+  invalidateShop(shop.id, "theme");
+  revalidatePath("/admin/theme");
+  return {
+    ok: true,
+    message: `${theme.name} was updated to ${theme.version}. Your own changes were kept.`,
+  };
 }
 
 /**
