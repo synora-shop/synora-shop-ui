@@ -394,7 +394,7 @@ export function ThemeManager({
                       type="button"
                       onClick={() => run(theme.key, () => installTheme(theme.key))}
                       disabled={busy(theme.key)}
-                      className="flex h-[calc(35*var(--u))] items-center gap-1.5 rounded-[var(--radius-control)] bg-ink px-[calc(16*var(--u))] text-[length:var(--text-secondary)] font-medium text-white transition-transform hover:-translate-y-px disabled:opacity-60"
+                      className="flex h-[calc(35*var(--u))] items-center gap-1.5 rounded-[var(--radius-control)] bg-ink px-[calc(16*var(--u))] text-[length:var(--text-secondary)] font-medium text-white disabled:opacity-60"
                     >
                       {busy(theme.key) ? (
                         <Loader2 className="h-[var(--icon-box)] w-[var(--icon-box)] animate-spin" />
@@ -407,7 +407,7 @@ export function ThemeManager({
                       href={theme.previewUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="flex h-[calc(35*var(--u))] items-center rounded-[var(--radius-control)] bg-panel px-[calc(16*var(--u))] text-[length:var(--text-secondary)] text-control-ink transition-transform hover:-translate-y-px"
+                      className="flex h-[calc(35*var(--u))] items-center rounded-[var(--radius-control)] bg-panel px-[calc(16*var(--u))] text-[length:var(--text-secondary)] text-control-ink"
                     >
                       Preview
                     </a>

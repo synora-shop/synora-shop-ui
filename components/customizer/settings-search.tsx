@@ -96,7 +96,7 @@ export function SettingsSearch({
           sits in. The input's own height is reset just below. */}
       <div
         className={cn(
-          "flex h-9 items-center gap-2 rounded-pill border px-3.5 shadow-sm transition-all duration-200 ease-out",
+          "flex h-9 items-center gap-2 rounded-pill border px-3.5 shadow-sm transition-[background-color,border-color,color,box-shadow] duration-200 ease-out",
           onDark
             ? "border-white/15 bg-white/10 focus-within:border-white/40 focus-within:bg-white/15 hover:border-white/25"
             : "border-border bg-surface focus-within:border-brand-500 focus-within:shadow-brand hover:border-brand-300"

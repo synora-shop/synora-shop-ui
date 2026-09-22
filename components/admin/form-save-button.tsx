@@ -51,7 +51,7 @@ export function FormSaveButton({
       disabled={pending}
       aria-live="polite"
       className={cn(
-        "inline-flex items-center gap-2 rounded-full px-6 py-2 text-sm font-medium text-white transition-all duration-200",
+        "inline-flex items-center gap-2 rounded-full px-6 py-2 text-sm font-medium text-white transition-[background-color,border-color,color,box-shadow] duration-200",
         saved ? "bg-emerald" : "bg-brand-500 hover:bg-brand-600",
         pending && "opacity-70",
         className

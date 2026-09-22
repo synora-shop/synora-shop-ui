@@ -143,7 +143,7 @@ export function SingleImageField({
             {/* eslint-disable-next-line @next/next/no-img-element -- arbitrary/pasted URLs, skip the image optimizer */}
             <img src={value} alt="" className="h-full w-full object-cover" />
 
-            <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/0 opacity-0 transition-all group-hover:bg-black/40 group-hover:opacity-100 focus-within:bg-black/40 focus-within:opacity-100">
+            <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/0 opacity-0 transition-[background-color,border-color,color,box-shadow] group-hover:bg-black/40 group-hover:opacity-100 focus-within:bg-black/40 focus-within:opacity-100">
               <button
                 type="button"
                 onClick={() => fileInput.current?.click()}

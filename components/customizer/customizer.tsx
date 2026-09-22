@@ -477,9 +477,9 @@ export function Customizer({
           disabled={!dirty || saveState === "saving"}
           key={`save-${refused}`}
           className={cn(
-            "flex-shrink-0 rounded-pill px-4 py-1.5 text-xs font-semibold transition-all duration-150 ease-out",
+            "flex-shrink-0 rounded-pill px-4 py-1.5 text-xs font-semibold transition-[background-color,border-color,color,box-shadow] duration-150 ease-out",
             dirty
-              ? "bg-brand-600 text-white shadow-brand hover:-translate-y-px hover:bg-brand-700 active:translate-y-0"
+              ? "bg-brand-600 text-white shadow-brand hover:bg-brand-700"
               : "border border-border bg-surface text-ink-faint",
             refused > 0 && dirty && "pulse-brand"
           )}
@@ -504,7 +504,7 @@ export function Customizer({
                 aria-current={current ? "page" : undefined}
                 title={current && dirty ? `${p.title} has unsaved changes` : p.title}
                 className={cn(
-                  "relative flex-shrink-0 rounded-pill px-3 py-1 text-xs font-medium transition-all duration-150 ease-out",
+                  "relative flex-shrink-0 rounded-pill px-3 py-1 text-xs font-medium transition-[background-color,border-color,color,box-shadow] duration-150 ease-out",
                   current
                     ? "bg-surface text-ink shadow-sm"
                     : "text-ink-soft hover:bg-surface/60 hover:text-ink",
@@ -722,7 +722,7 @@ export function Customizer({
                 <button
                   type="button"
                   onClick={() => setAdding(true)}
-                  className="flex w-full items-center justify-center gap-1.5 rounded-pill border border-brand-500 px-3 py-2 text-xs font-semibold text-brand-600 transition-all duration-150 ease-out hover:-translate-y-px hover:bg-brand-50 hover:shadow-sm active:translate-y-0 active:bg-brand-100"
+                  className="flex w-full items-center justify-center gap-1.5 rounded-pill border border-brand-500 px-3 py-2 text-xs font-semibold text-brand-600 transition-[background-color,border-color,color,box-shadow] duration-150 ease-out hover:bg-brand-50 hover:shadow-sm active:bg-brand-100"
                 >
                   <Plus className="h-3.5 w-3.5" /> Add section
                 </button>

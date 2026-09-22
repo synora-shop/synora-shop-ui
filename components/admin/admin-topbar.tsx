@@ -212,7 +212,7 @@ export function AdminTopbar({
             // The status dot stays off. That one really was mine, and whether
             // the store is live is said in words in the menu this opens, which
             // is where a merchant can act on it rather than just see it.
-            className="flex h-[calc(39.4*var(--u))] w-[calc(39.4*var(--u))] flex-shrink-0 items-center justify-center rounded-[var(--radius-avatar)] bg-[var(--color-avatar)] text-[length:var(--text-small)] font-semibold text-white transition-transform hover:-translate-y-px"
+            className="flex h-[calc(39.4*var(--u))] w-[calc(39.4*var(--u))] flex-shrink-0 items-center justify-center rounded-[var(--radius-avatar)] bg-[var(--color-avatar)] text-[length:var(--text-small)] font-semibold text-white"
           >
             {initials(storeName)}
           </button>

@@ -40,6 +40,18 @@ const check = (name: string, ok: boolean, detail = "") => {
 };
 
 const ROOT = process.cwd();
+
+/**
+ * Source with its comments removed.
+ *
+ * Any guard here that searches for a class name has to call this first. The
+ * comment explaining why `transition-all` is banned contains the words
+ * `transition-all`, so without it the check fails on its own reasoning — the
+ * trap the palette guard and the manifest guard have each fallen into.
+ */
+function stripComments(source: string): string {
+  return source.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/(^|[^:])\/\/.*$/gm, "$1");
+}
 const SKIP = new Set(["node_modules", ".git", ".next", ".claude", "generated", "migrations"]);
 
 function walk(dir: string, out: string[] = []): string[] {
@@ -238,6 +250,65 @@ check(
   /\.attention\b/.test(reduced) && /box-shadow/.test(reducedRulesFor("attention")),
   "a merchant who cannot be shown a pulse still has to be shown which control"
 );
+
+console.log("\nA BUTTON DOES NOT MOVE");
+// It lifted one pixel on hover and dropped back on press, in BUTTON_BASE, so
+// every button in the panel did it. One pixel is too small to read as a
+// deliberate lift and too large to go unnoticed: it registers as the control
+// having wobbled rather than responded.
+//
+// The panel scales with the window, so a button's box rarely lands on whole
+// pixels. Shifting it one more puts the label on a different sub-pixel grid,
+// the glyphs re-rasterise, and the text shimmers under the cursor — guaranteed
+// on any laptop running a scaled resolution, which is most of them.
+//
+// Hover and press are carried by colour, border and shadow. Movement belongs
+// to things that are genuinely picked up.
+{
+  const panel = walk(join(ROOT, "app/admin"))
+    .concat(walk(join(ROOT, "components/admin")))
+    .concat(walk(join(ROOT, "components/customizer")))
+    .concat([join(ROOT, "components/ui/primitives.tsx")])
+    .filter((f) => /\.tsx$/.test(f));
+  const movers = panel.filter((f) => {
+    const src = readFileSync(f, "utf8");
+    // A card lifting 4px is a different gesture and stays; a one-pixel nudge
+    // on hover is the thing being banned.
+    return /hover:-?translate-[xy]-px/.test(src);
+  });
+  check(
+    "no control in the panel moves by a pixel on hover",
+    movers.length === 0,
+    movers.map((f) => f.split("/").pop()).join(", ")
+  );
+  const base = readFileSync(join(ROOT, "components/ui/primitives.tsx"), "utf8");
+  check(
+    "and the shared button does not move at all",
+    !/BUTTON_BASE[\s\S]{0,600}translate/.test(base),
+    "this is the one that made it happen on every screen"
+  );
+  check(
+    "nor forces a compositor layer for a transform it no longer has",
+    !/BUTTON_BASE[\s\S]{0,600}will-change/.test(base)
+  );
+}
+
+// transition-all animates layout-affecting properties at the same rate as the
+// colour, so a control that changes size crawls to it. Every transition in the
+// panel names what it animates.
+{
+  const panel = walk(join(ROOT, "app/admin"))
+    .concat(walk(join(ROOT, "components/admin")))
+    .concat(walk(join(ROOT, "components/customizer")))
+    .concat(walk(join(ROOT, "components/ui")))
+    .filter((f) => /\.tsx$/.test(f));
+  const vague = panel.filter((f) => /transition-all/.test(stripComments(readFileSync(f, "utf8"))));
+  check(
+    "no transition in the panel animates everything",
+    vague.length === 0,
+    vague.map((f) => f.split("/").pop()).join(", ")
+  );
+}
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);

@@ -24,12 +24,34 @@ type ButtonSize = "sm" | "md";
 // Pill, not a rounded rectangle. The identity is built on full radius, and a
 // button is the element a merchant meets most often, so it is where the shape
 // has to be unmistakable.
+//
+// **A button does not move.** It used to lift one pixel on hover and drop back
+// on press, and that one line made every button in the panel feel loose —
+// which is exactly what it is. One pixel is too small to read as a deliberate
+// lift and too large to go unnoticed, so it registers as the control having
+// wobbled rather than responded.
+//
+// It is worst where the panel is actually used. The whole interface scales
+// with the window, so a button's box rarely lands on whole pixels; shifting it
+// by one more puts the label on a different sub-pixel grid, the glyphs
+// re-rasterise at new positions, and the text appears to shimmer under the
+// cursor. On a laptop running a scaled resolution — which is most of them —
+// that is guaranteed rather than occasional.
+//
+// So hover and press are carried by colour, border and shadow, which is what
+// this file already does well. Movement belongs to things that are genuinely
+// picked up, and a button is not one of them.
+//
+// `transition-[background-color,border-color,color,box-shadow]` went with it. It animated every property including the ones
+// that affect layout, at the same rate as the colour, so a button that changed
+// border width would have crawled to its new size. The list is explicit now.
+// `will-change-transform` went too: it forced a compositor layer onto every
+// button on every screen, to accelerate a transform that no longer exists.
 const BUTTON_BASE =
   "inline-flex items-center justify-center gap-1.5 rounded-pill font-medium " +
-  "transition-all duration-150 ease-out will-change-transform " +
-  "hover:-translate-y-px active:translate-y-0 " +
+  "transition-[background-color,border-color,color,box-shadow] duration-150 ease-out " +
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 " +
-  "disabled:cursor-not-allowed disabled:opacity-55 disabled:hover:translate-y-0";
+  "disabled:cursor-not-allowed disabled:opacity-55";
 
 const BUTTON_VARIANTS: Record<ButtonVariant, string> = {
   // brand-600 rather than 500: it clears AAA against white, so button labels
@@ -424,7 +446,7 @@ export function Stat({
     return (
       <Link
         href={href}
-        className="group rounded-lg border border-border bg-surface p-4 shadow-sm transition-all duration-200 ease-out hover:-translate-y-1 hover:border-brand-300 hover:shadow-lg"
+        className="group rounded-lg border border-border bg-surface p-4 shadow-sm transition-[background-color,border-color,box-shadow,transform] duration-200 ease-out hover:-translate-y-1 hover:border-brand-300 hover:shadow-lg"
       >
         {body}
       </Link>
