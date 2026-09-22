@@ -588,6 +588,7 @@ check out the approved commit, copy `.vercel/` across, and deploy from there.
 ## Reading further
 
 - `docs/FLOWS.md` — the journeys a merchant actually walks.
+- `docs/PANEL.md` — the panel screen by screen, as designed, with measurements.
 - `docs/THEMES.md` — what a theme decides, what the merchant decides, and the
   global settings that sit between them.
 - `docs/DESIGN.md` — what a row, a field, a state and a colour mean here.

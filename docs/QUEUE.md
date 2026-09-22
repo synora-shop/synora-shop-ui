@@ -143,6 +143,59 @@ that both write `businessType` is two rules waiting to disagree.
 
 ---
 
+## The panel is being designed, screen by screen — 22 September
+
+`docs/PANEL.md` is the document. The Themes screen is drawn and measured; the
+rest arrive one at a time. Four decisions came with it, each reversing
+something, and the reasons are in §4 of that document rather than repeated
+here.
+
+**In the order they have to happen:**
+
+1. **The navigation bar comes back and the sidebar loses its dropdown
+   children.** Reverses 21 September's dissolve. Sidebar goes to ten parent
+   rows at 40.5px in three 260px-wide groups; the tabs of the current section
+   return as a 55px bar at the top of the screen.
+2. **Maintenance moves to Preferences** — the close switch, the page customers
+   see while closed, and the reopen sign-ups. A tab move plus the reasoning on
+   the screen itself, which argued the opposite and is now overruled.
+3. **Drafts stops being a tab of its own.** `/admin/pages/drafts` folds into
+   the Pages screen. Products keeps its own Drafts screen, inside Products,
+   where it already is.
+4. **The customizer learns to edit site text** — then, and only then, the Site
+   text screen goes. See the warning below.
+5. **Themes gains versions and an Update action** — schema, migration and
+   behaviour. Then the Themes screen is rebuilt as drawn: Active Theme, All
+   Themes, Theme Store.
+6. **The top bar is painted** — full-width indigo gradient, mark at the left.
+   Carries one real risk: the sidebar's active-row indigo has to keep reading
+   as *selected* against a bar of nearly the same hue.
+
+### The one that must not be done out of order
+
+**Site text is 66 strings and the live customizer reaches none of them.**
+`Add to Cart`, `Place Order`, `Proceed to Checkout`, the checkout error
+messages, the empty cart, the filter labels, the account links. The customizer
+edits sections and theme tokens; checkout, cart, account and the filters are
+not section-built pages, so there is no way in.
+
+Deleting the screen before the customizer can reach those strings would not
+move the ability to the customizer — it would end it, and a merchant would have
+no way to change the words on their own checkout button. So the screen leaves
+the navigation bar now and stays reachable, and is removed after the customizer
+covers it.
+
+### Still needed before any of it
+
+**The notes file, `1920*1080:`.** It holds the global rules — including the one
+deciding which screens get an action bar, which is the reason the Themes screen
+has none. It is not on disk and cannot be read from the Notes app here. What
+`docs/PANEL.md` §1 says about the four bars is reconstructed from the guide's
+markings and one sentence, so it is the likeliest thing in that document to be
+wrong.
+
+---
+
 ## The product's own pages are in no sitemap — 21 September
 
 `app.synoradigitals.com/sitemap.xml` returns an empty `<urlset>`, and
@@ -204,7 +257,8 @@ What is missing is the catalogue and one thing that is backwards.
 - **Billing**, as a Settings tab.
 - **Security & privacy** as its own Settings tab: login locations, an
   authenticator app, a recovery phone number.
-- **Theme versions** (1.4.2) and an update-to-latest button.
+- ~~**Theme versions** (1.4.2) and an update-to-latest button.~~ — agreed
+  22 Sep and now designed; see `docs/PANEL.md` §2 and the entry above.
 - **"Direct me to the cause"** on every error that blocks an action.
 - **The Data library as the picker** wherever a picture can be changed,
   including inside the live customizer.

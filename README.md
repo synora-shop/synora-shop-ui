@@ -298,6 +298,8 @@ This README says what exists. These say how it holds together and why.
 - `docs/FLOWS.md` — the journeys a merchant actually walks: connecting a
   domain, changing what the store sells, closing the shop, setting its marks,
   importing a catalogue.
+- `docs/PANEL.md` — the admin panel screen by screen, as designed, with the
+  measurements each screen was drawn to and the decisions behind them.
 - `docs/THEMES.md` — what a theme decides, what the merchant decides, and what
   happens to each when the other changes. Every global setting, group by group,
   and the catalogue that is still to be designed.

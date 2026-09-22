@@ -188,6 +188,16 @@ picture falls back to a live frame of the merchant's own storefront.
 
 ## 6. Designed, not yet built
 
+> **The Themes screen is now drawn.** `docs/PANEL.md` §2 has it measurement by
+> measurement — three sections (Active Theme, All Themes, Theme Store), every
+> row height, every colour, every button. What follows is what the design needs
+> that the model does not have yet.
+>
+> **The words change with it.** The screen says `Activate`, `Edit Theme`,
+> `+ Add` and `Update`. This document says *publish*, *add* and *customise*.
+> The screen is what a merchant reads, so the screen wins; this document is
+> rewritten to match when the code is.
+
 Recorded here so the shape is agreed before the work starts. None of this is
 implemented; `docs/QUEUE.md` tracks it.
 
@@ -206,6 +216,16 @@ a design behaves, never a file from one of them.
 neutral floor; every theme states its colours outright. Then "the storefront
 opens in the theme's colours unless the merchant changed them" is true by
 construction rather than by a default that happens to be a leftover — see §2.
+
+**Versions, and updating to a new one — agreed 22 September.** A theme gets a
+version. A shop can hold the same theme at two versions, and `Update` moves it
+to the newest. The button is the easy half; the real question is what happens
+to a merchant's edits when the theme underneath them changes, and §2 already
+answers it: their row holds only their *differences*, never a resolved copy, so
+an update changes everything they did not choose and nothing they did. Updating
+is therefore choosing which version's defaults their differences sit on. That
+property is what makes this safe and must not be traded away to ship the
+button.
 
 **Primary, secondary, tertiary.** The colour settings are currently `accent` +
 `secondary`, which does not describe how a designed palette is actually used. A
