@@ -105,7 +105,18 @@ export function AdminSidebar() {
             panel scrolls except the main container — see app/admin/layout.tsx —
             so a sidebar that scrolled with the page would take the section you
             were trying to reach off the screen. At ten rows it never fires. */}
-        <nav className="flex flex-col gap-[var(--gap-sm)] overflow-y-auto p-2.5 lg:p-0">
+        {/* Padded, and pulled back by the same amount.
+            
+            `overflow-y-auto` does not mean "scroll vertically, leave the other
+            axis alone": once either axis is not `visible`, CSS computes the
+            other to `auto` as well. So this box was clipping horizontally, and
+            what it clipped was each container's own shadow — a hard vertical
+            cut down the right-hand side of the sidebar, which reads as the
+            corners being sliced off.
+            
+            The padding gives the shadow room inside the scroll box; the
+            negative margin puts the containers back where they were. */}
+        <nav className="-mx-[var(--gap-sm)] flex flex-col gap-[var(--gap-sm)] overflow-y-auto px-[var(--gap-sm)] py-2.5 lg:py-0">
           {bands.map((band) => (
             <div key={band[0].group} className="rounded-[var(--radius-container)] bg-panel p-[var(--pad-container)] shadow-container">
               <ul>

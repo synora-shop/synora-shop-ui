@@ -418,14 +418,34 @@ check(
 // library. Add is not "own this", it is "give me another copy".
 check(
   "the store offers a theme the shop already has",
-  !/store\s*=\s*themes\.filter\(\(t\) => !t\.installed\)/.test(gallery) &&
-    /theme\.owned > 0/.test(gallery),
+  (() => {
+    const page = read("app/admin/theme/page.tsx");
+    // Built from every theme for this business type, never filtered by what
+    // the shop owns — Add means "another copy", so filtering owned themes out
+    // makes a second copy unreachable.
+    return /store=\{available\.map/.test(page) && !/!.*installed/.test(page);
+  })(),
   "filtering owned themes out of the store makes a second copy unreachable"
 );
 check(
-  "and says how many the shop already holds before it is pressed",
-  /in your themes/.test(gallery),
-  "pressing Add on something you have is not a mistake, but it should not be a surprise"
+  "and adding says how many the shop now has",
+  /You now have \$\{count\}/.test(choice),
+  "pressing Add on something you have is not a mistake, but it should not be a silent one"
+);
+// The plate is a Synora colour, not the theme's own. The store is a Synora
+// screen showing what is on offer; the plate says "this is a theme" and the
+// picture on it says which.
+for (const theme of Object.values(THEMES)) {
+  check(
+    `${theme.key} sits on a plate`,
+    /^#[0-9a-f]{6}$/i.test(theme.plate.from) && /^#[0-9a-f]{6}$/i.test(theme.plate.to)
+  );
+}
+check(
+  "and the card is the plate rather than a white box on it",
+  /linear-gradient\(180deg, \$\{theme\.plate\.from\}/.test(gallery) &&
+    /shadow-card/.test(gallery),
+  "a white card with a coloured picture in it is not what the store draws"
 );
 
 // Versions. The platform's is in the registry beside the theme; the shop's is

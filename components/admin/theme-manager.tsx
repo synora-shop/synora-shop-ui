@@ -39,9 +39,9 @@ export type StoreTheme = {
   description: string;
   preview?: string;
   latest: string;
-  /** How many copies this shop already holds. */
-  owned: number;
   previewUrl: string;
+  /** The coloured plate this theme sits on, as two gradient stops. */
+  plate: { from: string; to: string };
 };
 
 /**
@@ -324,49 +324,54 @@ export function ThemeManager({
             {store.map((theme) => (
               <li
                 key={theme.key}
-                className="flex flex-col overflow-hidden rounded-[var(--radius-container)] border border-section-line bg-panel"
+                // 730 x 533, and the plate is the card. The picture sits on it
+                // inset by 10 with a 75 band beneath for the name and the two
+                // buttons — all four numbers are off the guide.
+                //
+                // The plate is a gradient from Synora's own accent palette,
+                // not from the theme's colours: the store is a Synora screen
+                // showing what is on offer. The plate says "this is a theme";
+                // the picture on it says which one.
+                className="flex aspect-[730/533] flex-col rounded-[var(--radius-container)] p-[calc(10*var(--u))] shadow-card"
+                style={{
+                  backgroundImage: `linear-gradient(180deg, ${theme.plate.from} 0%, ${theme.plate.to} 100%)`,
+                }}
               >
-                <div className="relative flex-1 p-[calc(10*var(--u))]">
-                  {/* 10 in from a 16 corner is a 6 corner. Two curves of different
-                      centres a hair apart is the uneven border you see at every
-                      seam once you have noticed it once. */}
-                  <div className="overflow-hidden rounded-[var(--radius-inner)] bg-control">
+                <div className="relative min-h-0 flex-1">
+                  {/* 10 in from a 16 corner is a 6 corner. */}
+                  <div className="h-full overflow-hidden rounded-[var(--radius-inner)] bg-panel">
                     {theme.preview ? (
                       <Image
                         src={theme.preview}
                         alt={`${theme.name} storefront`}
                         width={1420}
                         height={896}
-                        className="h-auto w-full"
+                        className="h-full w-full object-cover object-top"
                       />
                     ) : (
                       <StorefrontStill url={theme.previewUrl} height={448} />
                     )}
                   </div>
+                  {/* On the picture, at its corner, as drawn — a disc rather
+                      than a panel, so it reads as a mark on the image and not
+                      as a control floating over it. */}
                   <a
                     href={theme.previewUrl}
                     target="_blank"
                     rel="noreferrer"
                     aria-label={`Open ${theme.name} full size`}
-                    className="absolute right-[calc(20*var(--u))] top-[calc(20*var(--u))] flex h-[calc(30*var(--u))] w-[calc(30*var(--u))] items-center justify-center rounded-full bg-panel/90 text-control-ink shadow-panel transition-transform hover:-translate-y-px"
+                    className="absolute right-[calc(12*var(--u))] top-[calc(12*var(--u))] flex h-[calc(30*var(--u))] w-[calc(30*var(--u))] items-center justify-center rounded-full bg-ink text-white transition-transform hover:-translate-y-px"
                   >
-                    <ExternalLinkIcon className="h-[calc(15*var(--u))] w-[calc(15*var(--u))]" />
+                    <ExternalLinkIcon className="h-[calc(14*var(--u))] w-[calc(14*var(--u))]" />
                   </a>
                 </div>
 
-                <div className="flex flex-wrap items-center justify-between gap-3 px-[calc(20*var(--u))] pb-[calc(20*var(--u))]">
-                  <p className="text-[length:var(--text-normal)] font-semibold text-control-ink">
+                <div className="flex h-[calc(75*var(--u))] flex-shrink-0 items-center justify-between gap-3 px-[calc(10*var(--u))]">
+                  <p className="text-[length:var(--text-normal)] font-semibold uppercase tracking-wide text-control-ink">
                     {theme.name}{" "}
-                    <span className="font-normal text-control-soft">(v{theme.latest})</span>
-                    {/* Said quietly, and said. Add makes another copy, so a
-                        merchant pressing it on something they already have has
-                        not made a mistake — but they should know before the
-                        toast tells them afterwards. */}
-                    {theme.owned > 0 && (
-                      <span className="ml-2 font-normal text-control-soft">
-                        · {theme.owned} in your themes
-                      </span>
-                    )}
+                    <span className="font-normal normal-case tracking-normal text-control-ink/60">
+                      (v{theme.latest})
+                    </span>
                   </p>
                   <div className="flex items-center gap-[calc(10*var(--u))]">
                     <button
@@ -382,9 +387,14 @@ export function ThemeManager({
                       )}
                       Add
                     </button>
-                    <RowButton href={theme.previewUrl} external>
+                    <a
+                      href={theme.previewUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex h-[calc(35*var(--u))] items-center rounded-[var(--radius-control)] bg-panel px-[calc(16*var(--u))] text-[length:var(--text-secondary)] text-control-ink transition-transform hover:-translate-y-px"
+                    >
                       Preview
-                    </RowButton>
+                    </a>
                   </div>
                 </div>
               </li>

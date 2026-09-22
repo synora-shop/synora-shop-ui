@@ -90,7 +90,7 @@ export default async function ThemePage() {
           description: t.description,
           preview: t.preview,
           latest: t.version,
-          owned: rows.filter((r) => r.themeKey === t.key).length,
+          plate: t.plate,
           previewUrl: `${storeUrl}?__theme=${t.key}`,
         }))}
       />

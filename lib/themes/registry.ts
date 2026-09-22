@@ -77,6 +77,17 @@ export type ThemeDefinition = {
    */
   tokens: Partial<ThemeTokens>;
   /**
+   * The plate this theme sits on in the store, as two gradient stops.
+   *
+   * Taken from Synora's accent palette — `#c8e7ff` and `#b8efd6` are two of
+   * the five — rather than from the theme's own colours, and deliberately: the
+   * store is a Synora screen showing what is on offer, not a preview of the
+   * shop. The plate says *this is a theme*; the picture on it says which.
+   *
+   * Darker at the top, lighter at the bottom, which is what the design draws.
+   */
+  plate: { from: string; to: string };
+  /**
    * A picture of this theme, in `public/themes`.
    *
    * A photograph of the shop page rather than the home page, deliberately: the
@@ -116,6 +127,7 @@ export type ThemeDefinition = {
 const aurora: ThemeDefinition = {
   key: "aurora",
   version: "1.0.0",
+  plate: { from: "#8ab4c5", to: "#dbe8ed" },
   preview: "/themes/aurora.jpg",
   name: "Loom",
   description: "Clean and roomy, with large imagery. A safe first choice.",
@@ -148,6 +160,7 @@ const aurora: ThemeDefinition = {
 const atlas: ThemeDefinition = {
   key: "atlas",
   version: "1.0.0",
+  plate: { from: "#8fc9ae", to: "#b8efd6" },
   preview: "/themes/atlas.jpg",
   name: "Kite",
   description: "Photography-led, with a tight grid and quick buying. For a shop with a look.",

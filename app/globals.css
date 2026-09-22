@@ -222,10 +222,18 @@
    *   --radius-inner      what sits inside one, 10 in from the edge
    *   --radius-control    a button, a row plate, a thumbnail
    *   --radius-page       the background block that tucks under the header */
-  --radius-container: calc(16 * var(--u));
-  --radius-inner: calc(6 * var(--u));
-  --radius-control: calc(8 * var(--u));
-  --radius-page: calc(40 * var(--u));
+  /* A corner never gets *tighter* than it was drawn.
+   *
+   * Radii scaled with everything else and that was wrong in one direction: on
+   * a 13" laptop a 16px corner became 12px and the whole panel read as boxier
+   * — a corner is a constant of the visual language, not a measurement of
+   * layout, and 4px off one is visible in a way 4px off a margin is not.
+   *
+   * So they grow on a larger display and hold their drawn value below it. */
+  --radius-container: max(16px, calc(16 * var(--u)));
+  --radius-inner: max(6px, calc(6 * var(--u)));
+  --radius-control: max(8px, calc(8 * var(--u)));
+  --radius-page: max(40px, calc(40 * var(--u)));
 
   --text-normal: calc(20 * var(--u));
   --text-secondary: calc(18 * var(--u));
@@ -318,6 +326,10 @@
   --shadow-container: 0 0 10px rgb(0 0 0 / 0.10);
   --shadow-section: 0 0 5px rgb(0 0 0 / 0.10);
   --glow-page: 0 0 50px rgb(255 255 255 / 0.50);
+  /* A theme's card in the store. Heavier than anything else in the panel on
+     purpose: it is the only place a coloured plate sits on the grey, and it is
+     meant to lift off it rather than sit in it. */
+  --shadow-card: 0 calc(8 * var(--u)) calc(24 * var(--u)) rgb(0 0 0 / 0.45);
 }
 
 /* Anything you type into is a control, not a surface. Without this every input
@@ -462,6 +474,7 @@ a:hover .sd-sheen { animation-duration: 1.6s; }
   --radius-inner: var(--radius-inner);
   --radius-control: var(--radius-control);
   --radius-page: var(--radius-page);
+  --shadow-card: var(--shadow-card);
   --shadow-container: var(--shadow-container);
   --shadow-section: var(--shadow-section);
   --shadow-glow-page: var(--glow-page);
