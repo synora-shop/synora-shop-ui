@@ -82,12 +82,29 @@ for (const path of [
    passing — the old values were still there, in a comment explaining that they
    had been replaced. A check that a colour is mentioned is not a check that it
    is used. */
+/**
+ * Source with its comments removed.
+ *
+ * Every probe in this file that looks for a colour or a word has to call this
+ * first. Two have been written without it and both failed on the comment that
+ * explained why the thing they were banning was banned — the guard reading the
+ * argument for itself as a violation of itself.
+ */
+function stripComments(source: string): string {
+  return source
+    .replace(/\/\*[\s\S]*?\*\//g, " ")
+    .replace(/(^|[^:])\/\/.*$/gm, "$1");
+}
+
 const css = readFileSync(join(ROOT, "app/globals.css"), "utf8");
 const PANEL_COLOURS: [string, string][] = [
   ["--color-shell", "#f5f5f5"],
   ["--color-panel", "#ffffff"],
   ["--color-control", "#f5f5f5"],
-  ["--color-brand-500", "#6666ff"],
+  ["--color-brand-500", "#5050ea"],
+  ["--color-header", "#5050ea"],
+  ["--color-section", "#f5f5f5"],
+  ["--color-selected", "#e9e9ff"],
 ];
 for (const [token, colour] of PANEL_COLOURS) {
   check(
@@ -116,10 +133,14 @@ check(
   "a token nothing applies is a token that does nothing"
 );
 
-/* Two outlines, and only two: #86868b at rest and #6666ff active. The panel
-   reads its own state off the edge of a control, so a third grey creeping in
-   anywhere — a Tailwind border-gray-200, a one-off hex — breaks that reading
-   without breaking anything a test would otherwise notice. */
+/* A control at rest is outlined #86868b and the same control active is
+   outlined #5050ea. The panel reads its own state off the edge of a control,
+   so a third grey creeping in anywhere — a Tailwind border-gray-200, a one-off
+   hex — breaks that reading without breaking anything a test would otherwise
+   notice.
+
+   A section's outline is not part of that pair: #2e2e2e at 0.25px, a boundary
+   rather than a state, which is why it is darker, thinner and never changes. */
 const RGB_86868B = "134 134 139";
 check(
   "the inactive outline is #86868b",
@@ -170,7 +191,47 @@ check(
     // the outline sits 2px outside it, on the page, where brand-500 is visible.
     return files.every((f) => !/outline-brand-(?!500)/.test(readFileSync(f, "utf8")));
   })(),
-  "focus is #6666ff; a second shade of it is a second meaning"
+  "focus is #5050ea; a second shade of it is a second meaning"
+);
+
+/* #6666ff was the active colour until 22 September and left the palette with
+   the global design document. Two indigos one step apart is a distinction
+   nobody can make, so there is one — and a stray #6666ff anywhere in the panel
+   would be the old one growing back where nothing would notice. */
+check(
+  "#6666ff is gone from the panel",
+  (() => {
+    // Comments stripped first, and that is not a detail. The palette guard and
+    // the manifest guard have each failed on the sentence explaining them —
+    // a probe that reads prose is testing the documentation, not the code.
+    const files = walk(join(ROOT, "app/admin"))
+      .concat(walk(join(ROOT, "components/admin")))
+      .filter((f) => /\.tsx?$/.test(f));
+    const shell = stripComments(css.slice(css.indexOf(".admin-shell {")));
+    return (
+      !/#6666ff/i.test(shell) &&
+      files.every((f) => !/#6666ff/i.test(stripComments(readFileSync(f, "utf8"))))
+    );
+  })(),
+  "active is #5050ea everywhere now — see docs/PANEL.md §6"
+);
+
+/* The header is flat. What lightens it in the drawing is the page's own white
+   glow falling across it, which is a different thing that behaves differently:
+   a painted gradient would not move when the content beneath it does. */
+check(
+  "the header is one flat colour, not a gradient",
+  (() => {
+    const topbar = stripComments(
+      readFileSync(join(ROOT, "components/admin/admin-topbar.tsx"), "utf8")
+    );
+    return /bg-header/.test(topbar) && !/gradient/i.test(topbar);
+  })(),
+  "the lightening is --glow-page, not a fill"
+);
+check(
+  "the three lights the document specifies are all declared",
+  /--shadow-container:/.test(css) && /--shadow-section:/.test(css) && /--glow-page:/.test(css)
 );
 
 /* One typeface, loaded one way.

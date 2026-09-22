@@ -152,24 +152,35 @@ here.
 
 **In the order they have to happen:**
 
-1. **The navigation bar comes back and the sidebar loses its dropdown
-   children.** Reverses 21 September's dissolve. Sidebar goes to ten parent
-   rows at 40.5px in three 260px-wide groups; the tabs of the current section
-   return as a 55px bar at the top of the screen.
-2. **Maintenance moves to Preferences** — the close switch, the page customers
-   see while closed, and the reopen sign-ups. A tab move plus the reasoning on
-   the screen itself, which argued the opposite and is now overruled.
-3. **Drafts stops being a tab of its own.** `/admin/pages/drafts` folds into
-   the Pages screen. Products keeps its own Drafts screen, inside Products,
-   where it already is.
+1. ~~**The navigation bar comes back and the sidebar loses its dropdown
+   children.**~~ — **done 22 Sep.** Sidebar is ten parent rows at 40.5px, 20px
+   text, in three 260px containers 15px apart; the tabs are a 55px bar again.
+   All 26 admin addresses verified to resolve to themselves and light the right
+   section.
+2. ~~**Maintenance moves to Preferences**~~ — **done 22 Sep.** Second tab,
+   straight after Visibility, which asks the same question.
+3. **Drafts stops being a tab of its own.** *Half done:* it has left the
+   navigation bar. `/admin/pages/drafts` still exists as its own screen and
+   needs folding into Pages as a filter. Products keeps its own Drafts screen,
+   inside Products, where it already is.
 4. **The customizer learns to edit site text** — then, and only then, the Site
-   text screen goes. See the warning below.
+   text screen goes. See the warning below. `/admin/site-text` has left the
+   navigation bar and is still reachable, which is the whole point.
 5. **Themes gains versions and an Update action** — schema, migration and
    behaviour. Then the Themes screen is rebuilt as drawn: Active Theme, All
    Themes, Theme Store.
-6. **The top bar is painted** — full-width indigo gradient, mark at the left.
-   Carries one real risk: the sidebar's active-row indigo has to keep reading
-   as *selected* against a bar of nearly the same hue.
+6. ~~**The header is painted**~~ — **done 22 Sep.** 80px of flat `#5050ea`
+   across the whole window, mark at the left, a 50px search field and the
+   account pill at the right. The page title and breadcrumb left it — the
+   design has neither, and the sidebar and nav bar both say where you are. The
+   title survives as a screen-reader heading. "Change APP type" moved into the
+   account menu rather than being dropped.
+
+**Also done in step 1, because the whole frame moves together:** only the main
+container scrolls now — the header, sidebar, nav bar and action bar all stay
+put. And the fluid gutter and fluid page title are gone: the document gives one
+number, 30px from every edge, stepping down to 16px below the sidebar's
+breakpoint.
 
 ### The one that must not be done out of order
 

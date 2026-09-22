@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { shopSession } from "@/lib/auth-guard";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { AdminTopbar, type Alert } from "@/components/admin/admin-topbar";
+import { AdminNavbar } from "@/components/admin/admin-navbar";
 import { EditorBar } from "@/components/admin/editor-bar";
 import { RefreshButton } from "@/components/admin/refresh-button";
 import { getStoreSettings } from "@/lib/data/settings";
@@ -45,43 +46,55 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
     // Every client component that draws money reads the currency from here
     // rather than being handed it through six unrelated props.
     <CurrencyProvider currency={resolveStoreDefaults(settings).currency}>
+    // The window itself does not scroll, and that is the whole layout.
+    //
+    // The global design document is explicit: the header, the sidebar, the
+    // navigation bar and the action bar all stay put, and scrolling happens
+    // inside the main container. So the shell is exactly one screen tall and
+    // clips, and the one box below that is allowed to overflow is the content.
+    //
+    // It is not a preference. A merchant halfway down four hundred products
+    // still needs the tabs and the actions for that screen, and a page that
+    // scrolls as a whole takes both off the top of the window precisely when
+    // they are most wanted.
     <div
       data-business-type={type}
-      className="admin-shell min-h-screen bg-shell font-sans text-ink"
+      className="admin-shell flex h-screen flex-col overflow-hidden bg-shell font-sans text-ink"
     >
-      <div className="flex">
-        {/* The sidebar starts at the very top of the window, beside the heading
-            bar rather than under it — one column of six, full height, its own
-            thing. That is APP.ai's arrangement. */}
+      {/* Full width, above the sidebar as well as the content. */}
+      <AdminTopbar
+        storeName={me.shop.name}
+        isLive={!settings.maintenanceMode}
+        userEmail={me.email}
+        storeUrl={await canonicalUrl(me.shop.id)}
+        registryType={type}
+        storeStatus={me.shop.status}
+        hasOtherStores={(session.user.shops?.length ?? 0) > 1}
+        alerts={await pendingWork(schemaType)}
+      />
+
+      {/* 30px from every edge of the screen, and 30px between the sidebar and
+          the column beside it — one margin where two meet, never both. */}
+      <div className="flex min-h-0 flex-1 gap-[30px] p-[30px] pt-0 max-lg:p-4 max-lg:pt-0">
         <AdminSidebar />
 
-        <div className="flex min-w-0 flex-1 flex-col">
-          <AdminTopbar
-            storeName={me.shop.name}
-            isLive={!settings.maintenanceMode}
-            userEmail={me.email}
-            storeUrl={await canonicalUrl(me.shop.id)}
-            registryType={type}
-            storeStatus={me.shop.status}
-            hasOtherStores={(session.user.shops?.length ?? 0) > 1}
-            alerts={await pendingWork(schemaType)}
-          />
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-[15px]">
+          {/* The bars of the drawing, in order. The navigation bar carries no
+              bottom margin of its own: the action buttons beneath it bring
+              15px, and two margins meeting are one margin. */}
+          <AdminNavbar />
 
-          {/* The four bars of the drawing, in order: navigation, then whatever
-              the page puts in its action bar, then the content container. pb-24
-              leaves room for the floating save bar on editable screens. */}
-          <main className="gutter-fluid min-w-0 flex-1 space-y-2.5 pb-20">
-            {/* The navigation bar used to sit here — the section's screens as a
-                row of tabs across the top. They are in the sidebar now, dropped
-                underneath the section you are standing in, so the second level
-                is read in the same column as the first instead of in a
-                different corner of the screen. */}
-            {/* Discard and Save for whatever screen is open. Draws nothing on a
-                screen with nothing to save, so a list page keeps its own action
-                bar and a form page gets one without building it. */}
-            <EditorBar />
-            <div className="rounded-2xl bg-panel p-3 shadow-panel sm:p-4">{children}</div>
-          </main>
+          {/* The action bar. No container of its own — it is buttons side by
+              side, each carrying its own — so on a screen with nothing to
+              filter, sort or create it draws nothing at all and costs no
+              height. Themes is one of those. */}
+          <EditorBar />
+
+          {/* The main container, and the only thing on the screen that
+              scrolls. */}
+          <div className="min-h-0 flex-1 overflow-y-auto rounded-2xl bg-panel p-[30px] shadow-container max-lg:p-4">
+            {children}
+          </div>
         </div>
       </div>
       <RefreshButton />

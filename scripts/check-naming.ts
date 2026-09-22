@@ -227,29 +227,28 @@ const side = readFileSync(join(ROOT, "components/admin/admin-sidebar.tsx"), "utf
 // The sidebar's measurements are drawn, not chosen here, so they are asserted
 // as the numbers they are rather than as a rule about them.
 //
-// A band holds six sections at 18px in 180px of content with 10px of padding —
-// which makes a row exactly 30px and the container exactly 200px tall and 200px
-// wide. 200px of container inside 10px of nav padding either side is a 220px
-// sidebar. Earlier versions of this check held a *ceiling* on the row height
-// instead, and that was the right shape of rule while the height was a
-// judgement call; it is a specification now.
+// The sidebar's measurements are drawn, not chosen here, so they are asserted
+// as the numbers they are rather than as a rule about them. They come from the
+// global design document — 260px wide, 20px text — and the guide, which marks
+// the row at 40.5px. Earlier versions held a *ceiling* on the row height, and
+// that was the right shape of rule while the height was a judgement call; it
+// is a specification now.
+//
+// They changed on 22 September: 220px and 18px text with 16px children, which
+// was the shape the sidebar had for one day while it carried the second level.
 const sideNav = side.slice(side.indexOf("<nav"), side.indexOf("</nav>"));
 check(
-  "the sidebar is 220px, so a band container is 200px",
-  /lg:w-\[13\.75rem\]/.test(side),
-  "200px of container plus 10px of nav padding either side"
+  "the sidebar is 260px",
+  /lg:w-\[260px\]/.test(side),
+  "the one column in the panel that does not flex"
 );
 check("a band container pads 10px", /p-2\.5/.test(sideNav));
-check("a row is 30px", /h-\[30px\]/.test(sideNav), "180px of content for six of them");
-check("a section reads at 18px", /text-\[18px\]/.test(sideNav));
-check("and the screens under it at 16px", /text-\[16px\]/.test(sideNav));
-// The label column is one column: a child has no glyph, so its padding has to
-// put its text exactly where the section's text sits above it.
-check(
-  "a child's label lines up under its section's",
-  /pl-\[38px\]/.test(sideNav),
-  "10px container + 10px row + 20px glyph + 8px gap = 48px, and the row starts at 10"
-);
+check("the bands are 15px apart", /gap-\[15px\]/.test(sideNav));
+check("a row is 40.5px", /h-\[40\.5px\]/.test(sideNav));
+check("a section reads at 20px", /text-\[20px\]/.test(sideNav));
+// The glyph box is the point, not the glyph. An icon wider than it is tall
+// still occupies 20 x 20, which is what keeps the column optically aligned.
+check("its glyph sits in a 20px box", /h-5 w-5/.test(sideNav));
 
 // Twenty-five different buttons shipped while a Button primitive sat unused in
 // half the panel — five paddings for the primary alone. A button built out of

@@ -177,13 +177,56 @@ check(
     !/border border-control-line/.test(sidebar),
     "ten outlined pills is what the bands replaced"
   );
-  // Recessed and coloured, never filled. A solid brand slab behind the label is
-  // what this deliberately stopped being.
+  // Active is three things at once, and one of them alone is not a state
+  // anyone reads at a glance: the #e9e9ff plate, the #5050ea colour, and the
+  // weight. A solid brand slab with white text is what this is not.
   check(
-    "the selected row is recessed, not filled",
-    /bg-control[^"]*text-brand-500|text-brand-500[^"]*bg-control/.test(sidebar) &&
-      !/bg-brand-500 font-medium text-white/.test(sidebar),
-    "the selected row is #f5f5f5 with #6666ff text, not a #6666ff slab"
+    "the selected row is a plate, a colour and a weight",
+    /bg-selected font-semibold text-brand-500/.test(sidebar) &&
+      !/bg-brand-500[^"]*text-white/.test(sidebar),
+    "#e9e9ff behind it, #5050ea on it, semibold — not a #5050ea slab"
+  );
+  // The sidebar held the second level for one day. If children come back here
+  // the navigation bar is being said twice, which is the thing the design of
+  // 22 September settled.
+  check(
+    "the sidebar draws parents only",
+    !/children/.test(sidebar),
+    "the section's screens belong to the navigation bar now — see docs/PANEL.md §4"
+  );
+}
+
+// The navigation bar is back, and a section of one still draws none.
+{
+  const navbar = readFileSync(join(process.cwd(), "components/admin/admin-navbar.tsx"), "utf8");
+  check("a section with one screen draws no bar", /tabs\.length === 0\) return null/.test(navbar));
+  check("it is 55px", /h-\[55px\]/.test(navbar));
+  check("its tabs are 20px", /text-\[20px\]/.test(navbar));
+  check(
+    "its selected tab matches the sidebar's",
+    /bg-selected font-semibold text-brand-500/.test(navbar),
+    "two different active states in one panel is two meanings for one idea"
+  );
+  check(
+    "it slides rather than wraps",
+    /scrollbar-none/.test(navbar) && /overflow-x-auto/.test(navbar),
+    "a bar that wrapped would be two rows tall on some sections and one on others"
+  );
+}
+
+// Only the main container scrolls. Everything else is put somewhere and stays
+// there — which is the point of the bars being fixed heights.
+{
+  const layout = readFileSync(join(process.cwd(), "app/admin/layout.tsx"), "utf8");
+  check(
+    "the window itself does not scroll",
+    /h-screen[^"]*overflow-hidden/.test(layout),
+    "the shell is exactly one screen tall and clips"
+  );
+  check(
+    "the main container does",
+    /overflow-y-auto[^"]*bg-panel/.test(layout),
+    "a merchant deep in a long list still needs the tabs and the actions for it"
   );
 }
 check("the sidebar has more than one section", all.length > 1);

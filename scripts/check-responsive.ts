@@ -51,19 +51,19 @@ console.log("\nONLY ONE THING IS PINNED TO THE TOP OF THE VIEWPORT");
 const sidebarTopBars = (sidebar.match(/fixed[^"]*top-0/g) ?? []).length;
 check("the sidebar declares no bar of its own", sidebarTopBars === 0, `found ${sidebarTopBars}`);
 check("the topbar is the sticky one", /sticky top-0/.test(topbar));
-// The mark is centred on the window rather than on the content column. It used
-// to do that with `fixed`, and the sentence that stood here said it was "only
-// safe because the bar it appears to belong to is always at the top of the
-// viewport" — which was the assumption that broke. `overflow-x: hidden` on the
-// page made the bar's sticky positioning a no-op, so the bar scrolled away and
-// the mark stayed, floating over the page on its own. It is absolute inside
-// the bar now, pulled left by half a sidebar to land on the window's centre.
-check("the centred mark belongs to the bar", /absolute left-1\/2 top-0/.test(topbar));
+// The mark sits at the left of the header, where the design puts it. It was
+// centred on the window for as long as the header was colourless — the centre
+// was the only place it could sit without reading as a heading — and centring
+// it cost two bugs: a `fixed` version that floated free when `overflow-x:
+// hidden` made the bar's stickiness a no-op, and an absolute version needing a
+// hand-computed offset of half a sidebar. Neither problem exists at the left.
+check("the header is 80px", /h-20/.test(topbar));
+check("the mark is 30px", /h-\[30px\]/.test(topbar));
 check(
-  "and is offset by half the sidebar to reach the window's centre",
-  /-translate-x-\[calc\(50%\+6\.5rem\)\]/.test(topbar)
+  "and it is not centred on the window any more",
+  !/absolute left-1\/2 top-0/.test(topbar),
+  "centring it needed an offset nobody could derive from the drawing"
 );
-check("and cannot swallow clicks meant for the page", /pointer-events-none/.test(topbar));
 
 console.log("\nTHE NAVIGATION CAN BE OPENED ON A PHONE");
 check("the topbar owns the toggle", /aria-controls="admin-nav"/.test(topbar));
@@ -72,14 +72,14 @@ check("both read the same state", /useAdminNav/.test(topbar) && /useAdminNav/.te
 
 console.log("\nTHE TAB ROW SCROLLS RATHER THAN WRAPPING");
 // A wrapped tab row changes height as you move between sections, and
-// everything below it jumps by a line.
-// The navigation bar is gone — the section's screens drop under it in the
-// sidebar instead of running across the top of the page. What those three
-// checks were protecting still needs protecting, in its new place: a label that
-// cannot wrap, and nothing drawn for a section that has only one screen.
-check("a child label does not break mid-word", /truncate/.test(sidebar));
-check("a section of one screen lists nothing", /children\.length > 0/.test(sidebar));
-check("and the sidebar can scroll if the tree outgrows the screen", /overflow-y-auto/.test(sidebar));
+// everything below it jumps by a line. The bar is back as of 22 September, so
+// this is the original hazard again rather than a stand-in for it.
+const navbar = readFileSync(join(process.cwd(), "components/admin/admin-navbar.tsx"), "utf8");
+check("the tab row scrolls rather than wrapping", /overflow-x-auto/.test(navbar));
+check("and draws no scrollbar inside 55px of bar", /scrollbar-none/.test(navbar));
+check("a section of one screen draws no bar", /tabs\.length === 0\) return null/.test(navbar));
+check("a sidebar label does not break mid-word", /truncate/.test(sidebar));
+check("and the sidebar can scroll if it ever outgrows the screen", /overflow-y-auto/.test(sidebar));
 
 console.log("\nBOTH LEVELS COME FROM ONE PLACE");
 check("the sidebar reads the navigation model", /@\/lib\/admin-nav"/.test(sidebar));
@@ -99,12 +99,22 @@ check(
   !/\[data-business-type="restaurant"\]\s*\{[\s\S]{0,80}--color-brand/.test(css)
 );
 
-console.log("\nSPACING AND TYPE SCALE WITH THE WINDOW");
-check("a fluid gutter is defined", /\.gutter-fluid\s*\{[^}]*clamp\(/.test(css));
-check("a fluid page title is defined", /\.text-page-title\s*\{[^}]*clamp\(/.test(css));
-check("the page body uses the fluid gutter", /gutter-fluid/.test(layout));
-check("the topbar uses the same gutter, so they line up", /gutter-fluid/.test(topbar));
-check("the heading bar uses the fluid title", /text-page-title/.test(topbar));
+console.log("\nSPACING IS THE DOCUMENT'S, AND STEPS DOWN ON A PHONE");
+// The panel used a gutter that scaled with the window. The global design
+// document gives one number instead — 30px from every edge — so the fluid
+// gutter and the fluid page title are both gone rather than left unused.
+check("nothing is left using the old fluid gutter", !/gutter-fluid/.test(layout + topbar));
+check("the document's 30px is what the frame uses", /p-\[30px\]/.test(layout));
+check(
+  "the gap between sidebar and content is one margin, not two",
+  /gap-\[30px\]/.test(layout),
+  "30px meeting 30px is 30px; counting both gives 60 and pulls the layout apart"
+);
+check(
+  "and it steps down below the sidebar's breakpoint",
+  /max-lg:p-4/.test(layout),
+  "30px of every edge of a phone is most of the phone"
+);
 check(
   "the body no longer steps its padding at one width",
   !/px-4[^"]*lg:px-8/.test(layout)

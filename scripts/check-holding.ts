@@ -223,13 +223,22 @@ check("addresses are stored lowercase", normaliseEmail("  A.B@Example.COM ") ===
 // The screen is reachable
 // ---------------------------------------------------------------------------
 
+// Moved from Your App to Preferences on 22 September. The screen's own comment
+// argued it belonged beside Pages and Themes *because it is a page on the
+// storefront*, which is true and is the weaker argument: whether the shop is
+// open is how it behaves, and Visibility — the tab above it now — is already
+// that question.
 const nav = read("lib/admin-nav.ts");
-check("Maintenance is a tab under Your App", /\/admin\/maintenance/.test(nav));
+check("Maintenance is a tab", /\/admin\/maintenance/.test(nav));
 check(
-  "it sits inside the Your App section",
-  nav.indexOf("/admin/maintenance") > nav.indexOf('label: "Your App"') &&
-    nav.indexOf("/admin/maintenance") < nav.indexOf('label: "Preferences"'),
-  "it is a page on the storefront, not a preference"
+  "it sits inside Preferences",
+  nav.indexOf("/admin/maintenance") > nav.indexOf('label: "Preferences"'),
+  "whether the shop is open is how it behaves, not how it looks"
+);
+check(
+  "and directly after Visibility, which asks the same question",
+  nav.indexOf("/admin/maintenance") > nav.indexOf('label: "Visibility"') &&
+    nav.indexOf("/admin/maintenance") < nav.indexOf('label: "Fonts"')
 );
 
 console.log(`\n${pass} passed, ${fail} failed`);

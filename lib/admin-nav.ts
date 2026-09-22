@@ -25,12 +25,18 @@ import { activeHref } from "@/lib/active-nav";
  * than either: a merchant saw "Dishes" in the sidebar above a screen still
  * built around SKUs, variants and shipping.
  *
- * Two levels and no more, which is the change. The sidebar used to hold seven
- * collapsible groups with links nested inside them, so reaching Orders meant
- * finding the right group, opening it, and reading past six siblings. Now the
- * sidebar names six destinations and never moves, and the second level is a row
- * of tabs across the top of the page — the navigation bar. Which tabs appear
- * depends entirely on which sidebar item is selected.
+ * Two levels and no more. The sidebar names ten destinations and never moves;
+ * the second level is a row of tabs across the top of the page — the navigation
+ * bar. Which tabs appear depends entirely on which sidebar item is selected.
+ *
+ * The second level lived in the sidebar for one day. On 21 September the
+ * navigation bar was dissolved and its tabs hung under the section you were
+ * standing in, so both levels read in one column. The design of 22 September
+ * puts the bar back and returns the sidebar to ten parent rows. The reason it
+ * was dissolved — the same links appearing twice — is handled by the sidebar
+ * not repeating them, which it does not.
+ *
+ * Some screens belong to a section and draw no tab: see `hidden` below.
  *
  * This file is the single source of both. The sidebar reads the section labels,
  * the navigation bar reads the tabs of the current section, and the heading bar
@@ -49,6 +55,21 @@ export type NavTab = {
   href: string;
   label: string;
 };
+
+/**
+ * A screen that belongs to a section and draws no tab.
+ *
+ * Not every screen earns a place in the navigation bar, and a screen with no
+ * tab still has to light the right sidebar row when somebody reaches it by
+ * link. Without this, `resolveNav` finds no match, falls back to the first
+ * section, and the sidebar says you are on Home while you are looking at
+ * something else.
+ *
+ * It is a holding pattern, not a category. Every entry here is a screen on its
+ * way somewhere — folded into its parent screen, or removed once what it does
+ * lives elsewhere — and docs/QUEUE.md says which.
+ */
+export type NavHidden = NavTab;
 
 export type NavIcon = (props: { className?: string; title?: string }) => React.ReactElement;
 
@@ -74,6 +95,8 @@ export type NavSection = {
   icon: NavIcon;
   group: NavGroup;
   tabs: NavTab[];
+  /** Screens of this section that draw no tab. See NavHidden. */
+  hidden?: NavHidden[];
 };
 
 /**
@@ -191,18 +214,26 @@ export const NAV_SECTIONS: readonly NavSection[] = [
     // this list and no longer do — they are sections of their own in group 1.
     // What is left is genuinely one job: the pages of the shop, what they look
     // like, and the words on them.
+    // Three screens, and the design draws them in this order.
     tabs: [
-      { href: "/admin/pages", label: "Pages" },
-      // The same idea as Products' Drafts, for pages: everything written and
-      // not yet published, in one place, with a tick beside each one.
-      { href: "/admin/pages/drafts", label: "Drafts" },
       { href: "/admin/theme", label: "Themes" },
-      // The one storefront page a merchant cannot reach through the
-      // customizer, because it is only ever shown when the storefront is shut.
-      // Next to Themes rather than at the end: closing the shop and what it
-      // looks like closed are the same thought.
-      { href: "/admin/maintenance", label: "Maintenance" },
+      { href: "/admin/pages", label: "Pages" },
       { href: "/admin/menus", label: "Menus" },
+    ],
+    // Both of these are on their way out of the navigation, not out of the
+    // product — see docs/PANEL.md §4.
+    //
+    // Drafts: a draft belongs to the thing it is a draft of. Page drafts fold
+    // into the Pages screen; Products keeps its own Drafts screen, inside
+    // Products, where it already is.
+    //
+    // Site text: all storefront wording is to be edited in the live
+    // customizer. It cannot be yet — these are 66 strings the customizer has
+    // no way to reach, including the words on the checkout button — so the
+    // screen stays reachable until it does. Removing it first would not move
+    // the ability, it would end it.
+    hidden: [
+      { href: "/admin/pages/drafts", label: "Drafts" },
       { href: "/admin/site-text", label: "Site text" },
     ],
   },
@@ -215,6 +246,12 @@ export const NAV_SECTIONS: readonly NavSection[] = [
     // customers at all is the first question, so it is the first tab.
     tabs: [
       { href: "/admin/preferences", label: "Visibility" },
+      // Moved here from Your App on 22 September. The screen itself argued it
+      // belonged beside Pages and Themes *because it is a page on the
+      // storefront*, and that is true and is the weaker argument: whether the
+      // shop is open is how it behaves, not how it looks, and Visibility above
+      // is already that question. Second, so the two sit together.
+      { href: "/admin/maintenance", label: "Maintenance" },
       { href: "/admin/fonts", label: "Fonts" },
       { href: "/admin/buttons", label: "Sticky buttons" },
       { href: "/admin/redirects", label: "Links & redirects" },
@@ -258,6 +295,8 @@ export type ResolvedSection = {
   href: string;
   group: NavGroup;
   tabs: { href: string; label: string }[];
+  /** Screens that belong here and draw no tab. Never rendered as navigation. */
+  hidden: { href: string; label: string }[];
 };
 
 /**
@@ -277,6 +316,7 @@ export function sections(): ResolvedSection[] {
     // tab. Computed rather than written down so the two cannot disagree.
     href: section.tabs[0].href,
     tabs: section.tabs.map((t) => ({ href: t.href, label: t.label })),
+    hidden: (section.hidden ?? []).map((t) => ({ href: t.href, label: t.label })),
   }));
 }
 
@@ -295,11 +335,18 @@ export type Crumb = { label: string; href: string };
  */
 export function resolveNav(pathname: string) {
   const all = sections();
-  const everyHref = all.flatMap((s) => s.tabs.map((t) => t.href));
+  // Hidden screens are matched here and nowhere else. Leaving them out is what
+  // made /admin/site-text light "Home" — no href covered it, so the fallback
+  // won and the sidebar named the wrong section.
+  const everyHref = all.flatMap((s) => [...s.tabs, ...s.hidden].map((t) => t.href));
   const current = activeHref(everyHref, pathname);
 
-  const section = all.find((s) => s.tabs.some((t) => t.href === current)) ?? all[0];
-  const tab = section.tabs.find((t) => t.href === current) ?? null;
+  const section =
+    all.find((s) => [...s.tabs, ...s.hidden].some((t) => t.href === current)) ?? all[0];
+  const tab =
+    section.tabs.find((t) => t.href === current) ??
+    section.hidden.find((t) => t.href === current) ??
+    null;
 
   const crumbs: Crumb[] = [{ label: section.label, href: section.href }];
   // A crumb that repeats the heading above it is noise. "Products > Products"
@@ -309,23 +356,9 @@ export function resolveNav(pathname: string) {
     crumbs.push({ label: tab.label, href: tab.href });
   }
 
-  // The section's screens, as the sidebar lists them beneath it.
-  //
-  // A tab named after its own section is dropped: Products' first tab is
-  // "Products" and Home's is "Home", and the section itself already links
-  // there, so listing it again is a row that looks like it goes somewhere new
-  // and does not. The breadcrumb has always done this — same rule, same reason.
-  //
-  // A section left with nothing has no list at all, which is most of them:
-  // Data, Discounts, Customers, Analytics and Account are one screen each.
-  const children = section.tabs.length > 1
-    ? section.tabs.filter((t) => t.label !== section.label)
-    : [];
-
   return {
     sections: all,
     section,
-    children,
     current,
     // One crumb is not a trail — it is the heading again. The breadcrumb only
     // earns its line once there is somewhere above you to go back to.

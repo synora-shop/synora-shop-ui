@@ -13,15 +13,28 @@ went wrong the first time.
 
 ## 1. Colour
 
-Five, and nothing else. Defined once in `.admin-shell` in `app/globals.css`.
+Defined once in `.admin-shell` in `app/globals.css`, and named in the global
+design document — `docs/PANEL.md` §1, which is where these come from.
 
 | | |
 | --- | --- |
 | `#f5f5f5` | the page — and anything recessed into a container |
-| `#ffffff` | containers — nav bar, action bar, content, sidebar items |
+| `#ffffff` | containers — header bar, nav bar, content, sidebar |
 | `#f5f5f5` | controls — anything you type into or press |
-| `#86868b` | the outline of anything at rest |
-| `#6666ff` | the active state, **and only** the active state |
+| `#f5f5f5` | a section inside the main container |
+| `#5050ea` | the header, and the active state — **and only** the active state |
+| `#e9e9ff` | the plate behind whatever is active |
+| `#86868b` | the outline of a control at rest, and secondary text |
+| `#2e2e2e` | the outline of a section, at 0.25px |
+
+**`#6666ff` is gone.** It was the active colour until 22 September and is not in
+the palette at all now. The global design document names `#5050ea`, which is
+also the header's colour, and two indigos one step apart would have been a
+distinction nobody could make.
+
+**Active is three things at once** — the `#e9e9ff` plate, the `#5050ea` colour,
+and DM Sans Semibold rather than Regular. Never one of them alone: colour by
+itself is not a state a merchant reads at 20px across a room.
 
 **Depth is carried by light, not by tone.** It used to be the other way: the
 page was `#d2d2d2`, containers `#e0e0e0`, controls `#fafafa` — each step
@@ -34,14 +47,15 @@ Two greys that close cannot separate themselves, so a container is lifted by
 `--shadow-panel` — two very soft layers, one tight for contact and one wide for
 height. A single hard shadow at this lightness reads as a badly drawn border.
 
-**There are two outlines and there is no third.** An element at rest is
-outlined `#86868b`; the same element focused or active is outlined `#6666ff`.
-The sidebar's connector line obeys the same pair: it is only ever drawn to the
-screen you are on, so it is only ever `#6666ff`.
-The pair is the whole system, which is what lets a merchant read the state of a
+**A control at rest is outlined `#86868b`; the same control focused or active
+is outlined `#5050ea`.** That pair is what lets a merchant read the state of a
 control off its edge without first having to know what the control is. A
 `border-gray-200` or a one-off hex is a third state nobody asked for, and
 `check:design` fails on one.
+
+A section's outline is not part of that pair and is a different job: `#2e2e2e`
+at 0.25px. It is not a state, it is a boundary — which is why it is darker and
+thinner than either of the other two, and why it never changes.
 
 The outline changed hue, not weight. It is drawn as a hairline — `#86868b` held
 back by its alpha — because depth is the shadow's job now. Drawn at full

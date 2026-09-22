@@ -94,89 +94,66 @@ export function AdminTopbar({
   }, []);
 
   return (
-    <header className="sticky top-0 z-40 bg-shell">
-      {/* Centred on the window, not on this column, which is where APP.ai puts
-          it. This column starts after the 13rem sidebar, so its own centre is
-          half a sidebar to the right of the window's — hence the offset.
-
-          Absolute inside the bar, not fixed. Fixed took it out of the header
-          altogether: it stayed at the top of the *window* while the bar itself
-          scrolled away, so the mark ended up floating over whatever happened
-          to be under it, and at z-50 it covered things it had no business
-          covering.
-
-          From xl only: below that the window's centre falls inside the page
-          title, and the mark would sit on top of the word it is beside. */}
-      <span className="pointer-events-none absolute left-1/2 top-0 z-10 hidden h-[76px] -translate-x-[calc(50%+6.5rem)] items-center xl:flex">
-        <Link href="/admin" className="pointer-events-auto">
-          <SynoraAppMark />
+    // 80px of #5050ea across the whole window, above the sidebar as well as
+    // the content. The one saturated surface in the panel.
+    //
+    // It is flat. What makes it look like a gradient in the drawing is the
+    // page's own white glow falling upward across it — the same relationship
+    // the header and background have on synoradigitals.com. A painted gradient
+    // would look close and behave wrong: the light would not move when the
+    // content beneath it does.
+    <header className="sticky top-0 z-40 h-20 bg-header">
+      <div className="flex h-20 items-center gap-3 px-[30px]">
+        {/* The mark, at the left where the design puts it. It was centred on
+            the window while the header was colourless and the centre was the
+            only place it could sit without looking like a heading. */}
+        <Link href="/admin" className="hidden flex-shrink-0 items-center lg:flex">
+          <SynoraAppMark className="h-[30px] w-auto text-white" />
         </Link>
-      </span>
 
-      {/* A fixed height, so a screen without a breadcrumb does not make the
-          bar shorter than its neighbours — the mark is centred against this
-          height from a fixed position and would drift with it. */}
-      <div className="gutter-fluid flex h-[76px] items-center gap-3">
         <button
           type="button"
           aria-label={navOpen ? "Close menu" : "Open menu"}
           aria-expanded={navOpen}
           aria-controls="admin-nav"
           onClick={toggleNav}
-          className="-ml-1 flex-shrink-0 rounded-full p-2 text-control-ink transition-colors hover:bg-panel lg:hidden"
+          className="-ml-1 flex-shrink-0 rounded-full p-2 text-white transition-colors hover:bg-white/15 lg:hidden"
         >
           {navOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
 
-        {/* The heading bar: which section, and how you got here. */}
-        <div className="min-w-0 flex-1">
-          <h1 className="text-page-title truncate font-normal tracking-tight text-ink">
-            {section.label}
-          </h1>
-          {trail.length > 0 && (
-          <nav aria-label="Breadcrumb" className="mt-0.5 flex items-center gap-1 text-[13px]">
-            {trail.map((crumb, i) => (
-              <span key={`${crumb.href}-${i}`} className="flex min-w-0 items-center gap-1">
-                {i > 0 && <span className="text-control-soft">›</span>}
-                {i === trail.length - 1 ? (
-                  <span className="truncate text-control-soft">{crumb.label}</span>
-                ) : (
-                  <Link
-                    href={crumb.href}
-                    className="truncate rounded text-control-soft transition-colors hover:text-brand-500 hover:underline"
-                  >
-                    {crumb.label}
-                  </Link>
-                )}
-              </span>
-            ))}
-          </nav>
-          )}
-        </div>
+        {/* Where you are is said twice already — the sidebar lights the
+            section and the navigation bar lights the screen — so the design
+            puts neither a title nor a trail in the header, and there is no
+            third place to say it.
+            
+            The heading stays, unseen. A page with no h1 is a page a screen
+            reader cannot summarise, and "drawn nowhere" is not the same as
+            "does not exist". */}
+        <h1 className="sr-only">{section.label}</h1>
+        <div className="min-w-0 flex-1" />
 
-        {/* Which type this store is, and what the types mean. Two questions a
-            merchant asks a moment apart, so two controls side by side. */}
-        <div className="hidden flex-shrink-0 items-center xl:flex">
-          <button
-            type="button"
-            onClick={() => setDialog("info")}
-            aria-label="Which type fits your business?"
-            className="rounded-full p-2 text-control-soft transition-colors hover:bg-panel hover:text-ink"
-          >
-            <InfoIcon />
-          </button>
-          <button
-            type="button"
-            onClick={() => setDialog("switch")}
-            className="inline-flex items-center gap-1 rounded-full px-2 py-1.5 text-xs text-control-soft transition-colors hover:bg-panel hover:text-ink"
-          >
-            Change APP type
-            <ChevronRight className="h-3.5 w-3.5" />
-          </button>
-        </div>
+        {/* Search, as drawn: a field rather than an icon, so what it searches
+            is written on it instead of being something you have to try.
+            
+            A button that looks like an input, deliberately. Typing happens in
+            the overlay it opens, which is where the results are — an input
+            here would have to hand its first keystroke over to a second input,
+            and the handover is always visible. */}
+        <button
+          type="button"
+          onClick={() => {
+            setMenu(null);
+            setSearching(true);
+          }}
+          className="hidden h-[50px] min-w-0 flex-shrink items-center gap-2.5 rounded-pill bg-night/25 px-5 text-left text-[15px] text-white/70 transition-colors hover:bg-night/35 md:flex md:w-[360px]"
+        >
+          <Search className="h-[18px] w-[18px] flex-shrink-0" />
+          <span className="truncate">Search Products, Customers, Pages</span>
+        </button>
 
-        {/* Search, notifications, account. One pill, as drawn. */}
-        <div className="relative flex flex-shrink-0 items-center gap-1 rounded-pill bg-panel px-1.5 py-1.5 shadow-panel">
+        {/* Notifications and the account. One pill, as drawn. */}
+        <div className="relative flex h-[50px] flex-shrink-0 items-center gap-1 rounded-pill bg-panel px-1.5 shadow-panel">
           <IconButton
             label="Search the admin"
             active={searching}
@@ -184,6 +161,7 @@ export function AdminTopbar({
               setMenu(null);
               setSearching(true);
             }}
+            className="md:hidden"
           >
             <Search className="h-[18px] w-[18px]" />
           </IconButton>
@@ -291,6 +269,33 @@ export function AdminTopbar({
                       <Settings2 className="h-4 w-4 text-control-soft" />
                       Your account
                     </Link>
+                    {/* These two were a pair of controls in the header. The
+                        design's header holds the mark, search, notifications
+                        and the account and nothing else, so they moved here
+                        rather than being dropped — which is where a merchant
+                        looks for what their store *is* anyway. */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        close();
+                        setDialog("switch");
+                      }}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-sm transition-colors hover:bg-panel"
+                    >
+                      <ChevronRight className="h-4 w-4 text-control-soft" />
+                      Change APP type
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        close();
+                        setDialog("info");
+                      }}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-sm transition-colors hover:bg-panel"
+                    >
+                      <InfoIcon className="h-4 w-4 text-control-soft" />
+                      Which type fits your business?
+                    </button>
                     {hasOtherStores && (
                       <Link
                         href="/merchant/stores"
@@ -336,11 +341,13 @@ function IconButton({
   active,
   onClick,
   children,
+  className,
 }: {
   label: string;
   active: boolean;
   onClick: () => void;
   children: React.ReactNode;
+  className?: string;
 }) {
   return (
     <button
@@ -351,7 +358,8 @@ function IconButton({
       onClick={onClick}
       className={cn(
         "relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full transition-colors",
-        active ? "bg-brand-500 text-white" : "text-control-ink hover:bg-control"
+        active ? "bg-brand-500 text-white" : "text-control-ink hover:bg-control",
+        className
       )}
     >
       {children}

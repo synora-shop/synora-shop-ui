@@ -109,15 +109,28 @@
  * painted with anything else:
  *
  *   #f5f5f5  shell     the page itself, behind everything
- *   #ffffff  panel     containers — nav bar, action bar, content, sidebar items
+ *   #ffffff  panel     containers — header bar, nav bar, content, sidebar
  *   #f5f5f5  control   things you type in or press that sit on a container
- *   #86868b  border    the outline of anything at rest
- *   #6666ff  brand-500 the active state, and only the active state
+ *   #f5f5f5  section   a section inside the main container
+ *   #86868b  border    the outline of a control at rest
+ *   #2e2e2e  section-line  the outline of a section, at 0.25px
+ *   #5050ea  brand-500 the active state, and only the active state
+ *   #e9e9ff  selected  the plate behind whatever is active
  *
- * The last two are a pair: an element at rest is outlined #86868b, and the
- * same element active or focused is outlined #6666ff. Nothing else outlines
- * anything, so a merchant can read the state of a control from its edge alone
- * without having to know what the control is.
+ * A control at rest is outlined #86868b and the same control active or focused
+ * is outlined #5050ea, so its state is readable from its edge alone. Sections
+ * are the third outline and a different job — they are not a state, they are a
+ * boundary, which is why they are darker and thinner rather than either of the
+ * other two.
+ *
+ * Active is three things at once and never one of them alone: the colour
+ * #5050ea, the weight (DM Sans Semibold rather than Regular), and the #e9e9ff
+ * plate behind it. Colour alone is not a state anyone can see at 20px.
+ *
+ * #6666ff is gone. It was the active colour until 22 September and is not in
+ * the palette at all now — the global design document names #5050ea, which is
+ * also the header's colour, and two indigos one step apart would have been a
+ * distinction nobody could make.
  *
  * The greys were darker: #d2d2d2 page, #e0e0e0 container, #fafafa control, in
  * that order lightest-forward. The panel is near-white now, and that inverts
@@ -142,31 +155,56 @@
   /* Pinned here, not inherited. The store's own brand colour repaints :root
      for the customizer, where it belongs — you are editing the shop there and
      seeing it is the point. It must not reach the panel: the panel is grey so
-     that #6666ff can mean "selected", and a merchant whose brand is red would
+     that #5050ea can mean "selected", and a merchant whose brand is red would
      otherwise get a red Save button beside a red active tab with nothing to
      tell them apart. */
   --color-brand-50: #f2f2ff;
   --color-brand-100: #e2e2ff;
   --color-brand-300: #a5a5ff;
-  --color-brand-500: #6666ff;
-  --color-brand-600: #5050e0;
-  --color-brand-700: #3f3fbe;
+  --color-brand-500: #5050ea;
+  --color-brand-600: #4040d0;
+  --color-brand-700: #3232a8;
   --color-brand-900: #24246b;
 
   --color-shell: #f5f5f5;
   --color-panel: #ffffff;
+  /* The header, and the only saturated surface in the panel.
+     It is one flat colour. What makes it look like a gradient in the drawing
+     is the page's own white glow falling across it — see --glow-page below.
+     A painted gradient would look close and behave wrong: the light would not
+     move when the content beneath it does. */
+  --color-header: #5050ea;
+  /* A section inside the main container: the page's own tone, boxed. Same
+     value as the shell deliberately — a section is not raised off the
+     container, it is a region marked out on it. */
+  --color-section: #f5f5f5;
+  /* 0.25px of #2e2e2e. A device pixel is the thinnest a browser will draw, so
+     the quarter is carried by the alpha instead — the same trick as
+     --color-control-line, for the same reason. */
+  --color-section-line: rgb(46 46 46 / 0.25);
+  /* The plate behind anything active: a sidebar row, a navigation tab. */
+  --color-selected: #e9e9ff;
+  /* Words in a field nobody has typed into yet. Two, because the panel has two
+     grounds it can happen on. */
+  --color-placeholder: #babac5;
+  --color-placeholder-dark: #555581;
+  /* Text on a dark ground — the header, and anything else saturated. */
+  --color-ink-on-dark: #ffffff;
+  --color-ink-soft-on-dark: #dddddd;
   /* The page's own tone, so a field reads as cut into a white card rather than
      floating on it. It was #fafafa — lighter than the container it sat on,
      which was right when containers were grey and is wrong now. */
   --color-control: #f5f5f5;
-  /* Text and icons on a control. The document says #808080; the drawing shows
-     near-black, and near-black is what a merchant can actually read at 13px.
-     Black now rather than #333333, to match the ink above — at 13px on a white
-     container the difference between the two is the difference between crisp
-     and slightly smudged. #808080 stays as secondary text, which is the job it
-     does well. The outline is its own colour now — see --color-border. */
+  /* Text and icons on a control. Black rather than #333333, to match the ink
+     above — at 20px on a white container the difference between the two is the
+     difference between crisp and slightly smudged. The outline is its own
+     colour — see --color-border.
+
+     Secondary text is #86868b, which the global design document names
+     outright. It was #808080, which was near enough to be indistinguishable
+     and far enough to be a second grey nobody could justify. */
   --color-control-ink: #000000;
-  --color-control-soft: #808080;
+  --color-control-soft: #86868b;
   /* "0.1px outline" is a hairline. A device pixel is the thinnest a browser
      will draw, so the weight is carried by the alpha instead. A control is the
      thing you aim at, so its edge is held a little harder than a container's. */
@@ -200,6 +238,21 @@
    * looks like a border drawn badly; two soft ones read as a card sitting on a
    * surface, which is the whole job now that tone cannot do it. */
   --shadow-panel: 0 1px 2px rgb(0 0 0 / 0.04), 0 4px 16px rgb(0 0 0 / 0.06);
+
+  /* The three lights the global design document specifies.
+   *
+   * A container — sidebar, navigation bar, main container — carries a 10px
+   * black glow at 10%. A section inside the main container carries the same
+   * at 5px, so it reads as nearer to the surface it sits on.
+   *
+   * The third is the one that does the visible work, and it points the other
+   * way: the page itself throws a wide white glow, 50px at 50%, which falls
+   * upward across the header. That is the whole reason the flat #5050ea header
+   * looks lit rather than stamped on, and it is the same relationship the
+   * header and background have on synoradigitals.com. */
+  --shadow-container: 0 0 10px rgb(0 0 0 / 0.10);
+  --shadow-section: 0 0 5px rgb(0 0 0 / 0.10);
+  --glow-page: 0 0 50px rgb(255 255 255 / 0.50);
 }
 
 /* Anything you type into is a control, not a surface. Without this every input
@@ -288,8 +341,8 @@ a:hover .sd-sheen { animation-duration: 1.6s; }
  * the storefront's, and a merchant who has never chosen a colour inherits it.
  * Repainting the marketing site must not repaint their shop.
  *
- * The same five the panel uses — #f5f5f5 behind, white in front, black text,
- * #86868b at rest, #6666ff for the one thing that is active. A marketing page
+ * The same palette the panel uses — #f5f5f5 behind, white in front, black
+ * text, #86868b at rest, and the brand for whatever is active. A marketing page
  * gets one more thing than the panel does: it may fill a whole block with the
  * accent, because a call to action is the page's active state.
  */
@@ -549,16 +602,19 @@ body {
      the gutter it picked for a full-width window, so the content is squeezed
      instead of reclaiming the margin. Growing the gutter with the viewport
      means narrowing the window gives space back smoothly, with no cliff. */
-  .gutter-fluid {
-    padding-inline: clamp(1rem, 0.55rem + 1.9vw, 2.5rem);
+  /* A strip that slides sideways rather than wrapping, with no bar drawn.
+     
+     Used by the navigation bar and the action bar, both of which are a fixed
+     height by design — 55px and 40px. A scrollbar inside either one takes its
+     height out of the labels, and both are short enough that the overflow is
+     found by dragging, which is what every horizontal strip on a touch screen
+     already teaches. */
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
-
-  /* Page titles scale with the window for the same reason the gutter does: a
-     24px heading that is comfortable at 1440px is oversized once a sidebar has
-     taken a third of the screen. */
-  .text-page-title {
-    font-size: clamp(1.35rem, 1.15rem + 0.65vw, 1.75rem);
-    line-height: 1.2;
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
   }
 
   /* One text box for the whole panel.
