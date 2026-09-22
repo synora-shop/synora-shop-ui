@@ -50,7 +50,17 @@ console.log("\nONLY ONE THING IS PINNED TO THE TOP OF THE VIEWPORT");
 // the top bar or hiding it.
 const sidebarTopBars = (sidebar.match(/fixed[^"]*top-0/g) ?? []).length;
 check("the sidebar declares no bar of its own", sidebarTopBars === 0, `found ${sidebarTopBars}`);
-check("the topbar is the sticky one", /sticky top-0/.test(topbar));
+// It used to be sticky, which it had to be while the page itself scrolled.
+// Nothing outside the main container scrolls now — the header is simply the
+// first row of a shell exactly one screen tall — so sticky would be a rule
+// with nothing to do, and `relative` is what the glow at its bottom edge is
+// positioned against.
+check("the header is the top row and does not scroll away", /relative isolate/.test(topbar));
+check(
+  "and it clips its own glow",
+  /overflow-hidden/.test(topbar),
+  "the white haze belongs on the header, not spilling onto the content below it"
+);
 // The mark sits at the left of the header, where the design puts it. It was
 // centred on the window for as long as the header was colourless — the centre
 // was the only place it could sit without reading as a heading — and centring

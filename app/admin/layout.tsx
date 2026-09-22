@@ -75,7 +75,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
 
       {/* 30px from every edge of the screen, and 30px between the sidebar and
           the column beside it — one margin where two meet, never both. */}
-      <div className="flex min-h-0 flex-1 gap-[var(--gap-lg)] p-[var(--gap-lg)] pt-0 max-lg:p-4 max-lg:pt-0">
+      <div className="flex min-h-0 flex-1 gap-[var(--gap-lg)] p-[var(--gap-lg)] max-lg:p-4">
         <AdminSidebar />
 
         <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-[var(--gap-sm)]">

@@ -270,6 +270,55 @@ check(
   "the three lights the document specifies are all declared",
   /--shadow-container:/.test(css) && /--shadow-section:/.test(css) && /--glow-page:/.test(css)
 );
+check(
+  "and all three are actually applied to something",
+  (() => {
+    const src = walk(join(ROOT, "app/admin"))
+      .concat(walk(join(ROOT, "components/admin")))
+      .filter((f) => /\.tsx$/.test(f))
+      .map((f) => readFileSync(f, "utf8"))
+      .join("");
+    // By the class each one is reached through, not by the variable name —
+    // the variable being present in a file proves nothing about whether any
+    // element wears it.
+    return ["shadow-container", "shadow-section", "shadow-glow-page"].every((c) =>
+      src.includes(c)
+    );
+  })(),
+  "--glow-page was declared, documented, and used by nothing for a day"
+);
+
+/* A class Tailwind never generated.
+ *
+ * `@theme inline` is what makes a utility exist. A --color-* declared in
+ * .admin-shell is a variable and nothing more; `bg-x` is generated only for the
+ * names registered in that block.
+ *
+ * Six tokens were added on 22 September without being registered — header,
+ * selected, section, section-line and the two shadows — so bg-header,
+ * bg-selected, bg-section, border-section-line, shadow-container and
+ * shadow-section were classes that did not exist. Every element wearing one got
+ * no style at all: the header was not indigo, active rows had no plate, and a
+ * section was white with a hard black border instead of #f5f5f5 with a
+ * hairline. Nothing errored, no check failed, and it took a screenshot from the
+ * merchant to find.
+ *
+ * So: every token the panel declares must be registered, and this fails on the
+ * one that is not. */
+check(
+  "every panel token is registered as a Tailwind utility",
+  (() => {
+    const shellBlock = (css.match(/\.admin-shell\s*\{[\s\S]*?\n\}/) ?? [""])[0];
+    const themeBlock = (css.match(/@theme inline\s*\{[\s\S]*?\n\}/) ?? [""])[0];
+    const declared = Array.from(
+      shellBlock.matchAll(/(--(?:color|shadow)-[a-z0-9-]+)\s*:/g)
+    ).map((m) => m[1]);
+    const missing = declared.filter((t) => !themeBlock.includes(`var(${t})`));
+    if (missing.length) console.log(`        ${missing.join(", ")}`);
+    return declared.length > 0 && missing.length === 0;
+  })(),
+  "a utility Tailwind never generated is a style that silently does nothing"
+);
 
 /* One typeface, loaded one way.
    

@@ -409,6 +409,19 @@ a:hover .sd-sheen { animation-duration: 1.6s; }
 }
 
 @theme inline {
+  /* This block is what makes a utility exist.
+   *
+   * A --color-* declared in .admin-shell is a variable and nothing more;
+   * Tailwind generates `bg-x` only for the names registered here. Six tokens
+   * were added on 22 September without being listed — header, selected,
+   * section, section-line, and the two shadows — so `bg-header`,
+   * `bg-selected`, `bg-section`, `border-section-line`, `shadow-container`
+   * and `shadow-section` were classes that did not exist. Every element
+   * wearing one got no style at all: the header was not indigo, active rows
+   * had no plate, and sections were white with a hard black border.
+   *
+   * Nothing errored and no check caught it. Add a token below whenever one is
+   * added above, or it is decoration. */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
@@ -420,6 +433,17 @@ a:hover .sd-sheen { animation-duration: 1.6s; }
   --color-control-ink: var(--color-control-ink);
   --color-control-soft: var(--color-control-soft);
   --color-control-line: var(--color-control-line);
+  --color-header: var(--color-header);
+  --color-section: var(--color-section);
+  --color-section-line: var(--color-section-line);
+  --color-selected: var(--color-selected);
+  --color-placeholder: var(--color-placeholder);
+  --color-placeholder-dark: var(--color-placeholder-dark);
+  --color-ink-on-dark: var(--color-ink-on-dark);
+  --color-ink-soft-on-dark: var(--color-ink-soft-on-dark);
+  --shadow-container: var(--shadow-container);
+  --shadow-section: var(--shadow-section);
+  --shadow-glow-page: var(--glow-page);
   --color-subtle: var(--color-subtle);
   --color-accent-soft: var(--color-accent-soft);
   --color-brand-50: var(--color-brand-50);

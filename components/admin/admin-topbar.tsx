@@ -102,7 +102,23 @@ export function AdminTopbar({
     // the header and background have on synoradigitals.com. A painted gradient
     // would look close and behave wrong: the light would not move when the
     // content beneath it does.
-    <header className="sticky top-0 z-40 h-[var(--header-h)] flex-shrink-0 bg-header">
+    <header className="relative isolate z-40 h-[var(--header-h)] flex-shrink-0 overflow-hidden bg-header">
+      {/* The page's white glow, falling across the header.
+        *
+        * The global design document asks for it by name: the background
+        * carries a 50px outer glow at 50% white, and that glow lands on the
+        * #5050ea header — the same relationship the header and background have
+        * on synoradigitals.com. It is the whole reason a flat colour reads as
+        * lit rather than stamped on, and the reason this must not be a painted
+        * gradient: the light belongs to the content below, not to the bar.
+        *
+        * Drawn as a hairline at the bottom edge carrying the glow, clipped by
+        * the header's own overflow — so the haze rises into the indigo and
+        * stops there, rather than spilling onto the content underneath it. */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-px shadow-glow-page"
+      />
       <div className="flex h-full items-center gap-3 px-[var(--gap-lg)]">
         {/* The mark, at the left where the design puts it. It was centred on
             the window while the header was colourless and the centre was the
