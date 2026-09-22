@@ -143,6 +143,39 @@ that both write `businessType` is two rules waiting to disagree.
 
 ---
 
+## The linter was never run — 22 September
+
+A `//` comment placed between a JSX opening tag and its first child is not a
+comment: it is text. Four paragraphs of reasoning about the scroll model
+rendered above the header on the live panel, and a merchant saw them there.
+
+**ESLint has always caught it.** `react/jsx-no-comment-textnodes` is on by
+default in `eslint-config-next`, and it names the file, line and column. It was
+never run: 3,201 assertions in the check suite and not one of them opened the
+linter, so the suite grew around a tool that would have caught this in a
+second.
+
+`npm run check:lint` now runs as part of `npm run check`. It fails on the rules
+whose failures a merchant can *see* — a comment rendered as text, an `<img>`
+that bypasses the image pipeline, a `<head>` fighting the metadata API, hooks
+called conditionally — and it counts everything else so the debt is named
+rather than silently tolerated.
+
+**53 other findings today**, none fatal, and worth paying down in this order:
+
+- **37 × `no-unused-vars`.** Mostly in `scripts/sweep/*`. Noise, but it is the
+  noise that hides a real one.
+- **4 parse errors.** Worth looking at first — a file the linter cannot read is
+  a file none of these rules covers.
+- **4 × `react-hooks/refs`, 2 × `set-state-in-effect`, 1 × `purity`.** The
+  React compiler's rules. Each is a real re-render hazard; none has been shown
+  to bite yet.
+- **3 × `no-html-link-for-pages`.** All three are CSV export links, where `<a>`
+  is deliberate — `<Link>` would prefetch a download. They need a disable
+  comment carrying that reason, not a fix.
+
+---
+
 ## The panel is being designed, screen by screen — 22 September
 
 `docs/PANEL.md` is the document. The Themes screen is drawn and measured; the

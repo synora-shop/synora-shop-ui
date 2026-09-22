@@ -45,7 +45,6 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
     // words: a restaurant's products are dishes.
     // Every client component that draws money reads the currency from here
     // rather than being handed it through six unrelated props.
-    <CurrencyProvider currency={resolveStoreDefaults(settings).currency}>
     // The window itself does not scroll, and that is the whole layout.
     //
     // The global design document is explicit: the header, the sidebar, the
@@ -57,6 +56,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
     // still needs the tabs and the actions for that screen, and a page that
     // scrolls as a whole takes both off the top of the window precisely when
     // they are most wanted.
+    <CurrencyProvider currency={resolveStoreDefaults(settings).currency}>
     <div
       data-business-type={type}
       className="admin-shell flex h-screen flex-col overflow-hidden bg-shell font-sans text-ink"

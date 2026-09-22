@@ -25,6 +25,7 @@ and that going live is refused until a test payment has really been through.
 | Script | Asserts | Exists because |
 | --- | --- | --- |
 | `check:sections` **472** | A section a merchant can pick is one that stores, configures and draws; every setting is explained; an empty section takes up no room | Twenty-two sections were written and could not be added to a page at all — the schema and the renderer existed, the database enum did not |
+| `check:lint` **4** | The lint rules whose failures a merchant can *see* — a comment rendered as page text, an `<img>` past the image pipeline, a `<head>` fighting the metadata API, hooks called conditionally. Everything else is counted, not failed | A `//` comment between a JSX tag and its first child is text, not a comment. Four paragraphs of reasoning rendered above the header on the live panel. ESLint had the rule on all along; nothing in this suite ever ran it |
 | `check:design` **552** | Colour, type, shape, one way to name a section, one gap between them | Four styles were naming the same thing, two of them a few hundred pixels apart on one screen |
 | `check:motion` **303** | Every animation is off under reduced motion and nothing is hidden by that; errors go through `FieldError`; the toast's two durations agree | Nineteen screens hand-wrote their error line and most carried no `role`, so a screen reader announced nothing |
 | `check:csv` **201** | Column names, formula defusal, the round trip | An exported product title could run a command on whoever opened the file |
