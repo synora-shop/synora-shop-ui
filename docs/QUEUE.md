@@ -185,14 +185,35 @@ no way to change the words on their own checkout button. So the screen leaves
 the navigation bar now and stays reachable, and is removed after the customizer
 covers it.
 
-### Still needed before any of it
+### The global rules are in hand
 
-**The notes file, `1920*1080:`.** It holds the global rules — including the one
-deciding which screens get an action bar, which is the reason the Themes screen
-has none. It is not on disk and cannot be read from the Notes app here. What
-`docs/PANEL.md` §1 says about the four bars is reconstructed from the guide's
-markings and one sentence, so it is the likeliest thing in that document to be
-wrong.
+`Documents/App > Admin > Global design .pages`, titled `1920*1080:`. Read in
+full and written into `docs/PANEL.md` §1 — sizes, the margin overlap rule, the
+four bars, colour, glows, and the closing line every screen ends with.
+
+**It reverses three things built on 21 September**, and that is the document's
+call rather than a mistake being corrected:
+
+- Sidebar text goes **18px → 20px**, semibold when active.
+- The active plate goes **`#f5f5f5` with `#6666ff` text → `#e9e9ff` with
+  `#5050ea` text**.
+- The **`#86868b` / `#6666ff` outlines go**. Sections are outlined `#2e2e2e` at
+  0.25px; `#86868b` is the secondary *text* colour now; **`#6666ff` leaves the
+  palette entirely** — active is `#5050ea` everywhere.
+
+**Two global pieces that do not exist yet and are needed by every screen:**
+
+- **The action bar.** 40px, no container of its own — filters, sorting and
+  *New* as free-standing buttons, sticky, sliding sideways when there are too
+  many. A screen with nothing to filter, sort or create has none.
+- **Only the main container scrolls.** The header, sidebar, nav bar and action
+  bar all stay put. That is a change to how the whole panel is laid out, not a
+  per-screen detail, so it lands with the navigation work in step 1.
+
+**The header is one flat `#5050ea`.** What makes it look like a gradient is the
+page background's white outer glow (50%, 50px) falling across it — the same
+effect as the header on `synoradigitals.com`. Painting a gradient would look
+close and behave wrong.
 
 ---
 

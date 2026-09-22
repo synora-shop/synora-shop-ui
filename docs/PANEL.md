@@ -18,7 +18,13 @@ resolved.
 | `APP extra/APP.ai` | The panel. The authority on layout and on the greys. |
 | `APP extra/APP themes.ai` | The Themes screen, drawn clean |
 | `Downloads/APP themes-page-guide.jpg` | The same screen with every measurement marked |
-| The notes file (`1920*1080:`) | **Global rules. Not yet in hand — see §6.** |
+| `Documents/App > Admin > Global design .pages` | **The global rules.** Titled `1920*1080:` |
+
+**Which wins.** The Pages document holds the global rules; a design file holds
+one screen. Where they disagree the Pages document is the stronger source —
+but every disagreement is listed in §6 and confirmed rather than quietly
+resolved, because a rule that contradicts a drawing usually means one of them
+moved on and the other has not.
 
 ---
 
@@ -30,75 +36,131 @@ composes at 1920 is a panel most merchants never see correctly.
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│  TOP BAR — full width, indigo                                │  logo · search · bell · account
+│  HEADER CONTAINER  80px          #5050ea, full width         │
+│    logo 30px            ┌ header bar 50px ─ search · bell · me ┐
 ├────────────┬─────────────────────────────────────────────────┤
-│  SIDEBAR   │  NAV BAR            55px                        │  the tabs of this section
+│  SIDEBAR   │  NAV BAR   55px   white, sticky                 │
 │  260px     ├─────────────────────────────────────────────────┤
-│            │  MAIN CONTAINER                                 │
-│  group 1   │   ┌───────────────────────────────────────────┐ │
-│            │   │  SECTION 1                                │ │
-│  ─ 30px ─  │   └───────────────────────────────────────────┘ │
-│  group 2   │              30px                               │
-│  ─ 30px ─  │   ┌───────────────────────────────────────────┐ │
-│  group 3   │   │  SECTION 2                                │ │
-│            │   └───────────────────────────────────────────┘ │
+│  white     │  ACTION BAR 40px  invisible — buttons only      │
+│            ├─────────────────────────────────────────────────┤
+│  group 1   │  MAIN CONTAINER            white, sticky        │
+│  ─ 15px ─  │   ┌── section ── #f5f5f5 ───────────────────┐   │
+│  group 2   │   └─────────────────────────────────────────┘   │
+│  ─ 15px ─  │              30px                               │
+│  group 3   │   ┌── section ── #f5f5f5 ───────────────────┐   │
+│            │   └─────────────────────────────────────────┘   │
 └────────────┴─────────────────────────────────────────────────┘
 ```
 
-### Widths, across the 1920 reference
+### Sizes
 
 | | |
 | --- | --- |
-| Page margin, each side | 30px |
-| Sidebar | **260px** |
-| Sidebar → main container | **30px** |
-| Main container | 1570px *(derived: 1920 − 30 − 260 − 30 − 30)* |
-| Section width | **1517px** |
-| Main container side padding | 26.5px *(derived: (1570 − 1517) ÷ 2)* |
+| Header container | **80px** high |
+| Header bar *(inside it: profile, notifications, search)* | **50px** high |
+| Search bar | **50px** high |
+| Header logo | **30px** high |
+| Sidebar | **260px** wide |
+| Navigation bar | **55px** high |
+| Action bar | **40px** high |
+| Normal text | **20px** |
+| Secondary text | **18px** |
+| Icons | **20 × 20** — the *space*, not the drawing |
 
-### The four bars, and which screens get which
+**Every icon is accommodated in a 20 × 20 box**, whatever its own proportions.
+An icon wider than it is tall still occupies 20 × 20. The box is what keeps a
+column of icons optically aligned; the drawing inside it may be any shape.
 
-This is the distinction the notes file makes, and it is the reason the Themes
-screen has no action bar:
+### Margins, and the overlap rule
+
+Everything sits **30px from the edge of the screen** — the sidebar from the
+left, the nav bar, action buttons and main container from the right.
+
+**Two adjacent margins are one margin, not two.** Where a 30px margin meets a
+30px margin, the gap is 30px. Counting each separately gives 60px and pulls the
+whole layout apart. This is the rule to apply wherever two of these boxes meet.
+
+| | |
+| --- | --- |
+| Screen edge → anything | 30px |
+| Sidebar → main column | 30px *(one margin, not two)* |
+| Between sidebar groups | **15px** |
+| Nav bar | 30px on three sides; **none at the bottom**, because the action buttons below carry 15px |
+| Action bar | 15px all round |
+| Between sections in the main container | **30px** |
+
+### The four bars
 
 | Bar | What it holds | Where it appears |
 | --- | --- | --- |
-| **Top bar** | The product mark, search, notifications, the account | Every screen |
-| **Sidebar** | The ten sections, in three groups | Every screen |
-| **Nav bar** | The tabs *of the section you are in* | Only where a section has more than one screen |
-| **Action bar** | What you can *do* on this screen — add, filter, bulk-select | **Only where a screen has actions.** Themes has none. |
+| **Header** | Logo left; a 50px bar holding search, notifications and the account | Every screen |
+| **Sidebar** | The ten sections in groups, each group its own white container | Every screen |
+| **Navigation bar** | The child sections of whichever sidebar section is selected | Only where a section has more than one screen |
+| **Action bar** | Filters, sorting, and *New* — product, page, category, menu, customer | **Only where the screen needs them** |
 
-A section with one screen draws no nav bar — Data, Discounts, Customers and
-Analytics are already like this. Themes draws a nav bar (it is one of Your App's
-three screens) and no action bar.
+**The action bar has no container.** It is invisible: a row of buttons side by
+side, each button carrying its own container. There is no bar to see, only the
+actions on it.
 
-### The sidebar
+**A screen with nothing to filter, sort or create has no action bar at all.**
+That is why the Themes screen has none — and it is a rule about the screen's
+needs, not a style choice.
 
-Three rounded white containers on the page ground, **30px apart**. Rows are
-**40.5px** high. Ten rows, parents only — no dropdown children (see §4).
+**The nav bar and the action bar are sticky, and so is the main container.**
+Scrolling happens *inside* the main container and nowhere else, so the section
+tabs and the actions are always where you left them. The sidebar gets its own
+scroll only if it ever outgrows the screen, which at ten rows it does not.
 
-| Group | Rows |
+Both bars **slide horizontally** rather than wrap, and only when there are more
+items than fit.
+
+### Colour
+
+| | |
 | --- | --- |
-| 1 | Home · Products · Data · Discounts · Customers · Analytics |
-| 2 | Your App · Preferences |
-| 3 | Settings · Account |
+| Page background | `#f5f5f5` |
+| Header | `#5050ea` |
+| Sidebar containers, nav bar, main container | pure white |
+| A section inside the main container | `#f5f5f5` |
+| Section outline | `#2e2e2e` at **0.25px** |
+| Normal text | pure black |
+| Secondary text | `#86868b` |
+| Text on a dark ground | pure white, secondary `#dddddd` |
+| Placeholder on white | `#babac5` |
+| Placeholder on `#0c0c4a` | `#555581` *(written `#555581c` — see §6)* |
+| **Active text** | `#5050ea`, and DM Sans **Semibold** instead of Regular |
+| **Active plate** | `#e9e9ff` |
 
-The active row is a filled plate with its icon and label in the brand indigo.
+Active state is three things at once — the colour, the weight, and the plate
+behind it. Not one of them alone.
 
-### The top bar
+Special sections may carry a different background; the design file for that
+screen says so when they do.
 
-Full width, above everything including the sidebar. A left-to-right indigo
-gradient. On it: the **synora app** mark at the left; a dark translucent search
-pill reading *Search Products, Customers, Pages*; a bell carrying an unread
-dot; a circular avatar.
+### Light and depth
 
-**This overrules a rule that was in the code.** The bar was deliberately
-colourless, on the reasoning that colour in this panel means *selected* and a
-permanently coloured bar competes with the one thing that needs to say it. The
-design decides otherwise. The reasoning does not evaporate, it becomes a
-constraint: the sidebar's active-row indigo has to stay legible as *selected*
-against a bar of nearly the same hue, which is a contrast problem to solve
-rather than a reason to refuse the design.
+| | |
+| --- | --- |
+| Nav bar, sidebar, main container | Outer glow, pure black, **10% opacity, 10px blur** |
+| A section | Outer glow, pure black, **10% opacity, 5px blur** |
+| The page background itself | Outer glow, pure white, **50% opacity, 50px blur** |
+
+That last one is the one doing the work. **The background overlaps the header**
+— the same relationship the header and background have on
+`synoradigitals.com` — so the white glow of the page casts up onto the `#5050ea`
+header rather than stopping dead against it.
+
+**This is why the header looks like a gradient and is not one.** The header is
+one flat `#5050ea`. What lightens it is the page's own white glow spilling
+upward across it. Painting a gradient instead would look close and behave
+wrong: the light would not move when the content below it does, and it would
+not match `synoradigitals.com`, which is where the effect comes from.
+
+### The last thing on every screen
+
+After the final section, centred: **Learn more about "<this screen>" here** —
+for example *Learn more about "Themes" here*. It goes to the documentation,
+which is also linked in the footer at `app.synoradigitals.com`.
 
 ---
 
@@ -241,19 +303,37 @@ being a tab and becomes part of the Pages screen.
 
 ---
 
-## 6. Open
+## 6. Where the two sources disagreed
 
-**The notes file is not in hand.** It is named `1920*1080:` and holds the
-global rules — including the one that says which screens get an action bar,
-which is why the Themes screen has none. It is not on disk; if it lives in the
-Notes app it cannot be read from here. Everything in §1 above about the four
-bars is reconstructed from the guide's markings and one sentence of
-instruction, so it is the part most likely to be wrong.
+All settled 22 September. Listed rather than silently applied: a rule that
+contradicts a drawing usually means one of them moved on, and knowing which
+saves re-litigating it.
 
-**Two numbers are derived, not drawn:** the main container's width (1570px) and
-its side padding (26.5px). Both fall out of the drawn numbers and the 1920
-canvas, and 26.5px is a suspicious value — it is more likely the intent was
-26px or 27px, or that the section is 1510px inside 30px padding.
+| | Pages document | Design file | Settled |
+| --- | --- | --- | --- |
+| Header | `#5050ea`, one flat colour | Appears to be a gradient | **Neither — it is flat, and the page's white glow falls across it.** Not a gradient at all; see §1 |
+| Gap between sidebar groups | **15px** | Marked `30px GAP`, twice | **15px** |
+| Section width | 30px padding → **1510px** | Marked `1517px` | **1510px.** One margin rule governs every edge; the drawing was measured, not specified |
+| Sidebar text | **20px** normal, semibold when active | — | **20px.** Reverses the 18px agreed on 21 Sep, deliberately |
+| Closing line | `Learn more about "Themes" here` | `Learn more about Themes` | Pages document — with *here* |
+| Active plate | `#e9e9ff` with `#5050ea` text | — | Pages document. Replaces the `#f5f5f5` plate with `#6666ff` text agreed on 21 Sep |
+| Outlines | Sections outlined `#2e2e2e` at 0.25px | — | Pages document. `#86868b` is the **secondary text** colour now, not an outline; `#6666ff` is not in the palette at all — active is `#5050ea` |
+
+**Three things that were built on 21 September are reversed by this.** The
+sidebar's 18px text, its `#f5f5f5`/`#6666ff` active plate, and its
+`#86868b`/`#6666ff` outlines. None of it was wrong when it was built; the
+global document is simply the authority now, and `#6666ff` leaves the palette
+entirely.
+
+### Small things
+
+**`#555581c` has seven hex digits.** Read as `#555581` — the placeholder
+colour on a `#0c0c4a` ground. Worth a look, since it is unreadable either way
+if the intended value was different.
+
+**Section heights are measurements, not constraints.** 750 / 537 / 690 are what
+the drawing measures with the content it happens to show. A shop with eight
+themes grows section 2 rather than clipping it.
 
 **Only one screen is designed.** This document grows a section per screen as
 each arrives.
