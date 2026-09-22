@@ -18,6 +18,32 @@
  */
 import { execFileSync } from "node:child_process";
 
+
+
+type Message = { ruleId: string | null; line: number; column: number; message: string };
+
+/**
+ * What a message with no rule id actually is.
+ *
+ * ESLint reports two different things without one: a file it could not parse,
+ * and a suppression comment that suppresses nothing. Lumping them together as
+ * "(parse)" is how this file first reported four stale eslint-disable lines as
+ * four parse errors — a label that sent me looking for broken syntax that was
+ * never there.
+ *
+ * An unused suppression is not cosmetic. It reads as though a warning exists
+ * to be silenced, so the next person leaves it alone, and it is exactly where
+ * a real problem hides once the rule underneath it starts firing again.
+ */
+const UNUSED_DIRECTIVE = "unused eslint-disable directive";
+function bucket(m: Message): string {
+  if (m.ruleId) return m.ruleId;
+  return m.message.toLowerCase().startsWith("unused eslint-disable")
+    ? UNUSED_DIRECTIVE
+    : "(could not parse)";
+}
+type Result = { filePath: string; messages: Message[] };
+
 /** Rules that produce a visible defect, not a stylistic complaint. */
 const FATAL = new Set([
   // A comment rendered as page text. The reason this file exists.
@@ -29,10 +55,13 @@ const FATAL = new Set([
   // A hook rule that has actually broken a screen here rather than merely
   // offended a linter.
   "react-hooks/rules-of-hooks",
+  // A file the linter cannot read is a file none of the rules above cover, so
+  // it is the one finding that makes every other one unreliable.
+  "(could not parse)",
+  // Suppressions that suppress nothing. Fatal now they are all cleared, so the
+  // list stays at zero rather than growing back one stale directive at a time.
+  UNUSED_DIRECTIVE,
 ]);
-
-type Message = { ruleId: string | null; line: number; column: number; message: string };
-type Result = { filePath: string; messages: Message[] };
 
 let raw = "";
 try {
@@ -60,7 +89,7 @@ const counts = new Map<string, number>();
 
 for (const file of results) {
   for (const m of file.messages) {
-    const rule = m.ruleId ?? "(parse)";
+    const rule = bucket(m);
     counts.set(rule, (counts.get(rule) ?? 0) + 1);
     if (FATAL.has(rule)) {
       fail++;

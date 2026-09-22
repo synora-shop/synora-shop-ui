@@ -17,6 +17,12 @@ export async function AdminTheme() {
   const tokens = await getThemeTokens();
   const css = adminThemeCss(tokens);
   if (!css) return null;
-  // eslint-disable-next-line react/no-danger -- static, server-computed CSS text, not user-facing markup
+  // Safe to inject: this is CSS text this file computed on the server from
+  // validated tokens. Nothing a merchant or a customer typed reaches it, and
+  // it is a <style> element rather than markup.
+  //
+  // Said as a comment rather than an eslint-disable, because react/no-danger
+  // is not an enabled rule in this project — the directive suppressed nothing
+  // and read as though a warning existed to suppress.
   return <style dangerouslySetInnerHTML={{ __html: css }} />;
 }

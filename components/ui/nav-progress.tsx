@@ -69,8 +69,8 @@ export function NavProgress() {
     }, 200);
   }
 
-  // A completed navigation is the one reliable "done" signal.
-  // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: finishes the bar started by the click handler below
+  // A completed navigation is the one reliable "done" signal: this effect ends
+  // the bar that the click handler below started.
   useEffect(() => {
     finish();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- finish() is stable enough for this purpose; only path/search identity matters
@@ -128,7 +128,8 @@ export function NavProgress() {
       document.removeEventListener("click", onClick, true);
       clearTimers();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- finish/clearTimers close over refs only
+    // finish and clearTimers close over refs only, so `start` is the whole of
+    // what this effect depends on.
   }, [start]);
 
   return (

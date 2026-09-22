@@ -161,18 +161,34 @@ that bypasses the image pipeline, a `<head>` fighting the metadata API, hooks
 called conditionally — and it counts everything else so the debt is named
 rather than silently tolerated.
 
-**53 other findings today**, none fatal, and worth paying down in this order:
+**The four "parse errors" were not parse errors.** They were stale
+`eslint-disable` comments, and this file reported them wrongly because ESLint
+gives a message no rule id for two different things — a file it cannot parse,
+and a suppression that suppresses nothing. They are told apart now, and both
+are fatal: a file the linter cannot read is one none of the other rules cover,
+and a suppression that suppresses nothing reads as though a warning exists, so
+the next person leaves it alone. All four are cleared, so the list stays at
+zero rather than growing back one directive at a time.
 
-- **37 × `no-unused-vars`.** Mostly in `scripts/sweep/*`. Noise, but it is the
-  noise that hides a real one.
-- **4 parse errors.** Worth looking at first — a file the linter cannot read is
-  a file none of these rules covers.
-- **4 × `react-hooks/refs`, 2 × `set-state-in-effect`, 1 × `purity`.** The
-  React compiler's rules. Each is a real re-render hazard; none has been shown
-  to bite yet.
+Two of them named `react/no-danger`, which is not an enabled rule in this
+project — they suppressed nothing at all. The justification they carried was
+worth keeping and is now a plain comment: `dangerouslySetInnerHTML` should
+never appear without one.
+
+**49 other findings**, none fatal, worth paying down in this order:
+
+- **4 × `react-hooks/refs`, 2 × `set-state-in-effect`, 1 × `purity`,
+  1 × `use-memo`.** The React compiler's rules, and the only ones here that
+  describe a real hazard: `image-comparison.tsx:50` reads a ref during render,
+  `admin-search.tsx:36` and `countdown.tsx:57` set state synchronously in an
+  effect, and `order-confirmation` calls `Date.now()` during render — which on
+  a server-rendered page is a value that can differ between server and client.
 - **3 × `no-html-link-for-pages`.** All three are CSV export links, where `<a>`
-  is deliberate — `<Link>` would prefetch a download. They need a disable
-  comment carrying that reason, not a fix.
+  is deliberate: `<Link>` would prefetch a download. They need a disable
+  comment carrying that reason, not a fix — and now that unused directives are
+  fatal, a wrong one cannot be left lying about.
+- **37 × `no-unused-vars`.** Mostly `scripts/sweep/*`. Noise, but it is the
+  noise a real one hides in.
 
 ---
 
