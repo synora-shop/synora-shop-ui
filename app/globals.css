@@ -1047,19 +1047,28 @@ body.in-preview section:has(> .section-body:empty) .section-body::after {
  * this one — the merchant has just changed page and has to find the thing
  * after their eyes have settled. It ends on its own; nothing to dismiss.
  */
+/* The halo takes the brand from the token, not from a literal.
+ *
+ * It was rgb(102 102 255) written out — #6666ff — while the ring drawn over it
+ * by .attention::after read var(--color-brand-500). That was invisible while
+ * the two were the same colour and became a #6666ff halo around a #5050ea edge
+ * the moment the panel's brand moved, which is two indigos one step apart: the
+ * exact distinction nobody can make that the single brand colour exists to
+ * avoid. Taking both from the token also means the ring is correct in any
+ * scope it is used in, including a storefront with its own brand. */
 @keyframes shp-attention {
   /* Full strength immediately: the merchant is arriving and looking now. */
   0%,
   86% {
     box-shadow:
-      0 0 0 3px rgb(102 102 255 / 0.6),
-      0 0 0 9px rgb(102 102 255 / 0.14);
+      0 0 0 3px color-mix(in srgb, var(--color-brand-500) 60%, transparent),
+      0 0 0 9px color-mix(in srgb, var(--color-brand-500) 14%, transparent);
   }
   /* Out gently at the end, so the screen settles rather than snapping. */
   100% {
     box-shadow:
-      0 0 0 3px rgb(102 102 255 / 0),
-      0 0 0 9px rgb(102 102 255 / 0);
+      0 0 0 3px transparent,
+      0 0 0 9px transparent;
   }
 }
 
@@ -1145,8 +1154,8 @@ body.in-preview section:has(> .section-body:empty) .section-body::after {
      rather than animated, and only the sweep goes. */
   .attention {
     box-shadow:
-      0 0 0 3px rgb(102 102 255 / 0.6),
-      0 0 0 9px rgb(102 102 255 / 0.14);
+      0 0 0 3px color-mix(in srgb, var(--color-brand-500) 60%, transparent),
+      0 0 0 9px color-mix(in srgb, var(--color-brand-500) 14%, transparent);
   }
 
   .attention::after {

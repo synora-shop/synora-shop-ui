@@ -215,6 +215,43 @@ check(
   })(),
   "active is #5050ea everywhere now — see docs/PANEL.md §6"
 );
+/* The same colour written the other way.
+ *
+ * The first version of this guard looked for the hex and passed while the
+ * attention ring's halo was rgb(102 102 255) — spelled out in a keyframe,
+ * outside .admin-shell, so neither half of the search reached it. It shipped,
+ * and drew a #6666ff halo around a #5050ea border.
+ *
+ * Anything that wants the brand takes it from the token. A literal is a value
+ * that cannot follow the scope it is used in, which is what went wrong. */
+check(
+  "and is not spelled out as rgb either",
+  (() => {
+    const clean = stripComments(css);
+    // Inside .admin-shell, and inside any @keyframes or reduced-motion block.
+    //
+    // Those last two are where it actually went wrong: a keyframe has no
+    // scope, so a literal in one is the same colour in the panel, the
+    // storefront and the marketing site at once — which is how a #6666ff halo
+    // ended up around a #5050ea border, and how the reduced-motion ring, the
+    // only indicator some people get, ended up the wrong indigo.
+    //
+    // .sd-mark is left alone deliberately: it is the Synora Digitals mark in
+    // the marketing footer, its colour was asked for by name, and it is not
+    // the panel.
+    // The rule block itself, not everything up to the next scope in the file.
+    // Slicing by file position put .sd-mark — which sits between the two —
+    // inside "the panel", and the guard failed on a colour that is not the
+    // panel's. Where a rule sits in a file is not what scopes it.
+    const shell = (clean.match(/\.admin-shell\s*\{[\s\S]*?\n\}/) ?? [""])[0];
+    const blocks = clean.match(/@(?:keyframes|media)[^{]*\{[\s\S]*?\n\}/g) ?? [];
+    return (
+      !/rgb\(\s*102\s+102\s+255/.test(shell) &&
+      blocks.every((b) => !/rgb\(\s*102\s+102\s+255/.test(b))
+    );
+  })(),
+  "the brand comes from --color-brand-500 so it follows whatever scope it is in"
+);
 
 /* The header is flat. What lightens it in the drawing is the page's own white
    glow falling across it, which is a different thing that behaves differently:
