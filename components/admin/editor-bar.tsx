@@ -76,7 +76,16 @@ export function EditorBar() {
   return (
     <>
       {dialog}
-      <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-panel p-2 shadow-panel">
+      {/* The action bar has no container, and that is the specification rather
+          than a saving. It was a white rounded bar with a shadow, which on a
+          screen with one Save button drew a whole bar to hold it.
+          
+          40px, buttons side by side, each carrying its own container. Sliding
+          rather than wrapping for the same reason the navigation bar does: a
+          bar that wrapped would be two rows tall on the screens with the most
+          actions and one row everywhere else, and the content below it would
+          start at a different height depending on where you were. */}
+      <div className="scrollbar-none flex h-10 flex-shrink-0 items-center gap-2.5 overflow-x-auto">
         {dirty ? (
           <p className="flex items-center gap-1.5 px-1 text-xs font-medium text-amber">
             <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0" aria-hidden />

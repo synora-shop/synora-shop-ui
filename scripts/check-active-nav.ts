@@ -214,6 +214,18 @@ check(
   );
 }
 
+// The action bar is invisible: no container of its own, just the buttons.
+{
+  const bar = readFileSync(join(process.cwd(), "components/admin/editor-bar.tsx"), "utf8");
+  check(
+    "the action bar draws no container",
+    !/rounded-2xl bg-panel[^"]*shadow-panel/.test(bar),
+    "a white bar drawn to hold one Save button is a bar nobody asked for"
+  );
+  check("it is 40px", /h-10/.test(bar));
+  check("and slides rather than wrapping", /scrollbar-none/.test(bar) && /overflow-x-auto/.test(bar));
+}
+
 // Only the main container scrolls. Everything else is put somewhere and stays
 // there — which is the point of the bars being fixed heights.
 {
