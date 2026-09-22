@@ -78,7 +78,7 @@ export function AnalyticsBar({
           href={href("/admin/analytics/export", searchParams, {})}
           className="flex h-10 items-center gap-1.5 rounded-pill border border-control-line bg-control px-3 text-xs text-control-ink transition-colors hover:text-ink"
         >
-          <ExternalLinkIcon className="h-3 w-3" />
+          <ExternalLinkIcon className="h-[var(--icon-box)] w-[var(--icon-box)]" />
           Export CSV
         </a>
       </div>

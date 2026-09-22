@@ -95,7 +95,7 @@ export function AdminSidebar() {
             onClick={() => setOpen(false)}
             className="rounded-full p-1.5 text-control-ink transition-colors hover:bg-control"
           >
-            <X className="h-5 w-5" />
+            <X className="h-[var(--icon-box)] w-[var(--icon-box)]" />
           </button>
         </div>
 

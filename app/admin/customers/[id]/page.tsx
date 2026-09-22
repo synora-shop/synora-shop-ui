@@ -36,7 +36,7 @@ export default async function CustomerPage(props: PageProps<"/admin/customers/[i
         href="/admin/customers"
         className="inline-flex items-center gap-1.5 text-sm text-ink-soft transition-colors hover:text-ink"
       >
-        <ArrowLeft className="h-4 w-4" />
+        <ArrowLeft className="h-[var(--icon-box)] w-[var(--icon-box)]" />
         All customers
       </Link>
 
@@ -64,7 +64,7 @@ export default async function CustomerPage(props: PageProps<"/admin/customers/[i
             <GroupLabel>Contact</GroupLabel>
             <dl className="mt-3 space-y-2 text-sm">
               <div className="flex items-start gap-2">
-                <Mail className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-ink-faint" />
+                <Mail className="mt-0.5 h-[var(--icon-box)] w-[var(--icon-box)].5 flex-shrink-0 text-ink-faint" />
                 <dd className="min-w-0 break-words">
                   {/* Mailing a customer is the most common next action after
                       looking one up, so it is a link rather than text to copy. */}
@@ -75,7 +75,7 @@ export default async function CustomerPage(props: PageProps<"/admin/customers/[i
               </div>
               {customer.phone && (
                 <div className="flex items-start gap-2">
-                  <Phone className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-ink-faint" />
+                  <Phone className="mt-0.5 h-[var(--icon-box)] w-[var(--icon-box)].5 flex-shrink-0 text-ink-faint" />
                   <dd>
                     <a href={`tel:${customer.phone}`} className="text-brand-600 hover:underline">
                       {customer.phone}
@@ -95,7 +95,7 @@ export default async function CustomerPage(props: PageProps<"/admin/customers/[i
               <ul className="mt-3 space-y-3 text-sm">
                 {customer.addresses.map((address) => (
                   <li key={address.id} className="flex items-start gap-2">
-                    <MapPin className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-ink-faint" />
+                    <MapPin className="mt-0.5 h-[var(--icon-box)] w-[var(--icon-box)].5 flex-shrink-0 text-ink-faint" />
                     <span className="leading-snug text-ink-soft">
                       {address.line1}
                       {address.line2 ? `, ${address.line2}` : ""}

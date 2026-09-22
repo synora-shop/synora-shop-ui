@@ -38,7 +38,7 @@ export function SortMenu({ options, current }: { options: SortChoice[]; current:
             : "border-control-line bg-control text-control-ink hover:text-ink"
         )}
       >
-        <ArrowUpDown className="h-3.5 w-3.5 flex-shrink-0" aria-hidden />
+        <ArrowUpDown className="h-[var(--icon-box)] w-[var(--icon-box)].5 flex-shrink-0" aria-hidden />
         <span className="hidden whitespace-nowrap sm:inline">{chosen.label}</span>
       </button>
 

@@ -151,7 +151,7 @@ export function StaffManager({
               </p>
             </div>
             <Button variant="primary" onClick={() => setInviting(true)}>
-              <UserPlus className="h-4 w-4" />
+              <UserPlus className="h-[var(--icon-box)] w-[var(--icon-box)]" />
               Invite
             </Button>
           </div>
@@ -176,7 +176,7 @@ export function StaffManager({
                   <p className="flex flex-wrap items-center gap-2 text-sm font-medium text-ink">
                     <span className="truncate">{member.name || member.email}</span>
                     <Badge tone={ROLE_TONE[member.role]}>
-                      {member.role === "OWNER" && <Crown className="h-3 w-3" />}
+                      {member.role === "OWNER" && <Crown className="h-[var(--icon-box)] w-[var(--icon-box)]" />}
                       {member.role.toLowerCase()}
                     </Badge>
                     {isMe && <Badge>you</Badge>}
@@ -224,7 +224,7 @@ export function StaffManager({
                         if (ok) run(() => transferOwnership(member.membershipId));
                       }}
                     >
-                      <Crown className="h-3.5 w-3.5" />
+                      <Crown className="h-[var(--icon-box)] w-[var(--icon-box)].5" />
                       Make owner
                     </Button>
                   )}
@@ -246,7 +246,7 @@ export function StaffManager({
                         if (ok) run(() => removeStaff(member.membershipId));
                       }}
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <Trash2 className="h-[var(--icon-box)] w-[var(--icon-box)].5" />
                     </Button>
                   )}
                 </div>
@@ -263,7 +263,7 @@ export function StaffManager({
           <Card className="divide-y divide-border">
             {invites.map((invite) => (
               <div key={invite.id} className="flex flex-wrap items-center gap-3 p-4">
-                <Mail className="h-4 w-4 flex-shrink-0 text-ink-faint" />
+                <Mail className="h-[var(--icon-box)] w-[var(--icon-box)] flex-shrink-0 text-ink-faint" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm text-ink">{invite.email}</p>
                   <p className="mt-0.5 text-xs text-ink-soft">
@@ -289,7 +289,7 @@ export function StaffManager({
                     if (ok) run(() => revokeInvite(invite.id));
                   }}
                 >
-                  <X className="h-3.5 w-3.5" />
+                  <X className="h-[var(--icon-box)] w-[var(--icon-box)].5" />
                   Withdraw
                 </Button>
               </div>

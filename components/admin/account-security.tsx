@@ -92,7 +92,7 @@ export function AccountSecurity({
           {error && <FormMessage tone="error">{error}</FormMessage>}
 
           <Button type="submit" variant="primary" disabled={pending}>
-            <ShieldCheck className="h-4 w-4" />
+            <ShieldCheck className="h-[var(--icon-box)] w-[var(--icon-box)]" />
             {pending ? "Changing…" : "Change password"}
           </Button>
         </form>
@@ -134,7 +134,7 @@ export function AccountSecurity({
             });
           }}
         >
-          <LogOut className="h-4 w-4" />
+          <LogOut className="h-[var(--icon-box)] w-[var(--icon-box)]" />
           Sign out everywhere
         </Button>
       </Fieldset>

@@ -69,7 +69,7 @@ export function StoreStatusBar({
         className="inline-flex flex-shrink-0 items-center gap-1 text-xs font-medium text-ink-soft underline-offset-2 transition-colors hover:text-ink hover:underline"
       >
         View
-        <ExternalLink className="h-3 w-3 opacity-60" />
+        <ExternalLink className="h-[var(--icon-box)] w-[var(--icon-box)] opacity-60" />
       </a>
       {!live && (
         <Link

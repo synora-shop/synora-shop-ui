@@ -138,11 +138,11 @@ export default async function AdminProductsPage(props: PageProps<"/admin/product
             href="/admin/products/export"
             className={buttonClass("secondary", "sm")}
           >
-            <Download className="h-4 w-4" />
+            <Download className="h-[var(--icon-box)] w-[var(--icon-box)]" />
             Export CSV
           </a>
           <ButtonLink href="/admin/products/new" variant="primary" size="sm">
-            <Plus className="h-4 w-4" />
+            <Plus className="h-[var(--icon-box)] w-[var(--icon-box)]" />
             Add product
           </ButtonLink>
         </div>

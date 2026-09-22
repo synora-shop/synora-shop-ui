@@ -143,7 +143,7 @@ export function MenuManager({
               onClick={() => setCreating(true)}
               className={buttonClass("primary", "sm")}
             >
-              <Plus className="h-3.5 w-3.5" />
+              <Plus className="h-[var(--icon-box)] w-[var(--icon-box)].5" />
               New menu
             </button>
           )}
@@ -257,9 +257,9 @@ function MenuCard({
           className="flex min-w-0 flex-1 items-center gap-2 text-left"
         >
           {open ? (
-            <ChevronDown className="h-4 w-4 flex-shrink-0 text-ink-soft" />
+            <ChevronDown className="h-[var(--icon-box)] w-[var(--icon-box)] flex-shrink-0 text-ink-soft" />
           ) : (
-            <ChevronRight className="h-4 w-4 flex-shrink-0 text-ink-soft" />
+            <ChevronRight className="h-[var(--icon-box)] w-[var(--icon-box)] flex-shrink-0 text-ink-soft" />
           )}
           {editing ? (
             <span className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
@@ -288,7 +288,7 @@ function MenuCard({
                     saving && "opacity-50"
                   )}
                 >
-                  <Check className="h-4 w-4" />
+                  <Check className="h-[var(--icon-box)] w-[var(--icon-box)]" />
                 </span>
               )}
               <span
@@ -302,7 +302,7 @@ function MenuCard({
                 aria-label="Cancel"
                 className="rounded p-1 text-ink-soft transition-colors hover:bg-subtle"
               >
-                <X className="h-4 w-4" />
+                <X className="h-[var(--icon-box)] w-[var(--icon-box)]" />
               </span>
             </span>
           ) : (
@@ -336,7 +336,7 @@ function MenuCard({
           aria-label={`Delete ${menu.name}`}
           className="rounded p-1.5 text-ink-soft transition-colors hover:bg-rose hover:text-white active:bg-rose"
         >
-          <Trash2 className="h-4 w-4" />
+          <Trash2 className="h-[var(--icon-box)] w-[var(--icon-box)]" />
         </button>
       </div>
 

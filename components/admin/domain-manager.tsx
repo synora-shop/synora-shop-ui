@@ -226,7 +226,7 @@ export function DomainManager({
               </p>
             </div>
             <Button variant="primary" onClick={() => setAdding(true)}>
-              <Plus className="h-4 w-4" />
+              <Plus className="h-[var(--icon-box)] w-[var(--icon-box)]" />
               Add domain
             </Button>
           </div>
@@ -257,7 +257,7 @@ export function DomainManager({
                   the list had their controls in the same place, and the one
                   that mattered was wherever the wrapping put it. */}
               <div className="flex items-start gap-3">
-                <Globe className="mt-1 h-4 w-4 flex-shrink-0 text-ink-faint" />
+                <Globe className="mt-1 h-[var(--icon-box)] w-[var(--icon-box)] flex-shrink-0 text-ink-faint" />
                 <div className="min-w-0 flex-1">
                   <p className="flex flex-wrap items-center gap-2">
                     <a
@@ -274,7 +274,7 @@ export function DomainManager({
                         so it reads as a sentence below instead of a chip. */}
                     {domain.isPrimary && (
                       <Badge tone="brand">
-                        <Star className="h-3 w-3" />
+                        <Star className="h-[var(--icon-box)] w-[var(--icon-box)]" />
                         main address
                       </Badge>
                     )}
@@ -321,7 +321,7 @@ export function DomainManager({
                       if (ok) run(() => disconnectDomain(domain.id));
                     }}
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <Trash2 className="h-[var(--icon-box)] w-[var(--icon-box)].5" />
                   </Button>
                 )}
               </div>
@@ -389,7 +389,7 @@ export function DomainManager({
                         if (ok) run(() => revertToAddress(domain.id));
                       }}
                     >
-                      <RotateCcw className="h-3.5 w-3.5" />
+                      <RotateCcw className="h-[var(--icon-box)] w-[var(--icon-box)].5" />
                       Use this again
                     </Button>
                   )}
@@ -408,7 +408,7 @@ export function DomainManager({
                         if (ok) run(() => makePrimary(domain.id));
                       }}
                     >
-                      <Star className="h-3.5 w-3.5" />
+                      <Star className="h-[var(--icon-box)] w-[var(--icon-box)].5" />
                       Make main
                     </Button>
                   )}
@@ -454,7 +454,7 @@ export function DomainManager({
                                 aria-label={`Copy the ${field.label.toLowerCase()} for the ${record.type} record`}
                                 className="flex-shrink-0 rounded-[var(--radius-control)] p-1.5 text-ink-faint transition-colors hover:bg-control hover:text-ink"
                               >
-                                <Copy className="h-3.5 w-3.5" />
+                                <Copy className="h-[var(--icon-box)] w-[var(--icon-box)].5" />
                               </button>
                             </div>
                           ))}

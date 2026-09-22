@@ -96,7 +96,7 @@ function Row({
               // eslint-disable-next-line @next/next/no-img-element -- arbitrary/pasted URLs, skip the image optimizer
               <img src={category.details.image} alt="" className="h-full w-full object-cover" />
             ) : (
-              <ImagePlus className="mx-auto h-4 w-4 text-ink-soft" />
+              <ImagePlus className="mx-auto h-[var(--icon-box)] w-[var(--icon-box)] text-ink-soft" />
             )}
           </button>
           <div className="min-w-0 flex-1">
@@ -123,7 +123,7 @@ function Row({
                   aria-label="Save name"
                   className="rounded p-1 text-brand-600 transition-colors hover:bg-brand-50 active:bg-brand-100 disabled:opacity-50"
                 >
-                  <Check className="h-4 w-4" />
+                  <Check className="h-[var(--icon-box)] w-[var(--icon-box)]" />
                 </button>
               )}
               <button
@@ -135,7 +135,7 @@ function Row({
                 aria-label="Cancel"
                 className="rounded p-1 text-ink-soft transition-colors hover:bg-subtle active:bg-subtle"
               >
-                <X className="h-4 w-4" />
+                <X className="h-[var(--icon-box)] w-[var(--icon-box)]" />
               </button>
             </div>
           ) : (

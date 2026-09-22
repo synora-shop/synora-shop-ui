@@ -103,7 +103,7 @@ export function MetafieldsEditor({
           description="Add one to carry something the product model has no place for. A care label, a size chart, a badge. Your theme can then read it."
           action={
             <Button variant="primary" size="sm" onClick={() => setAdding(true)}>
-              <Plus className="h-3.5 w-3.5" /> Add a field
+              <Plus className="h-[var(--icon-box)] w-[var(--icon-box)].5" /> Add a field
             </Button>
           }
         />
@@ -133,7 +133,7 @@ export function MetafieldsEditor({
                 aria-label={`Remove ${row.namespace}.${row.key}`}
                 className="rounded-[var(--radius-control)] p-1.5 text-ink-soft transition-colors hover:bg-rose-bg hover:text-rose disabled:opacity-50"
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="h-[var(--icon-box)] w-[var(--icon-box)]" />
               </button>
             </div>
           ))}
@@ -206,7 +206,7 @@ export function MetafieldsEditor({
 
           <div className="flex gap-2">
             <Button variant="primary" size="sm" onClick={save} disabled={busy}>
-              {busy && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+              {busy && <Loader2 className="h-[var(--icon-box)] w-[var(--icon-box)].5 animate-spin" />}
               Save field
             </Button>
             <Button size="sm" onClick={reset} disabled={busy}>
@@ -217,7 +217,7 @@ export function MetafieldsEditor({
       ) : (
         rows.length > 0 && (
           <Button size="sm" onClick={() => setAdding(true)}>
-            <Plus className="h-3.5 w-3.5" /> Add a field
+            <Plus className="h-[var(--icon-box)] w-[var(--icon-box)].5" /> Add a field
           </Button>
         )
       )}

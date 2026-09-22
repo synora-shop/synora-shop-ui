@@ -44,7 +44,7 @@ export function BusinessTypeForm({
           offered here and refused there is a bug the merchant finds. */}
       {!gate.allowed && (
         <p className="flex items-start gap-2 rounded-[var(--radius-container)] border border-amber/30 bg-amber-bg px-3.5 py-3 text-sm leading-snug text-ink">
-          <PauseCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber" aria-hidden />
+          <PauseCircle className="mt-0.5 h-[var(--icon-box)] w-[var(--icon-box)] flex-shrink-0 text-amber" aria-hidden />
           {gate.reason}
           {gate.canPause && (
             <>

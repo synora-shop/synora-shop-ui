@@ -97,7 +97,7 @@ export function AdminSearch({ open, onClose }: { open: boolean; onClose: () => v
         className="relative w-full max-w-xl overflow-hidden rounded-[var(--radius-container)] border border-control-line bg-control shadow-lg"
       >
         <div className="flex items-center gap-2.5 border-b border-control-line px-3.5">
-          <Search className="h-4 w-4 flex-shrink-0 text-ink-faint" />
+          <Search className="h-[var(--icon-box)] w-[var(--icon-box)] flex-shrink-0 text-ink-faint" />
           <input
             ref={inputRef}
             type="text"
@@ -150,7 +150,7 @@ export function AdminSearch({ open, onClose }: { open: boolean; onClose: () => v
                     </span>
                   </span>
                   {i === active && (
-                    <CornerDownLeft className="h-3.5 w-3.5 flex-shrink-0 text-ink-faint" />
+                    <CornerDownLeft className="h-[var(--icon-box)] w-[var(--icon-box)].5 flex-shrink-0 text-ink-faint" />
                   )}
                 </button>
               </li>

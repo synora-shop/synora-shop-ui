@@ -47,7 +47,7 @@ export function BlockedCountriesField({
   return (
     <div className="min-w-0">
           <div className="relative">
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-faint" aria-hidden />
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-[var(--icon-box)] w-[var(--icon-box)].5 -translate-y-1/2 text-ink-faint" aria-hidden />
             <input
               type="search"
               value={query}
@@ -91,7 +91,7 @@ export function BlockedCountriesField({
                     aria-label={`Stop blocking ${c.label}`}
                   >
                     {c.label}
-                    <X className="h-3 w-3" aria-hidden />
+                    <X className="h-[var(--icon-box)] w-[var(--icon-box)]" aria-hidden />
                   </button>
                 </li>
               ))}

@@ -144,7 +144,7 @@ export function ProductList({
             : "border-border bg-control text-transparent shadow-sm hover:border-ink-faint"
         )}
       >
-        <Check className="h-3.5 w-3.5" strokeWidth={3} />
+        <Check className="h-[var(--icon-box)] w-[var(--icon-box)].5" strokeWidth={3} />
       </button>
     );
   }
@@ -152,15 +152,15 @@ export function ProductList({
   const bulkBar = selected.length > 0 && (
     <BulkBar count={selected.length} noun="product" onClear={() => setPicked(new Set())}>
       <Button size="sm" variant="secondary" disabled={running} onClick={() => runBulk("publish", "published")}>
-        <Eye className="h-3.5 w-3.5" />
+        <Eye className="h-[var(--icon-box)] w-[var(--icon-box)].5" />
         Publish
       </Button>
       <Button size="sm" variant="secondary" disabled={running} onClick={() => runBulk("unpublish", "moved to drafts")}>
-        <EyeOff className="h-3.5 w-3.5" />
+        <EyeOff className="h-[var(--icon-box)] w-[var(--icon-box)].5" />
         Unpublish
       </Button>
       <Button size="sm" variant="danger" disabled={running} onClick={() => runBulk("bin", "moved to the Bin")}>
-        <Trash2 className="h-3.5 w-3.5" />
+        <Trash2 className="h-[var(--icon-box)] w-[var(--icon-box)].5" />
         Bin
       </Button>
     </BulkBar>
@@ -265,7 +265,7 @@ export function ProductList({
                   aria-label={`Move ${p.title} to the Bin`}
                   className="flex w-full items-center justify-center gap-1.5 border-t border-border py-1.5 text-[11px] text-ink-soft transition-colors hover:bg-rose-bg hover:text-rose"
                 >
-                  <Trash2 className="h-3 w-3" />
+                  <Trash2 className="h-[var(--icon-box)] w-[var(--icon-box)]" />
                   Bin
                 </button>
               </li>

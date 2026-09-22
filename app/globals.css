@@ -233,7 +233,12 @@
   --radius-container: max(16px, calc(16 * var(--u)));
   --radius-inner: max(6px, calc(6 * var(--u)));
   --radius-control: max(8px, calc(8 * var(--u)));
-  --radius-page: max(40px, calc(40 * var(--u)));
+  /* 24.4, read off the artboard — the background's top corner, where it tucks
+     under the header. I had it at 40 by eye. */
+  --radius-page: max(24px, calc(24.4 * var(--u)));
+  /* The avatar is a rounded square, not a circle: 14.65 on a 39.4 box, which
+     is 37% and therefore scale-proof as a percentage. */
+  --radius-avatar: 37.15%;
 
   --text-normal: calc(20 * var(--u));
   --text-secondary: calc(18 * var(--u));
@@ -247,6 +252,15 @@
      A painted gradient would look close and behave wrong: the light would not
      move when the content beneath it does. */
   --color-header: #5050ea;
+  /* The search field on the header, and the avatar. Both read off the
+     artboard: #0c0c4a is Synora's night, and #aa4cc1 is the avatar's own. */
+  --color-header-field: #0c0c4a;
+  --color-avatar: #aa4cc1;
+  /* The mark on the bell when something is waiting. Green, and the drawing's
+     own — it is a status, not a state of the glyph, which is why it is the one
+     thing in an icon that does not take currentColor. Named here so it is
+     still a single source rather than a hex inside a path. */
+  --color-unread: #39b54a;
   /* A section inside the main container: the page's own tone, boxed. Same
      value as the shell deliberately — a section is not raised off the
      container, it is a region marked out on it. */
@@ -463,6 +477,9 @@ a:hover .sd-sheen { animation-duration: 1.6s; }
   --color-control-soft: var(--color-control-soft);
   --color-control-line: var(--color-control-line);
   --color-header: var(--color-header);
+  --color-header-field: var(--color-header-field);
+  --color-avatar: var(--color-avatar);
+  --color-unread: var(--color-unread);
   --color-section: var(--color-section);
   --color-section-line: var(--color-section-line);
   --color-selected: var(--color-selected);
@@ -474,6 +491,7 @@ a:hover .sd-sheen { animation-duration: 1.6s; }
   --radius-inner: var(--radius-inner);
   --radius-control: var(--radius-control);
   --radius-page: var(--radius-page);
+  --radius-avatar: var(--radius-avatar);
   --shadow-card: var(--shadow-card);
   --shadow-container: var(--shadow-container);
   --shadow-section: var(--shadow-section);

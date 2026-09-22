@@ -57,8 +57,8 @@ export function FormSaveButton({
         className
       )}
     >
-      {pending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-      {saved && !pending && <Check className="h-3.5 w-3.5" />}
+      {pending && <Loader2 className="h-[var(--icon-box)] w-[var(--icon-box)].5 animate-spin" />}
+      {saved && !pending && <Check className="h-[var(--icon-box)] w-[var(--icon-box)].5" />}
       {pending ? savingLabel : saved ? savedLabel : idleLabel}
     </button>
   );

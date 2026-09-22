@@ -45,7 +45,7 @@ export function PaginationBar({
         disabled={page === 1}
         label="Previous page"
       >
-        <ChevronLeft className="h-4 w-4" />
+        <ChevronLeft className="h-[var(--icon-box)] w-[var(--icon-box)]" />
       </Step>
 
       {pageWindow(page, pages).map((n, i) =>
@@ -76,7 +76,7 @@ export function PaginationBar({
         disabled={page === pages}
         label="Next page"
       >
-        <ChevronRight className="h-4 w-4" />
+        <ChevronRight className="h-[var(--icon-box)] w-[var(--icon-box)]" />
       </Step>
     </nav>
   );

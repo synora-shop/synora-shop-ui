@@ -62,7 +62,7 @@ export function ViewToggle({
               : "text-control-ink hover:bg-panel hover:text-ink"
           )}
         >
-          <Icon className="h-4 w-4" />
+          <Icon className="h-[var(--icon-box)] w-[var(--icon-box)]" />
         </Link>
       ))}
     </div>

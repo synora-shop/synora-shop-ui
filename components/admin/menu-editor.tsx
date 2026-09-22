@@ -237,7 +237,7 @@ function Row({
           aria-label={item.isVisible ? "Hide item" : "Show item"}
           className="rounded p-1.5 text-ink-soft transition-colors hover:bg-subtle hover:text-ink active:bg-brand-100 active:text-ink"
         >
-          {item.isVisible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+          {item.isVisible ? <Eye className="h-[var(--icon-box)] w-[var(--icon-box)]" /> : <EyeOff className="h-[var(--icon-box)] w-[var(--icon-box)]" />}
         </button>
       </div>
     </SwipeRow>
@@ -366,7 +366,7 @@ export function MenuEditor({
           disabled={adding}
           className="flex items-center gap-1 rounded-full border border-brand-500 px-3 py-1.5 text-xs font-medium text-brand-600 transition-colors hover:bg-brand-50 active:bg-brand-100 disabled:opacity-50"
         >
-          <Plus className="h-3.5 w-3.5" /> Add
+          <Plus className="h-[var(--icon-box)] w-[var(--icon-box)].5" /> Add
         </button>
       </div>
     </div>

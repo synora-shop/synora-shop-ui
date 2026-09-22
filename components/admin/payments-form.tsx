@@ -125,7 +125,7 @@ export function PaymentsForm({ initial }: { initial: PaymentsState }) {
                     />
                     {missing && (
                       <p className="notice-in mt-1.5 flex items-start gap-1.5 text-xs leading-snug font-medium text-amber">
-                        <AlertTriangle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
+                        <AlertTriangle className="mt-0.5 h-[var(--icon-box)] w-[var(--icon-box)].5 flex-shrink-0" />
                         This is on, but with nothing here a customer who picks it
                         would not know where to send the money — so it is not
                         offered until you fill it in.

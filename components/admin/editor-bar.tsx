@@ -88,7 +88,7 @@ export function EditorBar() {
       <div className="scrollbar-none flex h-[var(--actionbar-h)] flex-shrink-0 items-center gap-2.5 overflow-x-auto">
         {dirty ? (
           <p className="flex items-center gap-1.5 px-1 text-xs font-medium text-amber">
-            <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0" aria-hidden />
+            <AlertTriangle className="h-[var(--icon-box)] w-[var(--icon-box)].5 flex-shrink-0" aria-hidden />
             Unsaved changes
           </p>
         ) : (

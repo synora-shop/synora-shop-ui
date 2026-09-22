@@ -129,14 +129,14 @@ export function ImageDropzone({
               )}
 
               <div className="absolute inset-x-0 top-1 flex items-center justify-between px-1">
-                <GripVertical className="h-4 w-4 text-white drop-shadow" />
+                <GripVertical className="h-[var(--icon-box)] w-[var(--icon-box)] text-white drop-shadow" />
                 <button
                   type="button"
                   onClick={() => removeImage(i)}
                   aria-label="Remove image"
                   className="rounded-full bg-black/60 p-1 text-white transition-colors hover:bg-rose active:bg-rose"
                 >
-                  <X className="h-3.5 w-3.5" />
+                  <X className="h-[var(--icon-box)] w-[var(--icon-box)].5" />
                 </button>
               </div>
 
@@ -182,7 +182,7 @@ export function ImageDropzone({
           isDraggingOver ? "border-brand-500 bg-brand-50" : "border-border hover:bg-subtle active:bg-subtle"
         }`}
       >
-        <UploadCloud className="h-5 w-5 text-brand-500" />
+        <UploadCloud className="h-[var(--icon-box)] w-[var(--icon-box)] text-brand-500" />
         {uploading > 0 ? (
           <span>Uploading {uploading} image{uploading > 1 ? "s" : ""}…</span>
         ) : (

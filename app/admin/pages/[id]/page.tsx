@@ -29,7 +29,7 @@ export default async function EditPagePage(props: PageProps<"/admin/pages/[id]">
         className="mb-2.5 inline-flex items-center gap-1.5 text-xs text-ink-soft underline-offset-2 hover:text-ink hover:underline"
       >
         <span className="font-mono">{pageAddress(page.slug, page.systemKey)}</span>
-        <ExternalLinkIcon className="h-3 w-3" />
+        <ExternalLinkIcon className="h-[var(--icon-box)] w-[var(--icon-box)]" />
       </a>
 
       <PageSettingsForm page={page} />

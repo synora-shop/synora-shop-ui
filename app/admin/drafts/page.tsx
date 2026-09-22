@@ -96,7 +96,7 @@ export default async function AdminDraftsPage(props: PageProps<"/admin/drafts">)
         description="Every product you have started is published. Anything you save as a draft appears here until you put it out."
         action={
           <ButtonLink href="/admin/products/new" variant="primary" size="sm">
-            <Plus className="h-4 w-4" />
+            <Plus className="h-[var(--icon-box)] w-[var(--icon-box)]" />
             Add a product
           </ButtonLink>
         }
@@ -128,7 +128,7 @@ export default async function AdminDraftsPage(props: PageProps<"/admin/drafts">)
         <div className="ml-auto flex flex-wrap items-center gap-2">
           <PerPageSelect basePath="/admin/drafts" searchParams={sp} total={total} />
           <ButtonLink href="/admin/products/new" variant="primary" size="sm">
-            <Plus className="h-4 w-4" />
+            <Plus className="h-[var(--icon-box)] w-[var(--icon-box)]" />
             Add product
           </ButtonLink>
         </div>

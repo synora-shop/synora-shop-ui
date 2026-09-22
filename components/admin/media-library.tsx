@@ -123,7 +123,7 @@ export function MediaLibrary({
                       : "border-border text-ink-soft hover:bg-subtle hover:text-ink"
                   )}
                 >
-                  {copied === asset.id ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copied === asset.id ? <Check className="h-[var(--icon-box)] w-[var(--icon-box)].5" /> : <Copy className="h-[var(--icon-box)] w-[var(--icon-box)].5" />}
                   {copied === asset.id ? "Copied" : "Copy link"}
                 </button>
                 {/* The rarer two recede until the row is under the pointer, the
@@ -136,7 +136,7 @@ export function MediaLibrary({
                     aria-label={`Open ${asset.filename} in a new tab`}
                     className="flex h-8 w-8 items-center justify-center rounded-full text-ink-soft transition-colors hover:bg-subtle hover:text-ink"
                   >
-                    <ExternalLink className="h-4 w-4" />
+                    <ExternalLink className="h-[var(--icon-box)] w-[var(--icon-box)]" />
                   </a>
                   <button
                     type="button"
@@ -145,7 +145,7 @@ export function MediaLibrary({
                     aria-label={`Delete ${asset.filename}`}
                     className="flex h-8 w-8 items-center justify-center rounded-full text-ink-soft transition-colors hover:bg-rose-bg hover:text-rose disabled:opacity-50"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-[var(--icon-box)] w-[var(--icon-box)]" />
                   </button>
                 </div>
               </div>
@@ -200,7 +200,7 @@ export function MediaLibrary({
                       copied === asset.id ? "bg-green text-white" : "bg-white text-ink"
                     )}
                   >
-                    {copied === asset.id ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                    {copied === asset.id ? <Check className="h-[var(--icon-box)] w-[var(--icon-box)].5" /> : <Copy className="h-[var(--icon-box)] w-[var(--icon-box)].5" />}
                     {copied === asset.id ? "Copied" : "Copy link"}
                   </span>
                 </span>
@@ -227,7 +227,7 @@ export function MediaLibrary({
                 aria-label={`Open ${asset.filename} in a new tab`}
                 className="flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-ink-soft shadow-sm backdrop-blur transition-colors hover:text-ink"
               >
-                <ExternalLink className="h-3.5 w-3.5" />
+                <ExternalLink className="h-[var(--icon-box)] w-[var(--icon-box)].5" />
               </a>
               <button
                 type="button"
@@ -236,7 +236,7 @@ export function MediaLibrary({
                 aria-label={`Delete ${asset.filename}`}
                 className="flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-ink-soft shadow-sm backdrop-blur transition-colors hover:text-rose disabled:opacity-50"
               >
-                <Trash2 className="h-3.5 w-3.5" />
+                <Trash2 className="h-[var(--icon-box)] w-[var(--icon-box)].5" />
               </button>
             </div>
           </li>

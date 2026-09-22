@@ -26,7 +26,7 @@ export default function AdminError({
     <div className="mx-auto max-w-lg py-12">
       <Card className="p-6 text-center">
         <span className="mx-auto mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-amber-bg text-amber">
-          <AlertTriangle className="h-5 w-5" />
+          <AlertTriangle className="h-[var(--icon-box)] w-[var(--icon-box)]" />
         </span>
 
         <h1 className="font-serif text-2xl font-semibold text-ink">This page didn&rsquo;t load</h1>
@@ -37,7 +37,7 @@ export default function AdminError({
 
         <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
           <Button variant="primary" onClick={reset}>
-            <RotateCw className="h-4 w-4" />
+            <RotateCw className="h-[var(--icon-box)] w-[var(--icon-box)]" />
             Try again
           </Button>
           <Link

@@ -256,6 +256,50 @@ check(
 /* The header is flat. What lightens it in the drawing is the page's own white
    glow falling across it, which is a different thing that behaves differently:
    a painted gradient would not move when the content beneath it does. */
+/* The header, measured off the artboard rather than guessed.
+ *
+ * Every one of these was wrong by eye and is now read from APP themes.ai's own
+ * content stream: the search field was a translucent tint at 360 wide, the
+ * avatar was a black circle with initials and a status dot, and the bell was
+ * lucide's with a red mark pinned to the corner of its button. */
+{
+  const topbarSrc = stripComments(
+    readFileSync(join(ROOT, "components/admin/admin-topbar.tsx"), "utf8")
+  );
+  const declared = (css.match(/\.admin-shell\s*\{[\s\S]*?\n\}/) ?? [""])[0];
+  check("the search field is #0c0c4a", /--color-header-field:\s*#0c0c4a/.test(declared));
+  check("and it is 390.5 wide by 50", /390\.5\*var\(--u\)/.test(topbarSrc));
+  check("the avatar is #aa4cc1", /--color-avatar:\s*#aa4cc1/.test(declared));
+  check(
+    "and a rounded square rather than a circle",
+    /--radius-avatar:\s*37\.15%/.test(declared) &&
+      /rounded-\[var\(--radius-avatar\)\]/.test(topbarSrc) &&
+      !/rounded-full[^"]*var\(--color-avatar\)/.test(topbarSrc)
+  );
+  check(
+    "it carries no initials and no status dot",
+    !/initials\(/.test(topbarSrc),
+    "both were invented; the drawing has a plain plate, and 'is my store live' is said in words in the menu"
+  );
+  check(
+    "the bell is the drawn one",
+    /<NotificationIcon/.test(topbarSrc) && !/<Bell/.test(topbarSrc),
+    "there is no bell in Assestz — it is read out of the artboard, and lucide's is a different drawing"
+  );
+  check(
+    "and its mark is green, inside the glyph",
+    /--color-unread:\s*#39b54a/.test(declared) &&
+      /circle[^>]*var\(--color-unread\)/.test(
+        readFileSync(join(ROOT, "components/admin/nav-icons.tsx"), "utf8")
+      ),
+    "a dot pinned to the button's corner is a different place at every scale"
+  );
+  check(
+    "the background's corner is the drawn 24.4, not a guess",
+    /--radius-page:[^;]*24\.4/.test(declared)
+  );
+}
+
 check(
   "the header is one flat colour, not a gradient",
   (() => {

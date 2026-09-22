@@ -45,7 +45,7 @@ export function DeleteOrderButton({ id }: { id: string }) {
           label is sentence case like every other action in the panel, and it
           says where the order goes rather than implying it is gone. */}
       <Button variant="danger" size="sm" onClick={handleClick} disabled={pending}>
-        <Trash2 className="h-4 w-4" />
+        <Trash2 className="h-[var(--icon-box)] w-[var(--icon-box)]" />
         {pending ? "Moving…" : "Move to Bin"}
       </Button>
     </>

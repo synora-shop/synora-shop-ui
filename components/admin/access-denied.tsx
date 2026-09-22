@@ -25,7 +25,7 @@ export function AccessDenied({
     <div className="mx-auto max-w-lg py-12">
       <Card className="p-6 text-center">
         <span className="mx-auto mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-brand-50 text-brand-600">
-          <Lock className="h-5 w-5" />
+          <Lock className="h-[var(--icon-box)] w-[var(--icon-box)]" />
         </span>
         <h1 className="font-serif text-2xl font-semibold text-ink">
           You don&rsquo;t have access to this

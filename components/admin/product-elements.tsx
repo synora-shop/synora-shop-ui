@@ -46,14 +46,14 @@ export function StockMark({ stock, low, className }: { stock: number; low: numbe
   if (stock <= 0)
     return (
       <span className={cn("inline-flex items-center gap-1 text-xs font-medium text-rose", className)}>
-        <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0" />
+        <AlertTriangle className="h-[var(--icon-box)] w-[var(--icon-box)].5 flex-shrink-0" />
         Out of stock
       </span>
     );
   if (stock <= low)
     return (
       <span className={cn("inline-flex items-center gap-1 text-xs font-medium text-amber", className)}>
-        <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0" />
+        <AlertTriangle className="h-[var(--icon-box)] w-[var(--icon-box)].5 flex-shrink-0" />
         {stock} left
       </span>
     );

@@ -166,7 +166,7 @@ export function SectionList({ pageId, sections: initial }: { pageId: string; sec
                 aria-hidden
                 className="hidden shrink-0 cursor-grab text-ink-soft active:cursor-grabbing lg:block"
               >
-                <GripVertical className="h-4 w-4" />
+                <GripVertical className="h-[var(--icon-box)] w-[var(--icon-box)]" />
               </span>
               <ReorderButtons index={i} count={sections.length} onMove={handleMove} />
               <button
@@ -187,7 +187,7 @@ export function SectionList({ pageId, sections: initial }: { pageId: string; sec
                 aria-label={section.isVisible ? "Hide section" : "Show section"}
                 className="rounded p-1.5 text-ink-soft transition-colors hover:bg-subtle hover:text-ink active:bg-brand-100 active:text-ink"
               >
-                {section.isVisible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                {section.isVisible ? <Eye className="h-[var(--icon-box)] w-[var(--icon-box)]" /> : <EyeOff className="h-[var(--icon-box)] w-[var(--icon-box)]" />}
               </button>
             </div>
           </SwipeRow>
@@ -229,7 +229,7 @@ export function SectionList({ pageId, sections: initial }: { pageId: string; sec
           disabled={busy}
           className="flex items-center gap-1 rounded-full border border-brand-500 px-4 py-2 text-sm font-medium text-brand-600 transition-colors hover:bg-brand-50 active:bg-brand-100 disabled:opacity-50"
         >
-          <Plus className="h-4 w-4" /> Add Section
+          <Plus className="h-[var(--icon-box)] w-[var(--icon-box)]" /> Add Section
         </button>
       </div>
     </div>

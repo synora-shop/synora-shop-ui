@@ -98,7 +98,7 @@ export function FilterBar({
               >
                 <span className="text-ink-faint">{group.label}:</span>
                 {labelFor(group.key, value)}
-                <X className="h-3 w-3" />
+                <X className="h-[var(--icon-box)] w-[var(--icon-box)]" />
               </Link>
             ))
           )}

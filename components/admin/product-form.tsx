@@ -310,7 +310,7 @@ export function ProductForm({
             onClick={() => setVariants((prev) => [...prev, { ...emptyVariant }])}
             className="flex items-center gap-1 rounded px-2 py-1 text-sm text-brand-600 transition-colors hover:bg-brand-50 active:bg-brand-100"
           >
-            <Plus className="h-4 w-4" /> Add Variant
+            <Plus className="h-[var(--icon-box)] w-[var(--icon-box)]" /> Add Variant
           </button>
         </div>
 
@@ -361,7 +361,7 @@ export function ProductForm({
                     title="Use the generated SKU"
                     className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded p-1 text-ink-faint transition-colors hover:bg-brand-50 hover:text-brand-600"
                   >
-                    <RotateCcw className="h-3.5 w-3.5" />
+                    <RotateCcw className="h-[var(--icon-box)] w-[var(--icon-box)].5" />
                   </button>
                 )}
               </div>
@@ -379,7 +379,7 @@ export function ProductForm({
                 onClick={() => setVariants((prev) => prev.filter((_, idx) => idx !== i))}
                 className="col-span-1 flex items-center justify-center gap-1 rounded border border-border py-2 text-sm text-ink-soft transition-colors hover:border-rose hover:bg-rose/5 hover:text-rose active:bg-rose/10 active:text-rose sm:col-span-1 sm:border-0 sm:py-0"
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="h-[var(--icon-box)] w-[var(--icon-box)]" />
                 <span className="sm:hidden">Remove</span>
               </button>
             </div>

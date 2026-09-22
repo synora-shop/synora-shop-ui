@@ -223,7 +223,7 @@ export function MaintenanceEditor({
 
         {storePaused && (
           <p className="notice-in flex items-start gap-1.5 text-xs leading-snug font-medium text-amber">
-            <AlertTriangle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
+            <AlertTriangle className="mt-0.5 h-[var(--icon-box)] w-[var(--icon-box)].5 flex-shrink-0" />
             {/* Said whether or not the toggle is on. A merchant who paused in
                 Themes and comes here to write the page must not read "your
                 store is visible" underneath a store that is not. */}
@@ -234,7 +234,7 @@ export function MaintenanceEditor({
 
         {on && !storePaused && (
           <p className="notice-in flex items-start gap-1.5 text-xs leading-snug font-medium text-amber">
-            <AlertTriangle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
+            <AlertTriangle className="mt-0.5 h-[var(--icon-box)] w-[var(--icon-box)].5 flex-shrink-0" />
             Your store is hidden from customers until you turn this off.
           </p>
         )}
@@ -358,7 +358,7 @@ export function MaintenanceEditor({
             <>
               <div className="flex flex-wrap items-center gap-2">
                 <Badge tone={waiting > 0 ? "brand" : "neutral"}>
-                  <Mail className="h-3 w-3" />
+                  <Mail className="h-[var(--icon-box)] w-[var(--icon-box)]" />
                   {signups.length} waiting
                 </Badge>
                 {waiting !== signups.length && (
@@ -368,7 +368,7 @@ export function MaintenanceEditor({
                 )}
                 <div className="ml-auto flex gap-2">
                   <Button size="sm" variant="ghost" onClick={exportSignups}>
-                    <Download className="h-3.5 w-3.5" />
+                    <Download className="h-[var(--icon-box)] w-[var(--icon-box)].5" />
                     Export
                   </Button>
                   {waiting > 0 && (
@@ -412,7 +412,7 @@ export function MaintenanceEditor({
                       aria-label={`Remove ${signup.email}`}
                       className="flex-shrink-0 rounded-full border border-rose/30 p-1.5 text-rose transition-colors hover:bg-rose hover:text-white"
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <Trash2 className="h-[var(--icon-box)] w-[var(--icon-box)].5" />
                     </button>
                   </li>
                 ))}

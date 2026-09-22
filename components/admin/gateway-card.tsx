@@ -147,14 +147,14 @@ export function GatewayCard({ state }: { state: GatewayCardState }) {
               rel="noreferrer noopener"
               className="lift inline-flex items-center gap-1 text-xs font-medium text-brand-600"
             >
-              Get an account <ExternalLink className="h-3 w-3" aria-hidden />
+              Get an account <ExternalLink className="h-[var(--icon-box)] w-[var(--icon-box)]" aria-hidden />
             </a>
           )}
         </div>
 
         {!state.storageReady && (
           <p className="notice-in mt-2.5 flex items-start gap-1.5 text-xs leading-snug font-medium text-amber">
-            <AlertTriangle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" aria-hidden />
+            <AlertTriangle className="mt-0.5 h-[var(--icon-box)] w-[var(--icon-box)].5 flex-shrink-0" aria-hidden />
             This platform cannot store gateway keys safely yet, so there is
             nowhere for yours to go. Nothing you type here would be saved.
           </p>
@@ -164,7 +164,7 @@ export function GatewayCard({ state }: { state: GatewayCardState }) {
         {state.connected && !editing && (
           <div className="notice-in mt-2.5 space-y-2.5">
             <p className="flex items-center gap-1.5 text-xs text-ink-soft">
-              <Lock className="h-3.5 w-3.5 flex-shrink-0 text-green" aria-hidden />
+              <Lock className="h-[var(--icon-box)] w-[var(--icon-box)].5 flex-shrink-0 text-green" aria-hidden />
               Your keys are saved and encrypted. They are never shown again, here
               or anywhere else.
             </p>
@@ -193,7 +193,7 @@ export function GatewayCard({ state }: { state: GatewayCardState }) {
               />
             ) : (
               <p className="flex items-start gap-1.5 rounded-[var(--radius-control)] bg-panel p-2.5 text-xs leading-snug text-ink-soft">
-                <ShieldCheck className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-ink-faint" aria-hidden />
+                <ShieldCheck className="mt-0.5 h-[var(--icon-box)] w-[var(--icon-box)].5 flex-shrink-0 text-ink-faint" aria-hidden />
                 <span>
                   <span className="font-medium text-ink">One test payment unlocks going live.</span>{" "}
                   Switch it on above, open your own storefront while signed in
@@ -205,14 +205,14 @@ export function GatewayCard({ state }: { state: GatewayCardState }) {
 
             {state.sandboxVerifiedAt && (
               <p className="flex items-center gap-1.5 text-xs text-green">
-                <CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0" aria-hidden />
+                <CheckCircle2 className="h-[var(--icon-box)] w-[var(--icon-box)].5 flex-shrink-0" aria-hidden />
                 A test payment has been through this connection.
               </p>
             )}
 
             {state.lastError && (
               <p className="flex items-start gap-1.5 text-xs leading-snug font-medium text-amber">
-                <AlertTriangle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" aria-hidden />
+                <AlertTriangle className="mt-0.5 h-[var(--icon-box)] w-[var(--icon-box)].5 flex-shrink-0" aria-hidden />
                 Last time we spoke to {state.label}: {state.lastError}
               </p>
             )}

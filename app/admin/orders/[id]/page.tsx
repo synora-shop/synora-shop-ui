@@ -177,7 +177,7 @@ export default async function AdminOrderDetailPage(props: PageProps<"/admin/orde
                     href={`/admin/customers/${order.customerId}`}
                     className="inline-flex items-center gap-1.5 underline-offset-2 hover:underline"
                   >
-                    <User className="h-3.5 w-3.5 flex-shrink-0 text-ink-faint" />
+                    <User className="h-[var(--icon-box)] w-[var(--icon-box)].5 flex-shrink-0 text-ink-faint" />
                     {order.customerName}
                   </Link>
                 ) : (
@@ -189,7 +189,7 @@ export default async function AdminOrderDetailPage(props: PageProps<"/admin/orde
                   href={`mailto:${order.customerEmail}`}
                   className="inline-flex items-center gap-1.5 break-all underline-offset-2 hover:underline"
                 >
-                  <Mail className="h-3.5 w-3.5 flex-shrink-0 text-ink-faint" />
+                  <Mail className="h-[var(--icon-box)] w-[var(--icon-box)].5 flex-shrink-0 text-ink-faint" />
                   {order.customerEmail}
                 </a>
               </Detail>
@@ -198,7 +198,7 @@ export default async function AdminOrderDetailPage(props: PageProps<"/admin/orde
                   href={`tel:${order.customerPhone}`}
                   className="inline-flex items-center gap-1.5 underline-offset-2 hover:underline"
                 >
-                  <Phone className="h-3.5 w-3.5 flex-shrink-0 text-ink-faint" />
+                  <Phone className="h-[var(--icon-box)] w-[var(--icon-box)].5 flex-shrink-0 text-ink-faint" />
                   {order.customerPhone}
                 </a>
               </Detail>

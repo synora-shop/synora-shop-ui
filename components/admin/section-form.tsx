@@ -129,7 +129,7 @@ export function SectionForm({
                     onClick={() => setSlides((prev) => prev.filter((_, idx) => idx !== i))}
                     className="rounded p-1 text-ink-soft transition-colors hover:bg-rose/10 hover:text-rose active:bg-rose/20 active:text-rose"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-[var(--icon-box)] w-[var(--icon-box)]" />
                   </button>
                 </div>
               </div>
@@ -207,7 +207,7 @@ export function SectionForm({
             onClick={() => setSlides((prev) => [...prev, { headline: "New slide" }])}
             className="flex items-center gap-1 text-sm text-brand-600"
           >
-            <Plus className="h-4 w-4" /> Add Slide
+            <Plus className="h-[var(--icon-box)] w-[var(--icon-box)]" /> Add Slide
           </button>
         </div>
       )}
@@ -314,7 +314,7 @@ export function SectionForm({
                     onClick={() => setItems((prev) => prev.filter((_, idx) => idx !== i))}
                     className="rounded p-1 text-ink-soft transition-colors hover:bg-rose/10 hover:text-rose active:bg-rose/20 active:text-rose"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-[var(--icon-box)] w-[var(--icon-box)]" />
                   </button>
                 </div>
               </div>
@@ -346,7 +346,7 @@ export function SectionForm({
             onClick={() => setItems((prev) => [...prev, { question: "", answer: "" }])}
             className="flex items-center gap-1 text-sm text-brand-600"
           >
-            <Plus className="h-4 w-4" /> Add Question
+            <Plus className="h-[var(--icon-box)] w-[var(--icon-box)]" /> Add Question
           </button>
         </div>
       )}

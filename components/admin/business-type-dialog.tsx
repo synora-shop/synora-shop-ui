@@ -112,7 +112,7 @@ export function BusinessTypeDialog({
             aria-label="Close"
             className="-mr-1 -mt-1 rounded-[var(--radius-control)] p-1.5 text-ink-faint transition-colors hover:bg-subtle hover:text-ink"
           >
-            <X className="h-4 w-4" />
+            <X className="h-[var(--icon-box)] w-[var(--icon-box)]" />
           </button>
         </div>
 
@@ -129,7 +129,7 @@ export function BusinessTypeDialog({
           {mode === "switch" && !gate.allowed && (
             <div className="mb-3 rounded-[var(--radius-container)] border border-amber/30 bg-amber-bg px-3.5 py-3">
               <p className="flex items-start gap-2 text-sm leading-snug text-ink">
-                <PauseCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber" aria-hidden />
+                <PauseCircle className="mt-0.5 h-[var(--icon-box)] w-[var(--icon-box)] flex-shrink-0 text-amber" aria-hidden />
                 {gate.reason}
               </p>
               {/* One way out of a refusal, and it is the one that teaches.
@@ -157,7 +157,7 @@ export function BusinessTypeDialog({
                     onClick={onClose}
                   >
                     Show me where
-                    <ArrowUpRight className="h-3.5 w-3.5" />
+                    <ArrowUpRight className="h-[var(--icon-box)] w-[var(--icon-box)].5" />
                   </ButtonLink>
                 </div>
               )}
@@ -188,11 +188,11 @@ export function BusinessTypeDialog({
                       <span className="text-sm font-semibold">{t.label}</span>
                       {isCurrent && (
                         <Badge tone="good">
-                          <Check className="h-3 w-3" />
+                          <Check className="h-[var(--icon-box)] w-[var(--icon-box)]" />
                           Current
                         </Badge>
                       )}
-                      {busy && <Loader2 className="h-3.5 w-3.5 animate-spin text-ink-faint" />}
+                      {busy && <Loader2 className="h-[var(--icon-box)] w-[var(--icon-box)].5 animate-spin text-ink-faint" />}
                     </span>
                     <span className="mt-1 block text-xs text-ink-soft">{t.summary}</span>
 
@@ -210,7 +210,7 @@ export function BusinessTypeDialog({
 
           {mode === "info" && (
             <p className="mt-4 flex items-start gap-2 rounded-[var(--radius-control)] bg-subtle px-3 py-2.5 text-xs text-ink-soft">
-              <Info className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" aria-hidden />
+              <Info className="mt-0.5 h-[var(--icon-box)] w-[var(--icon-box)].5 flex-shrink-0" aria-hidden />
               Still unsure? Pick the closest one. Changing it later keeps everything
               you have made — each type remembers its own storefront.
             </p>

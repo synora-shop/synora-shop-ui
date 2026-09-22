@@ -132,13 +132,13 @@ export function EnquiryList({ enquiries }: { enquiries: EnquiryRow[] }) {
                     href={`mailto:${row.email}?subject=${encodeURIComponent(`Re: ${row.productTitle}`)}`}
                     className={buttonClass("secondary", "sm")}
                   >
-                    <Mail className="h-3.5 w-3.5" /> {row.email}
+                    <Mail className="h-[var(--icon-box)] w-[var(--icon-box)].5" /> {row.email}
                   </a>
                   <a
                     href={`tel:${row.phone}`}
                     className={buttonClass("secondary", "sm")}
                   >
-                    <Phone className="h-3.5 w-3.5" /> {row.phone}
+                    <Phone className="h-[var(--icon-box)] w-[var(--icon-box)].5" /> {row.phone}
                   </a>
                   {row.productSlug && (
                     <Link
@@ -192,7 +192,7 @@ export function EnquiryList({ enquiries }: { enquiries: EnquiryRow[] }) {
                     disabled={pending}
                     onClick={() => remove(row)}
                   >
-                    <Trash2 className="h-3.5 w-3.5" /> Delete
+                    <Trash2 className="h-[var(--icon-box)] w-[var(--icon-box)].5" /> Delete
                   </Button>
                 </div>
               </div>

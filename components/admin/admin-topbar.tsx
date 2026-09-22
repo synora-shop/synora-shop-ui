@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
-  Bell,
   ChevronRight,
   LogOut,
   Menu,
@@ -15,6 +14,7 @@ import {
   X,
 } from "lucide-react";
 import { AdminSearch } from "@/components/admin/admin-search";
+import { NotificationIcon } from "@/components/admin/nav-icons";
 import { ExternalLinkIcon, InfoIcon, SynoraAppMark } from "@/components/ui/synora-marks";
 import { BusinessTypeDialog } from "@/components/admin/business-type-dialog";
 import type { ShopStatusName } from "@/lib/store-type-switch";
@@ -106,7 +106,9 @@ export function AdminTopbar({
       {/* The bar itself is 80px. The header element is taller by the
           background's corner radius, and that extra strip exists only to be
           the indigo showing through behind the curve — see app/admin/layout. */}
-      <div className="flex h-[var(--header-h)] items-center gap-3 px-[var(--gap-lg)]">
+      {/* 65 in on the left, 41 on the right — measured off the artboard, not
+          assumed to be the 30 that governs everything below the header. */}
+      <div className="flex h-[var(--header-h)] items-center gap-3 pl-[calc(65*var(--u))] pr-[calc(41*var(--u))] max-lg:px-4">
         {/* The mark, at the left where the design puts it. It was centred on
             the window while the header was colourless and the centre was the
             only place it could sit without looking like a heading. */}
@@ -122,7 +124,7 @@ export function AdminTopbar({
           onClick={toggleNav}
           className="-ml-1 flex-shrink-0 rounded-full p-2 text-white transition-colors hover:bg-white/15 lg:hidden"
         >
-          {navOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          {navOpen ? <X className="h-[var(--icon-box)] w-[var(--icon-box)]" /> : <Menu className="h-[var(--icon-box)] w-[var(--icon-box)]" />}
         </button>
 
         {/* Where you are is said twice already — the sidebar lights the
@@ -139,24 +141,30 @@ export function AdminTopbar({
         {/* Search, as drawn: a field rather than an icon, so what it searches
             is written on it instead of being something you have to try.
             
+            390.5 x 50 in #0c0c4a — Synora's night — all three read off the
+            artboard. It was a translucent tint of that colour at 360 wide,
+            which is a different colour and a different size.
+            
             A button that looks like an input, deliberately. Typing happens in
-            the overlay it opens, which is where the results are — an input
-            here would have to hand its first keystroke over to a second input,
-            and the handover is always visible. */}
+            the overlay it opens, which is where the results are; an input here
+            would hand its first keystroke to a second input, and the handover
+            is always visible. */}
         <button
           type="button"
           onClick={() => {
             setMenu(null);
             setSearching(true);
           }}
-          className="hidden h-[var(--header-bar-h)] min-w-0 flex-shrink items-center gap-2.5 rounded-pill bg-night/25 px-[calc(20*var(--u))] text-left text-[length:calc(15*var(--u))] text-white/70 transition-colors hover:bg-night/35 md:flex md:w-[calc(360*var(--u))]"
+          className="hidden h-[var(--header-bar-h)] min-w-0 flex-shrink items-center gap-[calc(12*var(--u))] rounded-pill bg-[var(--color-header-field)] px-[calc(21*var(--u))] text-left text-[length:var(--text-secondary)] text-[var(--color-placeholder-dark)] transition-opacity hover:opacity-90 md:flex md:w-[calc(390.5*var(--u))]"
         >
-          <Search className="h-[var(--icon-box)] w-[var(--icon-box)] flex-shrink-0" />
+          <Search className="h-[var(--icon-box)] w-[var(--icon-box)] flex-shrink-0 text-white" />
           <span className="truncate">Search Products, Customers, Pages</span>
         </button>
 
         {/* Notifications and the account. One pill, as drawn. */}
-        <div className="relative flex h-[var(--header-bar-h)] flex-shrink-0 items-center gap-1 rounded-pill bg-panel px-1.5 shadow-panel">
+        {/* Below the search field's breakpoint the field is hidden, so the
+            magnifier comes back as its own button — outside the pill, which
+            keeps its drawn width at every size. */}
           <IconButton
             label="Search the admin"
             active={searching}
@@ -169,43 +177,40 @@ export function AdminTopbar({
             <Search className="h-[var(--icon-box)] w-[var(--icon-box)]" />
           </IconButton>
 
-          <IconButton
-            label={alerts.length ? `${alerts.length} things need attention` : "Notifications"}
-            active={menu === "bell"}
+        {/* 103.1 x 50, with the bell 16.1 in from the left, a 21.3 gap, and
+            the avatar 6.3 from the right — all measured. The asymmetry is the
+            drawing's: a 20px glyph needs air around it, a 39.4 avatar in a 50
+            pill does not. */}
+        <div className="relative ml-[calc(28.5*var(--u))] flex h-[var(--header-bar-h)] w-[calc(103.1*var(--u))] flex-shrink-0 items-center justify-between rounded-pill bg-panel pl-[calc(16.1*var(--u))] pr-[calc(6.3*var(--u))]">
+
+          <button
+            type="button"
+            aria-label={alerts.length ? `${alerts.length} things need attention` : "Notifications"}
+            title={alerts.length ? `${alerts.length} things need attention` : "Notifications"}
+            aria-expanded={menu === "bell"}
             onClick={() => setMenu((m) => (m === "bell" ? null : "bell"))}
+            className="flex flex-shrink-0 items-center justify-center text-control-ink transition-opacity hover:opacity-70"
           >
-            <Bell className="h-[var(--icon-box)] w-[var(--icon-box)]" />
-            {alerts.length > 0 && (
-              <span
-                className="absolute right-0 top-0 h-[calc(8*var(--u))] w-[calc(8*var(--u))] rounded-full bg-rose ring-2 ring-panel"
-                aria-hidden
-              />
-            )}
-          </IconButton>
+            {/* The dot lives inside the glyph, where it was drawn: green,
+                ringed in white, breaking the bell's outline at the top right.
+                It was a red dot pinned to the corner of the button. */}
+            <NotificationIcon unread={alerts.length > 0} />
+          </button>
 
           <button
             type="button"
             aria-label="Store and account menu"
             aria-expanded={menu === "account"}
             onClick={() => setMenu((m) => (m === "account" ? null : "account"))}
-            // Scaled, like everything else in the bar. It was a fixed 36px
-            // circle inside a pill that is 50 design pixels tall — 38px on a
-            // 13" laptop — so the avatar overflowed its own container and the
-            // status dot hung outside the white entirely.
-            className="relative flex h-[calc(38*var(--u))] w-[calc(38*var(--u))] flex-shrink-0 items-center justify-center rounded-full bg-ink text-[length:calc(13*var(--u))] font-semibold text-white transition-transform hover:-translate-y-px"
-          >
-            {initials(storeName)}
-            <span
-              className={cn(
-                // Inside the circle, not hanging off it. Outside, it broke the
-                // pill's edge at every size below the one it was drawn at.
-                "absolute bottom-0 right-0 h-[calc(10*var(--u))] w-[calc(10*var(--u))] rounded-full ring-2 ring-ink",
-                isLive ? "bg-green" : "bg-amber"
-              )}
-              title={isLive ? "Customers can see your store." : "Your store is hidden."}
-              aria-label={isLive ? "Live" : "Hidden"}
-            />
-          </button>
+            // 39.4 square with a 14.65 corner — a rounded square, not a
+            // circle, and the radius is kept as a percentage so it survives
+            // scaling. #aa4cc1 is the drawing's own.
+            //
+            // No initials and no status dot. Both were mine; the drawing has a
+            // plain plate. Whether the store is live is still said in words in
+            // the menu this opens, which is where a merchant can act on it.
+            className="flex h-[calc(39.4*var(--u))] w-[calc(39.4*var(--u))] flex-shrink-0 items-center justify-center rounded-[var(--radius-avatar)] bg-[var(--color-avatar)] transition-transform hover:-translate-y-px"
+          />
 
           {menu && (
             <>
@@ -234,7 +239,7 @@ export function AdminTopbar({
                           className="flex items-center gap-2 px-3 py-2 text-sm transition-colors hover:bg-panel"
                         >
                           {alert.label}
-                          <ChevronRight className="ml-auto h-3.5 w-3.5 text-control-soft" />
+                          <ChevronRight className="ml-auto h-[var(--icon-box)] w-[var(--icon-box)].5 text-control-soft" />
                         </Link>
                       ))
                     )}
@@ -266,7 +271,7 @@ export function AdminTopbar({
                       onClick={close}
                       className="flex items-center gap-2 border-t border-control-line px-3 py-2 text-sm transition-colors hover:bg-panel"
                     >
-                      <Store className="h-4 w-4 text-control-soft" />
+                      <Store className="h-[var(--icon-box)] w-[var(--icon-box)] text-control-soft" />
                       Preview store
                       <ExternalLinkIcon className="ml-auto opacity-60" />
                     </a>
@@ -275,7 +280,7 @@ export function AdminTopbar({
                       onClick={close}
                       className="flex items-center gap-2 px-3 py-2 text-sm transition-colors hover:bg-panel"
                     >
-                      <Settings2 className="h-4 w-4 text-control-soft" />
+                      <Settings2 className="h-[var(--icon-box)] w-[var(--icon-box)] text-control-soft" />
                       Your account
                     </Link>
                     {/* These two were a pair of controls in the header. The
@@ -291,7 +296,7 @@ export function AdminTopbar({
                       }}
                       className="flex w-full items-center gap-2 px-3 py-2 text-sm transition-colors hover:bg-panel"
                     >
-                      <ChevronRight className="h-4 w-4 text-control-soft" />
+                      <ChevronRight className="h-[var(--icon-box)] w-[var(--icon-box)] text-control-soft" />
                       Change APP type
                     </button>
                     <button
@@ -302,7 +307,7 @@ export function AdminTopbar({
                       }}
                       className="flex w-full items-center gap-2 px-3 py-2 text-sm transition-colors hover:bg-panel"
                     >
-                      <InfoIcon className="h-4 w-4 text-control-soft" />
+                      <InfoIcon className="h-[var(--icon-box)] w-[var(--icon-box)] text-control-soft" />
                       Which type fits your business?
                     </button>
                     {hasOtherStores && (
@@ -311,7 +316,7 @@ export function AdminTopbar({
                         onClick={close}
                         className="flex items-center gap-2 px-3 py-2 text-sm transition-colors hover:bg-panel"
                       >
-                        <Store className="h-4 w-4 text-control-soft" />
+                        <Store className="h-[var(--icon-box)] w-[var(--icon-box)] text-control-soft" />
                         Switch store
                       </Link>
                     )}
@@ -320,7 +325,7 @@ export function AdminTopbar({
                       onClick={() => signOut({ redirectTo: "/" })}
                       className="flex w-full items-center gap-2 border-t border-control-line px-3 py-2 text-sm transition-colors hover:bg-rose-bg hover:text-rose"
                     >
-                      <LogOut className="h-4 w-4" />
+                      <LogOut className="h-[var(--icon-box)] w-[var(--icon-box)]" />
                       Sign out
                     </button>
                   </>
@@ -378,10 +383,4 @@ function IconButton({
   );
 }
 
-/** Up to two initials, so the avatar reads as the store rather than a generic icon. */
-function initials(name: string): string {
-  const words = name.trim().split(/\s+/).filter(Boolean);
-  if (words.length === 0) return "?";
-  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
-  return (words[0][0] + words[words.length - 1][0]).toUpperCase();
-}
+

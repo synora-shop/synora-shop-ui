@@ -27,7 +27,7 @@ export default function AnalyticsLoading() {
         {Array.from({ length: 2 }, (_, i) => (
           <div key={i} className="space-y-3 rounded-[var(--radius-container)] border border-border bg-surface p-4">
             <Skeleton className="h-2.5 w-16" />
-            <Skeleton className="h-5 w-32" />
+            <Skeleton className="h-[var(--icon-box)] w-[var(--icon-box)]2" />
             <Skeleton className="h-40 w-full" />
           </div>
         ))}

@@ -294,7 +294,7 @@ export function ThemeManager({
                                   }}
                                   className="flex w-full items-center gap-2 border-t border-control-line px-3 py-2 text-[length:var(--text-secondary)] transition-colors hover:bg-rose-bg hover:text-rose"
                                 >
-                                  <Trash2 className="h-4 w-4" />
+                                  <Trash2 className="h-[var(--icon-box)] w-[var(--icon-box)]" />
                                   Remove this copy
                                 </button>
                               )}
@@ -447,7 +447,7 @@ function RowButton({
 
   return (
     <button type="button" onClick={onClick} disabled={busy} className={shape}>
-      {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+      {busy ? <Loader2 className="h-[var(--icon-box)] w-[var(--icon-box)] animate-spin" /> : null}
       {children}
     </button>
   );

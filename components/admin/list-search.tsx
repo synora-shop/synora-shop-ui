@@ -49,7 +49,7 @@ export function ListSearch({ placeholder = "Search" }: { placeholder?: string })
 
   return (
     <div className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-pill border border-control-line bg-control px-4 sm:max-w-sm">
-      <Search className="h-4 w-4 flex-shrink-0 text-control-soft" aria-hidden />
+      <Search className="h-[var(--icon-box)] w-[var(--icon-box)] flex-shrink-0 text-control-soft" aria-hidden />
       <input
         type="search"
         value={value}
@@ -71,7 +71,7 @@ export function ListSearch({ placeholder = "Search" }: { placeholder?: string })
           }}
           className="flex-shrink-0 rounded-full p-0.5 text-control-soft transition-colors hover:text-ink"
         >
-          <X className="h-3.5 w-3.5" />
+          <X className="h-[var(--icon-box)] w-[var(--icon-box)].5" />
         </button>
       )}
     </div>

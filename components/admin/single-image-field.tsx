@@ -151,9 +151,9 @@ export function SingleImageField({
                 className="flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-medium text-ink shadow transition-colors hover:bg-subtle active:bg-brand-100 disabled:opacity-50"
               >
                 {uploading ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  <Loader2 className="h-[var(--icon-box)] w-[var(--icon-box)].5 animate-spin" />
                 ) : (
-                  <RefreshCw className="h-3.5 w-3.5" />
+                  <RefreshCw className="h-[var(--icon-box)] w-[var(--icon-box)].5" />
                 )}
                 {uploading ? "Uploading…" : "Change"}
               </button>
@@ -163,7 +163,7 @@ export function SingleImageField({
                 aria-label="Remove image"
                 className="rounded-full bg-white p-1.5 text-rose shadow transition-colors hover:bg-rose hover:text-white active:bg-rose"
               >
-                <X className="h-3.5 w-3.5" />
+                <X className="h-[var(--icon-box)] w-[var(--icon-box)].5" />
               </button>
             </div>
           </div>
@@ -178,12 +178,12 @@ export function SingleImageField({
           >
             {uploading ? (
               <>
-                <Loader2 className="h-5 w-5 animate-spin text-brand-500" />
+                <Loader2 className="h-[var(--icon-box)] w-[var(--icon-box)] animate-spin text-brand-500" />
                 <span>Uploading…</span>
               </>
             ) : (
               <>
-                <ImagePlus className="h-5 w-5 text-brand-500" />
+                <ImagePlus className="h-[var(--icon-box)] w-[var(--icon-box)] text-brand-500" />
                 <span>
                   Drag an image here, or <span className="text-brand-600 underline-scribble">browse</span>
                 </span>

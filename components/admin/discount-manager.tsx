@@ -219,7 +219,7 @@ export function DiscountManager({ discounts }: { discounts: DiscountRow[] }) {
               </p>
             </div>
             <Button variant="primary" onClick={() => setCreating(true)}>
-              <Plus className="h-4 w-4" />
+              <Plus className="h-[var(--icon-box)] w-[var(--icon-box)]" />
               New discount
             </Button>
           </div>
@@ -284,7 +284,7 @@ export function DiscountManager({ discounts }: { discounts: DiscountRow[] }) {
                       if (ok) run(() => deleteDiscount(discount.id));
                     }}
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <Trash2 className="h-[var(--icon-box)] w-[var(--icon-box)].5" />
                   </Button>
                 </div>
               </div>

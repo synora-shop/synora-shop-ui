@@ -168,7 +168,7 @@ export function PageList({
                     : "border-border bg-control text-transparent hover:border-ink-faint"
                 )}
               >
-                <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                <Check className="h-[var(--icon-box)] w-[var(--icon-box)].5" strokeWidth={3} />
               </button>
             )}
             <div className="min-w-0 flex-1">
@@ -190,7 +190,7 @@ export function PageList({
 
             {/* The row is a link, and until now nothing said so. */}
             <ChevronRight
-              className="h-4 w-4 flex-shrink-0 text-ink-faint transition-transform group-hover:translate-x-0.5"
+              className="h-[var(--icon-box)] w-[var(--icon-box)] flex-shrink-0 text-ink-faint transition-transform group-hover:translate-x-0.5"
               aria-hidden
             />
           </Link>
@@ -201,7 +201,7 @@ export function PageList({
     {selectable && selected.length > 0 && (
       <BulkBar count={selected.length} noun="page" onClear={() => setPicked(new Set())}>
         <Button size="sm" variant="primary" disabled={publishing} onClick={publish}>
-          <Eye className="h-3.5 w-3.5" />
+          <Eye className="h-[var(--icon-box)] w-[var(--icon-box)].5" />
           Publish
         </Button>
       </BulkBar>

@@ -104,7 +104,7 @@ export function ProductKindFields({
         </div>
         {value.kind !== "NORMAL" && (
           <p className="mt-2 flex items-start gap-1.5 rounded-[var(--radius-control)] bg-amber-bg px-3 py-2 text-xs leading-snug text-amber">
-            <TriangleAlert className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
+            <TriangleAlert className="mt-0.5 h-[var(--icon-box)] w-[var(--icon-box)].5 flex-shrink-0" />
             <span>
               Customers can&apos;t add this to a cart. The product page shows an enquiry form
               instead, and anything they send arrives in <strong>Enquiries</strong>.
@@ -208,7 +208,7 @@ export function ProductKindFields({
                       onClick={() => set("tiers", value.tiers.filter((_, n) => n !== i))}
                       className="ml-auto rounded p-1.5 text-ink-faint transition-colors hover:bg-rose-bg hover:text-rose"
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <Trash2 className="h-[var(--icon-box)] w-[var(--icon-box)].5" />
                     </button>
                   </div>
                 ))}
@@ -226,14 +226,14 @@ export function ProductKindFields({
                   ]);
                 }}
               >
-                <Plus className="h-3.5 w-3.5" /> Add a break
+                <Plus className="h-[var(--icon-box)] w-[var(--icon-box)].5" /> Add a break
               </Button>
 
               {problems.length > 0 && (
                 <ul className="mt-2 space-y-1">
                   {problems.map((p) => (
                     <li key={p} className="flex items-start gap-1.5 text-xs leading-snug text-amber">
-                      <TriangleAlert className="mt-0.5 h-3 w-3 flex-shrink-0" />
+                      <TriangleAlert className="mt-0.5 h-[var(--icon-box)] w-[var(--icon-box)] flex-shrink-0" />
                       {p}
                     </li>
                   ))}
@@ -300,7 +300,7 @@ export function ProductKindFields({
                     onClick={() => set("customFields", value.customFields.filter((_, n) => n !== i))}
                     className="ml-auto rounded p-1.5 text-ink-faint transition-colors hover:bg-rose-bg hover:text-rose"
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <Trash2 className="h-[var(--icon-box)] w-[var(--icon-box)].5" />
                   </button>
                 </div>
                 <input
@@ -332,7 +332,7 @@ export function ProductKindFields({
               ])
             }
           >
-            <Plus className="h-3.5 w-3.5" /> Add a field
+            <Plus className="h-[var(--icon-box)] w-[var(--icon-box)].5" /> Add a field
           </Button>
         </div>
       )}

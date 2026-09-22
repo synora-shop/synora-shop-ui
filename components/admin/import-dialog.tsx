@@ -118,7 +118,7 @@ export function ImportDialog({
   return (
     <>
       <button type="button" onClick={() => setOpen(true)} className={buttonClass("secondary", "sm")}>
-        <Upload className="h-4 w-4" />
+        <Upload className="h-[var(--icon-box)] w-[var(--icon-box)]" />
         Import CSV
       </button>
 
@@ -152,7 +152,7 @@ export function ImportDialog({
                   name && "border-solid"
                 )}
               >
-                <FileUp className="h-5 w-5 text-ink-faint" />
+                <FileUp className="h-[var(--icon-box)] w-[var(--icon-box)] text-ink-faint" />
                 <span className="text-sm font-medium text-ink">
                   {name ?? "Choose a CSV file"}
                 </span>
@@ -170,7 +170,7 @@ export function ImportDialog({
 
               {error && (
                 <p className="mt-3 flex items-start gap-2 rounded-[var(--radius-control)] border border-rose/30 bg-rose-bg px-3 py-2 text-sm text-ink">
-                  <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-rose" />
+                  <AlertTriangle className="mt-0.5 h-[var(--icon-box)] w-[var(--icon-box)] flex-shrink-0 text-rose" />
                   {error}
                 </p>
               )}
@@ -179,7 +179,7 @@ export function ImportDialog({
                 <div className="mt-3 space-y-3">
                   <div className="flex flex-wrap items-center gap-2 text-sm">
                     <span className="inline-flex items-center gap-1.5 rounded-pill bg-green-bg px-2.5 py-1 text-xs font-medium text-green">
-                      <Check className="h-3.5 w-3.5" />
+                      <Check className="h-[var(--icon-box)] w-[var(--icon-box)].5" />
                       {plan.creating} to add
                     </span>
                     {plan.updating > 0 && (
@@ -194,7 +194,7 @@ export function ImportDialog({
                     )}
                     {plan.problems.length > 0 && (
                       <span className="inline-flex items-center gap-1.5 rounded-pill bg-amber-bg px-2.5 py-1 text-xs font-medium text-amber">
-                        <AlertTriangle className="h-3.5 w-3.5" />
+                        <AlertTriangle className="h-[var(--icon-box)] w-[var(--icon-box)].5" />
                         {plan.problems.length} line
                         {plan.problems.length === 1 ? "" : "s"} skipped
                       </span>

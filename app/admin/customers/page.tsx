@@ -104,7 +104,7 @@ export default async function CustomersPage(props: PageProps<"/admin/customers">
             apply={applyCustomerImport}
           />
           <a href="/admin/customers/export" className={buttonClass("secondary", "sm")}>
-            <Download className="h-4 w-4" />
+            <Download className="h-[var(--icon-box)] w-[var(--icon-box)]" />
             Export CSV
           </a>
         </div>

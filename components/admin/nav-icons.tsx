@@ -132,6 +132,38 @@ export function CustomersIcon(props: IconProps) {
 }
 
 /**
+ * Notifications, lifted out of APP.ai itself.
+ *
+ * There is no notification SVG in Assestz — the twenty-one files there are the
+ * sidebar set plus add, cancel, external link, hide, info, mobile, refresh,
+ * show and web. The bell is drawn in the artboard and nowhere else, so this is
+ * its path read straight out of the file's content stream rather than an
+ * approximation of it. Same for the dot: #39b54a at 9.9 across, ringed in
+ * white, centred exactly where the drawing puts it — up and to the right of
+ * the bell, breaking its outline.
+ *
+ * The dot is inside the SVG rather than positioned beside it, which is what
+ * keeps it exactly where it was drawn at every scale. It was a red dot pinned
+ * to the corner of a button, which is a different colour in a different place.
+ *
+ * The viewBox covers the bell *and* the dot, and `Glyph` fits the pair into a
+ * 20 x 20 box — the rule the global design document gives every icon.
+ */
+export function NotificationIcon({ unread, ...props }: IconProps & { unread?: boolean }) {
+  return (
+    <Glyph viewBox="0 -2.8 20.8 24.8" {...props}>
+      <path d="M 7.86,19.04 C 7.55,18.61 6.95,18.53 6.53,18.84 C 6.10,19.15 6.01,19.75 6.33,20.18 C 7.12,21.25 8.32,22.00 9.72,22.00 C 11.13,22.00 12.33,21.25 13.12,20.18 C 13.44,19.75 13.35,19.15 12.92,18.84 C 12.50,18.53 11.90,18.61 11.59,19.04 C 11.08,19.73 10.41,20.09 9.72,20.09 C 9.04,20.09 8.37,19.73 7.86,19.04 M 4.54,7.09 C 4.54,4.23 6.86,1.91 9.72,1.91 C 12.59,1.91 14.91,4.23 14.91,7.09 L 14.91,7.97 C 14.91,10.22 15.21,12.30 15.73,13.85 C 15.88,14.30 16.05,14.73 16.25,15.11 L 3.20,15.11 C 3.40,14.73 3.57,14.30 3.72,13.85 C 4.24,12.30 4.54,10.22 4.54,7.97 Z M 9.72,0.00 C 5.81,0.00 2.63,3.18 2.63,7.09 L 2.63,7.97 C 2.63,10.08 2.34,11.94 1.91,13.25 C 1.69,13.91 1.45,14.37 1.23,14.65 C 1.07,14.86 0.97,14.90 0.95,14.91 C 0.42,14.91 0.00,15.34 0.00,15.86 L 0.00,16.06 C 0.00,16.59 0.43,17.02 0.96,17.02 L 18.49,17.02 C 19.02,17.02 19.45,16.59 19.45,16.06 L 19.45,15.86 C 19.45,15.34 19.03,14.91 18.50,14.91 C 18.48,14.90 18.38,14.86 18.22,14.65 C 18.00,14.37 17.76,13.91 17.54,13.25 C 17.10,11.94 16.82,10.08 16.82,7.97 L 16.82,7.09 C 16.82,3.18 13.64,0.00 9.72,0.00" />
+      {unread && (
+        <>
+          <circle cx="15.35" cy="2.65" r="5.45" fill="var(--color-panel)" />
+          <circle cx="15.35" cy="2.65" r="4.95" fill="var(--color-unread)" />
+        </>
+      )}
+    </Glyph>
+  );
+}
+
+/**
  * Add — the plus in a ring, from Assestz.
  *
  * Not lucide's Plus, which is a bare cross drawn on a different grid at a

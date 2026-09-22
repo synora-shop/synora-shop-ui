@@ -125,7 +125,7 @@ export function PushNotificationsToggle() {
         disabled={busy}
         className={buttonClass("secondary", "md")}
       >
-        {status === "subscribed" ? <BellOff className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
+        {status === "subscribed" ? <BellOff className="h-[var(--icon-box)] w-[var(--icon-box)]" /> : <Bell className="h-[var(--icon-box)] w-[var(--icon-box)]" />}
         {busy
           ? "Please wait…"
           : status === "subscribed"

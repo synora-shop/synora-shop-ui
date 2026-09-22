@@ -114,12 +114,12 @@ export function StoreLifecycle({
                   run(pauseStore, choice === "also" ? "/admin/maintenance" : undefined);
                 }}
               >
-                <PauseCircle className="h-4 w-4" />
+                <PauseCircle className="h-[var(--icon-box)] w-[var(--icon-box)]" />
                 Pause store
               </Button>
             ) : (
               <Button variant="primary" disabled={pending} onClick={() => run(resumeStore)}>
-                <PlayCircle className="h-4 w-4" />
+                <PlayCircle className="h-[var(--icon-box)] w-[var(--icon-box)]" />
                 {status === "CLOSED" ? "Reopen store" : "Open store"}
               </Button>
             ))}

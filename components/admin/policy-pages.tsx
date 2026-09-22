@@ -51,7 +51,7 @@ export function PolicyPages({
             className="flex flex-col rounded-[var(--radius-container)] border border-border bg-surface p-3.5"
           >
             <p className="flex items-center gap-1.5 text-sm font-medium text-ink">
-              <ScrollText className="h-3.5 w-3.5 flex-shrink-0 text-ink-faint" aria-hidden />
+              <ScrollText className="h-[var(--icon-box)] w-[var(--icon-box)].5 flex-shrink-0 text-ink-faint" aria-hidden />
               {policy.title}
             </p>
             <p className="mt-1 flex-1 text-xs leading-snug text-ink-soft">{policy.summary}</p>
@@ -61,7 +61,7 @@ export function PolicyPages({
                   href={`/admin/pages/${have.id}`}
                   className="inline-flex items-center gap-1.5 text-xs font-medium text-ink-soft transition-colors hover:text-ink"
                 >
-                  <Check className="h-3.5 w-3.5 text-green" />
+                  <Check className="h-[var(--icon-box)] w-[var(--icon-box)].5 text-green" />
                   {have.isPublished ? "Added" : "Draft — read it, then publish"}
                 </Link>
               ) : (
@@ -71,7 +71,7 @@ export function PolicyPages({
                   disabled={pending}
                   onClick={() => add(policy.key)}
                 >
-                  <Plus className="h-3.5 w-3.5" />
+                  <Plus className="h-[var(--icon-box)] w-[var(--icon-box)].5" />
                   {adding === policy.key ? "Adding…" : "Add"}
                 </Button>
               )}
