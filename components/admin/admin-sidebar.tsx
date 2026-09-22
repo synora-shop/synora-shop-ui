@@ -79,7 +79,7 @@ export function AdminSidebar() {
           // sidebar is the one column in the panel that is not fluid: it holds
           // ten labels whose longest is known, so a width that flexed would
           // only ever make it worse.
-          "lg:sticky lg:top-0 lg:h-screen lg:w-[260px] lg:flex-shrink-0 lg:translate-x-0 lg:bg-transparent lg:shadow-none lg:transition-none",
+          "lg:sticky lg:top-0 lg:h-full lg:w-[var(--sidebar-w)] lg:flex-shrink-0 lg:translate-x-0 lg:bg-transparent lg:shadow-none lg:transition-none",
           open ? "translate-x-0" : "-translate-x-full"
         )}
       >
@@ -105,9 +105,9 @@ export function AdminSidebar() {
             panel scrolls except the main container — see app/admin/layout.tsx —
             so a sidebar that scrolled with the page would take the section you
             were trying to reach off the screen. At ten rows it never fires. */}
-        <nav className="flex flex-col gap-[15px] overflow-y-auto p-2.5 lg:p-0">
+        <nav className="flex flex-col gap-[var(--gap-sm)] overflow-y-auto p-2.5 lg:p-0">
           {bands.map((band) => (
-            <div key={band[0].group} className="rounded-2xl bg-panel p-2.5 shadow-container">
+            <div key={band[0].group} className="rounded-2xl bg-panel p-[var(--pad-container)] shadow-container">
               <ul>
                 {band.map((item) => {
                   const here = item.key === section.key;
@@ -123,13 +123,13 @@ export function AdminSidebar() {
                           // The box is the point rather than the drawing inside
                           // it: an icon wider than it is tall still occupies
                           // 20 x 20, which is what keeps the column aligned.
-                          "flex h-[40.5px] items-center gap-2.5 rounded-lg px-2.5 text-[20px] transition-colors",
+                          "flex h-[var(--row-h)] items-center gap-[calc(10*var(--u))] rounded-lg px-[var(--pad-container)] text-[length:var(--text-normal)] transition-colors",
                           here
                             ? "bg-selected font-semibold text-brand-500"
                             : "text-control-ink hover:bg-control"
                         )}
                       >
-                        <Icon className="h-5 w-5 shrink-0" />
+                        <Icon className="h-[var(--icon-box)] w-[var(--icon-box)] shrink-0" />
                         <span className="truncate">{item.label}</span>
                       </Link>
                     </li>

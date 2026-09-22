@@ -36,7 +36,7 @@ export function AdminNavbar() {
   return (
     <nav
       aria-label="Section"
-      className="h-[55px] flex-shrink-0 rounded-2xl bg-panel shadow-container"
+      className="h-[var(--navbar-h)] flex-shrink-0 rounded-2xl bg-panel shadow-container"
     >
       {/* Sliding rather than wrapping, and only when it has to.
           
@@ -48,7 +48,7 @@ export function AdminNavbar() {
           scrollbar-none because a visible scrollbar inside a 55px bar eats the
           bottom of the labels; the overflow is discoverable by dragging, which
           is how every other horizontal strip on a touch screen works. */}
-      <ul className="scrollbar-none flex h-full items-center gap-1 overflow-x-auto px-2.5">
+      <ul className="scrollbar-none flex h-full items-center gap-1 overflow-x-auto px-[var(--pad-container)]">
         {tabs.map((tab) => {
           const here = tab.href === current;
           return (
@@ -60,7 +60,7 @@ export function AdminNavbar() {
                   // 20px, and the active one is semibold rather than merely
                   // coloured — the same three-part active state as the
                   // sidebar: plate, colour, weight.
-                  "flex h-[38px] items-center rounded-lg px-3.5 text-[20px] transition-colors",
+                  "flex h-[calc(38*var(--u))] items-center rounded-lg px-[calc(14*var(--u))] text-[length:var(--text-normal)] transition-colors",
                   here
                     ? "bg-selected font-semibold text-brand-500"
                     : "text-control-ink hover:bg-control"

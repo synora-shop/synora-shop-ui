@@ -200,8 +200,8 @@ check(
 {
   const navbar = readFileSync(join(process.cwd(), "components/admin/admin-navbar.tsx"), "utf8");
   check("a section with one screen draws no bar", /tabs\.length === 0\) return null/.test(navbar));
-  check("it is 55px", /h-\[55px\]/.test(navbar));
-  check("its tabs are 20px", /text-\[20px\]/.test(navbar));
+  check("it is 55 design pixels", /h-\[var\(--navbar-h\)\]/.test(navbar));
+  check("its tabs are 20", /text-\[length:var\(--text-normal\)\]/.test(navbar));
   check(
     "its selected tab matches the sidebar's",
     /bg-selected font-semibold text-brand-500/.test(navbar),
@@ -222,7 +222,7 @@ check(
     !/rounded-2xl bg-panel[^"]*shadow-panel/.test(bar),
     "a white bar drawn to hold one Save button is a bar nobody asked for"
   );
-  check("it is 40px", /h-10/.test(bar));
+  check("it is 40 design pixels", /h-\[var\(--actionbar-h\)\]/.test(bar));
   check("and slides rather than wrapping", /scrollbar-none/.test(bar) && /overflow-x-auto/.test(bar));
 }
 

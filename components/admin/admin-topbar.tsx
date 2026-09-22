@@ -102,13 +102,13 @@ export function AdminTopbar({
     // the header and background have on synoradigitals.com. A painted gradient
     // would look close and behave wrong: the light would not move when the
     // content beneath it does.
-    <header className="sticky top-0 z-40 h-20 bg-header">
-      <div className="flex h-20 items-center gap-3 px-[30px]">
+    <header className="sticky top-0 z-40 h-[var(--header-h)] flex-shrink-0 bg-header">
+      <div className="flex h-full items-center gap-3 px-[var(--gap-lg)]">
         {/* The mark, at the left where the design puts it. It was centred on
             the window while the header was colourless and the centre was the
             only place it could sit without looking like a heading. */}
         <Link href="/admin" className="hidden flex-shrink-0 items-center lg:flex">
-          <SynoraAppMark className="h-[30px] w-auto text-white" />
+          <SynoraAppMark className="h-[var(--logo-h)] w-auto text-white" />
         </Link>
 
         <button
@@ -146,14 +146,14 @@ export function AdminTopbar({
             setMenu(null);
             setSearching(true);
           }}
-          className="hidden h-[50px] min-w-0 flex-shrink items-center gap-2.5 rounded-pill bg-night/25 px-5 text-left text-[15px] text-white/70 transition-colors hover:bg-night/35 md:flex md:w-[360px]"
+          className="hidden h-[var(--header-bar-h)] min-w-0 flex-shrink items-center gap-2.5 rounded-pill bg-night/25 px-[calc(20*var(--u))] text-left text-[length:calc(15*var(--u))] text-white/70 transition-colors hover:bg-night/35 md:flex md:w-[calc(360*var(--u))]"
         >
-          <Search className="h-[18px] w-[18px] flex-shrink-0" />
+          <Search className="h-[var(--icon-box)] w-[var(--icon-box)] flex-shrink-0" />
           <span className="truncate">Search Products, Customers, Pages</span>
         </button>
 
         {/* Notifications and the account. One pill, as drawn. */}
-        <div className="relative flex h-[50px] flex-shrink-0 items-center gap-1 rounded-pill bg-panel px-1.5 shadow-panel">
+        <div className="relative flex h-[var(--header-bar-h)] flex-shrink-0 items-center gap-1 rounded-pill bg-panel px-1.5 shadow-panel">
           <IconButton
             label="Search the admin"
             active={searching}
@@ -163,7 +163,7 @@ export function AdminTopbar({
             }}
             className="md:hidden"
           >
-            <Search className="h-[18px] w-[18px]" />
+            <Search className="h-[var(--icon-box)] w-[var(--icon-box)]" />
           </IconButton>
 
           <IconButton
@@ -171,7 +171,7 @@ export function AdminTopbar({
             active={menu === "bell"}
             onClick={() => setMenu((m) => (m === "bell" ? null : "bell"))}
           >
-            <Bell className="h-[18px] w-[18px]" />
+            <Bell className="h-[var(--icon-box)] w-[var(--icon-box)]" />
             {alerts.length > 0 && (
               <span
                 className="absolute right-1 top-1 h-2 w-2 rounded-full bg-rose ring-2 ring-panel"
@@ -185,7 +185,7 @@ export function AdminTopbar({
             aria-label="Store and account menu"
             aria-expanded={menu === "account"}
             onClick={() => setMenu((m) => (m === "account" ? null : "account"))}
-            className="relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-ink text-[11px] font-semibold text-white transition-transform hover:-translate-y-px"
+            className="relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-ink text-[length:calc(11*var(--u))] font-semibold text-white transition-transform hover:-translate-y-px"
           >
             {initials(storeName)}
             <span
@@ -209,7 +209,7 @@ export function AdminTopbar({
               <div className="absolute right-0 top-full z-50 mt-2 w-72 overflow-hidden rounded-xl border border-control-line bg-control text-ink shadow-lg">
                 {menu === "bell" && (
                   <div className="py-1">
-                    <p className="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-control-soft">
+                    <p className="px-3 pb-1 pt-2 text-[length:calc(11*var(--u))] font-semibold uppercase tracking-wide text-control-soft">
                       Notifications
                     </p>
                     {alerts.length === 0 ? (

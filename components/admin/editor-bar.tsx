@@ -85,7 +85,7 @@ export function EditorBar() {
           bar that wrapped would be two rows tall on the screens with the most
           actions and one row everywhere else, and the content below it would
           start at a different height depending on where you were. */}
-      <div className="scrollbar-none flex h-10 flex-shrink-0 items-center gap-2.5 overflow-x-auto">
+      <div className="scrollbar-none flex h-[var(--actionbar-h)] flex-shrink-0 items-center gap-2.5 overflow-x-auto">
         {dirty ? (
           <p className="flex items-center gap-1.5 px-1 text-xs font-medium text-amber">
             <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0" aria-hidden />

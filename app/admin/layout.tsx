@@ -75,10 +75,10 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
 
       {/* 30px from every edge of the screen, and 30px between the sidebar and
           the column beside it — one margin where two meet, never both. */}
-      <div className="flex min-h-0 flex-1 gap-[30px] p-[30px] pt-0 max-lg:p-4 max-lg:pt-0">
+      <div className="flex min-h-0 flex-1 gap-[var(--gap-lg)] p-[var(--gap-lg)] pt-0 max-lg:p-4 max-lg:pt-0">
         <AdminSidebar />
 
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-[15px]">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-[var(--gap-sm)]">
           {/* The bars of the drawing, in order. The navigation bar carries no
               bottom margin of its own: the action buttons beneath it bring
               15px, and two margins meeting are one margin. */}
@@ -92,7 +92,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
 
           {/* The main container, and the only thing on the screen that
               scrolls. */}
-          <div className="min-h-0 flex-1 overflow-y-auto rounded-2xl bg-panel p-[30px] shadow-container max-lg:p-4">
+          <div className="min-h-0 flex-1 overflow-y-auto rounded-2xl bg-panel p-[var(--gap-lg)] shadow-container max-lg:p-4">
             {children}
           </div>
         </div>

@@ -57,8 +57,8 @@ check("the topbar is the sticky one", /sticky top-0/.test(topbar));
 // it cost two bugs: a `fixed` version that floated free when `overflow-x:
 // hidden` made the bar's stickiness a no-op, and an absolute version needing a
 // hand-computed offset of half a sidebar. Neither problem exists at the left.
-check("the header is 80px", /h-20/.test(topbar));
-check("the mark is 30px", /h-\[30px\]/.test(topbar));
+check("the header is 80 design pixels", /h-\[var\(--header-h\)\]/.test(topbar));
+check("the mark is 30", /h-\[var\(--logo-h\)\]/.test(topbar));
 check(
   "and it is not centred on the window any more",
   !/absolute left-1\/2 top-0/.test(topbar),
@@ -99,16 +99,54 @@ check(
   !/\[data-business-type="restaurant"\]\s*\{[\s\S]{0,80}--color-brand/.test(css)
 );
 
+console.log("\nTHE DRAWING SCALES; IT IS NOT PINNED TO 1920");
+// The panel is drawn on a 1920 x 1080 artboard and every number in the design
+// document is a number on that artboard. Written as literal pixels they are
+// right on that one screen and wrong on every other — reported from a 13"
+// MacBook, whose browser is about 1470 x 830, where a 260px sidebar takes 18%
+// of the width instead of the 13.5% it was drawn as.
+//
+// --u is one pixel of the drawing. Everything is expressed in it, so the panel
+// is the same composition at any size rather than a fixed drawing with the
+// furniture sliding about inside it.
+check("one design pixel is defined", /--u:\s*clamp\(/.test(css));
+check(
+  "it reads both axes, not just the width",
+  /--u:[^;]*100vw \/ 1920[^;]*100vh \/ 1080/.test(css),
+  "scaling on width alone fits the columns and pushes the last section off a short window"
+);
+check(
+  "it is allowed to scale up as well as down",
+  (() => {
+    const m = css.match(/--u:\s*clamp\(([^,]+),[\s\S]*?,\s*([^)]+)\)\s*;/);
+    if (!m) return false;
+    return parseFloat(m[1]) < 1 && parseFloat(m[2]) > 1;
+  })(),
+  "a larger display should get the drawing larger — the design is a proportion, not a maximum"
+);
+check("the frame's measurements are named once", /--sidebar-w:\s*calc\(260 \* var\(--u\)\)/.test(css));
+// The whole point: a literal px anywhere in the frame is the artboard leaking
+// onto every other screen. Tailwind's own scale (p-2.5, gap-1) is left alone —
+// those are small paddings inside a control, not drawn measurements.
+check(
+  "and no frame file pins a drawn measurement to literal pixels",
+  (() => {
+    const frame = [layout, topbar, sidebar, navbar];
+    return frame.every((src) => !/(?:^|[^a-z-])(?:w|h|text|gap|px|py|p)-\[\d[\d.]*px\]/.test(src));
+  })(),
+  "every drawn number goes through --u"
+);
+
 console.log("\nSPACING IS THE DOCUMENT'S, AND STEPS DOWN ON A PHONE");
 // The panel used a gutter that scaled with the window. The global design
 // document gives one number instead — 30px from every edge — so the fluid
 // gutter and the fluid page title are both gone rather than left unused.
 check("nothing is left using the old fluid gutter", !/gutter-fluid/.test(layout + topbar));
-check("the document's 30px is what the frame uses", /p-\[30px\]/.test(layout));
+check("the document's 30 is what the frame uses", /p-\[var\(--gap-lg\)\]/.test(layout));
 check(
   "the gap between sidebar and content is one margin, not two",
-  /gap-\[30px\]/.test(layout),
-  "30px meeting 30px is 30px; counting both gives 60 and pulls the layout apart"
+  /gap-\[var\(--gap-lg\)\]/.test(layout),
+  "30 meeting 30 is 30; counting both gives 60 and pulls the layout apart"
 );
 check(
   "and it steps down below the sidebar's breakpoint",

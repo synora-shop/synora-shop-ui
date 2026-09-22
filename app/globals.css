@@ -166,6 +166,54 @@
   --color-brand-700: #3232a8;
   --color-brand-900: #24246b;
 
+  /* ONE DESIGN PIXEL.
+   *
+   * Every measurement in the panel is drawn on a 1920 x 1080 artboard, and a
+   * number taken off that artboard is only correct on that artboard. Written
+   * as literal pixels they were wrong everywhere else — worst on a 13" laptop,
+   * whose browser is about 1470 x 830, where a 260px sidebar takes 18% of the
+   * width instead of the 13.5% it was drawn as, and a 750px section is nearly
+   * the whole of the scrollable height rather than two thirds of it.
+   *
+   * So `--u` is one pixel *of the drawing*, and everything below is expressed
+   * in it: `calc(260 * var(--u))`, never `260px`. The panel is then the same
+   * composition at every size, scaled, rather than a fixed drawing with the
+   * furniture sliding around inside it.
+   *
+   * Both axes, not just width. The drawing is a whole screen and its height is
+   * as much a part of it as its width — scaling on width alone would fit the
+   * columns and push the last section off the bottom on a short window, which
+   * is exactly the machine this was reported from.
+   *
+   * The floor stops it becoming unreadable on a small window: below roughly
+   * 1190px the layout has already dropped to the phone arrangement, where the
+   * sidebar is a drawer and these numbers stop governing. The ceiling lets a
+   * larger display scale *up* — the drawing is a proportion, not a maximum —
+   * and stops short of a factor that would turn 20px body text into headlines
+   * on a 4K panel running unscaled. */
+  --u: clamp(0.62px, min(calc(100vw / 1920), calc(100vh / 1080)), 1.35px);
+
+  /* The frame, in design pixels. Named rather than repeated, so a number that
+     moves in the design moves in one place here. */
+  --header-h: calc(80 * var(--u));
+  --header-bar-h: calc(50 * var(--u));
+  --logo-h: calc(30 * var(--u));
+  --sidebar-w: calc(260 * var(--u));
+  --navbar-h: calc(55 * var(--u));
+  --actionbar-h: calc(40 * var(--u));
+  --row-h: calc(40.5 * var(--u));
+  /* 30px from every edge, and two adjacent margins are one margin. 15px is
+     what the document gives for the gaps inside the sidebar and around the
+     action bar. */
+  --gap-lg: calc(30 * var(--u));
+  --gap-sm: calc(15 * var(--u));
+  --pad-container: calc(10 * var(--u));
+  /* Type. 20 normal, 18 secondary, and a 20 x 20 box for every icon whatever
+     the shape of the drawing inside it. */
+  --text-normal: calc(20 * var(--u));
+  --text-secondary: calc(18 * var(--u));
+  --icon-box: calc(20 * var(--u));
+
   --color-shell: #f5f5f5;
   --color-panel: #ffffff;
   /* The header, and the only saturated surface in the panel.

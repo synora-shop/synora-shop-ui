@@ -237,18 +237,28 @@ const side = readFileSync(join(ROOT, "components/admin/admin-sidebar.tsx"), "utf
 // They changed on 22 September: 220px and 18px text with 16px children, which
 // was the shape the sidebar had for one day while it carried the second level.
 const sideNav = side.slice(side.indexOf("<nav"), side.indexOf("</nav>"));
+//
+// They are design pixels, never literal ones — see --u in globals.css. A
+// number lifted off a 1920 artboard and written as `260px` is correct on that
+// artboard and wrong on every other screen; the same number written as
+// `calc(260 * var(--u))` is the proportion the drawing actually specifies.
 check(
-  "the sidebar is 260px",
-  /lg:w-\[260px\]/.test(side),
-  "the one column in the panel that does not flex"
+  "the sidebar is 260 design pixels",
+  /lg:w-\[var\(--sidebar-w\)\]/.test(side),
+  "the one column in the panel that does not flex — but it still scales"
 );
-check("a band container pads 10px", /p-2\.5/.test(sideNav));
-check("the bands are 15px apart", /gap-\[15px\]/.test(sideNav));
-check("a row is 40.5px", /h-\[40\.5px\]/.test(sideNav));
-check("a section reads at 20px", /text-\[20px\]/.test(sideNav));
+check("a band container pads 10", /p-\[var\(--pad-container\)\]/.test(sideNav));
+check("the bands are 15 apart", /gap-\[var\(--gap-sm\)\]/.test(sideNav));
+check("a row is 40.5", /h-\[var\(--row-h\)\]/.test(sideNav));
+check("a section reads at 20", /text-\[length:var\(--text-normal\)\]/.test(sideNav));
 // The glyph box is the point, not the glyph. An icon wider than it is tall
 // still occupies 20 x 20, which is what keeps the column optically aligned.
-check("its glyph sits in a 20px box", /h-5 w-5/.test(sideNav));
+check("its glyph sits in a 20 box", /var\(--icon-box\)/.test(sideNav));
+check(
+  "and none of it is a literal pixel",
+  !/(?:w|h|text|gap|p)-\[\d[\d.]*px\]/.test(sideNav),
+  "a literal px is the 1920 artboard leaking onto every other screen"
+);
 
 // Twenty-five different buttons shipped while a Button primitive sat unused in
 // half the panel — five paddings for the primary alone. A button built out of
