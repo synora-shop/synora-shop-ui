@@ -119,7 +119,7 @@ export function PageList({
     return (
       <>
         {dialog}
-        <p className="rounded-xl border border-dashed border-border bg-surface px-5 py-10 text-center text-sm text-ink-soft">
+        <p className="rounded-[var(--radius-container)] border border-dashed border-border bg-surface px-5 py-10 text-center text-sm text-ink-soft">
           {emptyMessage}
         </p>
       </>
@@ -128,7 +128,7 @@ export function PageList({
 
   return (
     <>
-    <div className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface">
+    <div className="divide-y divide-border overflow-hidden rounded-[var(--radius-container)] border border-border bg-surface">
       {dialog}
       {rows.map((page) => (
         <SwipeRow
@@ -159,7 +159,7 @@ export function PageList({
                   toggle(page.id);
                 }}
                 className={cn(
-                  // An explicit radius: this design system's rounded-md is
+                  // An explicit radius: this design system's rounded-[var(--radius-control)] is
                   // 14px, which on a 20px box is a circle, and a circle means
                   // "pick one of these".
                   "flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-[5px] border transition-colors",

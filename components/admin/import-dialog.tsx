@@ -138,7 +138,7 @@ export function ImportDialog({
             role="dialog"
             aria-modal="true"
             aria-label={`Import ${plural}`}
-            className="relative flex max-h-full w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-control-line bg-control shadow-lg"
+            className="relative flex max-h-full w-full max-w-2xl flex-col overflow-hidden rounded-[var(--radius-container)] border border-control-line bg-control shadow-lg"
           >
             <div className="border-b border-control-line px-4 py-3">
               <h2 className="text-sm font-semibold text-ink">Import {plural}</h2>
@@ -148,7 +148,7 @@ export function ImportDialog({
             <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">
               <label
                 className={cn(
-                  "flex cursor-pointer flex-col items-center gap-1.5 rounded-xl border border-dashed border-border px-4 py-6 text-center transition-colors hover:border-brand-500 hover:bg-brand-50/40",
+                  "flex cursor-pointer flex-col items-center gap-1.5 rounded-[var(--radius-container)] border border-dashed border-border px-4 py-6 text-center transition-colors hover:border-brand-500 hover:bg-brand-50/40",
                   name && "border-solid"
                 )}
               >
@@ -169,7 +169,7 @@ export function ImportDialog({
               </label>
 
               {error && (
-                <p className="mt-3 flex items-start gap-2 rounded-lg border border-rose/30 bg-rose-bg px-3 py-2 text-sm text-ink">
+                <p className="mt-3 flex items-start gap-2 rounded-[var(--radius-control)] border border-rose/30 bg-rose-bg px-3 py-2 text-sm text-ink">
                   <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-rose" />
                   {error}
                 </p>
@@ -209,7 +209,7 @@ export function ImportDialog({
                   )}
 
                   {plan.problems.length > 0 && (
-                    <ul className="space-y-1 rounded-lg border border-amber/30 bg-amber-bg/50 px-3 py-2">
+                    <ul className="space-y-1 rounded-[var(--radius-control)] border border-amber/30 bg-amber-bg/50 px-3 py-2">
                       {plan.problems.slice(0, 8).map((problem, i) => (
                         <li key={i} className="text-xs leading-snug text-ink">
                           <span className="font-mono text-ink-soft">Line {problem.line}</span> —{" "}
@@ -225,7 +225,7 @@ export function ImportDialog({
                   )}
 
                   {plan.rows.length > 0 && (
-                    <div className="overflow-hidden rounded-lg border border-border">
+                    <div className="overflow-hidden rounded-[var(--radius-control)] border border-border">
                       <ul className="max-h-64 divide-y divide-border overflow-y-auto">
                         {plan.rows.map((row) => (
                           <li

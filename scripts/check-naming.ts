@@ -133,19 +133,44 @@ check(
   named.length > 0 && named.every((n) => exported.includes(n)),
   `missing: ${named.filter((n) => !exported.includes(n)).join(", ")}`
 );
-check(
-  "every glyph drawn is used by a section",
-  exported.length === usedInNav.length,
-  `drawn but unused: ${exported.filter((n) => !usedInNav.includes(n)).join(", ")}`
-);
+// Used somewhere, not necessarily by the sidebar. AddIcon is a button's glyph
+// rather than a section's, and the rule being protected is that nothing is
+// drawn and left on the shelf — not that every drawing is a sidebar row.
+{
+  const adminSrc = walk(join(ROOT, "app/admin"))
+    .concat(walk(join(ROOT, "components/admin")))
+    .filter((f) => /\.tsx$/.test(f) && !f.endsWith("nav-icons.tsx"))
+    .map((f) => readFileSync(f, "utf8"))
+    .join("\n");
+  const unused = exported.filter(
+    (n) => !usedInNav.includes(n) && !new RegExp(`<${n}[\\s/>]`).test(adminSrc)
+  );
+  check(
+    "every glyph drawn is used somewhere",
+    unused.length === 0,
+    `drawn but unused: ${unused.join(", ")}`
+  );
+}
 
-// Six came from the design file. The seventh did not, because the sidebar had
-// six sections when that file was drawn — it is marked as drawn-to-match in
-// nav-icons.tsx and should be replaced when Assestz gains a real one.
+// Every glyph is now the drawn one. CustomersIcon was hand-made while the
+// design file had six sections and no customers glyph; Assestz has one, and it
+// replaced the stand-in. A glyph that merely *matches* the set drifts from it,
+// so this fails if a hand-drawn one comes back wearing the old apology.
 check(
-  "the borrowed glyph says so",
-  !/CustomersIcon/.test(icons) || /NOT from Assestz/.test(icons),
-  "an icon that is not from the design file must say which one it is"
+  "no glyph is a stand-in for a drawing that exists",
+  !/NOT from Assestz|drawn here to match/i.test(icons),
+  "Assestz has the real one; take it rather than approximating it"
+);
+// The drawn Customers glyph, by a path only the real file has.
+check(
+  "Customers is the drawn glyph",
+  /viewBox="0 0 22\.84 20\.94"/.test(icons),
+  "the hand-made one had a different viewBox and a different weight"
+);
+check(
+  "and Add is too",
+  /viewBox="0 0 20\.37 20\.37"/.test(icons),
+  "lucide's Plus is a bare cross on a different grid at a different weight"
 );
 // The source files carry their own fills, which would ignore the active pill
 // and leave a dark glyph sitting on the brand colour. Matched on the attribute
@@ -242,6 +267,30 @@ const sideNav = side.slice(side.indexOf("<nav"), side.indexOf("</nav>"));
 // number lifted off a 1920 artboard and written as `260px` is correct on that
 // artboard and wrong on every other screen; the same number written as
 // `calc(260 * var(--u))` is the proportion the drawing actually specifies.
+// Corners scale with everything else, and nested ones follow the rule: the
+// inner radius is the outer minus the padding between them. A 16px card
+// holding a 16px picture inset by 10px draws two curves of different centres a
+// hair apart — the uneven offset border that was at every seam in the panel.
+{
+  const admin = walk(join(ROOT, "app/admin"))
+    .concat(walk(join(ROOT, "components/admin")))
+    .filter((f) => /\.tsx$/.test(f));
+  const fixed = admin.filter((f) =>
+    /(?<=[\s"'])rounded-(?:sm|md|lg|xl|2xl|3xl)(?=[\s"'])/.test(readFileSync(f, "utf8"))
+  );
+  check(
+    "no corner is pinned to a fixed radius",
+    fixed.length === 0,
+    `${fixed.length} file(s), first: ${fixed[0]?.split("/").pop() ?? ""}`
+  );
+  check(
+    "and the three nesting radii are defined",
+    /--radius-container:/.test(css) &&
+      /--radius-inner:/.test(css) &&
+      /--radius-control:/.test(css)
+  );
+}
+
 check(
   "the sidebar is 260 design pixels",
   /lg:w-\[var\(--sidebar-w\)\]/.test(side),

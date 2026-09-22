@@ -79,7 +79,7 @@ export function BinOrderList({ orders }: { orders: BinOrderRow[] }) {
           description="Orders you delete land here first, and can be restored for as long as they sit in it."
         />
       ) : (
-      <div className="mt-6 divide-y divide-border rounded-xl border border-border bg-surface">
+      <div className="mt-6 divide-y divide-border rounded-[var(--radius-container)] border border-border bg-surface">
         {rows.map((o) => (
           <SwipeRow
             key={o.id}

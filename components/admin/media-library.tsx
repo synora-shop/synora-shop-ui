@@ -94,13 +94,13 @@ export function MediaLibrary({
   if (view === "list") {
     return (
       <>
-        <div className="divide-y divide-border rounded-xl border border-border bg-surface">
+        <div className="divide-y divide-border rounded-[var(--radius-container)] border border-border bg-surface">
           {assets.map((asset) => (
             <div
               key={asset.id}
               className="group grid grid-cols-[2.75rem_minmax(0,1fr)_auto] items-center gap-3 px-4 py-2.5 lg:gap-4"
             >
-              <div className="h-11 w-11 overflow-hidden rounded-lg border border-border bg-subtle">
+              <div className="h-11 w-11 overflow-hidden rounded-[var(--radius-control)] border border-border bg-subtle">
                 {/* eslint-disable-next-line @next/next/no-img-element -- Blob URLs
                     are arbitrary hosts; next/image would need each one allowed. */}
                 <img src={asset.url} alt="" loading="lazy" className="h-full w-full object-cover" />
@@ -163,7 +163,7 @@ export function MediaLibrary({
         {assets.map((asset) => (
           <li
             key={asset.id}
-            className="group relative overflow-hidden rounded-xl border border-border bg-surface transition-shadow hover:shadow-sm"
+            className="group relative overflow-hidden rounded-[var(--radius-container)] border border-border bg-surface transition-shadow hover:shadow-sm"
           >
             {/* The picture is the button. Copying the address is what a merchant
                 comes here to do — every image field in the admin accepts a

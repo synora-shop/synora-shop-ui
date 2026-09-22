@@ -42,7 +42,7 @@ export default function AdminError({
           </Button>
           <Link
             href="/admin"
-            className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-border bg-surface px-3.5 py-2 text-sm font-medium text-ink transition-colors hover:bg-subtle"
+            className="inline-flex items-center justify-center gap-1.5 rounded-[var(--radius-control)] border border-border bg-surface px-3.5 py-2 text-sm font-medium text-ink transition-colors hover:bg-subtle"
           >
             Back to dashboard
           </Link>

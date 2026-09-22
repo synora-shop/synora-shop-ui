@@ -94,7 +94,7 @@ export function AdminSearch({ open, onClose }: { open: boolean; onClose: () => v
         role="dialog"
         aria-modal="true"
         aria-label="Search the admin"
-        className="relative w-full max-w-xl overflow-hidden rounded-xl border border-control-line bg-control shadow-lg"
+        className="relative w-full max-w-xl overflow-hidden rounded-[var(--radius-container)] border border-control-line bg-control shadow-lg"
       >
         <div className="flex items-center gap-2.5 border-b border-control-line px-3.5">
           <Search className="h-4 w-4 flex-shrink-0 text-ink-faint" />
@@ -111,7 +111,7 @@ export function AdminSearch({ open, onClose }: { open: boolean; onClose: () => v
             aria-label="Search the admin"
             className="h-12 min-w-0 flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-ink-faint"
           />
-          <kbd className="hidden flex-shrink-0 rounded-md border border-border bg-subtle px-1.5 py-0.5 font-mono text-[10px] text-ink-faint sm:block">
+          <kbd className="hidden flex-shrink-0 rounded-[var(--radius-control)] border border-border bg-subtle px-1.5 py-0.5 font-mono text-[10px] text-ink-faint sm:block">
             esc
           </kbd>
         </div>

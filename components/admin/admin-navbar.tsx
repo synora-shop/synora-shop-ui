@@ -36,7 +36,7 @@ export function AdminNavbar() {
   return (
     <nav
       aria-label="Section"
-      className="h-[var(--navbar-h)] flex-shrink-0 rounded-2xl bg-panel shadow-container"
+      className="h-[var(--navbar-h)] flex-shrink-0 rounded-[var(--radius-container)] bg-panel shadow-container"
     >
       {/* Sliding rather than wrapping, and only when it has to.
           
@@ -60,7 +60,7 @@ export function AdminNavbar() {
                   // 20px, and the active one is semibold rather than merely
                   // coloured — the same three-part active state as the
                   // sidebar: plate, colour, weight.
-                  "flex h-[calc(38*var(--u))] items-center rounded-lg px-[calc(14*var(--u))] text-[length:var(--text-normal)] transition-colors",
+                  "flex h-[calc(38*var(--u))] items-center rounded-[var(--radius-control)] px-[calc(14*var(--u))] text-[length:var(--text-normal)] transition-colors",
                   here
                     ? "bg-selected font-semibold text-brand-500"
                     : "text-control-ink hover:bg-control"

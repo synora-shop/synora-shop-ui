@@ -107,7 +107,7 @@ export function AdminSidebar() {
             were trying to reach off the screen. At ten rows it never fires. */}
         <nav className="flex flex-col gap-[var(--gap-sm)] overflow-y-auto p-2.5 lg:p-0">
           {bands.map((band) => (
-            <div key={band[0].group} className="rounded-2xl bg-panel p-[var(--pad-container)] shadow-container">
+            <div key={band[0].group} className="rounded-[var(--radius-container)] bg-panel p-[var(--pad-container)] shadow-container">
               <ul>
                 {band.map((item) => {
                   const here = item.key === section.key;
@@ -123,7 +123,7 @@ export function AdminSidebar() {
                           // The box is the point rather than the drawing inside
                           // it: an icon wider than it is tall still occupies
                           // 20 x 20, which is what keeps the column aligned.
-                          "flex h-[var(--row-h)] items-center gap-[calc(10*var(--u))] rounded-lg px-[var(--pad-container)] text-[length:var(--text-normal)] transition-colors",
+                          "flex h-[var(--row-h)] items-center gap-[calc(10*var(--u))] rounded-[var(--radius-control)] px-[var(--pad-container)] text-[length:var(--text-normal)] transition-colors",
                           here
                             ? "bg-selected font-semibold text-brand-500"
                             : "text-control-ink hover:bg-control"

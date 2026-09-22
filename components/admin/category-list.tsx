@@ -90,7 +90,7 @@ function Row({
             aria-expanded={editingDetails}
             aria-label={`Edit the ${category.name} collection`}
             title="Picture, description and SEO"
-            className="h-11 w-11 flex-shrink-0 overflow-hidden rounded-lg border border-border bg-subtle transition-colors hover:border-brand-500"
+            className="h-11 w-11 flex-shrink-0 overflow-hidden rounded-[var(--radius-control)] border border-border bg-subtle transition-colors hover:border-brand-500"
           >
             {category.details.image ? (
               // eslint-disable-next-line @next/next/no-img-element -- arbitrary/pasted URLs, skip the image optimizer
@@ -178,7 +178,7 @@ export function CategoryList({ categories }: { categories: CategoryRow[] }) {
     <div>
       {dialog}
       {error && <FieldError className="mb-2">{error}</FieldError>}
-      <div className="divide-y divide-border rounded-lg border border-border bg-white">
+      <div className="divide-y divide-border rounded-[var(--radius-control)] border border-border bg-white">
         {rows.map((cat) => (
           <Row
             key={cat.id}

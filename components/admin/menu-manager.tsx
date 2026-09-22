@@ -113,7 +113,7 @@ export function MenuManager({
 
         <div className="mt-2.5 grid gap-2.5 sm:grid-cols-2">
           {slots.map((slot) => (
-            <div key={slot.slot} className="rounded-xl border border-border bg-surface p-3">
+            <div key={slot.slot} className="rounded-[var(--radius-container)] border border-border bg-surface p-3">
               <FieldLabel htmlFor={`slot-${slot.slot}`}>{slot.label}</FieldLabel>
               <select
                 id={`slot-${slot.slot}`}
@@ -150,7 +150,7 @@ export function MenuManager({
         </div>
 
         {creating && (
-          <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg border border-border bg-white p-4">
+          <div className="mt-3 flex flex-wrap items-center gap-2 rounded-[var(--radius-control)] border border-border bg-white p-4">
             <input
               autoFocus
               value={newName}
@@ -248,7 +248,7 @@ function MenuCard({
   }
 
   return (
-    <div className="rounded-lg border border-border bg-white">
+    <div className="rounded-[var(--radius-control)] border border-border bg-white">
       <div className="flex flex-wrap items-center gap-2 px-4 py-3">
         <button
           type="button"

@@ -32,7 +32,7 @@ export function Section({
   return (
     <section
       className={cn(
-        "rounded-2xl border border-section-line bg-section p-[var(--gap-lg)] shadow-section",
+        "rounded-[var(--radius-container)] border border-section-line bg-section p-[var(--gap-lg)] shadow-section",
         className
       )}
     >

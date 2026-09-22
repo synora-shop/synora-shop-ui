@@ -206,7 +206,7 @@ export function SectionList({ pageId, sections: initial }: { pageId: string; sec
       ))}
 
       {sections.length === 0 && (
-        <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-ink-soft">
+        <p className="rounded-[var(--radius-control)] border border-dashed border-border p-6 text-center text-sm text-ink-soft">
           No sections yet, add one below.
         </p>
       )}

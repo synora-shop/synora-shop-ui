@@ -253,7 +253,7 @@ export function ProductForm({
           </div>
 
           <Field label="Categories" hint="A product can belong to more than one.">
-            <div className="flex flex-wrap gap-3 rounded-lg border border-border p-3">
+            <div className="flex flex-wrap gap-3 rounded-[var(--radius-control)] border border-border p-3">
               {categories.map((c) => {
                 const isSale = c.id === saleCategory?.id;
                 const locked = isSale && onSale;
@@ -318,7 +318,7 @@ export function ProductForm({
           {variants.map((v, i) => (
             <div
               key={i}
-              className="grid grid-cols-2 items-center gap-2 rounded-lg border border-border p-2 sm:grid-cols-12 sm:border-0 sm:p-0"
+              className="grid grid-cols-2 items-center gap-2 rounded-[var(--radius-control)] border border-border p-2 sm:grid-cols-12 sm:border-0 sm:p-0"
             >
               <input
                 placeholder="Size"

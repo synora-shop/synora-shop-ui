@@ -97,7 +97,7 @@ export function PaymentsForm({ initial }: { initial: PaymentsState }) {
             const isLastOne = on && enabled.length === 1;
 
             return (
-              <div key={method.value} className="rounded-lg border border-border p-3">
+              <div key={method.value} className="rounded-[var(--radius-control)] border border-border p-3">
                 <ToggleSwitch
                   inline
                   label={method.label}

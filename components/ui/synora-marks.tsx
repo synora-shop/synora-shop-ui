@@ -28,7 +28,17 @@ type MarkProps = { className?: string; title?: string };
 export function SynoraAppMark({ className, title = "synora app" }: MarkProps) {
   return (
     <svg
-      viewBox="0 0 154.98 26.69"
+      // Half a unit of air on every side.
+      //
+      // The artwork exactly fills its own viewBox — the "app" box runs from
+      // y=0 to y=26.69 — and an SVG clips to its viewBox by default. At any
+      // fractional rendered height, which is every height now that the panel
+      // scales, the bottom row of pixels was being cut: on a 13" laptop the
+      // box lost its lower edge and the mark read as broken.
+      //
+      // Padding the viewBox rather than switching off the clip, because the
+      // clip is right — what was wrong was a drawing with no margin.
+      viewBox="-0.5 -0.5 155.98 27.69"
       role="img"
       aria-label={title}
       fill="currentColor"

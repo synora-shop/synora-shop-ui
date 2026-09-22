@@ -41,7 +41,7 @@ export function AddCategoryForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="h-fit space-y-3 rounded-lg border border-border bg-white p-5">
+    <form onSubmit={handleSubmit} className="h-fit space-y-3 rounded-[var(--radius-control)] border border-border bg-white p-5">
       {dialog}
       <CardTitle as="h3">Add Category</CardTitle>
       <input

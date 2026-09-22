@@ -29,7 +29,7 @@ export default async function AdminSiteTextPage() {
         {Array.from(groups.entries()).map(([group, keys]) => (
           <div key={group}>
             <SectionDivider title={group} />
-            <div className="mt-2 rounded-xl border border-border bg-surface p-4">
+            <div className="mt-2 rounded-[var(--radius-container)] border border-border bg-surface p-4">
               {keys.map(({ key, label }) => {
                 const defaultValue = SITE_TEXT_DEFAULTS[key].value;
                 const isOverridden = overrideMap.has(key);

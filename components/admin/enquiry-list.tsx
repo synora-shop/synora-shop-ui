@@ -96,7 +96,7 @@ export function EnquiryList({ enquiries }: { enquiries: EnquiryRow[] }) {
         const open = openId === row.id;
         const meta = STATUS_META[row.status] ?? STATUS_META.NEW;
         return (
-          <div key={row.id} className="overflow-hidden rounded-xl border border-border bg-surface">
+          <div key={row.id} className="overflow-hidden rounded-[var(--radius-container)] border border-border bg-surface">
             <button
               type="button"
               onClick={() => setOpenId(open ? null : row.id)}
@@ -154,7 +154,7 @@ export function EnquiryList({ enquiries }: { enquiries: EnquiryRow[] }) {
                 <p className="mt-4 whitespace-pre-wrap text-sm leading-relaxed">{row.message}</p>
 
                 {Object.keys(row.details).length > 0 && (
-                  <dl className="mt-4 grid gap-x-6 gap-y-1.5 rounded-lg bg-subtle p-3 sm:grid-cols-2">
+                  <dl className="mt-4 grid gap-x-6 gap-y-1.5 rounded-[var(--radius-control)] bg-subtle p-3 sm:grid-cols-2">
                     {Object.entries(row.details).map(([key, value]) => (
                       <div key={key} className="flex items-baseline justify-between gap-3">
                         <dt className="text-xs text-ink-soft">
@@ -232,7 +232,7 @@ function NotesBox({ id, initial }: { id: string; initial: string }) {
         onChange={(e) => setNotes(e.target.value)}
         onBlur={persist}
         placeholder="Quoted 480/unit, waiting on fabric confirmation…"
-        className="mt-1 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-300"
+        className="mt-1 w-full rounded-[var(--radius-control)] border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-300"
       />
       <p className="mt-1 text-[11px] text-ink-faint">
         Only you can see this. Saves when you click away.

@@ -48,7 +48,7 @@ export function PolicyPages({
         return (
           <li
             key={policy.key}
-            className="flex flex-col rounded-xl border border-border bg-surface p-3.5"
+            className="flex flex-col rounded-[var(--radius-container)] border border-border bg-surface p-3.5"
           >
             <p className="flex items-center gap-1.5 text-sm font-medium text-ink">
               <ScrollText className="h-3.5 w-3.5 flex-shrink-0 text-ink-faint" aria-hidden />

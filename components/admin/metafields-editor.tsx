@@ -110,7 +110,7 @@ export function MetafieldsEditor({
       )}
 
       {rows.length > 0 && (
-        <div className="divide-y divide-border rounded-xl border border-border bg-surface">
+        <div className="divide-y divide-border rounded-[var(--radius-container)] border border-border bg-surface">
           {rows.map((row) => (
             <div key={row.id} className="flex flex-wrap items-start gap-3 p-3">
               <div className="min-w-0 flex-1">
@@ -131,7 +131,7 @@ export function MetafieldsEditor({
                 disabled={busy}
                 onClick={() => remove(row)}
                 aria-label={`Remove ${row.namespace}.${row.key}`}
-                className="rounded-lg p-1.5 text-ink-soft transition-colors hover:bg-rose-bg hover:text-rose disabled:opacity-50"
+                className="rounded-[var(--radius-control)] p-1.5 text-ink-soft transition-colors hover:bg-rose-bg hover:text-rose disabled:opacity-50"
               >
                 <Trash2 className="h-4 w-4" />
               </button>
@@ -141,7 +141,7 @@ export function MetafieldsEditor({
       )}
 
       {adding ? (
-        <div className="space-y-3 rounded-xl border border-border bg-surface p-3">
+        <div className="space-y-3 rounded-[var(--radius-container)] border border-border bg-surface p-3">
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="block">
               <span className="text-xs font-medium text-ink-soft">Namespace</span>

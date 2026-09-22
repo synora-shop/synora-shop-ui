@@ -73,9 +73,26 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
         alerts={await pendingWork(schemaType)}
       />
 
-      {/* 30px from every edge of the screen, and 30px between the sidebar and
-          the column beside it — one margin where two meet, never both. */}
-      <div className="flex min-h-0 flex-1 gap-[var(--gap-lg)] p-[var(--gap-lg)] max-lg:p-4">
+      {/* The background, as a block that tucks under the header.
+        *
+        * The global design document says the background *overlaps* the header,
+        * the way it does on synoradigitals.com, and the design file draws it:
+        * the grey does not meet the indigo in a straight seam, it curves away
+        * from it, and the indigo fills the corners behind the curve. It was a
+        * flat edge here, which is the difference between the two screens that
+        * reads first and is hardest to name.
+        *
+        * Pulled up by its own radius so the corners sit against the indigo,
+        * and the header is that much taller to have something behind them.
+        *
+        * The white glow belongs to this block, not to the header — it is the
+        * *background* that glows, and what it lands on is the header above it.
+        * Putting it here rather than inside the bar is what makes that true
+        * rather than merely look true.
+        *
+        * 30px from every edge of the screen, and 30px between the sidebar and
+        * the column beside it — one margin where two meet, never both. */}
+      <div className="relative -mt-[var(--radius-page)] flex min-h-0 flex-1 gap-[var(--gap-lg)] rounded-t-[var(--radius-page)] bg-shell p-[var(--gap-lg)] shadow-glow-page max-lg:p-4">
         <AdminSidebar />
 
         <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-[var(--gap-sm)]">
@@ -92,7 +109,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
 
           {/* The main container, and the only thing on the screen that
               scrolls. */}
-          <div className="min-h-0 flex-1 overflow-y-auto rounded-2xl bg-panel p-[var(--gap-lg)] shadow-container max-lg:p-4">
+          <div className="min-h-0 flex-1 overflow-y-auto rounded-[var(--radius-container)] bg-panel p-[var(--gap-lg)] shadow-container max-lg:p-4">
             {children}
           </div>
         </div>

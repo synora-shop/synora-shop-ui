@@ -330,7 +330,7 @@ export function MaintenanceEditor({
           </p>
           {fields.signups && (
             <div className="mt-2 flex w-full max-w-xs gap-2">
-              <span className="flex-1 rounded-lg border border-border bg-control px-2.5 py-2 text-left text-xs text-ink-faint">
+              <span className="flex-1 rounded-[var(--radius-control)] border border-border bg-control px-2.5 py-2 text-left text-xs text-ink-faint">
                 you@example.com
               </span>
               <span className="rounded-pill bg-brand-600 px-3 py-2 text-xs font-medium text-white">
@@ -390,7 +390,7 @@ export function MaintenanceEditor({
                 </div>
               </div>
 
-              <ul className="divide-y divide-border rounded-lg border border-border">
+              <ul className="divide-y divide-border rounded-[var(--radius-control)] border border-border">
                 {signups.map((signup) => (
                   <li
                     key={signup.id}

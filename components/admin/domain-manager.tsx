@@ -124,7 +124,7 @@ export function DomainManager({
               links people have already shared keep working.
             </p>
 
-            <div className="mt-4 rounded-lg border border-border p-3">
+            <div className="mt-4 rounded-[var(--radius-control)] border border-border p-3">
               <ToggleSwitch
                 checked={mainOn}
                 disabled={pending}
@@ -416,7 +416,7 @@ export function DomainManager({
                 </div>
 
               {showRecords && (
-                <div className="mt-3 ml-7 rounded-xl border border-border p-4">
+                <div className="mt-3 ml-7 rounded-[var(--radius-container)] border border-border p-4">
                   <p className="text-xs leading-snug text-ink-soft">
                     Add these at whoever you bought {domain.hostname} from. Changes usually take a
                     few minutes, occasionally up to an hour.
@@ -445,14 +445,14 @@ export function DomainManager({
                               <span className="w-11 flex-shrink-0 text-xs text-ink-faint">
                                 {field.label}
                               </span>
-                              <code className="min-w-0 flex-1 overflow-x-auto whitespace-nowrap rounded-lg bg-control px-2.5 py-1.5 font-mono text-xs text-ink">
+                              <code className="min-w-0 flex-1 overflow-x-auto whitespace-nowrap rounded-[var(--radius-control)] bg-control px-2.5 py-1.5 font-mono text-xs text-ink">
                                 {field.value}
                               </code>
                               <button
                                 type="button"
                                 onClick={() => copy(field.value)}
                                 aria-label={`Copy the ${field.label.toLowerCase()} for the ${record.type} record`}
-                                className="flex-shrink-0 rounded-lg p-1.5 text-ink-faint transition-colors hover:bg-control hover:text-ink"
+                                className="flex-shrink-0 rounded-[var(--radius-control)] p-1.5 text-ink-faint transition-colors hover:bg-control hover:text-ink"
                               >
                                 <Copy className="h-3.5 w-3.5" />
                               </button>

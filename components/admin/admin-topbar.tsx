@@ -102,24 +102,11 @@ export function AdminTopbar({
     // the header and background have on synoradigitals.com. A painted gradient
     // would look close and behave wrong: the light would not move when the
     // content beneath it does.
-    <header className="relative isolate z-40 h-[var(--header-h)] flex-shrink-0 overflow-hidden bg-header">
-      {/* The page's white glow, falling across the header.
-        *
-        * The global design document asks for it by name: the background
-        * carries a 50px outer glow at 50% white, and that glow lands on the
-        * #5050ea header — the same relationship the header and background have
-        * on synoradigitals.com. It is the whole reason a flat colour reads as
-        * lit rather than stamped on, and the reason this must not be a painted
-        * gradient: the light belongs to the content below, not to the bar.
-        *
-        * Drawn as a hairline at the bottom edge carrying the glow, clipped by
-        * the header's own overflow — so the haze rises into the indigo and
-        * stops there, rather than spilling onto the content underneath it. */}
-      <span
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-px shadow-glow-page"
-      />
-      <div className="flex h-full items-center gap-3 px-[var(--gap-lg)]">
+    <header className="relative z-0 h-[calc(var(--header-h)+var(--radius-page))] flex-shrink-0 bg-header">
+      {/* The bar itself is 80px. The header element is taller by the
+          background's corner radius, and that extra strip exists only to be
+          the indigo showing through behind the curve — see app/admin/layout. */}
+      <div className="flex h-[var(--header-h)] items-center gap-3 px-[var(--gap-lg)]">
         {/* The mark, at the left where the design puts it. It was centred on
             the window while the header was colourless and the centre was the
             only place it could sit without looking like a heading. */}
@@ -190,7 +177,7 @@ export function AdminTopbar({
             <Bell className="h-[var(--icon-box)] w-[var(--icon-box)]" />
             {alerts.length > 0 && (
               <span
-                className="absolute right-1 top-1 h-2 w-2 rounded-full bg-rose ring-2 ring-panel"
+                className="absolute right-0 top-0 h-[calc(8*var(--u))] w-[calc(8*var(--u))] rounded-full bg-rose ring-2 ring-panel"
                 aria-hidden
               />
             )}
@@ -201,12 +188,18 @@ export function AdminTopbar({
             aria-label="Store and account menu"
             aria-expanded={menu === "account"}
             onClick={() => setMenu((m) => (m === "account" ? null : "account"))}
-            className="relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-ink text-[length:calc(11*var(--u))] font-semibold text-white transition-transform hover:-translate-y-px"
+            // Scaled, like everything else in the bar. It was a fixed 36px
+            // circle inside a pill that is 50 design pixels tall — 38px on a
+            // 13" laptop — so the avatar overflowed its own container and the
+            // status dot hung outside the white entirely.
+            className="relative flex h-[calc(38*var(--u))] w-[calc(38*var(--u))] flex-shrink-0 items-center justify-center rounded-full bg-ink text-[length:calc(13*var(--u))] font-semibold text-white transition-transform hover:-translate-y-px"
           >
             {initials(storeName)}
             <span
               className={cn(
-                "absolute -bottom-px -right-px h-2.5 w-2.5 rounded-full ring-2 ring-panel",
+                // Inside the circle, not hanging off it. Outside, it broke the
+                // pill's edge at every size below the one it was drawn at.
+                "absolute bottom-0 right-0 h-[calc(10*var(--u))] w-[calc(10*var(--u))] rounded-full ring-2 ring-ink",
                 isLive ? "bg-green" : "bg-amber"
               )}
               title={isLive ? "Customers can see your store." : "Your store is hidden."}
@@ -222,7 +215,7 @@ export function AdminTopbar({
                 onClick={close}
                 className="fixed inset-0 z-40 cursor-default"
               />
-              <div className="absolute right-0 top-full z-50 mt-2 w-72 overflow-hidden rounded-xl border border-control-line bg-control text-ink shadow-lg">
+              <div className="absolute right-0 top-full z-50 mt-2 w-72 overflow-hidden rounded-[var(--radius-container)] border border-control-line bg-control text-ink shadow-lg">
                 {menu === "bell" && (
                   <div className="py-1">
                     <p className="px-3 pb-1 pt-2 text-[length:calc(11*var(--u))] font-semibold uppercase tracking-wide text-control-soft">
@@ -373,7 +366,9 @@ function IconButton({
       aria-expanded={active}
       onClick={onClick}
       className={cn(
-        "relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full transition-colors",
+        // Scaled: a fixed 36px button in a 50-design-pixel pill overflows it
+        // on every screen narrower than the artboard.
+        "relative flex h-[calc(38*var(--u))] w-[calc(38*var(--u))] flex-shrink-0 items-center justify-center rounded-full transition-colors",
         active ? "bg-brand-500 text-white" : "text-control-ink hover:bg-control",
         className
       )}

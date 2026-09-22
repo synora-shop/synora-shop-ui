@@ -14,12 +14,12 @@ import { cn } from "@/lib/utils";
  * glyph all along, which is its own evidence that they were meant to be
  * sidebar destinations rather than tabs buried under Your App.
  *
- * CustomersIcon is the one exception and is marked as such below: Assestz has
- * no customers glyph, because the sidebar had six sections when it was drawn.
- * It is drawn here to match the set — same fill, same optical weight, same
- * construction — and should be replaced by a real one when the design file
- * gains it. AccountIcon was that way for about half an hour and is not any
- * more; the drawn one arrived and replaced it.
+ * Every glyph here is the drawn one. CustomersIcon was hand-made for a while,
+ * because the sidebar had six sections when the set was first drawn and there
+ * was no customers glyph to take. There is one now, and it replaced the
+ * stand-in — the same way AccountIcon's did. Nothing in this file is drawn by
+ * hand any more, and nothing should be: a glyph that merely *matches* the set
+ * is a glyph that drifts from it.
  *
  * Each arrives with its own viewBox and its own proportions, which is the point
  * and also the catch: Analytics is tall and narrow, Products is square. They
@@ -108,29 +108,44 @@ export function AnalyticsIcon(props: IconProps) {
 }
 
 /**
- * Customers — NOT from Assestz. Drawn to match the set; see the note at the
- * top of this file.
+ * Customers, from Assestz.
  *
  * Two figures rather than one, because the section is a list of people and a
- * single head reads as "your account" — which is a different destination, two
- * rows down under Settings. The second figure is behind and slightly smaller,
- * so the pair still reads at 18px instead of turning into a blob.
+ * single head reads as "your account" — a different destination, two rows down
+ * under Settings. The second is behind and cropped to a half-head, which is
+ * what keeps the pair legible in a 20px box instead of turning into a blob.
+ *
+ * It was hand-drawn here for a fortnight, while the design file still had six
+ * sections and no customers glyph. The drawn one arrived and replaced it.
  */
 export function CustomersIcon(props: IconProps) {
   return (
-    <Glyph viewBox="0 0 22 20.37" {...props}>
+    <Glyph viewBox="0 0 22.84 20.94" {...props}>
       {/* The person in front. */}
-      <path d="M8.55,0C6.11,0,4.13,1.98,4.13,4.42s1.98,4.42,4.42,4.42,4.42-1.98,4.42-4.42S10.99,0,8.55,0ZM8.55,1.85c1.42,0,2.57,1.15,2.57,2.57s-1.15,2.57-2.57,2.57-2.57-1.15-2.57-2.57,1.15-2.57,2.57-2.57Z" />
-      <path d="M8.55,10.37c-3.55,0-6.48,1.72-7.9,4.36-.72,1.34-.83,2.87-.32,4.03.53,1.19,1.62,1.61,2.6,1.61h11.24c.98,0,2.07-.42,2.6-1.61.51-1.16.4-2.69-.32-4.03-1.42-2.64-4.35-4.36-7.9-4.36ZM8.55,12.22c2.9,0,5.16,1.35,6.27,3.39.47.88.5,1.79.31,2.22-.11.25-.26.31-.91.31H2.93c-.65,0-.8-.06-.91-.31-.19-.43-.16-1.34.31-2.22,1.1-2.05,3.36-3.39,6.27-3.39Z" />
-      {/* The one behind: shifted right, drawn smaller, and cut off by the
-          frame the way a second person in a photograph would be. */}
-      <path d="M16.34,2.31c-.5,0-.98.09-1.43.25-.48.17-.73.7-.56,1.18.17.48.7.73,1.18.56.25-.09.52-.14.8-.14,1.32,0,2.39,1.07,2.39,2.39s-1.07,2.39-2.39,2.39c-.28,0-.55-.05-.8-.14-.48-.17-1.01.08-1.18.56-.17.48.08,1.01.56,1.18.45.16.93.25,1.43.25,2.34,0,4.24-1.9,4.24-4.24s-1.9-4.24-4.24-4.24Z" />
-      <path d="M17.72,11.99c-.51,0-.93.41-.93.93s.41.93.93.93c1.79,0,3.17.79,3.83,2.03.28.53.3,1.06.19,1.31-.05.11-.09.14-.35.14-.51,0-.93.41-.93.93s.41.93.93.93c.85,0,1.68-.38,2.05-1.24.42-.97.31-2.19-.25-3.24-1-1.87-3.05-3.7-5.47-3.7Z" />
+      <path d="M8.56,0C5.67,0,3.33,2.34,3.33,5.23s2.34,5.23,5.23,5.23,5.23-2.34,5.23-5.23S11.46,0,8.56,0ZM5.23,5.23c0-1.84,1.49-3.33,3.33-3.33s3.33,1.49,3.33,3.33-1.49,3.33-3.33,3.33-3.33-1.49-3.33-3.33Z" />
+      {/* The half-head behind, which is what makes it people rather than a person. */}
+      <path d="M14.75,0c-.53,0-.95.43-.95.95s.43.95.95.95c1.84,0,3.33,1.49,3.33,3.33s-1.49,3.33-3.33,3.33c-.53,0-.95.43-.95.95s.43.95.95.95c2.89,0,5.23-2.34,5.23-5.23S17.64,0,14.75,0Z" />
+      <path d="M18.16,13.34c.21-.48.77-.7,1.25-.49,2.01.88,3.43,2.89,3.43,5.23v1.9c0,.53-.43.95-.95.95s-.95-.43-.95-.95v-1.9c0-1.56-.94-2.9-2.28-3.49-.48-.21-.7-.77-.49-1.25Z" />
+      <path d="M5.71,12.37c-3.15,0-5.71,2.56-5.71,5.71v1.9c0,.53.43.95.95.95s.95-.43.95-.95v-1.9c0-2.1,1.7-3.81,3.81-3.81h5.71c2.1,0,3.81,1.7,3.81,3.81v1.9c0,.53.43.95.95.95s.95-.43.95-.95v-1.9c0-3.15-2.56-5.71-5.71-5.71h-5.71Z" />
     </Glyph>
   );
 }
 
-/** Settings — Assestz/SVG/Settings icon.svg */
+/**
+ * Add — the plus in a ring, from Assestz.
+ *
+ * Not lucide's Plus, which is a bare cross drawn on a different grid at a
+ * different weight. A button that sits beside the sidebar's glyphs has to be
+ * from the same hand as they are.
+ */
+export function AddIcon(props: IconProps) {
+  return (
+    <Glyph viewBox="0 0 20.37 20.37" {...props}>
+      <path d="M10.19,0C4.56,0,0,4.56,0,10.19s4.56,10.19,10.19,10.19,10.19-4.56,10.19-10.19S15.81,0,10.19,0ZM10.19,1.85c4.6,0,8.33,3.73,8.33,8.33s-3.73,8.33-8.33,8.33S1.85,14.79,1.85,10.19,5.58,1.85,10.19,1.85ZM10.19,5.56c-.51,0-.93.41-.93.93v2.78h-2.78c-.51,0-.93.41-.93.93s.41.93.93.93h2.78v2.78c0,.51.41.93.93.93s.93-.41.93-.93v-2.78h2.78c.51,0,.93-.41.93-.93s-.41-.93-.93-.93h-2.78v-2.78c0-.51-.41-.93-.93-.93Z" />
+    </Glyph>
+  );
+}
+
 export function SettingsIcon(props: IconProps) {
   return (
     <Glyph viewBox="0 0 20.37 20.37" {...props}>

@@ -102,7 +102,12 @@ export type ThemeDefinition = {
 /* -------------------------------------------------------------------------- */
 
 /**
- * Aurora — the storefront this platform has always had.
+ * Loom — the storefront this platform has always had.
+ *
+ * Named Aurora until 22 September; the design files renamed it. The *key* is
+ * unchanged and must stay unchanged: it is what every storefront has stored,
+ * and renaming it would drop every shop running it back to a default. That is
+ * precisely what `key` is for — "stable across renames", as the type says.
  *
  * Registered first and unchanged on purpose: it is what every existing shop is
  * already running, so making it a named theme must be a no-op for them. Its
@@ -112,7 +117,7 @@ const aurora: ThemeDefinition = {
   key: "aurora",
   version: "1.0.0",
   preview: "/themes/aurora.jpg",
-  name: "Aurora",
+  name: "Loom",
   description: "Clean and roomy, with large imagery. A safe first choice.",
   businessTypes: ["ecommerce"],
   sections: [...SECTION_TYPES],
@@ -120,7 +125,9 @@ const aurora: ThemeDefinition = {
 };
 
 /**
- * Atlas — the first theme that is more than a palette.
+ * Kite — the first theme that is more than a palette.
+ *
+ * Named Atlas until 22 September. Key unchanged, for the reason above.
  *
  * Aurora and Meridian differ in colour, type and corner radius, and in nothing
  * else: the same header, the same card, the same grid, the same footer. Atlas
@@ -142,7 +149,7 @@ const atlas: ThemeDefinition = {
   key: "atlas",
   version: "1.0.0",
   preview: "/themes/atlas.jpg",
-  name: "Atlas",
+  name: "Kite",
   description: "Photography-led, with a tight grid and quick buying. For a shop with a look.",
   businessTypes: ["ecommerce"],
   sections: [...SECTION_TYPES],

@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
  * here yet" rather than "something went wrong".
  */
 export function Thumb({ src, size }: { src?: string; size: "row" | "tile" }) {
-  const box = size === "row" ? "h-11 w-11 rounded-lg" : "aspect-square w-full rounded-none";
+  const box = size === "row" ? "h-11 w-11 rounded-[var(--radius-control)]" : "aspect-square w-full rounded-none";
   return (
     <div className={cn("relative flex-shrink-0 overflow-hidden bg-brand-50", box)}>
       {src ? (

@@ -2,7 +2,9 @@
 
 import { useState, useTransition } from "react";
 import Image from "next/image";
-import { Check, ExternalLink, Loader2, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
+import { Check, Loader2, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { AddIcon } from "@/components/admin/nav-icons";
+import { ExternalLinkIcon } from "@/components/ui/synora-marks";
 import {
   chooseTheme,
   installTheme,
@@ -108,7 +110,7 @@ export function ThemeManager({
       <Section title="Active Theme">
         {liveTheme ? (
           <div className="flex flex-col items-center">
-            <div className="w-full max-w-[calc(720*var(--u))] overflow-hidden rounded-xl border border-section-line bg-panel">
+            <div className="w-full max-w-[calc(720*var(--u))] overflow-hidden rounded-[var(--radius-container)] border border-section-line bg-panel">
               {liveTheme.preview ? (
                 <Image
                   src={liveTheme.preview}
@@ -167,8 +169,15 @@ export function ThemeManager({
               const isLive = copy.id === liveId;
               const outOfDate = copy.version !== copy.latest;
               return (
-                <li key={copy.id} className="flex items-center gap-[var(--gap-lg)]">
-                  <div className="h-[calc(108*var(--u))] w-[calc(171*var(--u))] flex-shrink-0 overflow-hidden rounded-lg border border-section-line bg-panel">
+                <li
+                  key={copy.id}
+                  // 144 tall with a 108 thumbnail centred in it, which is what
+                  // puts 37 between one preview and the next. The rows had no
+                  // height of their own, so the thumbnails stacked nearly
+                  // touching and the list read as one smeared block.
+                  className="flex h-[calc(144*var(--u))] items-center gap-[var(--gap-lg)]"
+                >
+                  <div className="h-[calc(108*var(--u))] w-[calc(171*var(--u))] flex-shrink-0 overflow-hidden rounded-[var(--radius-inner)] border border-section-line bg-panel">
                     {copy.preview && (
                       <Image
                         src={copy.preview}
@@ -191,7 +200,8 @@ export function ThemeManager({
                       of the container, and that is already drawn. */}
                   <div
                     className={cn(
-                      "flex min-w-0 flex-1 flex-wrap items-center gap-x-[var(--gap-lg)] gap-y-2 rounded-lg px-[calc(20*var(--u))] py-[calc(20*var(--u))]",
+                      // 95 tall inside the 144 row, 20 of padding, as marked.
+                      "flex h-[calc(95*var(--u))] min-w-0 flex-1 items-center gap-x-[var(--gap-lg)] rounded-[var(--radius-control)] px-[calc(20*var(--u))]",
                       i > 0 && !isLive && "border-t border-section-line",
                       isLive && "bg-[#d2ffd6]"
                     )}
@@ -257,7 +267,7 @@ export function ThemeManager({
                               onClick={() => setMenuKey(null)}
                               className="fixed inset-0 z-40 cursor-default"
                             />
-                            <div className="absolute right-0 top-full z-50 mt-1 w-56 overflow-hidden rounded-xl border border-control-line bg-panel shadow-lg">
+                            <div className="absolute right-0 top-full z-50 mt-1 w-56 overflow-hidden rounded-[var(--radius-container)] border border-control-line bg-panel shadow-lg">
                               <a
                                 href={copy.previewUrl}
                                 target="_blank"
@@ -265,7 +275,7 @@ export function ThemeManager({
                                 onClick={() => setMenuKey(null)}
                                 className="flex items-center gap-2 px-3 py-2 text-[length:var(--text-secondary)] transition-colors hover:bg-control"
                               >
-                                <ExternalLink className="h-4 w-4 text-control-soft" />
+                                <ExternalLinkIcon className="h-[var(--icon-box)] w-[var(--icon-box)] text-control-soft" />
                                 Preview on your shop
                               </a>
                               {!isLive && (
@@ -314,10 +324,13 @@ export function ThemeManager({
             {store.map((theme) => (
               <li
                 key={theme.key}
-                className="flex flex-col overflow-hidden rounded-2xl border border-section-line bg-panel"
+                className="flex flex-col overflow-hidden rounded-[var(--radius-container)] border border-section-line bg-panel"
               >
                 <div className="relative flex-1 p-[calc(10*var(--u))]">
-                  <div className="overflow-hidden rounded-xl bg-control">
+                  {/* 10 in from a 16 corner is a 6 corner. Two curves of different
+                      centres a hair apart is the uneven border you see at every
+                      seam once you have noticed it once. */}
+                  <div className="overflow-hidden rounded-[var(--radius-inner)] bg-control">
                     {theme.preview ? (
                       <Image
                         src={theme.preview}
@@ -337,7 +350,7 @@ export function ThemeManager({
                     aria-label={`Open ${theme.name} full size`}
                     className="absolute right-[calc(20*var(--u))] top-[calc(20*var(--u))] flex h-[calc(30*var(--u))] w-[calc(30*var(--u))] items-center justify-center rounded-full bg-panel/90 text-control-ink shadow-panel transition-transform hover:-translate-y-px"
                   >
-                    <ExternalLink className="h-[calc(15*var(--u))] w-[calc(15*var(--u))]" />
+                    <ExternalLinkIcon className="h-[calc(15*var(--u))] w-[calc(15*var(--u))]" />
                   </a>
                 </div>
 
@@ -360,12 +373,12 @@ export function ThemeManager({
                       type="button"
                       onClick={() => run(theme.key, () => installTheme(theme.key))}
                       disabled={busy(theme.key)}
-                      className="flex h-[calc(35*var(--u))] items-center gap-1.5 rounded-lg bg-ink px-[calc(16*var(--u))] text-[length:var(--text-secondary)] font-medium text-white transition-transform hover:-translate-y-px disabled:opacity-60"
+                      className="flex h-[calc(35*var(--u))] items-center gap-1.5 rounded-[var(--radius-control)] bg-ink px-[calc(16*var(--u))] text-[length:var(--text-secondary)] font-medium text-white transition-transform hover:-translate-y-px disabled:opacity-60"
                     >
                       {busy(theme.key) ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <Loader2 className="h-[var(--icon-box)] w-[var(--icon-box)] animate-spin" />
                       ) : (
-                        <Plus className="h-4 w-4" />
+                        <AddIcon className="h-[var(--icon-box)] w-[var(--icon-box)]" />
                       )}
                       Add
                     </button>
@@ -406,7 +419,7 @@ function RowButton({
   className?: string;
 }) {
   const shape = cn(
-    "flex h-[calc(35*var(--u))] items-center gap-1.5 rounded-lg border border-control-line bg-panel px-[calc(14*var(--u))] text-[length:var(--text-secondary)] text-control-ink transition-colors hover:border-brand-500 hover:text-brand-500 disabled:opacity-60",
+    "flex h-[calc(35*var(--u))] items-center gap-1.5 rounded-[var(--radius-control)] border border-control-line bg-panel px-[calc(14*var(--u))] text-[length:var(--text-secondary)] text-control-ink transition-colors hover:border-brand-500 hover:text-brand-500 disabled:opacity-60",
     className
   );
 

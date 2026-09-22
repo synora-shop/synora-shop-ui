@@ -562,6 +562,15 @@ console.log("\nTHE DOCUMENT STILL DESCRIBES THE CODE");
   for (const theme of Object.values(THEMES)) {
     check(`it names ${theme.name}`, doc.includes(theme.name));
   }
+  // A theme's key is what every storefront has stored. Renaming the display
+  // name is free; renaming a key drops every shop running it back to a
+  // default, which is why the type calls the key "stable across renames" and
+  // why the 22 September rename touched only `name`.
+  check(
+    "the keys are the ones storefronts already store",
+    ["aurora", "atlas"].every((k) => k in THEMES),
+    "a renamed key is every shop on that theme silently losing its design"
+  );
   check(
     "it names the three layers a look resolves through",
     doc.includes("THEME_TOKEN_DEFAULTS") &&

@@ -50,7 +50,7 @@ export function SortMenu({ options, current }: { options: SortChoice[]; current:
             onClick={() => setOpen(false)}
             className="fixed inset-0 z-40 cursor-default"
           />
-          <div className="absolute left-0 top-full z-50 mt-1.5 w-56 overflow-hidden rounded-xl border border-control-line bg-control py-1 shadow-lg">
+          <div className="absolute left-0 top-full z-50 mt-1.5 w-56 overflow-hidden rounded-[var(--radius-container)] border border-control-line bg-control py-1 shadow-lg">
             {options.map((option) => (
               <Link
                 key={option.value}

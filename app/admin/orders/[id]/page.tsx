@@ -111,7 +111,7 @@ export default async function AdminOrderDetailPage(props: PageProps<"/admin/orde
 
       <div className="grid gap-2.5 lg:grid-cols-3">
         <div className="space-y-2.5 lg:col-span-2">
-          <div className="rounded-xl border border-border bg-surface p-4">
+          <div className="rounded-[var(--radius-container)] border border-border bg-surface p-4">
             <CardTitle as="h3">What was ordered</CardTitle>
             <div className="mt-2.5 divide-y divide-border">
               {order.items.map((item) => (
@@ -158,7 +158,7 @@ export default async function AdminOrderDetailPage(props: PageProps<"/admin/orde
             title="Only you can see this"
             description="Cost and profit are taken from what each product cost when the order was placed, so they stay right even if you change a price later."
           />
-          <div className="rounded-xl border border-border bg-surface p-4">
+          <div className="rounded-[var(--radius-container)] border border-border bg-surface p-4">
             <Total label="Profit on this order" value={money(orderProfit)} strong />
             <Total
               label="Margin"
@@ -168,7 +168,7 @@ export default async function AdminOrderDetailPage(props: PageProps<"/admin/orde
         </div>
 
         <div className="space-y-2.5">
-          <div className="rounded-xl border border-border bg-surface p-4">
+          <div className="rounded-[var(--radius-container)] border border-border bg-surface p-4">
             <CardTitle as="h3">Where it is going</CardTitle>
             <div className="mt-2.5 space-y-2.5">
               <Detail label="Customer">
@@ -218,7 +218,7 @@ export default async function AdminOrderDetailPage(props: PageProps<"/admin/orde
             </div>
           </div>
 
-          <div className="rounded-xl border border-border bg-surface p-4">
+          <div className="rounded-[var(--radius-container)] border border-border bg-surface p-4">
             <CardTitle as="h3">Progress</CardTitle>
             <form action={updateOrderStatus} className="mt-2.5 space-y-2">
               <input type="hidden" name="id" value={order.id} />
@@ -238,7 +238,7 @@ export default async function AdminOrderDetailPage(props: PageProps<"/admin/orde
             </form>
           </div>
 
-          <div className="rounded-xl border border-border bg-surface p-4">
+          <div className="rounded-[var(--radius-container)] border border-border bg-surface p-4">
             <div className="flex items-center justify-between gap-2">
               <CardTitle as="h3">Payment</CardTitle>
               <span

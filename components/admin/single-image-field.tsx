@@ -138,7 +138,7 @@ export function SingleImageField({
       >
         {value ? (
           <div
-            className={`group relative w-full overflow-hidden rounded-lg border border-border bg-subtle ${aspect}`}
+            className={`group relative w-full overflow-hidden rounded-[var(--radius-control)] border border-border bg-subtle ${aspect}`}
           >
             {/* eslint-disable-next-line @next/next/no-img-element -- arbitrary/pasted URLs, skip the image optimizer */}
             <img src={value} alt="" className="h-full w-full object-cover" />
@@ -172,7 +172,7 @@ export function SingleImageField({
             type="button"
             onClick={() => fileInput.current?.click()}
             disabled={uploading}
-            className={`flex w-full flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed px-4 py-6 text-center text-xs text-ink-soft transition-colors ${aspect} ${
+            className={`flex w-full flex-col items-center justify-center gap-1 rounded-[var(--radius-control)] border-2 border-dashed px-4 py-6 text-center text-xs text-ink-soft transition-colors ${aspect} ${
               draggingOver ? "border-brand-500 bg-brand-50" : "border-border hover:bg-subtle active:bg-subtle"
             }`}
           >

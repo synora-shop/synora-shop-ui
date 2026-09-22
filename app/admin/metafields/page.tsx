@@ -101,7 +101,7 @@ export default async function MetafieldsPage(props: PageProps<"/admin/metafields
                   key={o.id}
                   href={`/admin/metafields?on=${ownerType}&id=${o.id}`}
                   className={cn(
-                    "block truncate rounded-lg px-2.5 py-2 text-sm transition-colors",
+                    "block truncate rounded-[var(--radius-control)] px-2.5 py-2 text-sm transition-colors",
                     o.id === owner?.id
                       ? "bg-brand-50 font-medium text-brand-600"
                       : "text-ink-soft hover:bg-subtle hover:text-ink"

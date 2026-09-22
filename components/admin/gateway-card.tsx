@@ -120,7 +120,7 @@ export function GatewayCard({ state }: { state: GatewayCardState }) {
   return (
     <>
       {dialog}
-      <div className="rounded-lg border border-border p-3">
+      <div className="rounded-[var(--radius-control)] border border-border p-3">
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div className="min-w-0">
             <p className="flex items-center gap-2 text-sm font-medium text-ink">
@@ -192,7 +192,7 @@ export function GatewayCard({ state }: { state: GatewayCardState }) {
                 onChange={goLive}
               />
             ) : (
-              <p className="flex items-start gap-1.5 rounded-lg bg-panel p-2.5 text-xs leading-snug text-ink-soft">
+              <p className="flex items-start gap-1.5 rounded-[var(--radius-control)] bg-panel p-2.5 text-xs leading-snug text-ink-soft">
                 <ShieldCheck className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-ink-faint" aria-hidden />
                 <span>
                   <span className="font-medium text-ink">One test payment unlocks going live.</span>{" "}

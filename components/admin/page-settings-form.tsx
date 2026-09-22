@@ -123,7 +123,7 @@ export function PageSettingsForm({ page }: { page: PageMeta }) {
 
       {isHome ? (
         <Field label="Address" hint="The homepage is your store's front door, so there is nothing after the slash to change.">
-          <p className="flex h-9 items-center gap-1.5 rounded-lg border border-border bg-subtle px-3 font-mono text-sm text-ink-soft">
+          <p className="flex h-9 items-center gap-1.5 rounded-[var(--radius-control)] border border-border bg-subtle px-3 font-mono text-sm text-ink-soft">
             <Link2 className="h-3.5 w-3.5 flex-shrink-0" />/
           </p>
         </Field>
@@ -161,7 +161,7 @@ export function PageSettingsForm({ page }: { page: PageMeta }) {
             </>
           ) : (
             <div className="flex items-center gap-2">
-              <p className="flex h-9 min-w-0 flex-1 items-center gap-1.5 rounded-lg border border-border bg-subtle px-3 font-mono text-sm text-ink-soft">
+              <p className="flex h-9 min-w-0 flex-1 items-center gap-1.5 rounded-[var(--radius-control)] border border-border bg-subtle px-3 font-mono text-sm text-ink-soft">
                 <Link2 className="h-3.5 w-3.5 flex-shrink-0" />
                 <span className="truncate">/p/{slug}</span>
               </p>

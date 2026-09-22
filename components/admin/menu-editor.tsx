@@ -316,7 +316,7 @@ export function MenuEditor({
   }
 
   return (
-    <div className="rounded-xl border border-border bg-surface">
+    <div className="rounded-[var(--radius-container)] border border-border bg-surface">
       {dialog}
       {error && <FieldError className="px-3 pt-3">{error}</FieldError>}
       <div className="p-2">

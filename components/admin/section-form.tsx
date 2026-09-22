@@ -119,7 +119,7 @@ export function SectionForm({
       {type === "HERO_SLIDESHOW" && (
         <div className="space-y-4">
           {slides.map((slide, i) => (
-            <div key={i} className="space-y-3 rounded-lg border border-border p-3">
+            <div key={i} className="space-y-3 rounded-[var(--radius-control)] border border-border p-3">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-faint">Slide {i + 1}</span>
                 <div className="flex items-center gap-2">
@@ -304,7 +304,7 @@ export function SectionForm({
             <input value={heading} onChange={(e) => setHeading(e.target.value)} className="input" />
           </Field>
           {items.map((item, i) => (
-            <div key={i} className="space-y-2 rounded-lg border border-border p-3">
+            <div key={i} className="space-y-2 rounded-[var(--radius-control)] border border-border p-3">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-faint">Question {i + 1}</span>
                 <div className="flex items-center gap-2">

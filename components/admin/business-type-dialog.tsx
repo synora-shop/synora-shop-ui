@@ -110,7 +110,7 @@ export function BusinessTypeDialog({
             type="button"
             onClick={() => !pending && onClose()}
             aria-label="Close"
-            className="-mr-1 -mt-1 rounded-lg p-1.5 text-ink-faint transition-colors hover:bg-subtle hover:text-ink"
+            className="-mr-1 -mt-1 rounded-[var(--radius-control)] p-1.5 text-ink-faint transition-colors hover:bg-subtle hover:text-ink"
           >
             <X className="h-4 w-4" />
           </button>
@@ -118,7 +118,7 @@ export function BusinessTypeDialog({
 
         <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
           {error && (
-            <p className="notice-in mb-3 rounded-lg bg-rose-bg px-3 py-2 text-sm text-rose" role="alert">
+            <p className="notice-in mb-3 rounded-[var(--radius-control)] bg-rose-bg px-3 py-2 text-sm text-rose" role="alert">
               {error}
             </p>
           )}
@@ -127,7 +127,7 @@ export function BusinessTypeDialog({
               change that. Said before the list rather than after it: a merchant
               who reads the reason first does not click a row and wonder. */}
           {mode === "switch" && !gate.allowed && (
-            <div className="mb-3 rounded-xl border border-amber/30 bg-amber-bg px-3.5 py-3">
+            <div className="mb-3 rounded-[var(--radius-container)] border border-amber/30 bg-amber-bg px-3.5 py-3">
               <p className="flex items-start gap-2 text-sm leading-snug text-ink">
                 <PauseCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber" aria-hidden />
                 {gate.reason}
@@ -176,7 +176,7 @@ export function BusinessTypeDialog({
                       ? { type: "button" as const, onClick: () => choose(t.key), disabled: pending }
                       : {})}
                     className={cn(
-                      "w-full rounded-xl border p-3.5 text-left transition-colors",
+                      "w-full rounded-[var(--radius-container)] border p-3.5 text-left transition-colors",
                       isCurrent
                         ? "border-green bg-green-bg"
                         : canSwitch
@@ -209,7 +209,7 @@ export function BusinessTypeDialog({
           </ul>
 
           {mode === "info" && (
-            <p className="mt-4 flex items-start gap-2 rounded-lg bg-subtle px-3 py-2.5 text-xs text-ink-soft">
+            <p className="mt-4 flex items-start gap-2 rounded-[var(--radius-control)] bg-subtle px-3 py-2.5 text-xs text-ink-soft">
               <Info className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" aria-hidden />
               Still unsure? Pick the closest one. Changing it later keeps everything
               you have made — each type remembers its own storefront.

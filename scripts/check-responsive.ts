@@ -55,12 +55,28 @@ check("the sidebar declares no bar of its own", sidebarTopBars === 0, `found ${s
 // first row of a shell exactly one screen tall — so sticky would be a rule
 // with nothing to do, and `relative` is what the glow at its bottom edge is
 // positioned against.
-check("the header is the top row and does not scroll away", /relative isolate/.test(topbar));
+check("the header is the top row and does not scroll away", /relative z-0 h-\[calc\(var\(--header-h\)/.test(topbar));
+// It is taller than the bar it holds, and the extra strip is load-bearing: it
+// is the indigo showing through behind the background block's rounded corners.
+// Without it the grey meets the indigo in a straight seam, which is the
+// difference between the two screens that reads first and is hardest to name.
 check(
-  "and it clips its own glow",
-  /overflow-hidden/.test(topbar),
-  "the white haze belongs on the header, not spilling onto the content below it"
+  "and it is taller than its bar by the background's corner",
+  /\+var\(--radius-page\)/.test(topbar) && /h-\[var\(--header-h\)\]/.test(topbar),
+  "the background overlaps the header; there has to be something behind the curve"
 );
+{
+  const layout = readFileSync(join(process.cwd(), "app/admin/layout.tsx"), "utf8");
+  check(
+    "the background tucks under it",
+    /-mt-\[var\(--radius-page\)\][\s\S]{0,200}rounded-t-\[var\(--radius-page\)\]/.test(layout)
+  );
+  check(
+    "and the glow belongs to the background, not to the bar",
+    /shadow-glow-page/.test(layout) && !/shadow-glow-page/.test(topbar),
+    "it is the background that glows; what it lands on is the header above it"
+  );
+}
 // The mark sits at the left of the header, where the design puts it. It was
 // centred on the window for as long as the header was colourless — the centre
 // was the only place it could sit without reading as a heading — and centring

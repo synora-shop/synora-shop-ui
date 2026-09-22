@@ -57,7 +57,7 @@ export function BlockedCountriesField({
               className="input pl-8"
             />
             {matches.length > 0 && (
-              <ul className="absolute left-0 right-0 top-full z-20 mt-1 overflow-hidden rounded-lg border border-border bg-surface shadow-lg">
+              <ul className="absolute left-0 right-0 top-full z-20 mt-1 overflow-hidden rounded-[var(--radius-control)] border border-border bg-surface shadow-lg">
                 {matches.map((c) => (
                   <li key={c.code}>
                     <button

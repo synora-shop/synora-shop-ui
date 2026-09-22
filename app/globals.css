@@ -210,6 +210,23 @@
   --pad-container: calc(10 * var(--u));
   /* Type. 20 normal, 18 secondary, and a 20 x 20 box for every icon whatever
      the shape of the drawing inside it. */
+  /* Corners.
+   *
+   * Nested radii have a rule and it was being broken everywhere: the inner
+   * radius of a box is the outer radius minus the padding between them. A 16px
+   * card holding a 16px picture inset by 10px draws two curves of different
+   * centres a hair apart, which is the "uneven offset border" you see at every
+   * seam once you have noticed it once.
+   *
+   *   --radius-container  the white containers and the sections on them
+   *   --radius-inner      what sits inside one, 10 in from the edge
+   *   --radius-control    a button, a row plate, a thumbnail
+   *   --radius-page       the background block that tucks under the header */
+  --radius-container: calc(16 * var(--u));
+  --radius-inner: calc(6 * var(--u));
+  --radius-control: calc(8 * var(--u));
+  --radius-page: calc(40 * var(--u));
+
   --text-normal: calc(20 * var(--u));
   --text-secondary: calc(18 * var(--u));
   --icon-box: calc(20 * var(--u));
@@ -441,6 +458,10 @@ a:hover .sd-sheen { animation-duration: 1.6s; }
   --color-placeholder-dark: var(--color-placeholder-dark);
   --color-ink-on-dark: var(--color-ink-on-dark);
   --color-ink-soft-on-dark: var(--color-ink-soft-on-dark);
+  --radius-container: var(--radius-container);
+  --radius-inner: var(--radius-inner);
+  --radius-control: var(--radius-control);
+  --radius-page: var(--radius-page);
   --shadow-container: var(--shadow-container);
   --shadow-section: var(--shadow-section);
   --shadow-glow-page: var(--glow-page);

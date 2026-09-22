@@ -29,7 +29,7 @@ function ColorField({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           aria-label={`${label} swatch`}
-          className="h-9 w-12 flex-shrink-0 cursor-pointer rounded-lg border border-border bg-control p-1"
+          className="h-9 w-12 flex-shrink-0 cursor-pointer rounded-[var(--radius-control)] border border-border bg-control p-1"
         />
         <input value={value} onChange={(e) => onChange(e.target.value)} className="input font-mono" />
       </div>

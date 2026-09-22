@@ -86,7 +86,7 @@ export function OrderList({ orders, filtered = false }: { orders: OrderRow[]; fi
           the order number and a name on the left and everything else on the
           right, with the whole middle of a 1500px screen empty — and no date,
           which is the column an order list is scanned by. */}
-      <div className="overflow-hidden rounded-xl border border-border bg-surface">
+      <div className="overflow-hidden rounded-[var(--radius-container)] border border-border bg-surface">
         <div className="hidden items-center gap-3 border-b border-border px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-faint lg:flex">
           <span className="w-24">Order</span>
           <span className="min-w-0 flex-1">Customer</span>

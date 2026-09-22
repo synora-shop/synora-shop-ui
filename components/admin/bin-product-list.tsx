@@ -81,7 +81,7 @@ export function BinProductList({ products }: { products: BinProductRow[] }) {
           description="Products you delete land here first, and can be restored for as long as they sit in it."
         />
       ) : (
-      <div className="mt-6 divide-y divide-border rounded-xl border border-border bg-surface">
+      <div className="mt-6 divide-y divide-border rounded-[var(--radius-container)] border border-border bg-surface">
         {rows.map((p) => (
           <SwipeRow
             key={p.id}

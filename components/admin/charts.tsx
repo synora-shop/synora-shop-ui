@@ -191,7 +191,7 @@ export function TrendChart({
 
       {active && (
         <div
-          className="pointer-events-none absolute -top-1 rounded-lg border border-control-line bg-control px-2 py-1 text-[11px] shadow-sm"
+          className="pointer-events-none absolute -top-1 rounded-[var(--radius-control)] border border-control-line bg-control px-2 py-1 text-[11px] shadow-sm"
           style={{ left: `${(x(hover!) / W) * 100}%`, transform: "translateX(-50%)" }}
         >
           <span className="font-medium">{draw(active.value, format)}</span>
@@ -377,7 +377,7 @@ export function MetricTile({
   );
 
   const shell =
-    "rounded-xl border border-control-line bg-control p-3 transition-colors";
+    "rounded-[var(--radius-container)] border border-control-line bg-control p-3 transition-colors";
   return href ? (
     <a href={href} className={cn(shell, "block hover:border-brand-300")}>{body}</a>
   ) : (

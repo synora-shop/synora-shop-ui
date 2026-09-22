@@ -62,13 +62,13 @@ shop's untouched fields sit. It cannot reach a field a merchant has set.
 ### The honest gap
 
 `THEME_TOKEN_DEFAULTS` — layer 1 — is still the palette of a different
-business: a maroon accent (`#4c100f`), a tan secondary, a cream page. Aurora
+business: a maroon accent (`#4c100f`), a tan secondary, a cream page. Loom
 declares `tokens: {}`, meaning "the platform defaults", so **Aurora is that old
 palette wearing a new name**, and a brand-new shop opens in it.
 
 That is backwards. Layer 1 should be a neutral floor that guarantees every
 field has *some* readable value, and the palette a shop opens in should be the
-theme's own declared choice. Fixing it is two edits — give Aurora explicit
+theme's own declared choice. Fixing it is two edits — give Loom explicit
 tokens, make the floor neutral — and it is deliberately not done yet, because
 it should happen when the themes are designed rather than twice.
 
@@ -150,8 +150,8 @@ which theme is being edited, checked against the shop's own library.
 `ThemeSettings.themeKey` stays the single answer to "which is live", and the
 theme that was live moves *into* the library rather than being lost.
 
-**A theme's edits belong to the theme, not to the shop.** Atlas can be worked
-on for a week while Aurora keeps serving customers, and switching between them
+**A theme's edits belong to the theme, not to the shop.** Kite can be worked
+on for a week while Loom keeps serving customers, and switching between them
 loses nothing either way.
 
 The guards, each of which is a state with no honest screen to show for it:
@@ -175,8 +175,8 @@ Two themes, and that is a deliberate floor rather than a starting point.
 
 | Theme | What it is |
 | --- | --- |
-| **Aurora** | The storefront this platform has always had. Every existing shop runs it, so making it a named theme had to be a no-op for them. |
-| **Atlas** | The first theme that is more than a palette: its own header, card, grid density, footer, and the shopping behaviour to match. |
+| **Loom** | The storefront this platform has always had. Every existing shop runs it, so making it a named theme had to be a no-op for them. Named Aurora until 22 September. |
+| **Kite** | The first theme that is more than a palette: its own header, card, grid density, footer, and the shopping behaviour to match. Named Atlas until 22 September. |
 
 Five others — Meridian, Quill, Column, Hearth and Service — were removed on
 10 September 2026. All five were palettes. Five recolours beside two real themes

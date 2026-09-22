@@ -221,7 +221,7 @@ export function ProductList({
                 key={p.id}
                 // A column so every tile's Bin bar lands on the same line,
                 // whatever the text above it happens to be.
-                className="group/tile flex h-full flex-col overflow-hidden rounded-xl border border-border bg-surface transition-shadow hover:shadow-sm"
+                className="group/tile flex h-full flex-col overflow-hidden rounded-[var(--radius-container)] border border-border bg-surface transition-shadow hover:shadow-sm"
               >
                 <Link href={`/admin/products/${p.id}`} className="flex flex-1 flex-col">
                   <div className="relative">
@@ -280,7 +280,7 @@ export function ProductList({
   return (
     <>
       {dialog}
-      <div className="divide-y divide-border rounded-lg border border-border bg-surface">
+      <div className="divide-y divide-border rounded-[var(--radius-control)] border border-border bg-surface">
         {rows.map((p) => {
           const stock = p.variants.reduce((sum, v) => sum + v.stock, 0);
           return (

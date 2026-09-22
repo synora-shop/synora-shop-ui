@@ -72,7 +72,7 @@ export function ProductKindFields({
       : [];
 
   return (
-    <div className="space-y-5 rounded-xl border border-border bg-surface p-5">
+    <div className="space-y-5 rounded-[var(--radius-container)] border border-border bg-surface p-5">
       <div>
         <GroupLabel>How this is sold</GroupLabel>
         <div className="mt-2 grid gap-2 sm:grid-cols-3">
@@ -86,7 +86,7 @@ export function ProductKindFields({
                 onClick={() => set("kind", k)}
                 aria-pressed={active}
                 className={cn(
-                  "rounded-lg border p-3 text-left transition-colors",
+                  "rounded-[var(--radius-control)] border p-3 text-left transition-colors",
                   active
                     ? "border-brand-500 bg-brand-50"
                     : "border-border hover:border-brand-300 hover:bg-subtle"
@@ -103,7 +103,7 @@ export function ProductKindFields({
           })}
         </div>
         {value.kind !== "NORMAL" && (
-          <p className="mt-2 flex items-start gap-1.5 rounded-lg bg-amber-bg px-3 py-2 text-xs leading-snug text-amber">
+          <p className="mt-2 flex items-start gap-1.5 rounded-[var(--radius-control)] bg-amber-bg px-3 py-2 text-xs leading-snug text-amber">
             <TriangleAlert className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
             <span>
               Customers can&apos;t add this to a cart. The product page shows an enquiry form
@@ -138,7 +138,7 @@ export function ProductKindFields({
                 <label
                   key={mode}
                   className={cn(
-                    "flex cursor-pointer items-start gap-2.5 rounded-lg border p-2.5 transition-colors",
+                    "flex cursor-pointer items-start gap-2.5 rounded-[var(--radius-control)] border p-2.5 transition-colors",
                     value.bulkPricing === mode ? "border-brand-500 bg-brand-50" : "border-border hover:bg-subtle"
                   )}
                 >
@@ -263,7 +263,7 @@ export function ProductKindFields({
 
           <div className="mt-2 space-y-2">
             {value.customFields.map((field, i) => (
-              <div key={field.id} className="rounded-lg border border-border p-3">
+              <div key={field.id} className="rounded-[var(--radius-control)] border border-border p-3">
                 <div className="flex flex-wrap items-center gap-2">
                   <input
                     aria-label="Field label" placeholder="Label" className={cn(input, "max-w-44")}

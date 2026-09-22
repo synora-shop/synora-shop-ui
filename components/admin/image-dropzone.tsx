@@ -115,7 +115,7 @@ export function ImageDropzone({
                 setDraggingIndex(null);
                 setDragOverIndex(null);
               }}
-              className={`group relative aspect-[4/5] cursor-grab overflow-hidden rounded-lg border bg-subtle transition-shadow active:cursor-grabbing ${
+              className={`group relative aspect-[4/5] cursor-grab overflow-hidden rounded-[var(--radius-control)] border bg-subtle transition-shadow active:cursor-grabbing ${
                 dragOverIndex === i ? "border-brand-500 ring-2 ring-brand-300" : "border-border"
               } ${draggingIndex === i ? "opacity-60 shadow-lg" : ""}`}
             >
@@ -178,7 +178,7 @@ export function ImageDropzone({
           setIsDraggingOver(false);
           if (e.dataTransfer.files?.length) uploadFiles(e.dataTransfer.files);
         }}
-        className={`mt-3 flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed px-4 py-6 text-center text-xs text-ink-soft transition-colors ${
+        className={`mt-3 flex cursor-pointer flex-col items-center justify-center gap-1 rounded-[var(--radius-control)] border-2 border-dashed px-4 py-6 text-center text-xs text-ink-soft transition-colors ${
           isDraggingOver ? "border-brand-500 bg-brand-50" : "border-border hover:bg-subtle active:bg-subtle"
         }`}
       >
