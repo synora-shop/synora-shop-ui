@@ -205,11 +205,17 @@ export function AdminTopbar({
             // circle, and the radius is kept as a percentage so it survives
             // scaling. #aa4cc1 is the drawing's own.
             //
-            // No initials and no status dot. Both were mine; the drawing has a
-            // plain plate. Whether the store is live is still said in words in
-            // the menu this opens, which is where a merchant can act on it.
-            className="flex h-[calc(39.4*var(--u))] w-[calc(39.4*var(--u))] flex-shrink-0 items-center justify-center rounded-[var(--radius-avatar)] bg-[var(--color-avatar)] transition-transform hover:-translate-y-px"
-          />
+            // The initials belong on it. The plate in the drawing is empty
+            // because a drawing has no store to name; removing them was me
+            // reading an absence as a decision.
+            //
+            // The status dot stays off. That one really was mine, and whether
+            // the store is live is said in words in the menu this opens, which
+            // is where a merchant can act on it rather than just see it.
+            className="flex h-[calc(39.4*var(--u))] w-[calc(39.4*var(--u))] flex-shrink-0 items-center justify-center rounded-[var(--radius-avatar)] bg-[var(--color-avatar)] text-[length:var(--text-small)] font-semibold text-white transition-transform hover:-translate-y-px"
+          >
+            {initials(storeName)}
+          </button>
 
           {menu && (
             <>
@@ -349,6 +355,19 @@ export function AdminTopbar({
       )}
     </header>
   );
+}
+
+/**
+ * Up to two initials, so the plate names the store rather than being a colour.
+ *
+ * Deleted for a day, because the drawing shows an empty plate — which it would,
+ * having no store to name.
+ */
+function initials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
 function IconButton({

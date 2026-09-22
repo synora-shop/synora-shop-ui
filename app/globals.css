@@ -202,6 +202,8 @@
   --navbar-h: calc(55 * var(--u));
   --actionbar-h: calc(40 * var(--u));
   --row-h: calc(40.5 * var(--u));
+  /* A button on a row in All Themes. 47, not the 35 the store cards use. */
+  --row-button-h: calc(47 * var(--u));
   /* 30px from every edge, and two adjacent margins are one margin. 15px is
      what the document gives for the gaps inside the sidebar and around the
      action bar. */
@@ -230,7 +232,14 @@
    * layout, and 4px off one is visible in a way 4px off a margin is not.
    *
    * So they grow on a larger display and hold their drawn value below it. */
-  --radius-container: max(16px, calc(16 * var(--u)));
+  /* Every one of these is read off the artboard's own vector paths, not
+     judged by eye. The values they replaced were mine and most were wrong. */
+  --radius-container: max(20px, calc(20 * var(--u)));
+  --radius-section: max(25.6px, calc(25.6 * var(--u)));
+  --radius-card: max(46px, calc(46 * var(--u)));
+  --radius-plate: max(12px, calc(12.5 * var(--u)));
+  --radius-thumb: max(16px, calc(16.36 * var(--u)));
+  --radius-row-button: max(18px, calc(18.75 * var(--u)));
   /* Derived, never declared.
    *
    * The inner radius of a box is the outer radius minus the padding between
@@ -246,6 +255,10 @@
    * negative, and a square inner corner inside a round outer one is its own
    * kind of wrong. */
   --radius-inner: max(2px, calc(var(--radius-container) - var(--pad-container)));
+  /* The store card is 46 and its picture is inset 10, which the drawing puts
+     at 36 — the same subtraction, confirming the rule is the design's and not
+     something imposed on it. */
+  --radius-card-inner: max(2px, calc(var(--radius-card) - var(--pad-container)));
   --radius-control: max(8px, calc(8 * var(--u)));
   /* 24.4, read off the artboard — the background's top corner, where it tucks
      under the header. I had it at 40 by eye. */
@@ -255,6 +268,7 @@
   --radius-avatar: 37.15%;
 
   --text-normal: calc(20 * var(--u));
+  --text-small: calc(16 * var(--u));
   --text-secondary: calc(18 * var(--u));
   --icon-box: calc(20 * var(--u));
 
@@ -351,13 +365,32 @@
    * upward across the header. That is the whole reason the flat #5050ea header
    * looks lit rather than stamped on, and it is the same relationship the
    * header and background have on synoradigitals.com. */
-  --shadow-container: 0 0 10px rgb(0 0 0 / 0.10);
-  --shadow-section: 0 0 5px rgb(0 0 0 / 0.10);
+  /* Measured off the artboard rather than read off the document.
+   *
+   * The document says "outerglow 10% opacity with 10px blur", and Illustrator
+   * spreads that 10% across the whole blur — a CSS box-shadow at the same
+   * numbers is several times darker, because its alpha is the value at the
+   * edge. Sampling the drawing settles it: one pixel outside a sidebar
+   * container the ground is 5/245 darker, 2 by six pixels out, and gone by
+   * sixteen. That is a 5% shadow over a wide blur, not a 10% one over a tight
+   * one.
+   *
+   * Every container in the panel was carrying roughly five times the shadow it
+   * was drawn with. */
+  --shadow-container: 0 0 16px rgb(0 0 0 / 0.05);
+  --shadow-section: 0 0 8px rgb(0 0 0 / 0.04);
   --glow-page: 0 0 50px rgb(255 255 255 / 0.50);
-  /* A theme's card in the store. Heavier than anything else in the panel on
-     purpose: it is the only place a coloured plate sits on the grey, and it is
-     meant to lift off it rather than sit in it. */
-  --shadow-card: 0 calc(8 * var(--u)) calc(24 * var(--u)) rgb(0 0 0 / 0.45);
+  /* The store card has no drop shadow, and never did.
+   *
+   * I read "45% gradient shadow" as a 45%-black drop and gave it one — a dark
+   * smear under every card, which is the thing that looked wrong. Sampling
+   * straight down from the card's bottom edge in the drawing returns #f5f5f5
+   * at one pixel out and at forty: there is no shadow there to match. What
+   * lifts the card off the section is its own colour.
+   *
+   * It keeps the same faint glow every other container has, so it is not flat
+   * against the grey. */
+  --shadow-card: var(--shadow-container);
 }
 
 /* Anything you type into is a control, not a surface. Without this every input
@@ -501,6 +534,14 @@ a:hover .sd-sheen { animation-duration: 1.6s; }
   --color-placeholder-dark: var(--color-placeholder-dark);
   --color-ink-on-dark: var(--color-ink-on-dark);
   --color-ink-soft-on-dark: var(--color-ink-soft-on-dark);
+  --radius-section: var(--radius-section);
+  --radius-card: var(--radius-card);
+  --radius-card-inner: var(--radius-card-inner);
+  --radius-plate: var(--radius-plate);
+  --radius-thumb: var(--radius-thumb);
+  --radius-row-button: var(--radius-row-button);
+  --text-small: var(--text-small);
+  --row-button-h: var(--row-button-h);
   --radius-container: var(--radius-container);
   --radius-inner: var(--radius-inner);
   --radius-control: var(--radius-control);

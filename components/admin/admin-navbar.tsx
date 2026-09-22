@@ -60,7 +60,7 @@ export function AdminNavbar() {
                   // 20px, and the active one is semibold rather than merely
                   // coloured — the same three-part active state as the
                   // sidebar: plate, colour, weight.
-                  "flex h-[calc(38*var(--u))] items-center rounded-[var(--radius-inner)] px-[calc(14*var(--u))] text-[length:var(--text-normal)] transition-colors",
+                  "flex h-[calc(38*var(--u))] items-center rounded-[var(--radius-plate)] px-[calc(14*var(--u))] text-[length:var(--text-normal)] transition-colors",
                   here
                     ? "bg-selected font-semibold text-brand-500"
                     : "text-control-ink hover:bg-control"

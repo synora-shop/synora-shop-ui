@@ -110,7 +110,7 @@ export function ThemeManager({
       <Section title="Active Theme">
         {liveTheme ? (
           <div className="flex flex-col items-center">
-            <div className="w-full max-w-[calc(720*var(--u))] overflow-hidden rounded-[var(--radius-container)] border border-section-line bg-panel">
+            <div className="w-full max-w-[calc(892.5*var(--u))] overflow-hidden rounded-[var(--radius-section)] border border-section-line bg-panel">
               {liveTheme.preview ? (
                 <Image
                   src={liveTheme.preview}
@@ -131,7 +131,7 @@ export function ThemeManager({
             {/* The shop's own address on the left, the design on the right.
                 Both answer "what am I looking at" — one names the place, the
                 other names the design, down to which copy of it. */}
-            <div className="mt-[var(--gap-lg)] flex w-full max-w-[calc(720*var(--u))] flex-wrap items-baseline justify-between gap-3">
+            <div className="mt-[var(--gap-lg)] flex w-full max-w-[calc(892.5*var(--u))] flex-wrap items-baseline justify-between gap-3">
               <a
                 href={liveTheme.previewUrl}
                 target="_blank"
@@ -177,7 +177,7 @@ export function ThemeManager({
                   // touching and the list read as one smeared block.
                   className="flex h-[calc(144*var(--u))] items-center gap-[var(--gap-lg)]"
                 >
-                  <div className="h-[calc(108*var(--u))] w-[calc(171*var(--u))] flex-shrink-0 overflow-hidden rounded-[var(--radius-control)] border border-section-line bg-panel">
+                  <div className="h-[calc(108*var(--u))] w-[calc(171*var(--u))] flex-shrink-0 overflow-hidden rounded-[var(--radius-thumb)] border border-section-line bg-panel">
                     {copy.preview && (
                       <Image
                         src={copy.preview}
@@ -189,23 +189,35 @@ export function ThemeManager({
                     )}
                   </div>
 
-                  {/* The live row is a plate, and it is the row rather than a
-                      badge on it: which design is live is the one thing this
-                      list is asked, so the whole row answers it.
+                  {/* A separator above every row but the first — above the
+                      live one too, because the drawing puts the green plate
+                      between two lines rather than in place of one. There was
+                      no separator at all: the condition excluded the live row,
+                      and with two themes in a library the live one is half of
+                      them.
                       
-                      The rule sits on this block rather than the <li>, so it
-                      starts where the content starts and not under the
-                      thumbnail — which is how the guide draws it. Never above
-                      the first: a line at the edge of a list reads as the edge
-                      of the container, and that is already drawn. */}
+                      On this column, so it starts where the content starts and
+                      never runs under the thumbnail. On the full-height
+                      wrapper, so it lands in the gap rather than on the plate.
+                      Never above the first: a line at the edge of a list reads
+                      as the edge of the container, which is already drawn.
+                      
+                      #2e2e2e at a quarter of a pixel, which no browser will
+                      draw — so the quarter is carried by the alpha, the way
+                      every other hairline in the panel is. */}
                   <div
                     className={cn(
-                      // 95 tall inside the 144 row, 20 of padding, as marked.
-                      "flex h-[calc(95*var(--u))] min-w-0 flex-1 items-center gap-x-[var(--gap-lg)] rounded-[var(--radius-control)] px-[calc(20*var(--u))]",
-                      i > 0 && !isLive && "border-t border-section-line",
-                      isLive && "bg-[#d2ffd6]"
+                      "flex h-full min-w-0 flex-1 items-center",
+                      i > 0 && "border-t border-section-line"
                     )}
                   >
+                    <div
+                      className={cn(
+                        // 95 tall inside the 144 row, 20 of padding, as marked.
+                        "flex h-[calc(95*var(--u))] w-full min-w-0 items-center gap-x-[var(--gap-lg)] rounded-[var(--radius-plate)] px-[calc(20*var(--u))]",
+                        isLive && "bg-[#d2ffd6]"
+                      )}
+                    >
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-[length:var(--text-normal)] font-semibold text-control-ink">
                         {copy.name}{" "}
@@ -255,7 +267,7 @@ export function ThemeManager({
                           aria-label={`More for ${copy.name} v${copy.version}`}
                           aria-expanded={menuKey === copy.id}
                           onClick={() => setMenuKey((k) => (k === copy.id ? null : copy.id))}
-                          className="flex h-[calc(35*var(--u))] w-[calc(35*var(--u))] items-center justify-center rounded-full text-control-soft transition-colors hover:bg-panel hover:text-control-ink"
+                          className="flex h-[var(--row-button-h)] w-[var(--row-button-h)] items-center justify-center rounded-full text-control-soft transition-colors hover:bg-panel hover:text-control-ink"
                         >
                           <MoreHorizontal className="h-[var(--icon-box)] w-[var(--icon-box)]" />
                         </button>
@@ -302,6 +314,7 @@ export function ThemeManager({
                           </>
                         )}
                       </div>
+                      </div>
                     </div>
                   </div>
                 </li>
@@ -332,14 +345,14 @@ export function ThemeManager({
                 // not from the theme's colours: the store is a Synora screen
                 // showing what is on offer. The plate says "this is a theme";
                 // the picture on it says which one.
-                className="flex aspect-[730/533] flex-col rounded-[var(--radius-container)] p-[var(--pad-container)] shadow-card"
+                className="flex aspect-[730.6/533.7] flex-col rounded-[var(--radius-card)] p-[var(--pad-container)] shadow-card"
                 style={{
                   backgroundImage: `linear-gradient(180deg, ${theme.plate.from} 0%, ${theme.plate.to} 100%)`,
                 }}
               >
                 <div className="relative min-h-0 flex-1">
                   {/* 10 in from a 16 corner is a 6 corner. */}
-                  <div className="h-full overflow-hidden rounded-[var(--radius-inner)] bg-panel">
+                  <div className="h-full overflow-hidden rounded-[var(--radius-card-inner)] bg-panel">
                     {theme.preview ? (
                       <Image
                         src={theme.preview}
@@ -369,7 +382,7 @@ export function ThemeManager({
                 <div className="flex h-[calc(75*var(--u))] flex-shrink-0 items-center justify-between gap-3 px-[calc(10*var(--u))]">
                   <p className="text-[length:var(--text-normal)] font-semibold uppercase tracking-wide text-control-ink">
                     {theme.name}{" "}
-                    <span className="font-normal normal-case tracking-normal text-control-ink/60">
+                    <span className="text-[length:var(--text-small)] font-normal normal-case tracking-normal text-control-ink/60">
                       (v{theme.latest})
                     </span>
                   </p>
@@ -429,7 +442,7 @@ function RowButton({
   className?: string;
 }) {
   const shape = cn(
-    "flex h-[calc(35*var(--u))] items-center gap-1.5 rounded-[var(--radius-control)] border border-control-line bg-panel px-[calc(14*var(--u))] text-[length:var(--text-secondary)] text-control-ink transition-colors hover:border-brand-500 hover:text-brand-500 disabled:opacity-60",
+    "flex h-[var(--row-button-h)] items-center gap-1.5 rounded-[var(--radius-row-button)] border border-control-line bg-panel px-[calc(18*var(--u))] text-[length:var(--text-secondary)] text-control-ink transition-colors hover:border-brand-500 hover:text-brand-500 disabled:opacity-60",
     className
   );
 

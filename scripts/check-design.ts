@@ -276,10 +276,14 @@ check(
       /rounded-\[var\(--radius-avatar\)\]/.test(topbarSrc) &&
       !/rounded-full[^"]*var\(--color-avatar\)/.test(topbarSrc)
   );
+  // The initials belong on it. The drawing shows an empty plate because a
+  // drawing has no store to name — reading that absence as a decision is how
+  // they came off in the first place.
+  check("it carries the store's initials", /initials\(storeName\)/.test(topbarSrc));
   check(
-    "it carries no initials and no status dot",
-    !/initials\(/.test(topbarSrc),
-    "both were invented; the drawing has a plain plate, and 'is my store live' is said in words in the menu"
+    "and no status dot",
+    !/ring-ink/.test(topbarSrc),
+    "that one really was invented; whether the store is live is said in words in the menu, where it can be acted on"
   );
   check(
     "the bell is the drawn one",
@@ -297,6 +301,47 @@ check(
   check(
     "the background's corner is the drawn 24.4, not a guess",
     /--radius-page:[^;]*24\.4/.test(declared)
+  );
+}
+
+/* Every radius and every light, read off the artboard's vector paths.
+ *
+ * These were judged by eye and most were wrong: containers at 16 where the
+ * drawing says 20, sections at 16 where it says 25.6, and the store card at 16
+ * where it says 46. The shadows were worse — the document's "10% opacity,
+ * 10px blur" is an Illustrator outer glow, which spreads that 10% across the
+ * whole blur, while a CSS box-shadow's alpha is the value *at the edge*.
+ * Sampling the drawing one pixel outside a container gives 5/245, gone by
+ * sixteen. Every container was carrying about five times the shadow it was
+ * drawn with, and the store card was carrying a 45% drop shadow the drawing
+ * does not have at all. */
+{
+  const declared = (css.match(/\.admin-shell\s*\{[\s\S]*?\n\}/) ?? [""])[0];
+  const drawn: [string, string][] = [
+    ["--radius-container", "20"],
+    ["--radius-section", "25.6"],
+    ["--radius-card", "46"],
+    ["--radius-plate", "12.5"],
+    ["--radius-thumb", "16.36"],
+    ["--radius-row-button", "18.75"],
+    ["--row-button-h", "47"],
+  ];
+  for (const [token, value] of drawn) {
+    check(
+      `${token} is the drawn ${value}`,
+      new RegExp(`${token}:[^;]*${value.replace(".", "\\.")}`).test(declared),
+      "measured off the artboard, not judged by eye"
+    );
+  }
+  check(
+    "the container glow is the light the drawing casts, not the document's arithmetic",
+    /--shadow-container:[^;]*0\.0[45]\)/.test(declared),
+    "Illustrator spreads its 10% across the blur; a box-shadow puts it at the edge"
+  );
+  check(
+    "and the store card has no drop shadow of its own",
+    /--shadow-card:\s*var\(--shadow-container\)/.test(declared),
+    "sampling below the card in the drawing returns the page colour at one pixel out and at forty"
   );
 }
 
