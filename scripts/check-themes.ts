@@ -441,6 +441,27 @@ for (const theme of Object.values(THEMES)) {
     /^#[0-9a-f]{6}$/i.test(theme.plate.from) && /^#[0-9a-f]{6}$/i.test(theme.plate.to)
   );
 }
+// Preview is the control that opens a theme full size, and it is labelled.
+// A disc on the picture doing the same thing is a second control for one job,
+// the unlabelled one.
+check(
+  "nothing sits on the store card's picture",
+  !/absolute[^"]*top-\[calc\(12\*var\(--u\)\)\]/.test(gallery),
+  "Preview already does this, and says so"
+);
+// 41.5 inside the card's own 10 puts the name and the buttons 51.5 from the
+// card's edge, which is where the drawing has them — clear of a 46 corner
+// rather than tucked into it. At 10 they were inside the curve.
+check(
+  "the card's band clears its corner",
+  /px-\[calc\(41\.5\*var\(--u\)\)\]/.test(gallery),
+  "the name and the buttons sat against the rounded edge"
+);
+check(
+  "and the band runs to the card's bottom edge",
+  /px-\[var\(--pad-container\)\] pt-\[var\(--pad-container\)\]/.test(gallery),
+  "10 + 448.6 + 75 is the card's 533.7 only if nothing is padded beneath the band"
+);
 check(
   "and the card is the plate rather than a white box on it",
   /linear-gradient\(180deg, \$\{theme\.plate\.from\}/.test(gallery) &&

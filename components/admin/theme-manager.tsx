@@ -337,21 +337,28 @@ export function ThemeManager({
             {store.map((theme) => (
               <li
                 key={theme.key}
-                // 730 x 533, and the plate is the card. The picture sits on it
-                // inset by 10 with a 75 band beneath for the name and the two
-                // buttons — all four numbers are off the guide.
+                // 730.6 x 533.7, and the plate is the card. The picture sits
+                // on it inset by 10, with a 75 band beneath carrying the name
+                // and the two buttons — every number read off the artboard.
                 //
                 // The plate is a gradient from Synora's own accent palette,
                 // not from the theme's colours: the store is a Synora screen
                 // showing what is on offer. The plate says "this is a theme";
                 // the picture on it says which one.
-                className="flex aspect-[730.6/533.7] flex-col rounded-[var(--radius-card)] p-[var(--pad-container)] shadow-card"
+                className="flex aspect-[730.6/533.7] flex-col rounded-[var(--radius-card)] px-[var(--pad-container)] pt-[var(--pad-container)] shadow-card"
                 style={{
                   backgroundImage: `linear-gradient(180deg, ${theme.plate.from} 0%, ${theme.plate.to} 100%)`,
                 }}
               >
-                <div className="relative min-h-0 flex-1">
-                  {/* 10 in from a 16 corner is a 6 corner. */}
+                <div className="min-h-0 flex-1">
+                  {/* 10 in from a 46 corner is a 36 corner — which is what the
+                      drawing has, so the subtraction is the design's rather
+                      than a rule imposed on it.
+                      
+                      Nothing sits on the picture. There was a disc in this
+                      corner opening the theme full size, and Preview below
+                      already does exactly that — two controls for one job, one
+                      of them unlabelled. */}
                   <div className="h-full overflow-hidden rounded-[var(--radius-card-inner)] bg-panel">
                     {theme.preview ? (
                       <Image
@@ -365,21 +372,17 @@ export function ThemeManager({
                       <StorefrontStill url={theme.previewUrl} height={448} />
                     )}
                   </div>
-                  {/* On the picture, at its corner, as drawn — a disc rather
-                      than a panel, so it reads as a mark on the image and not
-                      as a control floating over it. */}
-                  <a
-                    href={theme.previewUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label={`Open ${theme.name} full size`}
-                    className="absolute right-[calc(12*var(--u))] top-[calc(12*var(--u))] flex h-[calc(30*var(--u))] w-[calc(30*var(--u))] items-center justify-center rounded-full bg-ink text-white transition-transform hover:-translate-y-px"
-                  >
-                    <ExternalLinkIcon className="h-[calc(14*var(--u))] w-[calc(14*var(--u))]" />
-                  </a>
                 </div>
 
-                <div className="flex h-[calc(75*var(--u))] flex-shrink-0 items-center justify-between gap-3 px-[calc(10*var(--u))]">
+                {/* 75 tall, running to the card's bottom edge — there is no
+                    padding beneath it, which is what makes 10 + 448.6 + 75
+                    come to the card's own 533.7.
+                    
+                    41.5 in from the band, on top of the card's 10, puts the
+                    name 51.5 from the card's edge: measured off the drawing,
+                    where it sits clear of the 46 corner rather than tucked
+                    into it. It was 10, which is inside the curve. */}
+                <div className="flex h-[calc(75*var(--u))] flex-shrink-0 items-center justify-between gap-3 px-[calc(41.5*var(--u))]">
                   <p className="text-[length:var(--text-normal)] font-semibold uppercase tracking-wide text-control-ink">
                     {theme.name}{" "}
                     <span className="text-[length:var(--text-small)] font-normal normal-case tracking-normal text-control-ink/60">
