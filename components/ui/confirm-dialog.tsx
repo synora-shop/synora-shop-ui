@@ -44,6 +44,22 @@ export type ConfirmChoice = "cancel" | "confirm" | "also";
 type PendingConfirm = ConfirmOptions & { resolve: (result: ConfirmChoice) => void };
 
 /**
+ * Asking the question, in the two shapes callers use.
+ *
+ * The overloads live on a type rather than on a function declaration so the
+ * function itself can be written inline and memoised once. As a declaration it
+ * was rebuilt on every render and then handed to `useCallback(confirm, [])`,
+ * which pins the *first* one forever — correct here only because it closes
+ * over nothing but a setState, and a trap the day it closes over anything
+ * else. The lint rule that objects to a non-inline argument is objecting to
+ * exactly that.
+ */
+type ConfirmFn = {
+  (options: ConfirmOptions & { also: { label: string } }): Promise<ConfirmChoice>;
+  (options: ConfirmOptions): Promise<boolean>;
+};
+
+/**
  * Reusable confirmation modal — the first dialog component in the app, replacing bare
  * `window.confirm()` calls with something styled and Promise-based:
  *
@@ -59,18 +75,27 @@ export function useConfirm() {
   // Overloaded so the thirty existing callers keep the boolean they were
   // written against, and only a caller that offers a third button has to think
   // about a third answer. A single union return would have made every one of
-  // them start comparing strings for no reason.
-  function confirm(options: ConfirmOptions & { also: { label: string } }): Promise<ConfirmChoice>;
-  function confirm(options: ConfirmOptions): Promise<boolean>;
-  function confirm(options: ConfirmOptions): Promise<ConfirmChoice | boolean> {
-    return new Promise((resolve) => {
-      setPending({
-        ...options,
-        resolve: (choice) => resolve(options.also ? choice : choice === "confirm"),
-      });
-    });
-  }
-  const confirmRef = useCallback(confirm, []);
+  // them start comparing strings for no reason. The overloads are on ConfirmFn
+  // above; this is one inline function wearing them.
+  //
+  // Stable for the life of the component, and honestly so: setPending is the
+  // only thing it closes over and React guarantees that identity.
+  const ask = useCallback(
+    (options: ConfirmOptions) =>
+      new Promise<ConfirmChoice | boolean>((resolve) => {
+        setPending({
+          ...options,
+          resolve: (choice) => resolve(options.also ? choice : choice === "confirm"),
+        });
+      }),
+    []
+  );
+  // The implementation is one signature; ConfirmFn is the two the callers see.
+  // The cast is outside useCallback rather than on its argument, because a
+  // cast wrapped around the function is no longer an inline function
+  // expression — which is the same objection, differently worded. It creates
+  // no value, so `confirm` is the same reference for the life of the hook.
+  const confirm = ask as ConfirmFn;
 
   function close(result: ConfirmChoice) {
     pending?.resolve(result);
@@ -159,5 +184,5 @@ export function useConfirm() {
     </div>
   ) : null;
 
-  return { confirm: confirmRef, dialog };
+  return { confirm, dialog };
 }

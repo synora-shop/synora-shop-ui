@@ -103,6 +103,7 @@ export default async function CustomersPage(props: PageProps<"/admin/customers">
             plan={planCustomerImport}
             apply={applyCustomerImport}
           />
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- a download, not a page: <Link> would prefetch the CSV and hand the browser a file it never asked for */}
           <a href="/admin/customers/export" className={buttonClass("secondary", "sm")}>
             <Download className="h-[var(--icon-box)] w-[var(--icon-box)]" />
             Export CSV

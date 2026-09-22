@@ -175,20 +175,40 @@ project — they suppressed nothing at all. The justification they carried was
 worth keeping and is now a plain comment: `dangerouslySetInnerHTML` should
 never appear without one.
 
-**49 other findings**, none fatal, worth paying down in this order:
+**Every error is cleared.** `app`, `components` and `lib` lint with zero
+errors; 38 `no-unused-vars` warnings remain and nothing else.
 
-- **4 × `react-hooks/refs`, 2 × `set-state-in-effect`, 1 × `purity`,
-  1 × `use-memo`.** The React compiler's rules, and the only ones here that
-  describe a real hazard: `image-comparison.tsx:50` reads a ref during render,
-  `admin-search.tsx:36` and `countdown.tsx:57` set state synchronously in an
-  effect, and `order-confirmation` calls `Date.now()` during render — which on
-  a server-rendered page is a value that can differ between server and client.
-- **3 × `no-html-link-for-pages`.** All three are CSV export links, where `<a>`
-  is deliberate: `<Link>` would prefetch a download. They need a disable
-  comment carrying that reason, not a fix — and now that unused directives are
-  fatal, a wrong one cannot be left lying about.
-- **37 × `no-unused-vars`.** Mostly `scripts/sweep/*`. Noise, but it is the
-  noise a real one hides in.
+The React compiler's nine were the only ones describing a real hazard, and one
+of them was a real bug a customer could see:
+
+- **`image-comparison.tsx` read a ref during render** to size the left photo to
+  its container. On the first render the ref is still null, so the photo fell
+  back to the width of the *clip* and squashed instead of being revealed — and
+  nothing re-measured it on resize. It is `clip-path` now: the image stays
+  full-size in a full-size box and the box is clipped, which needs no
+  measurement and cannot be wrong on the first frame. Verified at three
+  divider positions; the image is the container's width at all of them.
+- **`countdown.tsx` and `admin-search.tsx` set state synchronously in an
+  effect**, making React render twice before the browser painted once. The
+  countdown takes its first reading on the next frame instead. The search had
+  nothing to reset once the header stopped keeping a closed palette mounted —
+  a fresh mount is a fresh search.
+- **`order-confirmation` called `Date.now()` during render.** Safe there, since
+  it is a server component, but it is the shape of a real hydration bug
+  anywhere else and the rule cannot tell them apart. The question moved to
+  `isHolding()` beside the reservation code that acts on it.
+- **`confirm-dialog` pinned a rebuilt function with `useCallback(fn, [])`.**
+  Correct only because it closed over nothing but a setState, and a trap the
+  day it closed over anything else. The overloads are a type now and the
+  implementation is one memoised inline function.
+
+**3 × `no-html-link-for-pages`** were not bugs: all three are CSV export links,
+where `<a>` is right and `<Link>` would prefetch a download. They carry a
+disable with that reason written on it — and since an unused directive is now
+fatal, one that stops being true cannot sit there unnoticed.
+
+**38 × `no-unused-vars` remain.** Noise, but it is the noise a real one hides
+in.
 
 ---
 

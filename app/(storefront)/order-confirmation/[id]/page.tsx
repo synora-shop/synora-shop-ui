@@ -6,6 +6,7 @@ import { db } from "@/lib/data/shop";
 import { formatMoney } from "@/lib/money";
 import { getCurrency } from "@/lib/data/settings";
 import { verifyPayment } from "@/lib/payments/verify";
+import { isHolding } from "@/lib/payments/reservations";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { isGatewayProvider } from "@/lib/payments/providers";
 import { PaymentStatus, type PaymentState } from "@/components/storefront/payment-status";
@@ -66,7 +67,12 @@ export default async function OrderConfirmationPage(props: PageProps<"/order-con
   if (!order) notFound();
 
   const online = isGatewayProvider(order.paymentMethod);
-  const stillHolding = !!order.reservedUntil && order.reservedUntil.getTime() > Date.now();
+  // Asked of the reservation code rather than compared to the clock here.
+  // This is a server component, so reading the clock is safe — but it read as
+  // a component calling an impure function during render, which is the shape
+  // of a real hydration bug everywhere else, and the rule that flags it cannot
+  // tell the two apart. Better where it belongs anyway.
+  const stillHolding = isHolding(order.reservedUntil);
   const state: PaymentState = !online
     ? "manual"
     : order.paymentStatus === "CONFIRMED"

@@ -29,6 +29,21 @@ import type { Prisma } from "@/lib/generated/prisma/client";
  * arriving together produce one release and one no-op rather than restocking
  * twice. Returns whether this call was the one that did it.
  */
+/**
+ * Whether a gateway order's stock is still being held for it.
+ *
+ * The hold is a moment in the future written on the order when the customer was
+ * sent to pay; past it, the sweep is free to give the stock back. Anything that
+ * wants to know reads it through here rather than comparing to the clock
+ * itself, so the rule lives beside the code that acts on it.
+ *
+ * It reads the clock, which makes it impure — fine on the server, where it is
+ * called, and not to be used to decide what a client component renders.
+ */
+export function isHolding(reservedUntil: Date | null | undefined): boolean {
+  return !!reservedUntil && reservedUntil.getTime() > Date.now();
+}
+
 export async function releaseOrder(orderId: string, reason: string): Promise<boolean> {
   return prisma.$transaction(async (tx) => {
     // Claim it first. Only an order that is still unpaid and still holding a

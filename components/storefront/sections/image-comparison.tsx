@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 
 /**
  * Two photos with a divider that drags between them.
@@ -27,7 +27,6 @@ export function ImageComparison({
   startAt?: number;
 }) {
   const [at, setAt] = useState(Math.min(90, Math.max(10, startAt ?? 50)));
-  const box = useRef<HTMLDivElement | null>(null);
 
   // Both halves are the point. With one photo there is nothing to compare, and
   // showing it alone would be a different section pretending to be this one.
@@ -37,17 +36,27 @@ export function ImageComparison({
     <div className="mx-auto max-w-4xl">
       {heading && <h2 className="mb-6 text-center font-serif text-3xl font-semibold">{heading}</h2>}
 
-      <div ref={box} className="relative aspect-[4/3] select-none overflow-hidden rounded-lg bg-subtle">
+      <div className="relative aspect-[4/3] select-none overflow-hidden rounded-lg bg-subtle">
         {/* eslint-disable @next/next/no-img-element -- merchant URLs of unknown size */}
         <img src={afterImage} alt={afterLabel} className="absolute inset-0 h-full w-full object-cover" />
-        <div className="absolute inset-0 overflow-hidden" style={{ width: `${at}%` }}>
-          {/* Fixed to the box's width, not the clip's, or the left photo
-              squashes as the divider moves instead of being revealed. */}
+        {/* Clipped, not resized.
+            
+            The left photo has to stay the size of the *box* while the divider
+            moves, or it squashes instead of being revealed. That was done by
+            reading box.current?.clientWidth into the style — a ref read during
+            render, which is wrong twice over: on the first render the ref is
+            still null so the photo fell back to 100% of the clip and squashed
+            exactly as described, and nothing re-measured it when the window
+            resized.
+            
+            clip-path needs no measurement. The image stays full size in a
+            full-size box and the box is clipped, which is what "revealed"
+            means. */}
+        <div className="absolute inset-0" style={{ clipPath: `inset(0 ${100 - at}% 0 0)` }}>
           <img
             src={beforeImage}
             alt={beforeLabel}
-            className="absolute inset-0 h-full object-cover"
-            style={{ width: box.current?.clientWidth ?? "100%", maxWidth: "none" }}
+            className="absolute inset-0 h-full w-full object-cover"
           />
         </div>
         {/* eslint-enable @next/next/no-img-element */}

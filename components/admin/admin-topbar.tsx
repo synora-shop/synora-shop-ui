@@ -71,7 +71,6 @@ export function AdminTopbar({
   const pathname = usePathname();
 
   const { section, crumbs } = resolveNav(pathname);
-  const trail = trailing ? [...crumbs, { label: trailing, href: pathname }] : crumbs;
 
   const close = () => setMenu(null);
 
@@ -336,7 +335,9 @@ export function AdminTopbar({
         </div>
       </div>
 
-      <AdminSearch open={searching} onClose={() => setSearching(false)} />
+      {/* Rendered only while it is open, so a fresh mount is a fresh search.
+          It used to stay mounted and reset itself in an effect. */}
+      {searching && <AdminSearch onClose={() => setSearching(false)} />}
 
       {dialog && (
         <BusinessTypeDialog

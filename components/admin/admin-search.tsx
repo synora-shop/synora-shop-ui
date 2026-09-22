@@ -20,7 +20,19 @@ import { startNavProgress } from "@/components/ui/nav-progress";
  * button, by "/" or by ⌘K, closed by Escape or by clicking away. Nothing about
  * it is nested inside anything that can clip it.
  */
-export function AdminSearch({ open, onClose }: { open: boolean; onClose: () => void }) {
+/**
+ * Mounted means open.
+ *
+ * It used to take an `open` prop, render null when false, and reset its own
+ * query and selection in an effect whenever that prop flipped true — two
+ * setState calls fired synchronously inside an effect, which makes React
+ * render twice before the browser paints once, every time the palette opens.
+ *
+ * The reset is not needed at all once the parent stops keeping a closed search
+ * mounted: a fresh mount already starts with a fresh query and the first row
+ * selected. The state that had to be cleared is state that no longer exists.
+ */
+export function AdminSearch({ onClose }: { onClose: () => void }) {
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -32,12 +44,9 @@ export function AdminSearch({ open, onClose }: { open: boolean; onClose: () => v
   // Opening should land the cursor in the field. A search you have to click
   // twice to use is a search people stop using.
   useEffect(() => {
-    if (!open) return;
-    setQuery("");
-    setActive(0);
     const id = requestAnimationFrame(() => inputRef.current?.focus());
     return () => cancelAnimationFrame(id);
-  }, [open]);
+  }, []);
 
   // Keep the highlighted row in view when the arrows walk past the fold.
   useEffect(() => {
@@ -45,7 +54,6 @@ export function AdminSearch({ open, onClose }: { open: boolean; onClose: () => v
   }, [active]);
 
   useEffect(() => {
-    if (!open) return;
     function onKey(event: KeyboardEvent) {
       if (event.key === "Escape") {
         event.preventDefault();
@@ -54,9 +62,7 @@ export function AdminSearch({ open, onClose }: { open: boolean; onClose: () => v
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
-
-  if (!open) return null;
+  }, [onClose]);
 
   function go(entry: SettingEntry | undefined) {
     if (!entry) return;

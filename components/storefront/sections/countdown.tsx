@@ -52,11 +52,22 @@ export function Countdown({
   const target = parse(endsAt ?? "");
   const [now, setNow] = useState<number | null>(null);
 
+  // `now` stays null through the server render and the first client render,
+  // which is deliberate: the clock is the one thing that cannot agree between
+  // the two, and rendering it would be a hydration mismatch on every page.
+  //
+  // The first reading used to be taken synchronously inside the effect, which
+  // makes React render twice in a row before the browser paints once. On the
+  // next frame instead — invisible to a customer, and one render rather than
+  // two on a page that may hold several of these.
   useEffect(() => {
     if (target === null) return;
-    setNow(Date.now());
+    const first = requestAnimationFrame(() => setNow(Date.now()));
     const tick = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(tick);
+    return () => {
+      cancelAnimationFrame(first);
+      clearInterval(tick);
+    };
   }, [target]);
 
   // No date set, or one that is not a date. Nothing to count to.
