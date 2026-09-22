@@ -177,7 +177,7 @@ export function ThemeManager({
                   // touching and the list read as one smeared block.
                   className="flex h-[calc(144*var(--u))] items-center gap-[var(--gap-lg)]"
                 >
-                  <div className="h-[calc(108*var(--u))] w-[calc(171*var(--u))] flex-shrink-0 overflow-hidden rounded-[var(--radius-inner)] border border-section-line bg-panel">
+                  <div className="h-[calc(108*var(--u))] w-[calc(171*var(--u))] flex-shrink-0 overflow-hidden rounded-[var(--radius-control)] border border-section-line bg-panel">
                     {copy.preview && (
                       <Image
                         src={copy.preview}
@@ -332,7 +332,7 @@ export function ThemeManager({
                 // not from the theme's colours: the store is a Synora screen
                 // showing what is on offer. The plate says "this is a theme";
                 // the picture on it says which one.
-                className="flex aspect-[730/533] flex-col rounded-[var(--radius-container)] p-[calc(10*var(--u))] shadow-card"
+                className="flex aspect-[730/533] flex-col rounded-[var(--radius-container)] p-[var(--pad-container)] shadow-card"
                 style={{
                   backgroundImage: `linear-gradient(180deg, ${theme.plate.from} 0%, ${theme.plate.to} 100%)`,
                 }}

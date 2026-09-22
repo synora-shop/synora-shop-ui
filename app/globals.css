@@ -231,7 +231,21 @@
    *
    * So they grow on a larger display and hold their drawn value below it. */
   --radius-container: max(16px, calc(16 * var(--u)));
-  --radius-inner: max(6px, calc(6 * var(--u)));
+  /* Derived, never declared.
+   *
+   * The inner radius of a box is the outer radius minus the padding between
+   * them, and writing that as its own number only works while both sides
+   * scale together. They stopped: the outer radius gained a floor so corners
+   * would not get tighter than they were drawn, the padding kept scaling, and
+   * the relationship silently came apart everywhere except 1920. On a 13"
+   * laptop the inner corner was 2.34px too tight, which is the gap you can see
+   * widening at the corner of every nested box.
+   *
+   * Written as the subtraction it is, so it cannot drift again whatever either
+   * side does. Floored at 2px because a padding larger than the radius gives a
+   * negative, and a square inner corner inside a round outer one is its own
+   * kind of wrong. */
+  --radius-inner: max(2px, calc(var(--radius-container) - var(--pad-container)));
   --radius-control: max(8px, calc(8 * var(--u)));
   /* 24.4, read off the artboard — the background's top corner, where it tucks
      under the header. I had it at 40 by eye. */

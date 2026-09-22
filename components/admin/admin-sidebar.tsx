@@ -134,7 +134,7 @@ export function AdminSidebar() {
                           // The box is the point rather than the drawing inside
                           // it: an icon wider than it is tall still occupies
                           // 20 x 20, which is what keeps the column aligned.
-                          "flex h-[var(--row-h)] items-center gap-[calc(10*var(--u))] rounded-[var(--radius-control)] px-[var(--pad-container)] text-[length:var(--text-normal)] transition-colors",
+                          "flex h-[var(--row-h)] items-center gap-[calc(10*var(--u))] rounded-[var(--radius-inner)] px-[var(--pad-container)] text-[length:var(--text-normal)] transition-colors",
                           here
                             ? "bg-selected font-semibold text-brand-500"
                             : "text-control-ink hover:bg-control"

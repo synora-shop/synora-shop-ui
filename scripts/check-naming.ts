@@ -289,6 +289,29 @@ const sideNav = side.slice(side.indexOf("<nav"), side.indexOf("</nav>"));
       /--radius-inner:/.test(css) &&
       /--radius-control:/.test(css)
   );
+  // Derived, not declared. Written as a number it was right at 1920 and wrong
+  // everywhere else: the outer radius gained a floor, the padding kept
+  // scaling, and the relationship came apart without anything failing. As the
+  // subtraction it is, it cannot drift whatever either side does.
+  check(
+    "the inner radius is the outer minus the padding, as arithmetic",
+    /--radius-inner:[^;]*var\(--radius-container\)[^;]*var\(--pad-container\)/.test(css),
+    "a hard-coded inner radius is only correct at the one size both sides were drawn at"
+  );
+  check(
+    "and the padding it subtracts is declared before it",
+    css.indexOf("--pad-container:") < css.indexOf("--radius-inner:"),
+    "a custom property that reads one declared after it resolves to nothing"
+  );
+  // The one box that is genuinely nested inside a padded container must use
+  // the padding token that the radius subtracts, or the pair drifts again.
+  check(
+    "a nested box pads with the token the radius reads",
+    !/rounded-\[var\(--radius-container\)\][^"]*p-\[calc\(\d/.test(
+      readFileSync(join(ROOT, "components/admin/theme-manager.tsx"), "utf8")
+    ),
+    "padding written as its own calc is padding that can move without the radius"
+  );
 }
 
 check(
