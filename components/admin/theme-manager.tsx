@@ -15,41 +15,63 @@ import { useToast } from "@/components/ui/toast";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { cn } from "@/lib/utils";
 
-export type ManagedTheme = {
+/** One copy of a theme in this shop's library. */
+export type ThemeCopy = {
+  id: string;
+  themeKey: string;
+  name: string;
+  preview?: string;
+  /** The version this copy is at. */
+  version: string;
+  /** What the platform ships. Ahead of `version` means an update is waiting. */
+  latest: string;
+  /** "Sep 5 at 10:35 pm". */
+  addedAt: string;
+  previewUrl: string;
+};
+
+/** A theme in the store. Offered whether or not the shop already has copies. */
+export type StoreTheme = {
   key: string;
   name: string;
   description: string;
-  /** What this shop has, for a theme it owns. */
-  version?: string;
-  /** What the platform ships. Ahead of `version` means an update is waiting. */
-  latest: string;
-  /** Where this theme can be seen running, full size. */
-  previewUrl: string;
-  /** A photograph of it, shipped with the theme. */
   preview?: string;
-  installed: boolean;
-  /** "Sep 5 at 10:35 pm", for the themes that are. */
-  addedAt?: string;
+  latest: string;
+  /** How many copies this shop already holds. */
+  owned: number;
+  previewUrl: string;
 };
 
 /**
  * Three sections: what is live, what this shop owns, and what exists.
  *
- * The order is the order a merchant thinks about them, and it matters more
- * than it sounds. Before the library existed this screen had one list and one
+ * **A shop owns copies, not themes.** Add makes a copy every time, so the
+ * library can hold KITE at v1.1.1 and KITE at v1.0.4 at once — each with its
+ * own edits, each activatable, the older one offering Update. That is the point
+ * of a library: a design being worked on, beside the one serving customers,
+ * with neither standing in the other's way.
+ *
+ * Everything here is addressed by copy id. Two copies of KITE are both KITE, so
+ * a theme key cannot say which design a button means — and a key that saved to
+ * "the theme" would write a merchant's draft colours onto the storefront, which
+ * is the failure the library exists to prevent.
+ *
+ * The order is the order a merchant thinks about them, and it matters more than
+ * it sounds. Before the library existed this screen had one list and one
  * button, and that button changed the live storefront — so browsing six designs
  * was one press away from putting an untried one in front of customers.
- *
- * Adding and activating are separate acts, and nothing in the store can go live
- * in one press.
  */
 export function ThemeManager({
-  themes,
-  current,
+  copies,
+  store,
+  liveId,
+  liveKey,
   storeHost,
 }: {
-  themes: ManagedTheme[];
-  current: string;
+  copies: ThemeCopy[];
+  store: StoreTheme[];
+  liveId: string | null;
+  liveKey: string;
   storeHost: string;
 }) {
   const [pending, startTransition] = useTransition();
@@ -58,12 +80,13 @@ export function ThemeManager({
   const toast = useToast();
   const { confirm, dialog } = useConfirm();
 
-  const live = themes.find((t) => t.key === current);
-  const owned = themes.filter((t) => t.installed);
-  const store = themes.filter((t) => !t.installed);
+  // The live copy, or — for a shop running a theme it holds no copy of — the
+  // theme alone. Both are real states and the section has to render either.
+  const live = copies.find((c) => c.id === liveId) ?? null;
+  const liveTheme = live ?? store.find((t) => t.key === liveKey) ?? null;
 
-  function run(key: string, action: () => Promise<{ ok: boolean; message?: string; error?: string }>) {
-    setBusyKey(key);
+  function run(id: string, action: () => Promise<{ ok: boolean; message?: string; error?: string }>) {
+    setBusyKey(id);
     setMenuKey(null);
     startTransition(async () => {
       const result = await action();
@@ -73,7 +96,7 @@ export function ThemeManager({
     });
   }
 
-  const busy = (key: string) => pending && busyKey === key;
+  const busy = (id: string) => pending && busyKey === id;
 
   return (
     <>
@@ -83,13 +106,13 @@ export function ThemeManager({
       {/* 1 — what customers are looking at right now                        */}
       {/* ----------------------------------------------------------------- */}
       <Section title="Active Theme">
-        {live ? (
+        {liveTheme ? (
           <div className="flex flex-col items-center">
             <div className="w-full max-w-[calc(720*var(--u))] overflow-hidden rounded-xl border border-section-line bg-panel">
-              {live.preview ? (
+              {liveTheme.preview ? (
                 <Image
-                  src={live.preview}
-                  alt={`${live.name} on your storefront`}
+                  src={liveTheme.preview}
+                  alt={`${liveTheme.name} on your storefront`}
                   width={1440}
                   height={900}
                   className="h-auto w-full"
@@ -97,20 +120,18 @@ export function ThemeManager({
                 />
               ) : (
                 // No shipped picture, so the shop itself stands in — a live
-                // frame of the merchant's own storefront wearing this theme.
-                // Better than a placeholder by some distance: it is the only
-                // preview that answers "what would MY shop look like", which
-                // is the question being asked.
-                <StorefrontStill url={live.previewUrl} height={450} />
+                // frame of the merchant's own storefront wearing this design.
+                // The only preview that answers "what would MY shop look like".
+                <StorefrontStill url={liveTheme.previewUrl} height={450} />
               )}
             </div>
 
-            {/* The shop's own address on the left, the theme on the right.
-                Both are answers to "what am I looking at" — one names the
-                place, the other names the design. */}
+            {/* The shop's own address on the left, the design on the right.
+                Both answer "what am I looking at" — one names the place, the
+                other names the design, down to which copy of it. */}
             <div className="mt-[var(--gap-lg)] flex w-full max-w-[calc(720*var(--u))] flex-wrap items-baseline justify-between gap-3">
               <a
-                href={live.previewUrl}
+                href={liveTheme.previewUrl}
                 target="_blank"
                 rel="noreferrer"
                 className="text-[length:calc(24*var(--u))] font-semibold text-control-ink transition-colors hover:text-brand-500"
@@ -118,8 +139,8 @@ export function ThemeManager({
                 {storeHost}
               </a>
               <p className="text-[length:var(--text-secondary)] text-control-ink">
-                {live.name} &ndash; v{live.version ?? live.latest}
-                {live.addedAt && (
+                {liveTheme.name} &ndash; v{live?.version ?? liveTheme.latest}
+                {live && (
                   <span className="text-control-soft">{"  "}(Added: {live.addedAt})</span>
                 )}
               </p>
@@ -133,33 +154,24 @@ export function ThemeManager({
       </Section>
 
       {/* ----------------------------------------------------------------- */}
-      {/* 2 — everything this shop owns                                      */}
+      {/* 2 — every copy this shop holds                                     */}
       {/* ----------------------------------------------------------------- */}
       <Section title="All Themes">
-        {owned.length === 0 ? (
+        {copies.length === 0 ? (
           <p className="text-[length:var(--text-secondary)] text-control-soft">
             You have not added a theme yet. There are some below.
           </p>
         ) : (
           <ul>
-            {owned.map((theme, i) => {
-              const isLive = theme.key === current;
-              const outOfDate = theme.version !== undefined && theme.version !== theme.latest;
+            {copies.map((copy, i) => {
+              const isLive = copy.id === liveId;
+              const outOfDate = copy.version !== copy.latest;
               return (
-                <li
-                  key={theme.key}
-                  className={cn(
-                    "flex items-center gap-[var(--gap-lg)]",
-                    // A rule between rows, never above the first or below the
-                    // last: a line at the edge of a list reads as the edge of
-                    // the container, which is already drawn.
-                    i > 0 && "border-t border-section-line"
-                  )}
-                >
+                <li key={copy.id} className="flex items-center gap-[var(--gap-lg)]">
                   <div className="h-[calc(108*var(--u))] w-[calc(171*var(--u))] flex-shrink-0 overflow-hidden rounded-lg border border-section-line bg-panel">
-                    {theme.preview && (
+                    {copy.preview && (
                       <Image
-                        src={theme.preview}
+                        src={copy.preview}
                         alt=""
                         width={342}
                         height={216}
@@ -169,31 +181,36 @@ export function ThemeManager({
                   </div>
 
                   {/* The live row is a plate, and it is the row rather than a
-                      badge on it: which theme is live is the one thing this
-                      list is asked, so it is answered by the whole row. */}
+                      badge on it: which design is live is the one thing this
+                      list is asked, so the whole row answers it.
+                      
+                      The rule sits on this block rather than the <li>, so it
+                      starts where the content starts and not under the
+                      thumbnail — which is how the guide draws it. Never above
+                      the first: a line at the edge of a list reads as the edge
+                      of the container, and that is already drawn. */}
                   <div
                     className={cn(
                       "flex min-w-0 flex-1 flex-wrap items-center gap-x-[var(--gap-lg)] gap-y-2 rounded-lg px-[calc(20*var(--u))] py-[calc(20*var(--u))]",
+                      i > 0 && !isLive && "border-t border-section-line",
                       isLive && "bg-[#d2ffd6]"
                     )}
                   >
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-[length:var(--text-normal)] font-semibold text-control-ink">
-                        {theme.name}{" "}
-                        <span className="font-normal text-control-soft">(v{theme.version})</span>
+                        {copy.name}{" "}
+                        <span className="font-normal text-control-soft">(v{copy.version})</span>
                       </p>
-                      {theme.addedAt && (
-                        <p className="mt-1 truncate text-[length:var(--text-secondary)] text-control-soft">
-                          Added: {theme.addedAt}
-                        </p>
-                      )}
+                      <p className="mt-1 truncate text-[length:var(--text-secondary)] text-control-soft">
+                        Added: {copy.addedAt}
+                      </p>
                     </div>
 
                     <div className="flex flex-shrink-0 items-center gap-[calc(10*var(--u))]">
                       {outOfDate && (
                         <RowButton
-                          onClick={() => run(theme.key, () => updateTheme(theme.key))}
-                          busy={busy(theme.key)}
+                          onClick={() => run(copy.id, () => updateTheme(copy.id))}
+                          busy={busy(copy.id)}
                           className="border-transparent bg-selected text-brand-500"
                         >
                           Update
@@ -207,14 +224,14 @@ export function ThemeManager({
                         </span>
                       ) : (
                         <RowButton
-                          onClick={() => run(theme.key, () => chooseTheme(theme.key))}
-                          busy={busy(theme.key)}
+                          onClick={() => run(copy.id, () => chooseTheme(copy.id))}
+                          busy={busy(copy.id)}
                         >
                           Activate
                         </RowButton>
                       )}
 
-                      <RowButton href={`/admin/customize/theme?theme=${theme.key}`}>
+                      <RowButton href={`/admin/customize/theme?theme=${copy.id}`}>
                         <Pencil className="h-[calc(16*var(--u))] w-[calc(16*var(--u))]" />
                         Edit Theme
                       </RowButton>
@@ -225,14 +242,14 @@ export function ThemeManager({
                       <div className="relative">
                         <button
                           type="button"
-                          aria-label={`More for ${theme.name}`}
-                          aria-expanded={menuKey === theme.key}
-                          onClick={() => setMenuKey((k) => (k === theme.key ? null : theme.key))}
+                          aria-label={`More for ${copy.name} v${copy.version}`}
+                          aria-expanded={menuKey === copy.id}
+                          onClick={() => setMenuKey((k) => (k === copy.id ? null : copy.id))}
                           className="flex h-[calc(35*var(--u))] w-[calc(35*var(--u))] items-center justify-center rounded-full text-control-soft transition-colors hover:bg-panel hover:text-control-ink"
                         >
                           <MoreHorizontal className="h-[var(--icon-box)] w-[var(--icon-box)]" />
                         </button>
-                        {menuKey === theme.key && (
+                        {menuKey === copy.id && (
                           <>
                             <button
                               type="button"
@@ -242,7 +259,7 @@ export function ThemeManager({
                             />
                             <div className="absolute right-0 top-full z-50 mt-1 w-56 overflow-hidden rounded-xl border border-control-line bg-panel shadow-lg">
                               <a
-                                href={theme.previewUrl}
+                                href={copy.previewUrl}
                                 target="_blank"
                                 rel="noreferrer"
                                 onClick={() => setMenuKey(null)}
@@ -257,18 +274,18 @@ export function ThemeManager({
                                   onClick={async () => {
                                     setMenuKey(null);
                                     const ok = await confirm({
-                                      title: `Remove ${theme.name}?`,
+                                      title: `Remove this copy of ${copy.name}?`,
                                       description:
-                                        "Your changes to this theme are removed with it. Adding it again starts from the theme's own design.",
+                                        "Your changes to this copy go with it. Your other copies are untouched.",
                                       confirmLabel: "Remove",
                                       danger: true,
                                     });
-                                    if (ok) run(theme.key, () => removeTheme(theme.key));
+                                    if (ok) run(copy.id, () => removeTheme(copy.id));
                                   }}
                                   className="flex w-full items-center gap-2 border-t border-control-line px-3 py-2 text-[length:var(--text-secondary)] transition-colors hover:bg-rose-bg hover:text-rose"
                                 >
                                   <Trash2 className="h-4 w-4" />
-                                  Remove from your themes
+                                  Remove this copy
                                 </button>
                               )}
                             </div>
@@ -290,7 +307,7 @@ export function ThemeManager({
       <Section title="Theme Store">
         {store.length === 0 ? (
           <p className="text-[length:var(--text-secondary)] text-control-soft">
-            You have every theme made for this kind of store. More are being designed.
+            No themes are made for this kind of store yet.
           </p>
         ) : (
           <ul className="grid gap-[var(--gap-lg)] lg:grid-cols-2">
@@ -328,6 +345,15 @@ export function ThemeManager({
                   <p className="text-[length:var(--text-normal)] font-semibold text-control-ink">
                     {theme.name}{" "}
                     <span className="font-normal text-control-soft">(v{theme.latest})</span>
+                    {/* Said quietly, and said. Add makes another copy, so a
+                        merchant pressing it on something they already have has
+                        not made a mistake — but they should know before the
+                        toast tells them afterwards. */}
+                    {theme.owned > 0 && (
+                      <span className="ml-2 font-normal text-control-soft">
+                        · {theme.owned} in your themes
+                      </span>
+                    )}
                   </p>
                   <div className="flex items-center gap-[calc(10*var(--u))]">
                     <button

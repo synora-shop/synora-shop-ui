@@ -43,11 +43,12 @@ export type ThemePanelState = ThemeTokens & ThemeLayout;
 
 export function ThemePanel({
   initialTokens,
-  themeKey,
+  copyId,
 }: {
   initialTokens: ThemePanelState;
   /** Which theme these edits belong to. Its absence means the live one. */
-  themeKey?: string;
+  /** Which copy of a theme is being edited. Undefined means the live one. */
+  copyId?: string;
 }) {
   const [tokens, setTokens] = useState<ThemePanelState>(initialTokens);
   const [saved, setSaved] = useState<ThemePanelState>(initialTokens);
@@ -137,7 +138,7 @@ export function ThemePanel({
     }
     setSaveState("saving");
     try {
-      const result = await saveThemeTokens(tokens, themeKey);
+      const result = await saveThemeTokens(tokens, copyId);
       setSaved(result);
       setTokens(result);
       setSaveState("saved");
@@ -162,7 +163,7 @@ export function ThemePanel({
       danger: true,
     });
     if (!ok) return;
-    const defaults = await resetThemeTokens(themeKey);
+    const defaults = await resetThemeTokens(copyId);
     setTokens(defaults);
     setSaved(defaults);
     setSaveState("idle");

@@ -132,10 +132,23 @@ check(
   (themeData.match(/cachedForShop\(shopId, "theme"/g) ?? []).length === 1,
   "cachedForShop keys on shop and kind alone, so two callbacks under one kind collide and the second gets the wrong shape"
 );
+// By copy, not by theme. A shop can hold KITE twice with different colours on
+// each, so "this theme's edits" names two answers and the database decides
+// which — a draft's colours on the live storefront, arrived at by a lookup.
 check(
-  "and a theme's edits are read for that theme alone",
-  /installed\.find\(\(r\) => r\.themeKey === key\)/.test(themeData),
-  "otherwise a draft's colours would leak onto the live storefront"
+  "the live design's edits are found by copy, not by theme",
+  /installed\.find\(\(r\) => r\.id === settings\.installedThemeId\)/.test(themeData),
+  "two copies of one theme are both that theme; the key cannot say which is live"
+);
+check(
+  "and a preview resolves a copy before a theme",
+  /installed\.find\(\(r\) => r\.id === preview\)[\s\S]{0,200}preview in THEMES/.test(themeData),
+  "the Themes screen previews a copy and its edits; a store card previews a theme as it ships"
+);
+check(
+  "a shop running a theme it holds no copy of still renders",
+  /installedThemeId\s*\?[\s\S]{0,120}:\s*null/.test(themeData),
+  "that is what every shop looked like before the library existed — the theme's own values, nothing on top"
 );
 
 console.log(`\n${pass} passed, ${fail} failed`);

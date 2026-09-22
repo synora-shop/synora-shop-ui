@@ -1480,8 +1480,17 @@ model InstalledTheme {
   tokens Json @default("{}")
   layout Json @default("{}")
 
-  @@unique([shopId, themeKey])
+  // No unique on (shopId, themeKey), and that absence is the feature.
+  //
+  // Add makes a copy. A shop can hold KITE twice — two sets of edits, two
+  // versions, two Added dates — and activate either. The constraint that used
+  // to be here is what made the second Add a silent no-op, because the upsert
+  // keyed on it simply found the first row and updated nothing.
+  //
+  // Which copy is live is ThemeSettings.installedThemeId. It cannot be the
+  // theme key any more: two copies of KITE are both KITE.
   @@index([shopId])
+  @@index([shopId, themeKey])
 }
 
 model ThemeSettings {
@@ -1493,6 +1502,17 @@ model ThemeSettings {
   /// worth, and lib/themes/registry.ts falls back on an unknown key rather than
   /// letting a retired theme take a storefront offline.
   themeKey  String   @default("aurora")
+  /// Which *copy* of that theme is live.
+  ///
+  /// A shop can hold the same theme more than once, so themeKey above no longer
+  /// names one design — it names which design the storefront renders, and this
+  /// names whose edits it renders with. Every edit, reset, preview and
+  /// activation is addressed to this id.
+  ///
+  /// Nullable because a shop can be running a theme it has no copy of: that is
+  /// what every shop looked like before the library existed, and it still reads
+  /// correctly — the theme's own values, with no edits on top.
+  installedThemeId String?
   /// Legacy. Read by nothing since 10 September — a theme's colours and
   /// arrangement moved to InstalledTheme so an unpublished one could be
   /// edited. Kept rather than dropped: they are the only copy of what a shop

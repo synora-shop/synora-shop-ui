@@ -174,9 +174,11 @@ here.
    a resolved copy. The screen is rebuilt as drawn: Active Theme, All Themes,
    Theme Store, and the closing line.
 
-   **Still open:** a shop holding the same theme at two versions at once, which
-   the drawing shows. That needs the install keyed by version rather than by
-   theme and is a different feature — keeping an old copy to go back to.
+   **Add makes a copy**, every time — which is what the drawing was showing
+   with KITE listed twice. The library holds copies, not themes; each has its
+   own edits, version and Added date, and either can be activated. Everything
+   is addressed by copy id, because two copies of KITE are both KITE. The
+   store offers every theme always, since Add means *another copy*.
 6. ~~**The header is painted**~~ — **done 22 Sep.** 80px of flat `#5050ea`
    across the whole window, mark at the left, a 50px search field and the
    account pill at the right. The page title and breadcrumb left it — the

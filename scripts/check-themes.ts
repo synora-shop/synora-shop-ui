@@ -292,14 +292,15 @@ check(
   /themeTokens\(key\)/.test(actions) && /themeLayout\(key\)/.test(actions)
 );
 check(
-  "and clears only the theme being reset",
-  /installedTheme\.updateMany\(\{[\s\S]{0,120}where: \{ themeKey: key \}/.test(actions),
-  "resetting a draft must not strip the colours off the design customers are seeing"
+  "and clears only the copy being reset",
+  /installedTheme\.updateMany\(\{[\s\S]{0,120}where: \{ id \}/.test(actions),
+  "with two copies of one theme in the library, 'this theme's edits' is not specific enough to promise that"
 );
 check(
-  "saving writes to the theme, not to the shop",
-  /installedTheme\.updateMany/.test(actions) && !/themeSettings\.upsert[\s\S]{0,200}tokens: clean/.test(actions),
-  "while edits were per shop, editing a draft meant editing the live storefront"
+  "saving writes to one copy, not to the shop and not to the theme",
+  /installedTheme\.updateMany\(\{\s*where: \{ id \}/.test(actions) &&
+    !/themeSettings\.upsert[\s\S]{0,200}tokens: clean/.test(actions),
+  "keyed by theme it wrote to every copy, so editing a draft repainted the live storefront"
 );
 check(
   "and refuses when the theme is no longer in the library",
@@ -310,14 +311,14 @@ check(
 const data = read("lib/data/theme.ts");
 check("the storefront resolves a layout per request", /getThemeLayout/.test(data));
 check(
-  "a previewed theme shows its own arrangement and its own edits",
+  "a previewed design shows its own arrangement and its own edits",
   /themeForRequest\(shop\.id, shop\.businessType\)/.test(data) &&
-    /installed\.find\(\(r\) => r\.themeKey === key\)/.test(data),
+    /installed\.find\(\(r\) => r\.id === preview\)/.test(data),
   "a preview of Atlas wearing the header you chose on Aurora is a preview of neither"
 );
 check(
-  "and a preview outranks the live theme for that request only",
-  /const key = preview \?\? settings\?\.themeKey \?\? null/.test(data),
+  "and a preview outranks the live design for that request only",
+  /if \(preview\) \{[\s\S]{0,400}\}\s*\n\s*const key = settings\?\.themeKey/.test(data),
   "nothing is stored, so no cached page can be left wearing somebody's preview"
 );
 
@@ -334,29 +335,53 @@ const choice = read("app/admin/theme/actions-theme-choice.ts");
 check("a theme can be added to a shop's library", /export async function installTheme/.test(choice));
 check("and removed from it", /export async function removeTheme/.test(choice));
 check(
-  "publishing is refused for a theme that was never added",
-  /if \(!installed\)/.test(choice),
+  "activating is refused for a copy the shop does not have",
+  /if \(!copy\) return \{ ok: false/.test(choice),
   "otherwise the library is decoration and one click still changes the live store"
 );
 check(
-  "removing the live theme is refused",
-  /This is the theme your store is using/.test(choice),
-  "a shop rendering a theme it does not have is a state with no honest screen"
+  "removing the live copy is refused",
+  /This is the copy your store is using/.test(choice),
+  "a shop rendering a design it does not have is a state with no honest screen"
+);
+// The live *copy*, not the live theme. A shop with two copies of KITE may
+// remove the one it is not wearing; asking about the theme refused both.
+check(
+  "and it is the copy that is checked, not the theme",
+  /settings\?\.installedThemeId === copyId/.test(choice),
+  "asking by theme refused to remove a spare copy on the grounds that another one was live"
 );
 check(
   "adding a theme meant for another kind of store is refused",
   /is not made for this kind of store/.test(choice),
   "a blog theme on a shop renders sections the shop has no content for"
 );
+// Add makes a copy, every time. It used to upsert on (shop, theme), so the
+// second Add found the first row, wrote nothing, and reported success — a
+// merchant asking for a second copy got a toast saying they had one.
 check(
-  "re-adding does not reset when it was added",
-  /update: \{\},/.test(choice),
-  "'Added 3 weeks ago' is how a merchant tells two half-tried designs apart"
+  "adding makes a new copy rather than finding the old one",
+  /installedTheme\.create\(\{/.test(choice) && !/installedTheme\.upsert/.test(choice),
+  "two copies of one theme, each with its own edits, is what the library is for"
+);
+check(
+  "a copy is sealed at the version that ships today",
+  /data: \{ shopId: shop\.id, themeKey, version: theme\.version \}/.test(choice),
+  "a copy added in August staying at August's version is what makes Update mean anything"
 );
 check(
   "adding changes nothing a customer can see",
-  !/invalidateShop[\s\S]{0,80}installTheme/.test(choice) &&
-    /revalidatePath\("\/admin\/theme"\);\n  return \{ ok: true, message: `\$\{theme\.name\} was added/.test(choice),
+  (() => {
+    const body = choice.slice(
+      choice.indexOf("export async function installTheme"),
+      choice.indexOf("export async function updateTheme")
+    );
+    return (
+      body.includes('revalidatePath("/admin/theme")') &&
+      !body.includes("invalidateShop") &&
+      !body.includes('revalidatePath("/", "layout")')
+    );
+  })(),
   "it refreshes the admin screen and nothing else"
 );
 
@@ -386,9 +411,21 @@ check(
 );
 check(
   "the update is offered only when there is one",
-  /outOfDate = theme\.version !== undefined && theme\.version !== theme\.latest/.test(gallery) &&
-    /outOfDate && \(/.test(gallery),
+  /outOfDate = copy\.version !== copy\.latest/.test(gallery) && /outOfDate && \(/.test(gallery),
   "an Update offered for nothing teaches a merchant to ignore the next one"
+);
+// The store offers every theme, always — including ones already in the
+// library. Add is not "own this", it is "give me another copy".
+check(
+  "the store offers a theme the shop already has",
+  !/store\s*=\s*themes\.filter\(\(t\) => !t\.installed\)/.test(gallery) &&
+    /theme\.owned > 0/.test(gallery),
+  "filtering owned themes out of the store makes a second copy unreachable"
+);
+check(
+  "and says how many the shop already holds before it is pressed",
+  /in your themes/.test(gallery),
+  "pressing Add on something you have is not a mistake, but it should not be a surprise"
 );
 
 // Versions. The platform's is in the registry beside the theme; the shop's is
@@ -411,9 +448,16 @@ for (const theme of Object.values(THEMES)) {
     "the merchant's edits are differences on top; rewriting them here would destroy them"
   );
   check(
-    "adding a theme you already have does not silently update it",
-    /update: \{\},/.test(actions),
-    "pressing Add is not asking to be moved onto a new design"
+    "adding is a new copy, never an update to an existing one",
+    /installedTheme\.create/.test(actions) && !/installedTheme\.upsert/.test(actions),
+    "pressing Add asks for another copy, not to be moved onto a new version of the one you have"
+  );
+  check(
+    "and every action names a copy rather than a theme",
+    /updateTheme\(copyId: string\)/.test(actions) &&
+      /removeTheme\(copyId: string\)/.test(actions) &&
+      /chooseTheme\(copyId: string\)/.test(actions),
+    "two copies of KITE are both KITE; a key cannot say which one a button means"
   );
 }
 

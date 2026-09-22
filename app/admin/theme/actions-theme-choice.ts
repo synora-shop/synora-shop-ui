@@ -7,17 +7,27 @@ import { invalidateShop } from "@/lib/data/cached";
 import { THEMES } from "@/lib/themes/registry";
 import type { Prisma } from "@/lib/generated/prisma/client";
 
-export type ThemeResult = { ok: true; message: string } | { ok: false; error: string };
+export type ThemeResult =
+  | { ok: true; message: string; id?: string }
+  | { ok: false; error: string };
 
 /**
- * Adds a theme to this shop's library.
+ * Adds a copy of a theme to this shop's library.
  *
- * Nothing is copied and nothing is downloaded — every theme ships with the
- * platform. What this records is a merchant saying *this one is mine now*, and
- * the reason that is worth a row of its own is what it makes possible: a design
- * you can preview and customise for a week without a single customer seeing it.
+ * **A copy, every time.** Press Add twice on KITE and the library holds two
+ * KITEs, each with its own edits, its own version and its own Added date, and
+ * either can be activated. That is the point of the library and it is what the
+ * Themes screen was drawn showing: a design being worked on, beside the one
+ * serving customers, with neither standing in the other's way.
  *
- * Before this, the picker had one button and it changed the live storefront.
+ * It used to upsert on (shop, theme), so the second Add found the first row,
+ * updated nothing, and reported success. A merchant asking for a second copy
+ * got a toast saying they had one.
+ *
+ * Nothing is downloaded — every theme ships with the platform. What a row
+ * records is a merchant saying *this one is mine now*, and what makes it worth
+ * having is that it can be previewed and customised for a week without a
+ * single customer seeing it.
  */
 export async function installTheme(themeKey: string): Promise<ThemeResult> {
   await requireRole("ADMIN");
@@ -34,19 +44,26 @@ export async function installTheme(themeKey: string): Promise<ThemeResult> {
     return { ok: false, error: `${theme.name} is not made for this kind of store.` };
   }
 
-  await (await db()).installedTheme.upsert({
-    where: { shopId_themeKey: { shopId: shop.id, themeKey } },
-    // Already there. Re-adding is not an error and must not reset the date —
-    // "Added 3 weeks ago" is how a merchant tells two half-tried designs apart.
-    // It must not silently update the version either: a merchant who presses
-    // Add on something they already have has not asked to be moved onto a new
-    // design, and doing it here would be an update nobody could see coming.
-    update: {},
-    create: { shopId: shop.id, themeKey, version: theme.version },
+  // Sealed at the version that ships today. A copy added in August stays at
+  // the version it was added at — that is what makes Update mean something,
+  // and what lets two copies of one theme sit at two versions.
+  const copy = await (await db()).installedTheme.create({
+    data: { shopId: shop.id, themeKey, version: theme.version },
   });
 
+  // How many this shop now has, so the message can say which one this is
+  // rather than implying there is only ever one.
+  const count = await (await db()).installedTheme.count({ where: { themeKey } });
+
   revalidatePath("/admin/theme");
-  return { ok: true, message: `${theme.name} was added to your themes.` };
+  return {
+    ok: true,
+    message:
+      count > 1
+        ? `Another copy of ${theme.name} was added. You now have ${count}.`
+        : `${theme.name} was added to your themes.`,
+    id: copy.id,
+  };
 }
 
 /**
@@ -67,19 +84,21 @@ export async function installTheme(themeKey: string): Promise<ThemeResult> {
  * is wearing changes how it looks, immediately and on purpose: that is what the
  * merchant pressed.
  */
-export async function updateTheme(themeKey: string): Promise<ThemeResult> {
+export async function updateTheme(copyId: string): Promise<ThemeResult> {
   await requireRole("ADMIN");
-  if (!(themeKey in THEMES)) return { ok: false, error: "That theme no longer exists." };
+
+  const prisma = await db();
+  // Scoped by the tenant client, so an id belonging to another shop finds
+  // nothing rather than updating somebody else's design.
+  const row = await prisma.installedTheme.findFirst({
+    where: { id: copyId },
+    select: { themeKey: true, version: true },
+  });
+  if (!row) return { ok: false, error: "That copy is not in your themes." };
+  if (!(row.themeKey in THEMES)) return { ok: false, error: "That theme no longer exists." };
 
   const shop = await requireShop();
-  const theme = THEMES[themeKey];
-  const prisma = await db();
-
-  const row = await prisma.installedTheme.findUnique({
-    where: { shopId_themeKey: { shopId: shop.id, themeKey } },
-    select: { version: true },
-  });
-  if (!row) return { ok: false, error: "Add this theme before updating it." };
+  const theme = THEMES[row.themeKey];
 
   // Already current. Not an error — a second tab, or two presses — but nothing
   // should be written, and the merchant should be told the truth rather than
@@ -89,7 +108,7 @@ export async function updateTheme(themeKey: string): Promise<ThemeResult> {
   }
 
   await prisma.installedTheme.update({
-    where: { shopId_themeKey: { shopId: shop.id, themeKey } },
+    where: { id: copyId },
     data: { version: theme.version },
   });
 
@@ -110,25 +129,37 @@ export async function updateTheme(themeKey: string): Promise<ThemeResult> {
  * would leave the shop rendering a theme it does not have, which is a state
  * with no honest screen to show for it.
  */
-export async function removeTheme(themeKey: string): Promise<ThemeResult> {
+export async function removeTheme(copyId: string): Promise<ThemeResult> {
   await requireRole("ADMIN");
 
   const shop = await requireShop();
-  const settings = await (await db()).themeSettings.findFirst({
-    where: { businessType: shop.businessType },
+  const prisma = await db();
+
+  const row = await prisma.installedTheme.findFirst({
+    where: { id: copyId },
     select: { themeKey: true },
   });
+  if (!row) return { ok: false, error: "That copy is not in your themes." };
 
-  if ((settings?.themeKey ?? "aurora") === themeKey) {
+  const settings = await prisma.themeSettings.findFirst({
+    where: { businessType: shop.businessType },
+    select: { installedThemeId: true },
+  });
+
+  // The live *copy*, not the live theme. A shop with two copies of KITE may
+  // remove the one it is not wearing, which was impossible while this asked
+  // about the theme — it refused both, on the grounds that one of them was
+  // live.
+  if (settings?.installedThemeId === copyId) {
     return {
       ok: false,
-      error: "This is the theme your store is using. Publish another one first.",
+      error: "This is the copy your store is using. Activate another one first.",
     };
   }
 
-  await (await db()).installedTheme.deleteMany({ where: { themeKey } });
+  await prisma.installedTheme.delete({ where: { id: copyId } });
   revalidatePath("/admin/theme");
-  return { ok: true, message: `${THEMES[themeKey]?.name ?? "That theme"} was removed.` };
+  return { ok: true, message: `That copy of ${THEMES[row.themeKey]?.name ?? "the theme"} was removed.` };
 }
 
 /**
@@ -142,30 +173,43 @@ export async function removeTheme(themeKey: string): Promise<ThemeResult> {
  * there being a library: publishing is the second act, and it cannot be the
  * first one by accident.
  */
-export async function chooseTheme(themeKey: string): Promise<ThemeResult> {
+export async function chooseTheme(copyId: string): Promise<ThemeResult> {
   await requireRole("ADMIN");
+
+  const shop = await requireShop();
+  const prisma = await db();
+
+  // A copy of this shop's, or nothing. Only something in the library may go
+  // live — that is the whole point of there being a library, and it is what
+  // stops publishing being the first act by accident.
+  const copy = await prisma.installedTheme.findFirst({
+    where: { id: copyId },
+    select: { id: true, themeKey: true },
+  });
+  if (!copy) return { ok: false, error: "Add this theme to your store before activating it." };
 
   // An unknown key would be stored and then silently fall back on every read,
   // which looks like the choice not sticking.
-  if (!(themeKey in THEMES)) return { ok: false, error: "That theme no longer exists." };
-
-  const shop = await requireShop();
-
-  const installed = await (await db()).installedTheme.findFirst({ where: { themeKey } });
-  if (!installed) {
-    return { ok: false, error: "Add this theme to your store before publishing it." };
-  }
+  if (!(copy.themeKey in THEMES)) return { ok: false, error: "That theme no longer exists." };
 
   const key = { shopId: shop.id, businessType: shop.businessType };
 
-  await (await db()).themeSettings.upsert({
+  // Both, and they answer different questions. themeKey is what the storefront
+  // renders; installedThemeId is whose edits it renders with. Two copies of
+  // KITE are both KITE, so the key alone cannot say which design is live.
+  await prisma.themeSettings.upsert({
     where: { shopId_businessType: key },
-    update: { themeKey },
-    create: { ...key, themeKey, tokens: {} as Prisma.InputJsonValue },
+    update: { themeKey: copy.themeKey, installedThemeId: copy.id },
+    create: {
+      ...key,
+      themeKey: copy.themeKey,
+      installedThemeId: copy.id,
+      tokens: {} as Prisma.InputJsonValue,
+    },
   });
 
   invalidateShop(shop.id, "theme");
   revalidatePath("/admin/theme");
   revalidatePath("/", "layout");
-  return { ok: true, message: `${THEMES[themeKey].name} is now live.` };
+  return { ok: true, message: `${THEMES[copy.themeKey].name} is now live.` };
 }

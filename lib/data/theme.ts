@@ -25,8 +25,11 @@ async function previewTheme(): Promise<string | null> {
   const path = (await headers()).get(SHOP_PATH_HEADER);
   const query = path?.indexOf("?") ?? -1;
   if (!path || query === -1) return null;
-  const key = new URLSearchParams(path.slice(query + 1)).get("__theme");
-  return key && key in THEMES ? key : null;
+  // Either a theme from the registry — a store card, which the shop does not
+  // own and so has no edits — or the id of one of the shop's own copies. Both
+  // answer the same question, and which of the two it is is worked out below
+  // rather than here, because only the caller has the shop's library.
+  return new URLSearchParams(path.slice(query + 1)).get("__theme");
 }
 
 /**
@@ -48,9 +51,11 @@ const themeState = cache(async (shopId: string, businessType: string) => {
     const [settings, installed] = await Promise.all([
       t.themeSettings.findFirst({
         where: { businessType: businessType as never },
-        select: { themeKey: true },
+        select: { themeKey: true, installedThemeId: true },
       }),
-      t.installedTheme.findMany({ select: { themeKey: true, tokens: true, layout: true } }),
+      t.installedTheme.findMany({
+        select: { id: true, themeKey: true, tokens: true, layout: true },
+      }),
     ]);
     return { settings, installed };
   });
@@ -69,8 +74,32 @@ async function themeForRequest(shopId: string, businessType: string) {
     themeState(shopId, businessType),
     previewTheme(),
   ]);
-  const key = preview ?? settings?.themeKey ?? null;
-  const edits = key ? (installed.find((r) => r.themeKey === key) ?? null) : null;
+
+  // A copy first, then a theme. `?__theme=` carries whichever the link had:
+  // the Themes screen previews one of the shop's own copies, so it sends an
+  // id and the preview shows that copy's edits; a store card is a theme the
+  // shop does not own, so it sends a key and the preview shows the theme as it
+  // ships. Neither is trusted — an id that is not this shop's finds nothing,
+  // because `installed` is already scoped to the shop.
+  if (preview) {
+    const copy = installed.find((r) => r.id === preview);
+    if (copy) return { key: copy.themeKey, edits: copy };
+    if (preview in THEMES) return { key: preview, edits: null };
+  }
+
+  const key = settings?.themeKey ?? null;
+  if (!key) return { key: null, edits: null };
+
+  // The live copy by id. Two copies of one theme are both that theme, so
+  // finding edits by key would hand back whichever the database returned
+  // first — which is the bug this column exists to prevent.
+  //
+  // The fallback is for a shop running a theme it has no copy of, which is
+  // what every shop looked like before the library existed: the theme's own
+  // values, with nothing on top.
+  const edits = settings?.installedThemeId
+    ? (installed.find((r) => r.id === settings.installedThemeId) ?? null)
+    : null;
   return { key, edits };
 }
 

@@ -244,13 +244,32 @@ Built 22 September:
 | A Theme Store separate from the owned list | Three sections, as drawn |
 | A picture of the live storefront in section 1 | The shipped picture, falling back to a live frame of the merchant's own shop |
 
-**Not built: a shop holding the same theme at two versions at once.** The
-drawing shows KITE at v1.1.1 and v1.0.4 as separate rows. That needs the
-install to be keyed by version rather than by theme, which changes how the
-customizer, the activate path and the removal guard each find a theme — a
-larger change than the button, and a different feature: keeping an old copy to
-go back to. What is built is one install per theme, carrying its version, which
-is what `Update` acts on. The hard part is not the button: it is
+### Add makes a copy
+
+This is the part of the screen that is easiest to read past, and it changes
+everything else on it.
+
+**Press Add and the library gains a copy.** Press it twice on KITE and the shop
+holds two KITEs — each with its own edits, its own version, its own Added date
+— and either can be activated. That is what the drawing shows: KITE at v1.1.1
+active, KITE at v1.0.4 below it offering Update. Not a bug in the mock-up; the
+feature.
+
+It is also why the **Theme Store lists every theme, always**, including ones
+already in the library. Add is not *own this*, it is *give me another copy*.
+Filtering owned themes out of the store would make a second copy unreachable.
+
+Three consequences, each of which was a real defect until 22 September:
+
+- **Nothing may be addressed by theme key.** Two copies of KITE are both KITE.
+  Activate, Edit, Update, Remove, preview and the customizer all name a copy
+  by id.
+- **Saving edits by theme key wrote to every copy.** Editing the draft
+  repainted the live storefront — the exact failure a library exists to
+  prevent, reintroduced by a lookup.
+- **"Which theme is live" stopped being an answer.** `ThemeSettings` holds
+  `themeKey` (what the storefront renders) *and* `installedThemeId` (whose
+  edits it renders with). Both, because they answer different questions. The hard part is not the button: it is
 what happens to a merchant's edits when the theme underneath them updates.
 `docs/THEMES.md` §2 already answers the shape of it — a merchant's row holds
 only their *differences*, never a resolved copy, so an update changes

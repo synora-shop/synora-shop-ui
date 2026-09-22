@@ -26,7 +26,7 @@ export async function saveThemeTokens(
    * one, which is what every caller meant before a theme could be edited
    * without being published.
    */
-  themeKey?: string
+  copyId?: string
 ) {
   await requireRole("STAFF");
 
@@ -50,22 +50,30 @@ export async function saveThemeTokens(
   const layout = layoutChanges(resolveThemeLayout(tokens)) as unknown as Prisma.InputJsonValue;
 
   const shop = await requireShop();
-  const key = themeKey ?? (await liveThemeKey(shop.id, shop.businessType));
+  const id = copyId ?? (await liveCopyId(shop.businessType));
 
   /*
-   * Written to the theme, not to the shop.
+   * Written to one copy, not to the theme.
    *
-   * This is the whole of what makes an unpublished theme editable. While these
+   * This is the whole of what makes an unpublished design editable. While these
    * lived on ThemeSettings there was one set of colours per shop, applied to
    * whichever theme was live — so editing a draft meant editing the storefront.
+   *
+   * By id rather than by theme key since 22 September, and that is not a
+   * tidy-up. A shop can hold KITE twice; `where: { themeKey }` wrote the same
+   * colours to both, so editing the copy you were working on also repainted
+   * the one your customers were looking at — the exact failure the library was
+   * built to prevent, reintroduced by a lookup.
    */
-  const updated = await (await db()).installedTheme.updateMany({
-    where: { themeKey: key },
-    data: { tokens: clean, layout },
-  });
+  const updated = id
+    ? await (await db()).installedTheme.updateMany({
+        where: { id },
+        data: { tokens: clean, layout },
+      })
+    : { count: 0 };
 
-  // Nothing to write to means the theme is not in this shop's library, which a
-  // customizer pointed at a theme the merchant removed in another tab can be.
+  // Nothing to write to means the copy is not in this shop's library, which a
+  // customizer pointed at one the merchant removed in another tab can be.
   if (updated.count === 0) {
     throw new Error("That theme is not in your library. Add it again to keep editing.");
   }
@@ -80,12 +88,20 @@ export async function saveThemeTokens(
 }
 
 /** Which theme this shop is actually serving, for the callers that need it. */
-async function liveThemeKey(shopId: string, businessType: string): Promise<string> {
+/**
+ * The copy the storefront is wearing, or null.
+ *
+ * Null is a real answer: a shop can be running a theme it has no copy of —
+ * which is what every shop looked like before the library existed. There is
+ * then nothing to write edits to, and saying so beats writing them somewhere
+ * arbitrary.
+ */
+async function liveCopyId(businessType: string): Promise<string | null> {
   const row = await (await db()).themeSettings.findFirst({
     where: { businessType: businessType as never },
-    select: { themeKey: true },
+    select: { installedThemeId: true },
   });
-  return row?.themeKey ?? "aurora";
+  return row?.installedThemeId ?? null;
 }
 
 /**
@@ -164,18 +180,34 @@ async function storeIcon(
  * So the overrides are cleared and the choice is kept, and what comes back is
  * the theme's own defaults rather than the platform's.
  */
-export async function resetThemeTokens(themeKey?: string) {
+export async function resetThemeTokens(copyId?: string) {
   await requireRole("STAFF");
 
   const shop = await requireShop();
-  const key = themeKey ?? (await liveThemeKey(shop.id, shop.businessType));
+  const id = copyId ?? (await liveCopyId(shop.businessType));
 
-  // Clears this theme's edits and nobody else's. A merchant resetting a draft
-  // must not find the colours gone from the design their customers are seeing.
-  await (await db()).installedTheme.updateMany({
-    where: { themeKey: key },
-    data: { tokens: {}, layout: {} },
-  });
+  // Clears this copy's edits and nobody else's. A merchant resetting a draft
+  // must not find the colours gone from the design their customers are seeing
+  // — and with two copies of one theme in the library, "this theme's edits" is
+  // not specific enough to promise that.
+  // Which theme this copy is of, so the values handed back below are its own
+  // starting point rather than the platform's. Read before the write, because
+  // after it the row says nothing about which design it came from that it did
+  // not say before — but it is one query either way and reading first keeps
+  // the "no copy" case from needing a second.
+  const copy = id
+    ? await (await db()).installedTheme.findFirst({
+        where: { id },
+        select: { themeKey: true },
+      })
+    : null;
+
+  if (id) {
+    await (await db()).installedTheme.updateMany({
+      where: { id },
+      data: { tokens: {}, layout: {} },
+    });
+  }
 
   invalidateShop(await currentShopId(), "theme");
   revalidatePath("/admin/theme");
@@ -183,5 +215,6 @@ export async function resetThemeTokens(themeKey?: string) {
 
   // The theme's starting point, not the platform's — which is what the screen
   // said it would be, and what a merchant who picked Atlas expects to see.
+  const key = copy?.themeKey ?? "aurora";
   return { ...themeTokens(key), ...themeLayout(key) };
 }

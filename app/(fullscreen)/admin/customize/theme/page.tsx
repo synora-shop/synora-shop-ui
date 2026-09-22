@@ -35,14 +35,27 @@ export default async function CustomizeThemePage(props: PageProps<"/admin/custom
   const asked = typeof sp.theme === "string" ? sp.theme : null;
   const shop = await requireShop();
   const [installed, liveRow] = await Promise.all([
-    (await db()).installedTheme.findMany({ select: { themeKey: true } }),
+    (await db()).installedTheme.findMany({ select: { id: true, themeKey: true } }),
     (await db()).themeSettings.findFirst({
       where: { businessType: shop.businessType },
-      select: { themeKey: true },
+      select: { themeKey: true, installedThemeId: true },
     }),
   ]);
+
+  // A *copy*, named by id, not a theme named by key.
+  //
+  // A shop can hold KITE twice, with different colours on each. Addressing the
+  // editor by theme key would open one of them arbitrarily and — worse — save
+  // to both, which is the exact thing having a library is meant to prevent.
+  //
+  // Checked against the shop's own list rather than trusted: an id nobody here
+  // owns is not a design this shop can edit, and quietly opening the live one
+  // instead would be worse than falling back to it openly.
+  const liveId = liveRow?.installedThemeId ?? null;
+  const editingId = asked && installed.some((r) => r.id === asked) ? asked : liveId;
+  const editingRow = installed.find((r) => r.id === editingId) ?? null;
   const live = liveRow?.themeKey ?? "aurora";
-  const editing = asked && installed.some((r) => r.themeKey === asked) ? asked : live;
+  const editing = editingRow?.themeKey ?? live;
   const theme = themeFor(editing);
 
   // Both halves of "what does my shop look like", merged for one panel. They
@@ -51,11 +64,11 @@ export default async function CustomizeThemePage(props: PageProps<"/admin/custom
   // For the live theme these come from the request's own resolution. For a
   // draft they are read directly, because nothing about this request is
   // rendering that theme.
-  const edits = installed.length
-    ? await (await db()).installedTheme.findFirst({ where: { themeKey: editing } })
+  const edits = editingId
+    ? await (await db()).installedTheme.findFirst({ where: { id: editingId } })
     : null;
   const [tokens, layout] =
-    editing === live
+    editingId !== null && editingId === liveId
       ? await Promise.all([getThemeTokens(), getThemeLayout()])
       : [
           resolveThemeTokens({ ...theme.tokens, ...((edits?.tokens ?? {}) as object) }),
@@ -73,7 +86,7 @@ export default async function CustomizeThemePage(props: PageProps<"/admin/custom
           Customizer
         </Link>
         <span className="text-sm font-semibold">{theme.name}</span>
-        {editing !== live && (
+        {editingId !== liveId && (
           <span className="rounded-full bg-amber/10 px-2 py-0.5 text-[11px] font-medium text-amber">
             Draft — not live
           </span>
@@ -81,7 +94,9 @@ export default async function CustomizeThemePage(props: PageProps<"/admin/custom
       </header>
       <div className="min-h-0 flex-1 overflow-y-auto">
         <div className="mx-auto max-w-xl p-4">
-          <ThemePanel initialTokens={{ ...tokens, ...layout }} themeKey={editing} />
+          {/* The copy being edited, by id. Two copies of one theme are both
+              that theme, so a key here would save to both. */}
+          <ThemePanel initialTokens={{ ...tokens, ...layout }} copyId={editingId ?? undefined} />
         </div>
       </div>
     </div>

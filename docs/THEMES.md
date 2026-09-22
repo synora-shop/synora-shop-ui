@@ -131,8 +131,16 @@ changed the live storefront, so browsing six designs was one click away from
 putting an untried one in front of customers, and there was nowhere to keep a
 design being worked on but not ready.
 
-**Add** — the theme joins this shop's library (`InstalledTheme`). Nothing is
-copied or downloaded; the row records a merchant saying *this one is mine now*.
+**Add** — a **copy** of the theme joins this shop's library
+(`InstalledTheme`). Nothing is downloaded; every theme ships with the platform.
+What the row records is one design the merchant can work on.
+
+**Add again and you get another copy.** A shop can hold KITE twice, at two
+versions, with different colours on each, and activate either. That is the
+point: a design being worked on, beside the one serving customers, with neither
+standing in the other's way. It follows that nothing may be addressed by theme
+key — two copies of KITE are both KITE — so every action, every preview and the
+customizer name a copy by id.
 
 **Work on it** — an added theme can be previewed and customised indefinitely
 without a customer seeing any of it. `?theme=<key>` on the customizer names
