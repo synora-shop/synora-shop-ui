@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { auth } from "@/auth";
 import { currentShop, type CurrentShop } from "@/lib/data/shop";
 import { ROLE_RANK, roleAtLeast, type MemberRole } from "@/lib/roles";
@@ -35,7 +36,7 @@ export type ShopSession = {
  * different instead of failing — a "you don't have access" page reads better
  * than an error boundary.
  */
-export async function shopSession(): Promise<ShopSession | null> {
+export const shopSession = cache(async (): Promise<ShopSession | null> => {
   // currentShop, not requireShop: this function promises to return null rather
   // than throw, and requireShop calls notFound(). While it used the latter, a
   // signed-in merchant on the platform's own host who had not yet chosen a store
@@ -53,7 +54,7 @@ export async function shopSession(): Promise<ShopSession | null> {
     email: session.user.email ?? "",
     role: membership.role,
   };
-}
+});
 
 /**
  * Demands at least `min` in the current shop, or throws.

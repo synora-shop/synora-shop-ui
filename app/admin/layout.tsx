@@ -21,23 +21,31 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   // A session with no shop resolved means they are on the platform's own host and
   // have not said which store they mean — sending them to the login page there
   // would be a loop, because they are already signed in.
-  const session = await auth();
+  // Three questions that do not depend on each other, asked together.
+  //
+  // They were asked one after another, and so was everything below — seven
+  // round trips to the database in a row on *every* admin page, each waiting
+  // for the one before it for no reason. The guards still run in order; only
+  // the waiting is shared.
+  const [session, me, shop] = await Promise.all([auth(), shopSession(), currentShop()]);
+
   if (!session?.user?.id) redirect("/merchant/login?callbackUrl=/admin");
-
-  const me = await shopSession();
   if (!me) redirect("/merchant/stores");
-
-  // The sidebar shows what this kind of business needs. A blog has no orders,
-  // a shop has no opening hours, and offering either is a door to nowhere.
-  const shop = await currentShop();
 
   // A shop that has never been welcomed goes there first. The welcome flow has
   // its own layout, so this cannot loop: /admin/welcome never renders this one.
   if (shop && !shop.onboardedAt) redirect("/admin/welcome");
-  const settings = await getStoreSettings();
 
   const type = registryBusinessType(shop?.businessType);
   const schemaType = (shop?.businessType ?? "ECOMMERCE") as BusinessType;
+
+  // The second and last wave. These need a shop, so they cannot join the first
+  // — but they do not need each other.
+  const [settings, storeUrl, alerts] = await Promise.all([
+    getStoreSettings(),
+    canonicalUrl(me.shop.id),
+    pendingWork(schemaType),
+  ]);
 
   return (
     // data-business-type no longer repaints anything — the panel is one palette
@@ -131,7 +139,16 @@ async function pendingWork(businessType: BusinessType): Promise<Alert[]> {
   const prisma = await db();
   const alerts: Alert[] = [];
 
-  const enquiries = await prisma.enquiry.count({ where: { status: "NEW" } });
+  // Both counts at once. A blog has no orders, and counting them would be a
+  // query for a number that is always zero — so that one is skipped rather
+  // than asked and discarded.
+  const [enquiries, orders] = await Promise.all([
+    prisma.enquiry.count({ where: { status: "NEW" } }),
+    businessType === "BLOG"
+      ? Promise.resolve(0)
+      : prisma.order.count({ where: { orderStatus: "PENDING", deletedAt: null } }),
+  ]);
+
   if (enquiries > 0) {
     alerts.push({
       label: `${enquiries} new ${enquiries === 1 ? "enquiry" : "enquiries"}`,
@@ -139,18 +156,11 @@ async function pendingWork(businessType: BusinessType): Promise<Alert[]> {
     });
   }
 
-  // A blog has no orders, and counting them would be a query for a number that
-  // is always zero.
-  if (businessType !== "BLOG") {
-    const orders = await prisma.order.count({
-      where: { orderStatus: "PENDING", deletedAt: null },
+  if (orders > 0) {
+    alerts.push({
+      label: `${orders} ${orders === 1 ? "order" : "orders"} awaiting fulfilment`,
+      href: "/admin/orders",
     });
-    if (orders > 0) {
-      alerts.push({
-        label: `${orders} ${orders === 1 ? "order" : "orders"} awaiting fulfilment`,
-        href: "/admin/orders",
-      });
-    }
   }
 
   return alerts;

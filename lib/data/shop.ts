@@ -231,17 +231,23 @@ export const db = cache(async (): Promise<TenantClient> => {
  * this never returns nothing.
  */
 export const canonicalHost = cache(async (shopId: string): Promise<string> => {
-  const primary = await prisma.domain.findFirst({
-    where: { shopId, isPrimary: true, status: { in: ["VERIFIED", "ACTIVE"] } },
-    select: { hostname: true },
-  });
-  if (primary) return primary.hostname;
+  // Both at once, and the fallback is the one that usually answers.
+  //
+  // It asked for the custom domain, waited, and only then asked for the
+  // subdomain — so a shop on its free address, which is most of them, paid two
+  // round trips to the database every time anything needed its address. In
+  // parallel it costs one round trip of waiting either way; the second query
+  // is a primary-key lookup on a row this request has almost certainly cached
+  // already.
+  const [primary, shop] = await Promise.all([
+    prisma.domain.findFirst({
+      where: { shopId, isPrimary: true, status: { in: ["VERIFIED", "ACTIVE"] } },
+      select: { hostname: true },
+    }),
+    prisma.shop.findUnique({ where: { id: shopId }, select: { subdomain: true } }),
+  ]);
 
-  const shop = await prisma.shop.findUnique({
-    where: { id: shopId },
-    select: { subdomain: true },
-  });
-  return `${shop?.subdomain ?? "store"}.${PLATFORM_DOMAIN}`;
+  return primary ? primary.hostname : `${shop?.subdomain ?? "store"}.${PLATFORM_DOMAIN}`;
 });
 
 /** The canonical base URL for the current shop, for metadata and sitemaps. */
