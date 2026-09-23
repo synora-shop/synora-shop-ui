@@ -143,6 +143,68 @@ that both write `businessType` is two rules waiting to disagree.
 
 ---
 
+## Performance: what was measured, fixed, and left — 23 September
+
+Measured before anything was changed, because the obvious answer was the wrong
+one: a storefront page ships 722KB of JavaScript and the largest piece of it is
+React itself. There is no easy win in the bundle. The time goes on waiting for
+the database.
+
+### Fixed
+
+- **The admin layout asked seven questions in a row**, on every admin page,
+  each waiting on the one before for no reason. Two waves now — three
+  independent, then three that need a shop.
+- **`canonicalHost` asked twice, in sequence**: the custom domain, then the
+  subdomain if there wasn't one. A shop on its free address — most of them —
+  paid both. In parallel it is one round trip. **Benchmarked at 284ms → 235ms,
+  17% off**, and it is called by the layout, the metadata, the sitemap and
+  robots.
+- **`shopSession` is asked for 19 times** across the codebase and was
+  re-derived on every call. `cache()`d, so a request pays once.
+- **The bell counted twice in sequence** and asked for the order count on a
+  blog only to discard it.
+- **Images: AVIF ahead of WebP**, and a one-year cache lifetime instead of 60
+  seconds. At 60s the same photograph was re-optimised on nearly every view.
+
+### Measured and deliberately not changed
+
+- **`optimizePackageImports` for lucide-react.** Worth doing in principle — a
+  barrel of ~1,500 icons imported in 100 files — and Next already does it:
+  lucide is in its built-in default list. Adding it changed the built chunks by
+  **zero bytes**. Not kept.
+- **Bundle splitting.** The 223KB chunk is `react-dom`. It is the floor, and it
+  is shared and cached across every page.
+
+### Left, in the order they are worth doing
+
+1. **18 raw `<img>` tags on the storefront**, one in each of gallery, banner,
+   hero-slideshow, collage, image-text, multicolumn and collection-showcase —
+   the sections a merchant fills a home page with. Every one bypasses
+   `next/image`: no AVIF, no resizing, no lazy loading, no cache headers. The
+   product card is fine; the sections are not. **This is the largest remaining
+   customer-facing cost**, and the AVIF change above does nothing for any of
+   them.
+
+   The reason they are raw is real — a merchant may paste a URL from any host,
+   and `next/image` refuses a host not in `remotePatterns`. But an *uploaded*
+   image lands in Vercel Blob, which is already allowed, so the common case can
+   be optimised and the pasted-URL case can fall back to `<img>`. That is the
+   shape of the fix: decide per URL, not per component.
+
+2. **Storefront TTFB is ~490ms.** The cold-start spike is gone but the warm
+   figure has not moved, because the layout's own reads are the cost and they
+   are already parallel. Worth profiling query-by-query before touching.
+
+3. **54 routes are `force-dynamic`.** Most genuinely are — they depend on which
+   shop is being served. Worth going through for the few that are not.
+
+4. **119 client components.** Some are client-side only for a single handler
+   and could be server components with a small island. Each one moved is
+   JavaScript a customer stops downloading.
+
+---
+
 ## The linter was never run — 22 September
 
 A `//` comment placed between a JSX opening tag and its first child is not a
