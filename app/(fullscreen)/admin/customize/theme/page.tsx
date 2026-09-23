@@ -1,6 +1,4 @@
-import Link from "next/link";
 import { liveCopyOf } from "@/lib/themes/live";
-import { ArrowLeft } from "lucide-react";
 import { getThemeTokens, getThemeLayout } from "@/lib/data/theme";
 import { db, requireShop } from "@/lib/data/shop";
 import { themeFor } from "@/lib/themes/registry";
@@ -83,30 +81,24 @@ export default async function CustomizeThemePage(props: PageProps<"/admin/custom
           resolveThemeLayout({ ...theme.layout, ...((edits?.layout ?? {}) as object) }),
         ];
 
+  // ThemePanel is the whole screen: it draws its own header, the device
+  // switcher, the Reset control and the live preview beside the settings.
+  //
+  // This page used to draw a second header above it and then put all of that
+  // inside `mx-auto max-w-xl` — a 576px column. So the customizer opened with
+  // two "Customizer" back-links stacked, and a two-pane editor letterboxed
+  // into the middle of the window with its preview squeezed to a strip. It has
+  // been that way since this page was created; the panel has drawn its own
+  // chrome since the first commit.
+  //
+  // The two things the second header carried that this one did not — the
+  // theme's name and whether the copy is live — are passed in instead.
   return (
-    <div className="flex h-dvh flex-col bg-canvas">
-      <header className="flex h-12 flex-shrink-0 items-center gap-3 border-b border-border bg-surface px-4">
-        <Link
-          href="/admin/customize"
-          className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm text-ink-soft transition-colors hover:bg-subtle hover:text-ink"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Customizer
-        </Link>
-        <span className="text-sm font-semibold">{theme.name}</span>
-        {editingId !== liveId && (
-          <span className="rounded-full bg-amber/10 px-2 py-0.5 text-[11px] font-medium text-amber">
-            Draft — not live
-          </span>
-        )}
-      </header>
-      <div className="min-h-0 flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-xl p-4">
-          {/* The copy being edited, by id. Two copies of one theme are both
-              that theme, so a key here would save to both. */}
-          <ThemePanel initialTokens={{ ...tokens, ...layout }} copyId={editingId ?? undefined} />
-        </div>
-      </div>
-    </div>
+    <ThemePanel
+      initialTokens={{ ...tokens, ...layout }}
+      copyId={editingId ?? undefined}
+      themeName={theme.name}
+      isDraft={editingId !== liveId}
+    />
   );
 }

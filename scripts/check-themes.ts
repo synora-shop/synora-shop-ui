@@ -41,6 +41,11 @@ import {
   resolveThemeLayout,
 } from "../lib/theme-layout";
 
+/** Source with its comments removed — a guard must not read its own prose. */
+function stripComments(source: string): string {
+  return source.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/(^|[^:])\/\/.*$/gm, "$1");
+}
+
 let pass = 0,
   fail = 0;
 const check = (name: string, ok: boolean, detail = "") => {
@@ -695,6 +700,53 @@ console.log("\nA MISSING ID IS NOT A MISSING COPY");
     "and the screen that lists newest-first sorts its own copy",
     /oldestFirst/.test(page),
     "otherwise the row marked Active is not the copy the storefront renders"
+  );
+}
+
+// ---------------------------------------------------------------------------
+console.log("\nTHE CUSTOMIZER IS THE WHOLE SCREEN");
+// ---------------------------------------------------------------------------
+/*
+ * ThemePanel draws its own header, back-link, device switcher, Reset control
+ * and the live preview beside the settings. It is the surface, not a widget.
+ *
+ * The page that renders it drew a second header above it and then put the
+ * whole thing inside `mx-auto max-w-xl` — a 576px column. The customizer
+ * opened with two "Customizer" back-links stacked and a two-pane editor
+ * letterboxed in the middle of the window, its preview squeezed to a strip.
+ * That was true from the day the page was created; the panel has drawn its own
+ * chrome since the first commit, so nothing ever flagged it.
+ */
+{
+  const panel = read("components/customizer/theme-panel.tsx");
+  const page = read("app/(fullscreen)/admin/customize/theme/page.tsx");
+
+  check(
+    "the panel claims the screen",
+    /h-screen flex-col|flex h-screen flex-col/.test(panel),
+    "it is the editor, not a card in one"
+  );
+  check(
+    "the page renders it and nothing else",
+    /return \(\s*<ThemePanel[\s\S]*?\/>\s*\);/.test(page),
+    "a shell around a full-screen editor is a letterbox"
+  );
+  check(
+    "no width is imposed on it",
+    !/max-w-\w+/.test(stripComments(page)),
+    "max-w-xl is 576px; the preview pane alone needs more than that"
+  );
+  check(
+    "and there is one way back, not two",
+    (stripComments(page).match(/Customizer/g) ?? []).length === 0,
+    "both headers carried a back-link labelled Customizer"
+  );
+  // The two things the discarded header carried have to survive it.
+  check("the theme's name is still shown", /themeName=\{theme\.name\}/.test(page));
+  check(
+    "and so is whether the copy is live",
+    /isDraft=\{editingId !== liveId\}/.test(page) && /Draft — not live/.test(panel),
+    "editing a draft must not look identical to editing the storefront"
   );
 }
 

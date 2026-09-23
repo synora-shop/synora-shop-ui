@@ -44,11 +44,17 @@ export type ThemePanelState = ThemeTokens & ThemeLayout;
 export function ThemePanel({
   initialTokens,
   copyId,
+  themeName,
+  isDraft = false,
 }: {
   initialTokens: ThemePanelState;
   /** Which theme these edits belong to. Its absence means the live one. */
   /** Which copy of a theme is being edited. Undefined means the live one. */
   copyId?: string;
+  /** The theme's name, for the header. */
+  themeName?: string;
+  /** Whether this copy is one the storefront is not wearing. */
+  isDraft?: boolean;
 }) {
   const [tokens, setTokens] = useState<ThemePanelState>(initialTokens);
   const [saved, setSaved] = useState<ThemePanelState>(initialTokens);
@@ -183,7 +189,19 @@ export function ThemePanel({
           <ArrowLeft className="h-4 w-4" />
           <span className="hidden sm:inline">Customizer</span>
         </a>
-        <h1 className="text-sm font-medium">Theme</h1>
+        {/* The theme's own name, and whether it is the one customers see.
+            
+            Both used to live in a second header, on the page that renders this
+            — which also wrapped this panel, a full-screen customizer with its
+            own preview pane, in a 576px column. Two headers, and the editor in
+            a letterbox. They belong here, in the header this component already
+            draws. */}
+        <h1 className="text-sm font-medium">{themeName ?? "Theme"}</h1>
+        {isDraft && (
+          <span className="rounded-full bg-amber/10 px-2 py-0.5 text-[11px] font-medium text-amber">
+            Draft — not live
+          </span>
+        )}
 
         <div className="flex items-center gap-0.5 rounded-full border border-border p-0.5">
           {DEVICES.map((d) => (
