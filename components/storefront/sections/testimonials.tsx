@@ -1,4 +1,5 @@
 import { Star } from "lucide-react";
+import { SectionImage } from "@/components/storefront/section-image";
 import { COLS_CLASS } from "./grid-classes";
 
 type Quote = { quote?: string; name?: string; rating?: number; image?: string };
@@ -37,8 +38,13 @@ export function Testimonials({
             {q.name && (
               <figcaption className="mt-4 flex items-center gap-2.5 border-t border-border pt-3">
                 {q.image && (
-                  // eslint-disable-next-line @next/next/no-img-element -- merchant URL of unknown size
-                  <img src={q.image} alt="" className="h-8 w-8 shrink-0 rounded-full object-cover" />
+                  <SectionImage
+      src={q.image}
+      alt=""
+      className="h-8 w-8 shrink-0 rounded-full object-cover"
+      width={32}
+      height={32}
+    />
                 )}
                 <span className="text-xs font-medium text-ink-soft">{q.name}</span>
               </figcaption>

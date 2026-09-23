@@ -67,8 +67,25 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
     <CurrencyProvider currency={resolveStoreDefaults(settings).currency}>
     <div
       data-business-type={type}
-      className="admin-shell flex h-screen flex-col overflow-hidden bg-shell font-sans text-ink"
+      className="admin-shell relative flex h-screen flex-col overflow-hidden bg-shell font-sans text-ink"
     >
+      {/* The indigo, as a backdrop rather than as the header's own fill.
+        *
+        * It has to be *behind* the content, so the background's rounded
+        * corners can tuck under it. The header bar has to be *above* the
+        * content, so its search overlay and its account menu are not painted
+        * over. One element cannot be both, and while it tried, it was the
+        * second that lost: the bar was `z-0`, which traps everything inside it
+        * — a menu at z-50, an overlay at z-60 — beneath a content block that
+        * comes later in the document. Both were rendering. Neither was
+        * visible.
+        *
+        * So the colour is its own layer at the bottom, and the bar is a
+        * transparent row at the top of the stack. */}
+      <div
+        aria-hidden
+        className="absolute inset-x-0 top-0 z-0 h-[calc(var(--header-h)+var(--radius-page))] bg-header"
+      />
       {/* Full width, above the sidebar as well as the content. */}
       <AdminTopbar
         storeName={me.shop.name}
@@ -90,8 +107,9 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
         * flat edge here, which is the difference between the two screens that
         * reads first and is hardest to name.
         *
-        * Pulled up by its own radius so the corners sit against the indigo,
-        * and the header is that much taller to have something behind them.
+        * No negative margin any more. The backdrop above already extends a
+        * radius past the bar, so the content starts where the bar ends and its
+        * corners reveal what is behind them.
         *
         * The white glow belongs to this block, not to the header — it is the
         * *background* that glows, and what it lands on is the header above it.
@@ -100,7 +118,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
         *
         * 30px from every edge of the screen, and 30px between the sidebar and
         * the column beside it — one margin where two meet, never both. */}
-      <div className="relative -mt-[var(--radius-page)] flex min-h-0 flex-1 gap-[var(--gap-lg)] rounded-t-[var(--radius-page)] bg-shell p-[var(--gap-lg)] shadow-glow-page max-lg:p-4">
+      <div className="relative z-10 flex min-h-0 flex-1 gap-[var(--gap-lg)] rounded-t-[var(--radius-page)] bg-shell p-[var(--gap-lg)] shadow-glow-page max-lg:p-4">
         <AdminSidebar />
 
         <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-[var(--gap-sm)]">

@@ -1,4 +1,5 @@
 import { COLS_CLASS } from "./grid-classes";
+import { SectionImage } from "@/components/storefront/section-image";
 import { ImagePlaceholder } from "@/components/storefront/image-placeholder";
 
 type Person = { image?: string; name?: string; role?: string; text?: string };
@@ -31,8 +32,12 @@ export function Team({
               }`}
             >
               {person.image ? (
-                // eslint-disable-next-line @next/next/no-img-element -- merchant URL of unknown size
-                <img src={person.image} alt={person.name ?? ""} loading="lazy" className="h-full w-full object-cover" />
+                <SectionImage
+      src={person.image}
+      alt={person.name ?? ""}
+      className="h-full w-full object-cover"
+      sizes="(min-width: 1024px) 25vw, 50vw"
+    />
               ) : (
                 <ImagePlaceholder kind="image" variant={i} className="absolute inset-0 h-full w-full" />
               )}

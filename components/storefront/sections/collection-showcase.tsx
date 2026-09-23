@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SectionImage } from "@/components/storefront/section-image";
 import { ProductCard, type ProductCardProduct } from "@/components/storefront/product-card";
 import { ImagePlaceholder } from "@/components/storefront/image-placeholder";
 import type { GlobalEdits } from "@/lib/global-edits";
@@ -50,8 +51,12 @@ export function CollectionShowcase({
     <Link href={`/collections/${category.slug}`} className="block">
       <div className="relative aspect-[4/5] overflow-hidden rounded-lg bg-subtle">
         {category.image ? (
-          // eslint-disable-next-line @next/next/no-img-element -- merchant URL of unknown size
-          <img src={category.image} alt={category.name} className="h-full w-full object-cover" />
+          <SectionImage
+      src={category.image}
+      alt={category.name}
+      className="h-full w-full object-cover"
+      sizes="(min-width: 1024px) 33vw, 100vw"
+    />
         ) : (
           <ImagePlaceholder kind="collection" variant={category.slug.length} className="absolute inset-0 h-full w-full" />
         )}

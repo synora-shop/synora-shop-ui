@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SectionImage } from "@/components/storefront/section-image";
 import { ImagePlaceholder } from "@/components/storefront/image-placeholder";
 
 const HEIGHT: Record<string, string> = {
@@ -93,8 +94,12 @@ export function VideoSection({
           className="absolute inset-0 h-full w-full object-cover"
         />
       ) : poster ? (
-        // eslint-disable-next-line @next/next/no-img-element -- a merchant-pasted URL, not a known-size asset
-        <img src={poster} alt={heading || ""} className="absolute inset-0 h-full w-full object-cover" />
+        <SectionImage
+      src={poster}
+      alt={heading || ""}
+      className="absolute inset-0 h-full w-full object-cover"
+      sizes="100vw"
+    />
       ) : (
         <ImagePlaceholder kind="product" variant={3} className="absolute inset-0 h-full w-full" />
       )}

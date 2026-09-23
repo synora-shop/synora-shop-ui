@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SectionImage } from "@/components/storefront/section-image";
 import { COLS_CLASS, SHAPE_CLASS } from "./grid-classes";
 
 type Photo = { image?: string; caption?: string; href?: string };
@@ -25,14 +26,13 @@ export function Gallery({
         {shown.map((photo, i) => {
           const figure = (
             <figure>
-              <div className={`overflow-hidden rounded-lg bg-subtle ${SHAPE_CLASS[shape] ?? SHAPE_CLASS.square}`}>
-                {/* eslint-disable-next-line @next/next/no-img-element -- merchant URL of unknown size */}
-                <img
-                  src={photo.image}
-                  alt={photo.caption ?? ""}
-                  loading="lazy"
-                  className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-                />
+              <div className={`relative overflow-hidden rounded-lg bg-subtle ${SHAPE_CLASS[shape] ?? SHAPE_CLASS.square}`}>
+                <SectionImage
+      src={photo.image}
+      alt={photo.caption ?? ""}
+      className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+      sizes="(min-width: 1024px) 33vw, 100vw"
+    />
               </div>
               {photo.caption && (
                 <figcaption className="mt-2 text-center text-xs text-ink-soft">{photo.caption}</figcaption>

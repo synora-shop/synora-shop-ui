@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SectionImage } from "@/components/storefront/section-image";
 import { COLS_CLASS } from "./grid-classes";
 
 type Column = { image?: string; title?: string; text?: string; ctaLabel?: string; ctaHref?: string };
@@ -26,8 +27,13 @@ export function Multicolumn({
         {shown.map((column, i) => (
           <div key={i} className={`flex flex-col gap-2 ${centred ? "items-center text-center" : "items-start"}`}>
             {column.image && (
-              // eslint-disable-next-line @next/next/no-img-element -- merchant URL of unknown size
-              <img src={column.image} alt="" loading="lazy" className="mb-1 h-12 w-12 object-contain" />
+              <SectionImage
+      src={column.image}
+      alt=""
+      className="mb-1 h-12 w-12 object-contain"
+      width={48}
+      height={48}
+    />
             )}
             {column.title && <h3 className="font-medium text-ink">{column.title}</h3>}
             {column.text && (

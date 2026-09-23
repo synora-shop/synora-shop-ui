@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SectionImage } from "@/components/storefront/section-image";
 
 type LogoItem = { image?: string; alt?: string; href?: string };
 
@@ -34,16 +35,14 @@ export function LogoList({
       <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6">
         {shown.map((logo, i) => {
           const img = (
-            // eslint-disable-next-line @next/next/no-img-element -- merchant URL of unknown size
-            <img
-              src={logo.image}
-              alt={logo.alt ?? ""}
-              loading="lazy"
-              style={{ height: logoHeight }}
-              className={`w-auto object-contain transition ${
-                grayscale ? "opacity-70 grayscale hover:opacity-100 hover:grayscale-0" : ""
-              }`}
-            />
+            <SectionImage
+      src={logo.image}
+      alt={logo.alt ?? ""}
+      className="`w-auto object-contain transition ${
+                grayscale ?"
+      width={120}
+      height={48}
+    />
           );
           return logo.href ? (
             <Link key={i} href={logo.href}>

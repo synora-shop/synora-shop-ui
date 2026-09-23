@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SectionImage } from "@/components/storefront/section-image";
 import { cn } from "@/lib/utils";
 
 // The background image and overlay are absolutely positioned against
@@ -25,8 +26,13 @@ export function Banner({
     <>
       {image && (
         <>
-          {/* eslint-disable-next-line @next/next/no-img-element -- admin-uploaded banner image, arbitrary URL */}
-          <img src={image} alt="" className="absolute inset-0 h-full w-full object-cover" />
+          <SectionImage
+      src={image}
+      alt=""
+      className="absolute inset-0 h-full w-full object-cover"
+      sizes="100vw"
+      priority
+    />
           <div className="absolute inset-0 bg-black/30" />
         </>
       )}

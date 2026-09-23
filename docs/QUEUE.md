@@ -178,7 +178,21 @@ the database.
 
 ### Left, in the order they are worth doing
 
-1. **18 raw `<img>` tags on the storefront**, one in each of gallery, banner,
+1. ~~**18 raw `<img>` tags on the storefront**~~ — **done 23 September.**
+   `components/storefront/section-image.tsx` decides per URL: a host in
+   `remotePatterns` goes through `next/image`, anything else is served as it
+   was given. Three raw tags remain and each has a reason written on it — the
+   fallback itself, the uploaded sticky-button icon (rendered as `<img>` so a
+   browser will not execute script inside an uploaded SVG), and the holding
+   page. Verified by seeding four sections, rendering the storefront, and
+   confirming both paths: optimised with `srcset` for a host we serve, served
+   raw and still 200 for `cdn.example.com`.
+
+   Three of the boxes turned out to be sized but not positioned, which `fill`
+   needs — they had worked only because an absolutely-positioned `<img>` was
+   doing it. A check now holds every fill image to naming its `sizes`.
+
+   ~~Superseded description:~~ **18 raw `<img>` tags on the storefront**, one in each of gallery, banner,
    hero-slideshow, collage, image-text, multicolumn and collection-showcase —
    the sections a merchant fills a home page with. Every one bypasses
    `next/image`: no AVIF, no resizing, no lazy loading, no cache headers. The

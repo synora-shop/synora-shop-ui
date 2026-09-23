@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { SectionImage } from "@/components/storefront/section-image";
 
 /**
  * Two photos with a divider that drags between them.
@@ -37,8 +38,12 @@ export function ImageComparison({
       {heading && <h2 className="mb-6 text-center font-serif text-3xl font-semibold">{heading}</h2>}
 
       <div className="relative aspect-[4/3] select-none overflow-hidden rounded-lg bg-subtle">
-        {/* eslint-disable @next/next/no-img-element -- merchant URLs of unknown size */}
-        <img src={afterImage} alt={afterLabel} className="absolute inset-0 h-full w-full object-cover" />
+        <SectionImage
+          src={afterImage}
+          alt={afterLabel}
+          className="object-cover"
+          sizes="(min-width: 1024px) 56rem, 100vw"
+        />
         {/* Clipped, not resized.
             
             The left photo has to stay the size of the *box* while the divider
@@ -53,13 +58,13 @@ export function ImageComparison({
             full-size box and the box is clipped, which is what "revealed"
             means. */}
         <div className="absolute inset-0" style={{ clipPath: `inset(0 ${100 - at}% 0 0)` }}>
-          <img
+          <SectionImage
             src={beforeImage}
             alt={beforeLabel}
-            className="absolute inset-0 h-full w-full object-cover"
+            className="object-cover"
+            sizes="(min-width: 1024px) 56rem, 100vw"
           />
         </div>
-        {/* eslint-enable @next/next/no-img-element */}
 
         <div className="pointer-events-none absolute inset-y-0 w-0.5 bg-white shadow" style={{ left: `${at}%` }}>
           <span className="absolute left-1/2 top-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-white/30 backdrop-blur" />

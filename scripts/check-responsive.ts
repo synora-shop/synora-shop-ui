@@ -55,21 +55,44 @@ check("the sidebar declares no bar of its own", sidebarTopBars === 0, `found ${s
 // first row of a shell exactly one screen tall — so sticky would be a rule
 // with nothing to do, and `relative` is what the glow at its bottom edge is
 // positioned against.
-check("the header is the top row and does not scroll away", /relative z-0 h-\[calc\(var\(--header-h\)/.test(topbar));
-// It is taller than the bar it holds, and the extra strip is load-bearing: it
-// is the indigo showing through behind the background block's rounded corners.
-// Without it the grey meets the indigo in a straight seam, which is the
-// difference between the two screens that reads first and is hardest to name.
 check(
-  "and it is taller than its bar by the background's corner",
-  /\+var\(--radius-page\)/.test(topbar) && /h-\[var\(--header-h\)\]/.test(topbar),
-  "the background overlaps the header; there has to be something behind the curve"
+  "the header is the top row and does not scroll away",
+  /<header className="relative z-50 h-\[var\(--header-h\)\]/.test(topbar)
 );
+// Three layers, in this order: the indigo backdrop, the page, the bar.
+//
+// It was two — a filled bar at `z-0` with the page above it — and `z-0` opens
+// a stacking context, so the bar's own account menu at z-50 and its search
+// overlay at z-60 were only ever above other things *inside the bar*. The page
+// comes later in the document and painted over both. Search opened and could
+// not be seen; the profile menu dropped and was covered. Nothing was broken
+// except the order of two layers.
+//
+// The colour is its own backdrop underneath now, which runs a radius past the
+// bar — that strip is what the page's rounded corners reveal — so the bar can
+// sit at the top of the stack without hiding the tuck.
 {
   const layout = readFileSync(join(process.cwd(), "app/admin/layout.tsx"), "utf8");
   check(
+    "the header outranks the page it sits above",
+    /<header className="relative z-50/.test(topbar),
+    "at z-0 it traps its own menus below the content"
+  );
+  check(
+    "and carries no fill of its own",
+    !/<header[^>]*bg-header/.test(topbar) && /aria-hidden[\s\S]{0,200}bg-header/.test(layout),
+    "one element cannot be both behind the page and in front of it"
+  );
+  check(
+    "the page sits between the two",
+    /relative z-10 flex min-h-0 flex-1/.test(layout),
+    "above the backdrop so its corners show, below the bar so the menus do"
+  );
+  check(
     "the background tucks under it",
-    /-mt-\[var\(--radius-page\)\][\s\S]{0,200}rounded-t-\[var\(--radius-page\)\]/.test(layout)
+    /h-\[calc\(var\(--header-h\)\+var\(--radius-page\)\)\][\s\S]{0,80}bg-header/.test(layout) &&
+      /rounded-t-\[var\(--radius-page\)\]/.test(layout),
+    "the backdrop runs a radius past the bar, which is what the corners reveal"
   );
   check(
     "and the glow belongs to the background, not to the bar",

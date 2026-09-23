@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SectionImage } from "@/components/storefront/section-image";
 import { cn } from "@/lib/utils";
 
 export function ImageText({
@@ -24,10 +25,14 @@ export function ImageText({
         imagePosition === "right" && "md:[&>*:first-child]:order-2"
       )}
     >
-      <div className="aspect-[4/3] overflow-hidden rounded-lg bg-subtle">
+      <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-subtle">
         {image && (
-          // eslint-disable-next-line @next/next/no-img-element -- admin-uploaded image, arbitrary URL
-          <img src={image} alt="" className="h-full w-full object-cover" />
+          <SectionImage
+      src={image}
+      alt=""
+      className="h-full w-full object-cover"
+      sizes="(min-width: 1024px) 50vw, 100vw"
+    />
         )}
       </div>
       <div className="space-y-4">

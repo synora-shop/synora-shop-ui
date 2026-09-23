@@ -38,7 +38,63 @@ function walk(dir: string, out: string[] = []): string[] {
 const doc = join(ROOT, "docs/DESIGN.md");
 check("the design standards exist", existsSync(doc));
 if (!existsSync(doc)) {
-  console.log(`\n${pass} passed, ${fail} failed`);
+  /* Storefront photography goes through the image pipeline.
+ *
+ * Every section took its image with a bare <img> carrying an eslint-disable
+ * that said "arbitrary URL". The reason is real — next/image *throws* for a
+ * host outside remotePatterns rather than degrading, which on a live
+ * storefront is a missing photograph instead of an unoptimised one — but it
+ * was applied to every image rather than to the ones it describes. An uploaded
+ * image lands in Vercel Blob, which is already allowed, and that is the common
+ * case. So a whole storefront of photography was served full-size, in its
+ * original format, with no cache headers, to protect the minority pasted from
+ * elsewhere.
+ *
+ * SectionImage decides per URL. These hold the sections to it. */
+{
+  const sections = walk(join(ROOT, "components/storefront/sections")).filter((f) =>
+    /\.tsx$/.test(f)
+  );
+  const raw = sections.filter((f) => /<img\b/.test(stripComments(readFileSync(f, "utf8"))));
+  check(
+    "no storefront section reaches for a bare <img>",
+    raw.length === 0,
+    raw.map((f) => f.split("/").pop()).join(", ")
+  );
+
+  const comp = readFileSync(join(ROOT, "components/storefront/section-image.tsx"), "utf8");
+  check(
+    "the decision is made per URL, not per component",
+    /function optimisable/.test(comp) && /remotePatterns|blob\.vercel-storage/.test(comp),
+    "next/image throws for an unconfigured host; the fallback is what keeps the photograph on the page"
+  );
+  check(
+    "a host it does not recognise is still served",
+    /no-img-element[\s\S]{0,200}<img/.test(comp),
+    "the alternative is a broken image, which is worse than an unoptimised one"
+  );
+  check(
+    "and a section left unfilled renders nothing",
+    /if \(!src\) return null;/.test(comp),
+    "the bare tag rendered a broken image for an empty field"
+  );
+  // `fill` without a positioned parent renders nothing at all, and warns only
+  // at runtime — three of these boxes were sized but not positioned, and only
+  // worked before because an absolutely-positioned <img> was doing the work.
+  check(
+    "every fill image names the space it occupies",
+    sections.every((f) => {
+      const src = readFileSync(f, "utf8");
+      const uses = (src.match(/<SectionImage/g) ?? []).length;
+      if (uses === 0) return true;
+      const sized = (src.match(/sizes=|width=\{/g) ?? []).length;
+      return sized >= uses;
+    }),
+    "without sizes, a fill image generates the widest candidate — worse than not optimising"
+  );
+}
+
+console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(1);
 }
 
@@ -351,7 +407,16 @@ check(
     const topbar = stripComments(
       readFileSync(join(ROOT, "components/admin/admin-topbar.tsx"), "utf8")
     );
-    return /bg-header/.test(topbar) && !/gradient/i.test(topbar);
+    // The fill moved to the backdrop in app/admin/layout.tsx when the bar had
+    // to rise above the page to stop covering its own menus — so the colour is
+    // asked for there, and the bar is checked for not painting one.
+    const layout = stripComments(readFileSync(join(ROOT, "app/admin/layout.tsx"), "utf8"));
+    return (
+      /bg-header/.test(layout) &&
+      !/<header[^>]*bg-header/.test(topbar) &&
+      !/gradient/i.test(topbar) &&
+      !/gradient/i.test(layout)
+    );
   })(),
   "the lightening is --glow-page, not a fill"
 );

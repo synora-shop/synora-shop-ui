@@ -101,13 +101,19 @@ export function AdminTopbar({
     // the header and background have on synoradigitals.com. A painted gradient
     // would look close and behave wrong: the light would not move when the
     // content beneath it does.
-    <header className="relative z-0 h-[calc(var(--header-h)+var(--radius-page))] flex-shrink-0 bg-header">
-      {/* The bar itself is 80px. The header element is taller by the
-          background's corner radius, and that extra strip exists only to be
-          the indigo showing through behind the curve — see app/admin/layout. */}
+    // Above everything, and carrying no colour of its own — the backdrop in
+    // app/admin/layout.tsx paints the indigo and extends a radius past this
+    // bar, so the content's corners tuck under it.
+    //
+    // This was `z-0` and filled, which is what hid the search overlay and the
+    // account menu. `z-0` opens a stacking context, so a menu at z-50 and an
+    // overlay at z-60 are only ever above other things *inside* the bar — and
+    // the content block comes later in the document, so it painted over both.
+    // They were rendering the whole time.
+    <header className="relative z-50 h-[var(--header-h)] flex-shrink-0">
       {/* 65 in on the left, 41 on the right — measured off the artboard, not
           assumed to be the 30 that governs everything below the header. */}
-      <div className="flex h-[var(--header-h)] items-center gap-3 pl-[calc(65*var(--u))] pr-[calc(41*var(--u))] max-lg:px-4">
+      <div className="flex h-full items-center gap-3 pl-[calc(65*var(--u))] pr-[calc(41*var(--u))] max-lg:px-4">
         {/* The mark, at the left where the design puts it. It was centred on
             the window while the header was colourless and the centre was the
             only place it could sit without looking like a heading. */}

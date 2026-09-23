@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { SectionImage } from "@/components/storefront/section-image";
 import { ImagePlaceholder } from "@/components/storefront/image-placeholder";
 import Link from "next/link";
 import { Container } from "@/components/ui/container";
@@ -60,8 +61,13 @@ export function HeroSlideshow({
       }`}
     >
       {slide.image ? (
-        // eslint-disable-next-line @next/next/no-img-element -- admin-uploaded background image, arbitrary URL
-        <img src={slide.image} alt="" className="absolute inset-0 h-full w-full object-cover" />
+        <SectionImage
+      src={slide.image}
+      alt=""
+      className="absolute inset-0 h-full w-full object-cover"
+      sizes="100vw"
+      priority
+    />
       ) : (
         <ImagePlaceholder kind="image" className="absolute inset-0 h-full w-full" />
       )}

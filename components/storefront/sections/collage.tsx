@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SectionImage } from "@/components/storefront/section-image";
 
 type Tile = { image?: string; label?: string; href?: string };
 
@@ -36,13 +37,12 @@ export function Collage({
                 large ? "aspect-square sm:aspect-auto" : "aspect-square"
               }`}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element -- merchant URL of unknown size */}
-              <img
-                src={tile.image}
-                alt={tile.label ?? ""}
-                loading="lazy"
-                className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-              />
+              <SectionImage
+      src={tile.image}
+      alt={tile.label ?? ""}
+      className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+      sizes="(min-width: 1024px) 50vw, 100vw"
+    />
               {tile.label && (
                 <>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/55 to-transparent" />
