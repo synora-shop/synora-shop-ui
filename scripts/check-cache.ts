@@ -135,9 +135,13 @@ check(
 // By copy, not by theme. A shop can hold KITE twice with different colours on
 // each, so "this theme's edits" names two answers and the database decides
 // which — a draft's colours on the live storefront, arrived at by a lookup.
+//
+// Asked of lib/themes/live.ts rather than inline, because the id alone is not
+// enough: a null in that column means "unrecorded", not "no copy", and reading
+// it raw dropped a merchant's saved colours and stopped the customizer saving.
 check(
   "the live design's edits are found by copy, not by theme",
-  /installed\.find\(\(r\) => r\.id === settings\.installedThemeId\)/.test(themeData),
+  /liveCopyOf\(installed, settings\)/.test(themeData),
   "two copies of one theme are both that theme; the key cannot say which is live"
 );
 check(
@@ -147,8 +151,8 @@ check(
 );
 check(
   "a shop running a theme it holds no copy of still renders",
-  /installedThemeId\s*\?[\s\S]{0,120}:\s*null/.test(themeData),
-  "that is what every shop looked like before the library existed — the theme's own values, nothing on top"
+  /liveCopyOf/.test(themeData) && /c\.themeKey === settings\.themeKey/.test(readFileSync(join(ROOT, "lib/themes/live.ts"), "utf8")),
+  "the theme's own values with nothing on top, which is what every shop looked like before the library existed"
 );
 
 console.log(`\n${pass} passed, ${fail} failed`);
