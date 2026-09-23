@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { liveCopyOf } from "@/lib/themes/live";
 import { ArrowLeft } from "lucide-react";
 import { getThemeTokens, getThemeLayout } from "@/lib/data/theme";
 import { db, requireShop } from "@/lib/data/shop";
@@ -35,7 +36,10 @@ export default async function CustomizeThemePage(props: PageProps<"/admin/custom
   const asked = typeof sp.theme === "string" ? sp.theme : null;
   const shop = await requireShop();
   const [installed, liveRow] = await Promise.all([
-    (await db()).installedTheme.findMany({ select: { id: true, themeKey: true } }),
+    (await db()).installedTheme.findMany({
+      orderBy: { installedAt: "asc" },
+      select: { id: true, themeKey: true },
+    }),
     (await db()).themeSettings.findFirst({
       where: { businessType: shop.businessType },
       select: { themeKey: true, installedThemeId: true },
@@ -51,7 +55,11 @@ export default async function CustomizeThemePage(props: PageProps<"/admin/custom
   // Checked against the shop's own list rather than trusted: an id nobody here
   // owns is not a design this shop can edit, and quietly opening the live one
   // instead would be worse than falling back to it openly.
-  const liveId = liveRow?.installedThemeId ?? null;
+  // By id where one is recorded, by theme key where it is not. Taking the id
+  // at face value made this null for every shop whose settings row predates
+  // that column — and a null here is what made the editor open with nothing to
+  // save to, which is the whole of "the customizer is broken".
+  const liveId = liveCopyOf(installed, liveRow)?.id ?? null;
   const editingId = asked && installed.some((r) => r.id === asked) ? asked : liveId;
   const editingRow = installed.find((r) => r.id === editingId) ?? null;
   const live = liveRow?.themeKey ?? "aurora";

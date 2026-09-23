@@ -631,5 +631,72 @@ console.log("\nTHE DOCUMENT STILL DESCRIBES THE CODE");
   );
 }
 
+// ---------------------------------------------------------------------------
+console.log("\nA MISSING ID IS NOT A MISSING COPY");
+// ---------------------------------------------------------------------------
+/*
+ * ThemeSettings.installedThemeId arrived on 22 September and every reader was
+ * switched to it at once. A null in it was read as "this shop has no copy",
+ * which it does not mean: it means nobody recorded which copy. That is true of
+ * every shop whose settings row predates the column, every one the backfill
+ * could not match, and every one with no settings row for its current business
+ * type.
+ *
+ * Those shops got the theme's own defaults with their saved colours dropped,
+ * and the customizer refused every save with "that theme is not in your
+ * library" — to a merchant whose library was fine. That is what "the live
+ * customizer is broken" was.
+ */
+{
+  const live = read("lib/themes/live.ts");
+  check("there is one place that answers which copy is live", live.includes("liveCopyOf"));
+  check(
+    "it prefers the recorded id",
+    /settings\.installedThemeId\)\s*\{[\s\S]{0,200}c\.id === settings\.installedThemeId/.test(live)
+  );
+  check(
+    "and falls back to the theme key rather than to nothing",
+    /c\.themeKey === settings\.themeKey/.test(live),
+    "a null id must leave a shop no worse off than before the column existed"
+  );
+  check(
+    "a dangling id falls through instead of returning nothing",
+    /Fall\s*\n\s*\/\/ through|fall\s+through/i.test(live)
+  );
+
+  // Every reader goes through it. A second place deciding this is a second
+  // place to get it wrong.
+  for (const f of [
+    "lib/data/theme.ts",
+    "app/admin/theme/actions.ts",
+    "app/admin/theme/page.tsx",
+    "app/(fullscreen)/admin/customize/theme/page.tsx",
+  ]) {
+    const src = read(f);
+    check(`${f.split("/").pop()} asks it`, /liveCopyOf\(/.test(src));
+    check(
+      `${f.split("/").pop()} does not read the id raw`,
+      !/installedThemeId\s*\?\?\s*null/.test(src) &&
+        !/settings\?\.installedThemeId\s*\n?\s*\?/.test(src),
+      "taking the column at face value is the bug"
+    );
+  }
+
+  // The fallback picks "the oldest copy of that theme", so the list it is
+  // handed has to be in that order or it answers differently per call site.
+  const themeData = read("lib/data/theme.ts");
+  check(
+    "the copies it is given are oldest first",
+    /orderBy: \{ installedAt: "asc" \}/.test(themeData),
+    "the fallback takes the first match; unordered, that is whatever the database returned"
+  );
+  const page = read("app/admin/theme/page.tsx");
+  check(
+    "and the screen that lists newest-first sorts its own copy",
+    /oldestFirst/.test(page),
+    "otherwise the row marked Active is not the copy the storefront renders"
+  );
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);

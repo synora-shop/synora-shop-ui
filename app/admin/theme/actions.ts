@@ -9,6 +9,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { layoutChanges, resolveThemeLayout, type ThemeLayout } from "@/lib/theme-layout";
 import { themeLayout, themeTokens } from "@/lib/themes/registry";
+import { liveCopyOf } from "@/lib/themes/live";
 import { resolveThemeTokens, type ThemeTokens } from "@/lib/theme-tokens";
 import { validateIconFile, safeAssetUrl, MAX_LOGO_BYTES } from "@/lib/icon-validation";
 import { scanBuffer, scanPolicyBlocks } from "@/lib/virus-scan";
@@ -91,17 +92,25 @@ export async function saveThemeTokens(
 /**
  * The copy the storefront is wearing, or null.
  *
- * Null is a real answer: a shop can be running a theme it has no copy of —
- * which is what every shop looked like before the library existed. There is
- * then nothing to write edits to, and saying so beats writing them somewhere
- * arbitrary.
+ * Null is still a real answer — a shop can be running a theme it holds no copy
+ * of — but it must not be reached by an unrecorded id. Reading
+ * `installedThemeId` alone returned null for every shop whose row predates
+ * that column, so every save in the customizer threw "that theme is not in
+ * your library" at a merchant whose library was fine.
  */
 async function liveCopyId(businessType: string): Promise<string | null> {
-  const row = await (await db()).themeSettings.findFirst({
-    where: { businessType: businessType as never },
-    select: { installedThemeId: true },
-  });
-  return row?.installedThemeId ?? null;
+  const t = await db();
+  const [row, copies] = await Promise.all([
+    t.themeSettings.findFirst({
+      where: { businessType: businessType as never },
+      select: { themeKey: true, installedThemeId: true },
+    }),
+    t.installedTheme.findMany({
+      orderBy: { installedAt: "asc" },
+      select: { id: true, themeKey: true },
+    }),
+  ]);
+  return liveCopyOf(copies, row)?.id ?? null;
 }
 
 /**

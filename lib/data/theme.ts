@@ -4,6 +4,7 @@ import { currentShop } from "@/lib/data/shop";
 import { cachedForShop } from "@/lib/data/cached";
 import { SHOP_PATH_HEADER } from "@/lib/shop-context";
 import { THEMES, themeFor } from "@/lib/themes/registry";
+import { liveCopyOf } from "@/lib/themes/live";
 import { resolveThemeLayout, type ThemeLayout } from "@/lib/theme-layout";
 import { resolveThemeTokens, THEME_TOKEN_DEFAULTS, type ThemeTokens } from "@/lib/theme-tokens";
 import { getStoreSettings } from "@/lib/data/settings";
@@ -53,7 +54,10 @@ const themeState = cache(async (shopId: string, businessType: string) => {
         where: { businessType: businessType as never },
         select: { themeKey: true, installedThemeId: true },
       }),
+      // Oldest first, so liveCopyOf's fallback picks the same copy on every
+      // request rather than whatever the database happened to return.
       t.installedTheme.findMany({
+        orderBy: { installedAt: "asc" },
         select: { id: true, themeKey: true, tokens: true, layout: true },
       }),
     ]);
@@ -90,17 +94,10 @@ async function themeForRequest(shopId: string, businessType: string) {
   const key = settings?.themeKey ?? null;
   if (!key) return { key: null, edits: null };
 
-  // The live copy by id. Two copies of one theme are both that theme, so
-  // finding edits by key would hand back whichever the database returned
-  // first — which is the bug this column exists to prevent.
-  //
-  // The fallback is for a shop running a theme it has no copy of, which is
-  // what every shop looked like before the library existed: the theme's own
-  // values, with nothing on top.
-  const edits = settings?.installedThemeId
-    ? (installed.find((r) => r.id === settings.installedThemeId) ?? null)
-    : null;
-  return { key, edits };
+  // By id where the shop has one recorded, by theme key where it has not —
+  // see lib/themes/live.ts. Reading a null id as "no copy" dropped a
+  // merchant's saved colours on every shop whose row predates that column.
+  return { key, edits: liveCopyOf(installed, settings) };
 }
 
 /**

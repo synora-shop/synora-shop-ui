@@ -2,6 +2,7 @@ import { canonicalUrl, db, requireShop } from "@/lib/data/shop";
 import { registryBusinessType } from "@/lib/themes/business-type";
 import { defaultThemeFor, themeFor, themesFor } from "@/lib/themes/registry";
 import { normaliseHost } from "@/lib/shop-context";
+import { liveCopyOf } from "@/lib/themes/live";
 import { LearnMore } from "@/components/admin/panel";
 import { ThemeManager } from "@/components/admin/theme-manager";
 
@@ -40,7 +41,17 @@ export default async function ThemePage() {
   ]);
 
   const liveKey = settings?.themeKey ?? defaultThemeFor(type);
-  const liveId = settings?.installedThemeId ?? null;
+  // Same fallback as everywhere else: with a bare `?? null` no row was marked
+  // Active on any shop whose settings row predates the column.
+  //
+  // On a copy sorted oldest-first, deliberately. `rows` is newest-first
+  // because that is the order the design draws the list in, and the fallback
+  // picks the *first* match — so handing it this list would mark the newest
+  // copy Active here and render the oldest one on the storefront.
+  const oldestFirst = [...rows].sort(
+    (a, b) => a.installedAt.getTime() - b.installedAt.getTime()
+  );
+  const liveId = liveCopyOf(oldestFirst, settings)?.id ?? null;
 
   // "Sep 5 at 10:35 pm" — the shape the design asks for, and a more useful one
   // than a bare date. Two copies of the same theme added the same afternoon are
