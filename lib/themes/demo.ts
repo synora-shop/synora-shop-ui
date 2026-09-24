@@ -75,6 +75,17 @@ export function themeStorePath(themeKey: string): string | null {
   return slug ? `${THEME_STORE_ROOT}/${slug}` : null;
 }
 
+/** The URL slug a theme is published under, or null. */
+export function demoSlugForTheme(themeKey: string): string | null {
+  return KEY_TO_SLUG[themeKey] ?? null;
+}
+
+/** The demo shop a theme is demoed by, or null. */
+export function demoSubdomainForTheme(themeKey: string): string | null {
+  const slug = KEY_TO_SLUG[themeKey];
+  return slug ? demoSubdomain(slug) : null;
+}
+
 export type ThemeStoreRoute = {
   /** The slug exactly as it should be spelled. */
   slug: string;

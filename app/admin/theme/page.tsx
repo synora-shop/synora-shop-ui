@@ -2,7 +2,8 @@ import { canonicalUrl, db, requireShop } from "@/lib/data/shop";
 import { registryBusinessType } from "@/lib/themes/business-type";
 import { defaultThemeFor, themeFor, themesFor } from "@/lib/themes/registry";
 import { appUrl, normaliseHost } from "@/lib/shop-context";
-import { themeStorePath } from "@/lib/themes/demo";
+import { DEMO_SLUGS, demoSubdomain, demoSubdomainForTheme, themeStorePath } from "@/lib/themes/demo";
+import { prisma } from "@/lib/prisma";
 import { liveCopyOf } from "@/lib/themes/live";
 import { LearnMore } from "@/components/admin/panel";
 import { ThemeManager } from "@/components/admin/theme-manager";
@@ -29,7 +30,7 @@ export default async function ThemePage() {
   const shop = await requireShop();
   const type = registryBusinessType(shop.businessType);
 
-  const [settings, storeUrl, rows] = await Promise.all([
+  const [settings, storeUrl, rows, seededDemos] = await Promise.all([
     (await db()).themeSettings.findUnique({
       where: { shopId_businessType: { shopId: shop.id, businessType: shop.businessType } },
       select: { themeKey: true, installedThemeId: true },
@@ -39,7 +40,24 @@ export default async function ThemePage() {
     // "live first". Where a copy sits in the list is when it was added; which
     // one is live is said by the row itself.
     (await db()).installedTheme.findMany({ orderBy: { installedAt: "desc" } }),
+    // Which demos actually exist in this database.
+    //
+    // A theme's demo is a real Shop, and a real Shop has to be seeded — so
+    // there is always an environment where the code is deployed and the data
+    // is not: a fresh local database, a preview branch, and production in the
+    // minutes between a deploy and `scripts/seed-theme-store.ts`. Sending a
+    // merchant to a 404 in that window is worse than sending them where Preview
+    // used to go, so this asks rather than assumes.
+    //
+    // Bare `prisma`: these shops are ours, not this tenant's, so the scoped
+    // client cannot see them. One indexed lookup on a unique column, in the
+    // same wave as everything else on the screen.
+    prisma.shop.findMany({
+      where: { subdomain: { in: DEMO_SLUGS.map(demoSubdomain) } },
+      select: { subdomain: true },
+    }),
   ]);
+  const haveDemo = new Set(seededDemos.map((s) => s.subdomain));
 
   const liveKey = settings?.themeKey ?? defaultThemeFor(type);
   // Same fallback as everywhere else: with a bare `?? null` no row was marked
@@ -111,7 +129,8 @@ export default async function ThemePage() {
           //
           // Absolute, because the admin may be on the application host or on
           // the shop's own address and the demo is only ever on ours.
-          const demo = themeStorePath(t.key);
+          const sub = demoSubdomainForTheme(t.key);
+          const demo = sub && haveDemo.has(sub) ? themeStorePath(t.key) : null;
           return {
             key: t.key,
             name: t.name,
@@ -119,10 +138,10 @@ export default async function ThemePage() {
             preview: t.preview,
             latest: t.version,
             plate: t.plate,
-            // A theme with no published slug has no demo to send anyone to.
-            // `check:theme-store` makes that unreachable; the fallback is here
-            // so an unslugged theme degrades to the old preview rather than to
-            // a dead link.
+            // No demo — unseeded, or a theme with no published slug — falls
+            // back to what Preview did before the theme store existed: this
+            // shop wearing the theme. A worse answer to the question, and a
+            // far better one than a 404.
             previewUrl: demo ? appUrl(demo) : `${storeUrl}?__theme=${t.key}`,
           };
         })}

@@ -260,6 +260,12 @@ Loom   ->  loom-demo   ->  app.synoradigitals.com/theme-store/loom
   real rows and send real mail to whoever the notification address resolved to.
 - **Visits are not recorded.** These pages are indexed on purpose, and a crawler
   should not write a row per request into analytics nobody reads.
+- **A demo that has not been seeded is not a dead link.** The code deploys
+  before the data exists — on a fresh local database, on a preview branch, and
+  in production between a deploy and `scripts/seed-theme-store.ts`. The Themes
+  screen asks which demos exist and falls back to the old preview (this shop
+  wearing the theme) for any that do not. A worse answer to the question, and a
+  far better one than a 404.
 
 ### The catalogues
 

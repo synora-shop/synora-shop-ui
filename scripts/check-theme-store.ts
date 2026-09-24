@@ -215,6 +215,11 @@ check(
     /themeStorePath\(t\.key\)/.test(page) && /appUrl\(demo\)/.test(page),
     "previewing an unowned theme through the merchant's own catalogue judges the theme on their photography"
   );
+  check(
+    "and falls back rather than 404ing when the demo is not seeded",
+    /haveDemo\.has\(sub\)/.test(page) && /`\$\{storeUrl\}\?__theme=\$\{t\.key\}`/.test(page),
+    "the code deploys before the data is seeded — on a fresh database, a preview branch, and production in between the two, Preview must not be a dead link"
+  );
 
   const manager = stripComments(read("components/admin/theme-manager.tsx"));
   check(
