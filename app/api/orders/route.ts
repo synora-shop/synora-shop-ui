@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { currentShopId, requireShop, shopNotificationEmail } from "@/lib/data/shop";
 import { storefrontClosure } from "@/lib/maintenance";
+import { isDemoShop } from "@/lib/theme-store";
 import { claimDiscountUse, quoteDiscountWith } from "@/lib/data/discounts";
 import { getStoreSettings } from "@/lib/data/settings";
 import { sendOrderEmails } from "@/lib/email";
@@ -76,6 +77,21 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   if (!isValidPayload(body)) {
     return NextResponse.json({ error: "Invalid order payload" }, { status: 400 });
+  }
+
+  // A theme demo is a shop window, not a shop. Left alone it would take an
+  // order like any other store: write real rows, hold real stock, and post a
+  // "you have a new order" mail to whichever address `shopNotificationEmail`
+  // resolved to for a shop nobody owns.
+  //
+  // Refused on the *shop*, not on the route, so it holds however the demo was
+  // reached — through /theme-store, through its raw subdomain, or by a POST
+  // straight at this endpoint from a tab left open.
+  if (isDemoShop((await requireShop()).subdomain)) {
+    return NextResponse.json(
+      { error: "This is a demo store, so it can't take orders. Start your own to sell for real." },
+      { status: 409 }
+    );
   }
 
   // A paused store must actually stop taking orders, not merely stop showing

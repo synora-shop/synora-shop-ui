@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { StoreLink as Link } from "@/components/storefront/store-link";
 import { ProductCard, type ProductCardProduct } from "@/components/storefront/product-card";
 import type { GlobalEdits } from "@/lib/global-edits";
 import type { CardLayout } from "@/lib/theme-layout";

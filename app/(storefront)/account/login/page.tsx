@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import Link from "next/link";
+import { StoreLink as Link } from "@/components/storefront/store-link";
 import { Container } from "@/components/ui/container";
 import { getSiteText, text } from "@/lib/site-text";
 import { LoginForm } from "@/components/storefront/login-form";

@@ -1,7 +1,8 @@
 import { canonicalUrl, db, requireShop } from "@/lib/data/shop";
 import { registryBusinessType } from "@/lib/themes/business-type";
 import { defaultThemeFor, themeFor, themesFor } from "@/lib/themes/registry";
-import { normaliseHost } from "@/lib/shop-context";
+import { appUrl, normaliseHost } from "@/lib/shop-context";
+import { themeStorePath } from "@/lib/themes/demo";
 import { liveCopyOf } from "@/lib/themes/live";
 import { LearnMore } from "@/components/admin/panel";
 import { ThemeManager } from "@/components/admin/theme-manager";
@@ -74,6 +75,12 @@ export default async function ThemePage() {
         liveId={liveId}
         liveKey={liveKey}
         storeHost={normaliseHost(storeUrl.replace(/^https?:\/\//, ""))}
+        // The shop's own live address, for the Active Theme section — and with
+        // no `?__theme=` on it. Overriding the live theme with itself renders
+        // the same page while implying it is a preview, and on a shop running a
+        // theme it holds no copy of, the fallback used to hand that section a
+        // *store* link, so "your storefront" pointed at somebody's demo.
+        storeUrl={storeUrl}
         // Every copy this shop holds. A copy of a theme that has since been
         // retired from the registry is kept in the list rather than hidden —
         // the merchant still has it, and a row that quietly vanishes is worse
@@ -95,15 +102,30 @@ export default async function ThemePage() {
         // The store offers every theme, always — including ones already in the
         // library. Add is not "own this", it is "give me another copy", and a
         // merchant who wants a second KITE to experiment on gets it here.
-        store={available.map((t) => ({
-          key: t.key,
-          name: t.name,
-          description: t.description,
-          preview: t.preview,
-          latest: t.version,
-          plate: t.plate,
-          previewUrl: `${storeUrl}?__theme=${t.key}`,
-        }))}
+        store={available.map((t) => {
+          // The theme's own demo, on our servers, with our goods in it — the
+          // same page for everyone on the internet. Not this shop wearing the
+          // theme, which is what it used to be and which judged the design
+          // through the merchant's own photography: four products and a lot of
+          // white, and the theme read as empty. See docs/THEMES.md §5b.
+          //
+          // Absolute, because the admin may be on the application host or on
+          // the shop's own address and the demo is only ever on ours.
+          const demo = themeStorePath(t.key);
+          return {
+            key: t.key,
+            name: t.name,
+            description: t.description,
+            preview: t.preview,
+            latest: t.version,
+            plate: t.plate,
+            // A theme with no published slug has no demo to send anyone to.
+            // `check:theme-store` makes that unreachable; the fallback is here
+            // so an unslugged theme degrades to the old preview rather than to
+            // a dead link.
+            previewUrl: demo ? appUrl(demo) : `${storeUrl}?__theme=${t.key}`,
+          };
+        })}
       />
       <LearnMore about="Themes" />
     </div>

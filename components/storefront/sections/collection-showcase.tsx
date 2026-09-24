@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { StoreLink as Link } from "@/components/storefront/store-link";
 import { SectionImage } from "@/components/storefront/section-image";
 import { ProductCard, type ProductCardProduct } from "@/components/storefront/product-card";
 import { ImagePlaceholder } from "@/components/storefront/image-placeholder";

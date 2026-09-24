@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
+import { StoreLink as Link } from "@/components/storefront/store-link";
 import { CheckCircle2 } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { db } from "@/lib/data/shop";

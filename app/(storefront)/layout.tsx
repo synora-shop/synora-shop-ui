@@ -18,9 +18,13 @@ import { offerableGateways } from "@/lib/payments/offer";
 import { shopSession } from "@/lib/auth-guard";
 import { isDarkBackground } from "@/lib/contrast";
 import { resolveLogoColor } from "@/lib/theme-tokens";
-import { guardCanonicalHost, guardShopHost } from "@/lib/canonical";
+import { guardCanonicalHost, guardDemoShop, guardShopHost } from "@/lib/canonical";
+import { storeBase, themeStoreContext } from "@/lib/theme-store";
+import { StoreBaseProvider } from "@/components/storefront/store-link";
+import { ThemeDemoBar } from "@/components/storefront/theme-demo-bar";
+import { themeFor } from "@/lib/themes/registry";
 import { headers } from "next/headers";
-import { SHOP_PATH_HEADER } from "@/lib/shop-context";
+import { SHOP_PATH_HEADER, appUrl } from "@/lib/shop-context";
 import { canonicalUrl, currentShop } from "@/lib/data/shop";
 import { recordVisit } from "@/lib/analytics/visits";
 import { STORE_DEFAULTS, resolveStoreDefaults } from "@/lib/store-defaults";
@@ -50,6 +54,35 @@ export async function generateMetadata(): Promise<Metadata> {
   const shop = await currentShop();
   // No shop means the platform's own host, where the root metadata is correct.
   if (!shop) return {};
+
+  // A theme demo is Synora's page, not a shop's, and everything above is
+  // written on the opposite assumption — it would announce "Kite Supply" as a
+  // real business, point `metadataBase` at the demo's raw subdomain, and hand
+  // a crawler the one address this feature works to keep out of the index.
+  //
+  // So it answers for itself. Indexed on purpose: these pages exist to be
+  // found by somebody looking for a shop design.
+  const themeStore = await themeStoreContext();
+  if (themeStore) {
+    const theme = themeFor(themeStore.themeKey);
+    const base = appUrl(themeStore.base);
+    return {
+      metadataBase: new URL(base),
+      title: {
+        absolute: `${theme.name} — a theme for Synora App`,
+        template: `%s · ${theme.name} demo`,
+      },
+      description: `${theme.description} See ${theme.name} as a complete store, with demo products, before you use it.`,
+      alternates: { canonical: base },
+      openGraph: {
+        type: "website",
+        siteName: "Synora App themes",
+        title: `${theme.name} — a theme for Synora App`,
+        description: theme.description,
+      },
+      robots: { index: true, follow: true },
+    };
+  }
 
   const [settings, siteText, tokens] = await Promise.all([
     getStoreSettings(),
@@ -96,6 +129,11 @@ export default async function StorefrontLayout({ children }: LayoutProps<"/">) {
   // store's shopfront served from app.synoradigitals.com.
   await guardShopHost();
 
+  // A theme demo has exactly one address: /theme-store/kite. Its own raw
+  // subdomain serves the same pages and would compete with it in search, so
+  // that one redirects here rather than rendering.
+  await guardDemoShop();
+
   // A shop reachable at several addresses is several sites to a search engine,
   // and a basket left on one host is not there on another. Everything that is
   // not the canonical address redirects.
@@ -105,8 +143,12 @@ export default async function StorefrontLayout({ children }: LayoutProps<"/">) {
   // visit — otherwise every non-canonical request would be counted twice, once
   // on the way through and once at its destination. The write itself happens
   // after the response; see lib/analytics/visits.ts.
+  const demo = await themeStoreContext();
   const visiting = await currentShop();
-  if (visiting) {
+  // A theme demo is indexed on purpose, so it is crawled — and a crawl should
+  // not write a row per request into analytics belonging to a shop nobody
+  // reads. Nothing here is a visit to anybody's store.
+  if (visiting && !demo) {
     // The proxy already passes the path down for the canonical redirect. Its
     // query is dropped: a URL's parameters carry campaign tags and sometimes
     // worse, and none of it belongs in a table this size.
@@ -164,6 +206,15 @@ export default async function StorefrontLayout({ children }: LayoutProps<"/">) {
     // Prices on the storefront read in the shop's own currency, which is the
     // half of this bug a customer would have seen.
     <CurrencyProvider currency={resolveStoreDefaults(settings).currency}>
+    {/* Synora's own bar, outside the provider below: its links belong to the
+        platform — the other themes, the sign-up — and must not be prefixed
+        into the demo the way a storefront link is. */}
+    {demo && <ThemeDemoBar themeName={themeFor(demo.themeKey).name} slug={demo.slug} />}
+    {/* "" on every real shop, which is what makes this safe: a merchant's
+        storefront renders exactly the links it always did. On a theme demo it
+        is `/theme-store/kite`, and every link below carries it so browsing
+        stays inside the demo. See components/storefront/store-link.tsx. */}
+    <StoreBaseProvider base={await storeBase()}>
     <div data-heading-style={edits.headingStyle} className="contents">
       {/* AccentTheme used to sit here, emitting a brand ramp from the shop's
           `accentColor` so that ThemeStyle below could override it. Two style
@@ -211,6 +262,7 @@ export default async function StorefrontLayout({ children }: LayoutProps<"/">) {
         <WhatsAppButton number={settings.whatsappNumber} />
       )}
     </div>
+    </StoreBaseProvider>
     </CurrencyProvider>
   );
 }

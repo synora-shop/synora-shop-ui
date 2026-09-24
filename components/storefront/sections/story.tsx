@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { StoreLink as Link } from "@/components/storefront/store-link";
 
 // Spacing, background and width come from SectionFrame (the shared style
 // settings every section gets) — this renders content only.

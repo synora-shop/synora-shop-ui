@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { StoreLink as Link } from "@/components/storefront/store-link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Package, Ruler, ShoppingBag, Store } from "lucide-react";
 import { cn } from "@/lib/utils";

@@ -133,6 +133,20 @@ export const SHOP_HOST_HEADER = "x-shp-host";
 export const SHOP_PATH_HEADER = "x-shp-path";
 
 /**
+ * The theme store, passed from the proxy to the render.
+ *
+ * `/theme-store/kite` is a demo storefront on our own host, so the shop cannot
+ * be read from the hostname the way it is everywhere else. The proxy works it
+ * out from the path — pure string code, no database — and names it here.
+ *
+ * Only the shop travels. The link prefix every demo render needs is derived
+ * back from this one name rather than sent alongside it, so a request that
+ * arrives carrying headers of its own cannot choose where a demo's navigation
+ * points. See lib/themes/demo.ts and docs/THEMES.md §5b.
+ */
+export const DEMO_SHOP_HEADER = "x-shp-demo-shop";
+
+/**
  * Subdomains that are the platform itself, not a merchant.
  *
  * Reserved rather than merely taken: a merchant who managed to claim "admin" or
@@ -257,6 +271,16 @@ export function subdomainProblem(raw: string): string | null {
   }
   if (sub.includes("--")) return "It cannot contain two hyphens in a row.";
   if (RESERVED_SUBDOMAINS.has(sub)) return "That address is reserved. Try another.";
+  // The theme store's demo shops live at `<slug>-demo` — `kite-demo`,
+  // `loom-demo`. The whole suffix is held back rather than the two names in
+  // use today, so adding a theme never has to remember to come back here.
+  //
+  // Deliberately *not* in RESERVED_SUBDOMAINS: that set is also what
+  // `classifyHost` uses to decide a host is the platform rather than a shop,
+  // and a demo host that classified as the platform would stop resolving to
+  // its own shop — which is the thing that redirects it to its real address.
+  // This blocks the name at signup, which is the only place it needs blocking.
+  if (sub.endsWith("-demo")) return "That address is reserved. Try another.";
   // Entirely numeric reads as an IP fragment in some resolvers and is a common
   // source of confusion in support.
   if (/^\d+$/.test(sub)) return "Include at least one letter.";

@@ -59,6 +59,33 @@ logos were `ThemeSettings` tokens for most of this product's life, which meant
 switching business type lost them. Identity is not style — see
 `lib/brand-marks.ts` and §6.
 
+### The proxy's headers are not a private channel
+
+`proxy.ts` tells the render which shop a request is for by setting headers on
+it. Headers arriving *from the client* are on the same request, so copying
+`req.headers` straight through let a visitor choose the shop themselves: a
+request to one merchant's address, carrying `x-shp-shop`, came back rendering
+another merchant's storefront. Confirmed against a running build on
+24 September 2026, and closed the same day.
+
+It was never an escalation, and the reason is worth keeping:
+
+- `/admin` is gated on the subdomain **in the hostname**, not on these headers.
+- `shopSession()` re-checks membership against whichever shop was resolved, so
+  a forged header names a shop you are not a member of and yields nothing.
+
+What it could do is serve one shop's public pages under another shop's address,
+which is somebody else's search ranking.
+
+`x-shp-shop` is the sharper case: **nothing in this codebase writes it.** It is
+read in one place (`lib/data/shop.ts`) and set nowhere, so a forged header was
+the only way that branch could ever be reached.
+
+The fix is one helper, `trustedHeaders()` in `proxy.ts`: strip every header of
+ours off the incoming request, then set what the proxy means to say. Every path
+that hands headers to the render goes through it, and `check:theme-store`
+asserts there is exactly one place copying `req.headers`.
+
 ---
 
 ## 3. Caching: per shop, per kind, dropped by whoever writes
@@ -87,10 +114,13 @@ serving the old value for five minutes. Either go through the action, or delete
 ### The addresses that exist
 
 ```
-app.synoradigitals.com         the product: what it is, sign-up, sign-in,
-                               the dashboard, the admin
-acme.app.synoradigitals.com    a shop's free address
-acme.com                       a shop's own domain, once it is verified
+app.synoradigitals.com               the product: what it is, sign-up, sign-in,
+                                     the dashboard, the admin
+app.synoradigitals.com/theme-store/  a theme's demo storefront, on our servers
+acme.app.synoradigitals.com          a shop's free address
+acme.com                             a shop's own domain, once it is verified
+kite-demo.app.synoradigitals.com     a demo shop's raw address — never served,
+                                     always redirected to /theme-store/kite
 ```
 
 One address, not two. The product is called Synora App; `PLATFORM_DOMAIN` and
@@ -409,6 +439,37 @@ set it would be a second switch for one thing — the shape of bug
 Only the merchant's **differences** are stored, in `ThemeSettings.layout`.
 Writing a resolved layout would freeze today's theme defaults into their row, so
 switching theme later would change the colours and silently keep the old header.
+
+### The theme store demos
+
+`/theme-store/<theme>` on the application host is a full storefront wearing that
+theme, filled with demo goods that are ours. It is how a theme is judged before
+anybody owns it, and it is public and indexed on purpose. The model, the
+catalogues and the reasoning are in `docs/THEMES.md` §5b; what belongs here is
+the routing.
+
+- **`lib/themes/demo.ts`** is pure string code: slug to theme key, theme key to
+  demo subdomain, and the parse of a `/theme-store/...` path. Pure because
+  `proxy.ts` uses it, and that file runs on every request and holds no database.
+- **`proxy.ts`** rewrites `/theme-store/kite/<rest>` to `/<rest>` and passes two
+  headers down: the demo shop's subdomain, and the base path every link inside
+  the render must carry. A slug in the wrong case is **308**-ed to the lowercase
+  address rather than served, so the page has one URL.
+- **`lib/theme-store.ts`** reads those headers back. `currentShop()` consults it
+  *first* — before the selected-shop cookie — or a signed-in merchant browsing
+  the theme store would be served their own shop's products under a demo URL.
+- **`guardShopHost`** normally 404s a storefront on the application host. A
+  theme-store request is the one exemption, and it is safe because the shop it
+  resolves is ours by construction: the subdomain comes from the slug, not from
+  anything the visitor sent.
+- **The link prefix** rides a React context from the storefront layout
+  (`components/storefront/store-link.tsx`). Every storefront link goes through
+  `StoreLink`, which prepends the base to root-relative hrefs. **The base is the
+  empty string on every real shop**, so a merchant's storefront renders exactly
+  the HTML it rendered before this existed — which is the property that makes a
+  change this wide safe to make.
+- **A demo shop refuses checkout and records no visits.** Both are enforced on
+  the shop, not on the route, so neither can be reached round the side.
 
 ### Adding a theme, and publishing it
 

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { StoreLink as Link } from "@/components/storefront/store-link";
 
 const SIZE: Record<string, string> = {
   medium: "text-2xl sm:text-3xl",

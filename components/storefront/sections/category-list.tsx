@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { StoreLink as Link } from "@/components/storefront/store-link";
 import type { CategoryTile } from "./category-grid";
 
 /**

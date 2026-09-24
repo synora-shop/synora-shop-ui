@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { StoreLink as Link } from "@/components/storefront/store-link";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { SwipeRow } from "@/components/ui/swipe-row";

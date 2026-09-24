@@ -224,6 +224,24 @@ theme's name and version at the left, `+ Add` (solid dark) and `Preview`
 Under the section, centred on the page: **Learn more about Themes**, the last
 word a link.
 
+### Where Preview goes, on each of the three sections
+
+The word is the same in all three places and it means three different things,
+because three different questions are being asked. Written down here because the
+screen cannot show the difference and a reader of the code should not have to
+infer it.
+
+| Section | Preview opens | The question it answers |
+| --- | --- | --- |
+| **Active Theme** | the shop's own live address (`demo-user1.com`) | "What are my customers looking at?" |
+| **All Themes** | the shop's own address, `?__theme=<copyId>` | "What would *my* shop look like in this copy?" |
+| **Theme Store** | `app.synoradigitals.com/theme-store/<theme>` | "What is this theme?" |
+
+Only the third is on our servers, and only the third shows demo goods. A theme
+in the store is not the merchant's yet, so previewing it through their own
+half-filled catalogue would judge the theme on their photography. The full model
+is in `docs/THEMES.md` §5b.
+
 ### The words on the buttons
 
 `Activate`, not Publish. `Edit Theme`, not Customise. `+ Add`, not Install.

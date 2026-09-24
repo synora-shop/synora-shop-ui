@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { StoreLink as Link } from "@/components/storefront/store-link";
 import { useState } from "react";
 import { ChevronDown, Menu, Search, ShoppingBag, User, X } from "lucide-react";
 import { Container } from "@/components/ui/container";

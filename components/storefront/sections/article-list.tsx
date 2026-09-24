@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import { StoreLink as Link } from "@/components/storefront/store-link";
 import { ImagePlaceholder } from "@/components/storefront/image-placeholder";
 
 /** One post, as the storefront needs it. */

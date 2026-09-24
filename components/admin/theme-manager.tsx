@@ -69,12 +69,29 @@ export function ThemeManager({
   liveId,
   liveKey,
   storeHost,
+  storeUrl,
 }: {
   copies: ThemeCopy[];
   store: StoreTheme[];
   liveId: string | null;
   liveKey: string;
   storeHost: string;
+  /**
+   * The shop's own live address.
+   *
+   * Section 1 uses this rather than the live theme's own `previewUrl`, and the
+   * distinction is the whole of what "Preview" means in three places. Section 1
+   * is the live site, so it is the address itself — no `?__theme=` override,
+   * which would render the same page while implying it was a preview. Section 2
+   * is a copy the shop owns, so it is the shop with that copy on. Section 3 is
+   * a theme nobody owns yet, so it is our demo. See docs/PANEL.md §2.
+   *
+   * It also closes a real hole: on a shop running a theme it holds no copy of,
+   * `liveTheme` falls back to the *store card*, whose previewUrl is now a demo
+   * on our servers — so "your storefront" would have linked to someone else's
+   * shop window.
+   */
+  storeUrl: string;
 }) {
   const [pending, startTransition] = useTransition();
   const [busyKey, setBusyKey] = useState<string | null>(null);
@@ -124,7 +141,7 @@ export function ThemeManager({
                 // No shipped picture, so the shop itself stands in — a live
                 // frame of the merchant's own storefront wearing this design.
                 // The only preview that answers "what would MY shop look like".
-                <StorefrontStill url={liveTheme.previewUrl} height={450} />
+                <StorefrontStill url={storeUrl} height={450} />
               )}
             </div>
 
@@ -133,7 +150,7 @@ export function ThemeManager({
                 other names the design, down to which copy of it. */}
             <div className="mt-[var(--gap-lg)] flex w-full max-w-[calc(892.5*var(--u))] flex-wrap items-baseline justify-between gap-3">
               <a
-                href={liveTheme.previewUrl}
+                href={storeUrl}
                 target="_blank"
                 rel="noreferrer"
                 className="text-[length:calc(24*var(--u))] font-semibold text-control-ink transition-colors hover:text-brand-500"

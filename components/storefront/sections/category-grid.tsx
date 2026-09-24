@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { StoreLink as Link } from "@/components/storefront/store-link";
 import { ImagePlaceholder } from "@/components/storefront/image-placeholder";
 import Image from "next/image";
 import { cn } from "@/lib/utils";

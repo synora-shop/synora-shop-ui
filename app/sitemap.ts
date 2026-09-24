@@ -1,6 +1,9 @@
 import type { MetadataRoute } from "next";
 import { currentShop, canonicalUrl, isServingCustomers } from "@/lib/data/shop";
 import { forShop } from "@/lib/tenant";
+import { appUrl } from "@/lib/shop-context";
+import { isDemoShop } from "@/lib/theme-store";
+import { DEMO_SLUGS, THEME_STORE_ROOT } from "@/lib/themes/demo";
 
 // One shop's sitemap, at that shop's canonical address.
 //
@@ -17,8 +20,23 @@ export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const shop = await currentShop();
-  // A request to the platform's own apex is not a store and has no catalogue.
-  if (!shop) return [];
+  // A request to the platform's own apex is not a store and has no catalogue —
+  // but it does have the theme store, which is public and meant to be found.
+  // One entry per theme: the demo's home page, which is what a crawler should
+  // start from and is the address the theme is published at.
+  if (!shop) {
+    return DEMO_SLUGS.map((slug) => ({
+      url: appUrl(`${THEME_STORE_ROOT}/${slug}`),
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    }));
+  }
+
+  // A theme demo reached through /theme-store has no sitemap of its own: it is
+  // listed in the platform's, above, at the address it is actually published
+  // at. Emitting one here would advertise the demo's raw subdomain — the one
+  // address guardDemoShop exists to keep out of the index.
+  if (isDemoShop(shop.subdomain)) return [];
   // A paused, closed or suspended store should not be inviting crawlers in.
   if (!isServingCustomers(shop)) return [];
 

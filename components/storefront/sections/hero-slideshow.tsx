@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { SectionImage } from "@/components/storefront/section-image";
 import { ImagePlaceholder } from "@/components/storefront/image-placeholder";
-import Link from "next/link";
+import { StoreLink as Link } from "@/components/storefront/store-link";
 import { Container } from "@/components/ui/container";
 
 export type HeroSlide = {

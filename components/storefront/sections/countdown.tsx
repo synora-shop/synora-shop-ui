@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { StoreLink as Link } from "@/components/storefront/store-link";
 
 /**
  * A timer counting down to a moment.

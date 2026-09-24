@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
+import { StoreLink as Link } from "@/components/storefront/store-link";
 import { notFound } from "next/navigation";
 import { Container } from "@/components/ui/container";
 import { formatDate } from "@/components/storefront/sections/article-list";

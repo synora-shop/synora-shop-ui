@@ -2,7 +2,9 @@ import { headers } from "next/headers";
 import { notFound, permanentRedirect } from "next/navigation";
 import { canonicalHost, currentShop } from "@/lib/data/shop";
 import { shopSession } from "@/lib/auth-guard";
-import { SHOP_PATH_HEADER, classifyHost, normaliseHost } from "@/lib/shop-context";
+import { SHOP_PATH_HEADER, appUrl, classifyHost, normaliseHost } from "@/lib/shop-context";
+import { isDemoShop, themeStoreContext } from "@/lib/theme-store";
+import { THEME_STORE_ROOT, demoSlugForSubdomain } from "@/lib/themes/demo";
 
 /**
  * Keeps the public out of a storefront rendered on the product's own site.
@@ -26,8 +28,43 @@ export async function guardShopHost() {
   const host = normaliseHost(h.get("host") ?? "");
   if (classifyHost(host).kind !== "platform") return;
 
+  // The theme store is the one storefront that belongs on this host and is
+  // meant for everybody — `/theme-store/kite` is a demo shop of ours, public
+  // and indexed on purpose. Nothing is granted by the exemption: the shop it
+  // resolves is ours by construction, because its subdomain is derived from
+  // the slug rather than from anything the visitor sent.
+  if (await themeStoreContext()) return;
+
   const me = await shopSession();
   if (!me) notFound();
+}
+
+/**
+ * Keeps a demo shop at its one real address.
+ *
+ * Each theme's demo is a real Shop, so it also has a real free subdomain —
+ * `kite-demo.app.synoradigitals.com` — and left alone that would serve the same
+ * pages as `/theme-store/kite`. Two addresses for identical content is the
+ * thing guardCanonicalHost exists to prevent everywhere else, and here it would
+ * be our own demos competing with themselves in search.
+ *
+ * So the raw subdomain never serves. It redirects, permanently, to the address
+ * the theme store actually publishes.
+ */
+export async function guardDemoShop() {
+  // Already inside the theme store: this *is* the canonical address.
+  if (await themeStoreContext()) return;
+
+  const shop = await currentShop();
+  if (!shop || !isDemoShop(shop.subdomain)) return;
+
+  const slug = demoSlugForSubdomain(shop.subdomain);
+  if (!slug) return;
+
+  const path = (await headers()).get(SHOP_PATH_HEADER) ?? "/";
+  const inner = path.startsWith("/") ? path : `/${path}`;
+  const base = `${THEME_STORE_ROOT}/${slug}`;
+  permanentRedirect(`${appUrl(base)}${inner === "/" ? "" : inner}`);
 }
 
 /**

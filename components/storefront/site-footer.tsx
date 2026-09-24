@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { StoreLink as Link } from "@/components/storefront/store-link";
 import { Container } from "@/components/ui/container";
 import { THEME_LAYOUT_DEFAULTS, type FooterLayout } from "@/lib/theme-layout";
 import { Logo } from "@/components/ui/logo";

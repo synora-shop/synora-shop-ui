@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/auth-guard";
-import { db, currentShopId } from "@/lib/data/shop";
+import { currentShopId, db, requireShop } from "@/lib/data/shop";
+import { isDemoShop } from "@/lib/theme-store";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { looksAutomated } from "@/lib/spam";
 import { getStoreSettings } from "@/lib/data/settings";
@@ -44,6 +45,13 @@ export type EnquiryResult = { ok: true; id: string } | { ok: false; error: strin
  * into the stored JSON.
  */
 export async function submitEnquiry(input: EnquiryInput): Promise<EnquiryResult> {
+  // A theme demo shows the enquiry form because the form is part of the design
+  // a visitor is judging. It must not actually send one: an enquiry is the
+  // other thing this app emails about, and the demo has no merchant to email.
+  if (isDemoShop((await requireShop()).subdomain)) {
+    return { ok: false, error: "This is a demo store, so nobody is on the other end of this form." };
+  }
+
   // The one unauthenticated write in the app. Without this it can be looped to
   // fill a merchant's inbox and the platform's database, for free — which
   // makes it an abuse vector against us as much as against them.

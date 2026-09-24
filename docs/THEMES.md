@@ -194,6 +194,96 @@ picture falls back to a live frame of the merchant's own storefront.
 
 ---
 
+## 5b. The theme store demos
+
+**What somebody sees before they own anything.**
+
+`app.synoradigitals.com/theme-store/kite` is a complete, browsable storefront
+wearing Kite — home page, shop, collections, product pages — filled with demo
+products and demo photography that belong to *us*, not to any merchant. It is
+the same page for everyone on the internet, and that is the whole point: a theme
+should be judged on its design, and a theme judged through somebody else's
+half-filled catalogue is not being judged at all.
+
+This is the shape Shopify's theme store has, and it is that shape because the
+alternative does not work. Rendering the merchant's *own* shop in an unowned
+theme answers "what would my shop look like" — a real question, but a different
+one, and it is the question the **All Themes** rows answer. A merchant with four
+products and no photographs, shown their own shop in a photography-led theme,
+sees four pictures and a lot of white, and concludes the theme is empty.
+
+### Where each Preview goes
+
+| Where | What it opens | Why |
+| --- | --- | --- |
+| **Active Theme** | the shop's own live address — `demo-user1.com`, or the free `acme.app.synoradigitals.com` | It *is* the live site. No `?__theme=` override: overriding the live theme with itself renders the same page while implying it is a preview. |
+| **All Themes** — a copy the shop owns | the shop's own address with `?__theme=<copyId>` | The merchant's products wearing that copy, that copy's own edits included. |
+| **Theme Store** — a card | `app.synoradigitals.com/theme-store/<theme>` | Ours, demo content, identical for every visitor. |
+
+### Add never brings the demo content
+
+Pressing **Add** creates one `InstalledTheme` row and nothing else. No products,
+no photographs and no sections are copied from the demo: the merchant's own
+catalogue renders in the new theme immediately, which is what adding a theme
+means on every platform. The demo pictures exist to sell the theme, not to be
+inherited — a merchant who inherited them would have to delete forty products
+before opening.
+
+This is not a new rule; it is what `installTheme` has always done. It is written
+down because it is exactly the sort of invariant a later helpful-looking change
+breaks, and `check:theme-store` now asserts it.
+
+### How a demo is built
+
+Each theme has one real `Shop` behind it, so every storefront feature works
+without a second code path:
+
+```
+Kite   ->  kite-demo   ->  app.synoradigitals.com/theme-store/kite
+Loom   ->  loom-demo   ->  app.synoradigitals.com/theme-store/loom
+```
+
+- The subdomain is the theme's name lowercased plus `-demo`, **reserved** so no
+  merchant can claim it.
+- It never serves the shop itself. A request to
+  `kite-demo.app.synoradigitals.com` is permanently redirected to
+  `/theme-store/kite`, so one page never has two addresses and the demos cannot
+  compete with themselves in search.
+- `proxy.ts` rewrites `/theme-store/kite/<anything>` to `/<anything>` and names
+  the demo shop in a header. No database call: the subdomain is derived from the
+  slug in pure string code, which is what keeps that file free of queries.
+- Every storefront link is prefixed with `/theme-store/kite` while a demo is
+  being rendered, so browsing stays inside the demo and inside the URL. **The
+  prefix is empty for every real shop**, which is what makes this safe: a
+  merchant's storefront takes the same code path it always did.
+- **Checkout is refused on a demo shop.** A demo that took orders would write
+  real rows and send real mail to whoever the notification address resolved to.
+- **Visits are not recorded.** These pages are indexed on purpose, and a crawler
+  should not write a row per request into analytics nobody reads.
+
+### The catalogues
+
+Each theme demos the kind of shop it was built for. That is why they are two
+catalogues rather than one shared one — it is what the design file draws, and a
+photography-led theme and a roomy, text-led one are not selling the same goods.
+
+| Theme | Demo shop | What it sells |
+| --- | --- | --- |
+| **Kite** | Kite Supply | Streetwear — heavyweight cotton, outerwear, footwear. Photography-led, which is what Kite is for. |
+| **Loom** | Loom Beauty | Skincare and cosmetics. Roomier, lighter, more words per page. |
+
+Seeded by `scripts/seed-theme-store.ts`, which is reversible (`--undo`) and
+marks everything it writes exactly the way `scripts/seed-demo.ts` does — `DEMO-`
+SKUs, `@demo.invalid` addresses, `picsum.photos/seed/` pictures.
+
+**Real photography is the one thing still outstanding.** The placeholders are
+deterministic, so a screenshot taken today still matches next week, but until
+real pictures arrive the demos are honest about their design and obviously
+placeholder about their imagery.
+
+
+---
+
 ## 6. Designed, not yet built
 
 > **The Themes screen is now drawn.** `docs/PANEL.md` §2 has it measurement by

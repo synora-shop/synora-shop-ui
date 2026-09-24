@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { currentCustomer } from "@/lib/data/customer";
-import Link from "next/link";
+import { StoreLink as Link } from "@/components/storefront/store-link";
 import { db } from "@/lib/data/shop";
 import { Container } from "@/components/ui/container";
 

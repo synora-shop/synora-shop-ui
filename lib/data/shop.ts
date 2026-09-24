@@ -11,6 +11,7 @@ import {
   normaliseHost,
 } from "@/lib/shop-context";
 import { SELECTED_SHOP_COOKIE } from "@/lib/selected-shop";
+import { themeStoreContext } from "@/lib/theme-store";
 
 // Which shop this request is for, and a database client locked to it.
 //
@@ -62,6 +63,26 @@ const SHOP_SELECT = {
  */
 export const currentShop = cache(async (): Promise<CurrentShop | null> => {
   const h = await headers();
+
+  // The theme store, before anything else can answer.
+  //
+  // `/theme-store/kite` is served from the application host, where the rules
+  // below resolve a shop from the selected-shop cookie — so a signed-in
+  // merchant browsing the theme store would have been shown *their own*
+  // products under a demo URL, which is precisely the thing these pages exist
+  // not to do. The shop here is ours by construction: its subdomain is derived
+  // from the slug, never from anything the visitor sent.
+  const demo = await themeStoreContext();
+  if (demo) {
+    const shop = await prisma.shop.findUnique({
+      where: { subdomain: demo.subdomain },
+      select: SHOP_SELECT,
+    });
+    // Null when the demo has not been seeded into this database yet. Falling
+    // through would serve somebody's real shop at a demo address, so this
+    // stops here and the storefront 404s instead.
+    return shop ?? null;
+  }
 
   const id = h.get(SHOP_ID_HEADER);
   if (id) {

@@ -1,6 +1,6 @@
 # The guards
 
-Twenty-seven scripts, **3,048 assertions as of 10 September 2026**, all of them
+Twenty-eight scripts, **3,303 assertions as of 24 September 2026**, all of them
 dependency-free, all exiting non-zero on failure. `npm run check` runs the lot.
 
 The per-script counts below are a snapshot and will drift as assertions are
@@ -45,6 +45,7 @@ and that going live is refused until a test payment has really been through.
 | `check:spotlight` **31** | The refusal points at the cure; `.attention` has exactly one user | "Pause it first" named a cure without saying where it was kept |
 | `check:address` **48** | Renaming a shop moves its address without touching a custom domain, breaking shared links, or taking a name somebody holds | A store's public URL is derived from its name, so a rename is three dangerous things at once |
 | `check:themes` **113** | A theme arranges the storefront, not only paints it; every variant a theme names is drawn; an untouched shop is untouched | `ThemeDefinition` had tokens and nothing else, so Aurora and Meridian rendered byte-identical HTML and differed only in CSS variables |
+| `check:theme-store` **50** | A theme's demo exists, is reachable at one address, and is not a shop — every theme has a slug, Preview means three different things in three places, Add brings no demo content, a demo takes no orders, and the proxy's own headers cannot be sent by a visitor | The Theme Store's Preview opened the *merchant's* shop wearing an unowned theme, so a shop with four products and no photographs judged a photography-led theme on four pictures and a lot of white |
 | `check:gateways` **118** | Sealed credentials really seal; only the verification path pays for an order, and only by asking the provider; test mode never reaches a customer; an unpaid order gives back everything it took | The most-used PayFast library marks an order paid on any POST carrying a transaction id, and the field PayFast calls SIGNATURE is random hex |
 | `check:payments` **32** | A merchant chooses how they get paid; a method with no details is not offered; the server refuses one the shop does not take | Which methods existed was a constant in source, while Settings offered account details for methods no customer could pick |
 | `check:editor` **29** | Discard and Save exist wherever there is unsaved work | — |
