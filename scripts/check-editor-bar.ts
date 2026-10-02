@@ -99,5 +99,51 @@ for (const file of FORMS) {
 check("the bar is mounted once, in the layout",
   /<EditorBar \/>/.test(read("app/admin/layout.tsx")));
 
+// ---------------------------------------------------------------------------
+console.log("\nEVERY SETTING KIND DRAWS SOMETHING");
+// ---------------------------------------------------------------------------
+/*
+ * A `kind` the schema declares and the panel does not draw renders nothing at
+ * all, because the switch ends in `default: return null`.
+ *
+ * That is not hypothetical. `collection` was declared when Category spotlight
+ * was written, was never given a case, and so the section's only real setting
+ * — which category to spotlight — was an invisible gap in the panel for the
+ * life of the feature. The section fell back to whichever category sorted
+ * first and no merchant could change it. `product` was declared and unused in
+ * the same way. Both were found on 3 October and both are drawn now.
+ *
+ * The type checker cannot see this: the switch is exhaustive over nothing, and
+ * a missing case is a legal fall-through to the default.
+ */
+{
+  const schema = read("lib/section-schema.ts");
+  const panel = read("components/customizer/setting-field.tsx");
+
+  // The union is declared as `| "name"` lines under `type FieldKind =`.
+  const union = /export type FieldKind =([\s\S]*?);\n/.exec(schema)?.[1] ?? "";
+  const kinds = [...union.matchAll(/\|\s*"([a-z-]+)"/g)].map((m) => m[1]);
+
+  check("the FieldKind union was found", kinds.length > 0, "the guard below asserts nothing otherwise");
+
+  const drawn = new Set([...panel.matchAll(/case "([a-z-]+)":/g)].map((m) => m[1]));
+  for (const kind of kinds) {
+    check(
+      `the panel draws a "${kind}" field`,
+      drawn.has(kind),
+      "declared but not drawn falls through to `default: return null` — a labelled gap the merchant cannot fill"
+    );
+  }
+
+  // The other half of the same mistake: a kind nothing declares, drawn anyway.
+  for (const kind of drawn) {
+    check(
+      `"${kind}" is a kind the schema declares`,
+      kinds.includes(kind) || kind === "favicon" || kind === "logo",
+      "a case for a kind no field can have is dead code"
+    );
+  }
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);

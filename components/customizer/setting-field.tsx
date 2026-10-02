@@ -19,6 +19,7 @@ import {
 import { AUTO } from "@/lib/theme-tokens";
 import { cn } from "@/lib/utils";
 import type { SettingField } from "@/lib/section-schema";
+import { PICKER_EMPTY_HINT, usePickerOptions } from "@/components/customizer/picker-options";
 import { FieldError } from "@/components/ui/primitives";
 
 /**
@@ -50,6 +51,9 @@ export function SettingFieldInput({
   contrastBackground?: string;
 }) {
   const [urlError, setUrlError] = useState<string | null>(null);
+  // Read unconditionally: a hook cannot sit inside the switch below, and the
+  // lists are already in memory on the client.
+  const pickerOptions = usePickerOptions();
 
   const label = (
     <div className="flex items-center gap-1.5">
@@ -230,6 +234,48 @@ export function SettingFieldInput({
           {help}
         </div>
       );
+
+    // A field that points at something the merchant already made. Declared in
+    // the schema since Category spotlight was written and rendered by nothing
+    // until 3 October, so the section fell back to whichever category sorted
+    // first and no merchant could change it.
+    //
+    // The id is stored rather than the slug: a merchant renaming a category
+    // should not silently repoint a section at a different one.
+    case "collection":
+    case "product": {
+      const list = pickerOptions[field.kind];
+      if (list.length === 0) {
+        return (
+          <div>
+            {label}
+            <p className="mt-1 text-[11px] text-ink-faint">{PICKER_EMPTY_HINT[field.kind]}</p>
+            {help}
+          </div>
+        );
+      }
+      return (
+        <div>
+          {label}
+          <select
+            value={(value as string) ?? ""}
+            onChange={(e) => onChange(e.target.value)}
+            className="input mt-1"
+          >
+            {/* Empty is a real choice: the section's own fallback. Offering it
+                is what lets a merchant undo a pick without deleting the
+                section. */}
+            <option value="">Choose…</option>
+            {list.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+          {help}
+        </div>
+      );
+    }
 
     case "contrast-text": {
       // Only options that actually pass are offered, so an unreadable pairing

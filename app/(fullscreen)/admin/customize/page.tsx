@@ -2,6 +2,10 @@ import { redirect } from "next/navigation";
 import { canonicalUrl, currentShopId, db } from "@/lib/data/shop";
 import { getOrCreateHomePage } from "@/lib/data/pages";
 import { Customizer, type CustomizerPage } from "@/components/customizer/customizer";
+import {
+  PickerOptionsProvider,
+  type PickerOptions,
+} from "@/components/customizer/picker-options";
 
 export const dynamic = "force-dynamic";
 
@@ -54,6 +58,34 @@ export default async function CustomizePageRoute(props: PageProps<"/admin/custom
 
   const page = pages.find((p) => p.id === requestedId) ?? pages[0];
 
+  // What a section setting can point at. Fetched here, once, rather than by
+  // each field: the panel renders every field of every section on the page,
+  // so a per-field query would be one round trip per setting.
+  //
+  // Capped, and the cap is deliberate. These become <option> elements in a
+  // dropdown, and a shop with nine thousand products would otherwise ship all
+  // nine thousand into the editor's HTML on every load. A shop past the cap
+  // needs a search field rather than a longer list — see docs/QUEUE.md.
+  const PICKER_LIMIT = 200;
+  const client = await db();
+  const [pickCollections, pickProducts] = await Promise.all([
+    client.category.findMany({
+      orderBy: { name: "asc" },
+      take: PICKER_LIMIT,
+      select: { id: true, name: true },
+    }),
+    client.product.findMany({
+      where: { deletedAt: null },
+      orderBy: { title: "asc" },
+      take: PICKER_LIMIT,
+      select: { id: true, title: true },
+    }),
+  ]);
+  const pickers: PickerOptions = {
+    collection: pickCollections.map((c) => ({ value: c.id, label: c.name })),
+    product: pickProducts.map((p) => ({ value: p.id, label: p.title })),
+  };
+
   const sections = await (await db()).section.findMany({
     where: { pageId: page.id },
     orderBy: { order: "asc" },
@@ -72,12 +104,14 @@ export default async function CustomizePageRoute(props: PageProps<"/admin/custom
   // wrote the previous page's sections onto the page now named by page.id.
   // Silent, and destructive.
   return (
-    <Customizer
-      key={page.id}
-      pages={pages}
-      page={page}
-      initialSections={sections}
-      storeUrl={await canonicalUrl(await currentShopId())}
-    />
+    <PickerOptionsProvider options={pickers}>
+      <Customizer
+        key={page.id}
+        pages={pages}
+        page={page}
+        initialSections={sections}
+        storeUrl={await canonicalUrl(await currentShopId())}
+      />
+    </PickerOptionsProvider>
   );
 }
