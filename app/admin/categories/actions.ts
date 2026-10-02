@@ -1,12 +1,28 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { invalidateShop } from "@/lib/data/cached";
 import { requireRole } from "@/lib/auth-guard";
 import { db, currentShopId } from "@/lib/data/shop";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { safeAssetUrl } from "@/lib/icon-validation";
 import { describeUniqueConstraint, isUniqueConstraintError } from "@/lib/prisma-errors";
+
+/**
+ * Drops the storefront's cached catalogue.
+ *
+ * The category list and the featured products are cached per shop for five
+ * minutes (lib/data/section-context.ts), so a merchant who renames a category
+ * or features a product would otherwise watch their storefront not change —
+ * the exact bug lib/cache-tags.ts exists to prevent. Paired with the
+ * revalidatePath calls rather than left to memory, and check:cache fails the
+ * build if a writer in this file stops dropping it.
+ */
+async function dropCatalog() {
+  invalidateShop(await currentShopId(), "catalog");
+}
+
 
 async function requireAdmin() {
   await requireRole("STAFF");
@@ -53,6 +69,7 @@ export async function createCategory(name: string, image: string | null): Promis
   revalidatePath("/admin/categories");
   revalidatePath("/admin/menus");
   revalidatePath("/shop");
+  await dropCatalog();
   return {};
 }
 
@@ -66,6 +83,7 @@ export async function renameCategory(id: string, name: string): Promise<{ error?
   await (await db()).category.update({ where: { id }, data: { name: trimmed } });
   revalidatePath("/admin/categories");
   revalidatePath("/shop");
+  await dropCatalog();
   return {};
 }
 
@@ -146,5 +164,6 @@ export async function updateCollectionDetails(
 
   revalidatePath("/admin/categories");
   revalidatePath("/shop");
+  await dropCatalog();
   return {};
 }

@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { invalidateShop } from "@/lib/data/cached";
 import { requireRole } from "@/lib/auth-guard";
 import { db, currentShopId } from "@/lib/data/shop";
 import { Prisma } from "@/lib/generated/prisma/client";
@@ -18,6 +19,22 @@ import { del } from "@vercel/blob";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { describeUniqueConstraint, isUniqueConstraintError } from "@/lib/prisma-errors";
+import { effectivePrice } from "@/lib/product-pricing";
+
+/**
+ * Drops the storefront's cached catalogue.
+ *
+ * The category list and the featured products are cached per shop for five
+ * minutes (lib/data/section-context.ts), so a merchant who renames a category
+ * or features a product would otherwise watch their storefront not change —
+ * the exact bug lib/cache-tags.ts exists to prevent. Paired with the
+ * revalidatePath calls rather than left to memory, and check:cache fails the
+ * build if a writer in this file stops dropping it.
+ */
+async function dropCatalog() {
+  invalidateShop(await currentShopId(), "catalog");
+}
+
 
 async function requireAdmin() {
   await requireRole("STAFF");
@@ -133,6 +150,10 @@ export async function saveProduct(input: ProductInput): Promise<SaveProductResul
       images: input.images.filter(Boolean),
       basePrice: input.basePrice,
       salePrice: input.salePrice,
+      // Written beside the two it is derived from, never separately. The
+      // storefront orders by this column, so a price saved without it sorts
+      // at its old value — see the column's comment in schema.prisma.
+      effectivePrice: effectivePrice({ basePrice: input.basePrice, salePrice: input.salePrice }),
       costPrice: input.costPrice,
       isFeatured: input.isFeatured,
       isActive: input.isActive,
@@ -186,6 +207,7 @@ export async function saveProduct(input: ProductInput): Promise<SaveProductResul
     revalidatePath("/admin/products");
     revalidatePath(`/product/${slug}`);
     revalidatePath("/shop");
+    await dropCatalog();
     return { id: product.id, status, downgradedToDraft };
   } catch (err) {
     // By code, not by the text of the message: matching on Prisma's prose
@@ -209,6 +231,7 @@ export async function moveProductToBin(formData: FormData) {
   revalidatePath("/admin/products");
   revalidatePath("/admin/bin");
   revalidatePath("/shop");
+  await dropCatalog();
 }
 
 export async function restoreProduct(formData: FormData) {
@@ -218,6 +241,7 @@ export async function restoreProduct(formData: FormData) {
   revalidatePath("/admin/products");
   revalidatePath("/admin/bin");
   revalidatePath("/shop");
+  await dropCatalog();
 }
 
 /**
@@ -272,6 +296,7 @@ export async function bulkProducts(
   revalidatePath("/admin/products");
   revalidatePath("/admin/bin");
   revalidatePath("/shop");
+  await dropCatalog();
   return { changed: count };
 }
 

@@ -163,6 +163,7 @@ async function seedOne(
         description: p.blurb,
         images,
         basePrice: p.price,
+        effectivePrice: p.price,
         salePrice: p.sale ?? null,
         isFeatured: !!p.featured,
       },
@@ -173,6 +174,7 @@ async function seedOne(
         description: p.blurb,
         images,
         basePrice: p.price,
+        effectivePrice: p.price,
         salePrice: p.sale ?? null,
         costPrice: Math.round(p.price * 0.45),
         // Every product published. A demo with a quarter of it in draft is a

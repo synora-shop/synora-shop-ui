@@ -778,18 +778,26 @@ model Product {
   /// verbatim so an export can be diffed against a Shopify export and match.
   /// A JSON column rather than twenty real ones: thirteen of them are Google
   /// Shopping fields nothing in this platform will ever query.
-  csvExtras  Json             @default("{}")
-  basePrice  Int // stored in PKR, integer (no paisa)
-  salePrice  Int?
-  costPrice  Int              @default(0) // what you pay per unit, PKR — admin/profit-calc only, never sent to the storefront
+  csvExtras      Json             @default("{}")
+  /// `salePrice ?? basePrice`, stored so the storefront can order by it.
+  ///
+  /// The price a customer actually pays is not a column, so the listing could
+  /// not sort by it in SQL — it read the whole catalogue and sorted in
+  /// JavaScript, which is why there was no pagination. Written by every path
+  /// that writes a price, and `check:scale` fails the build if one forgets.
+  /// lib/product-pricing.ts effectivePrice() is the single definition.
+  effectivePrice Int              @default(0)
+  basePrice      Int // stored in PKR, integer (no paisa)
+  salePrice      Int?
+  costPrice      Int              @default(0) // what you pay per unit, PKR — admin/profit-calc only, never sent to the storefront
   // Many-to-many — a product can sit in several categories at once (e.g. a discounted Lawn
   // piece is both "Lawn" and "Sale"). "Sale" membership is kept in sync with salePrice
   // automatically by saveProduct() rather than left to the admin to remember — see actions.ts.
-  categories Category[]
-  variants   ProductVariant[]
-  isFeatured Boolean          @default(false)
-  isActive   Boolean          @default(true)
-  status     ProductStatus    @default(PUBLISHED) // DRAFT = half-configured/unpublished, hidden from storefront regardless of isActive
+  categories     Category[]
+  variants       ProductVariant[]
+  isFeatured     Boolean          @default(false)
+  isActive       Boolean          @default(true)
+  status         ProductStatus    @default(PUBLISHED) // DRAFT = half-configured/unpublished, hidden from storefront regardless of isActive
 
   // --- How this product is sold -------------------------------------------
   // NORMAL products use basePrice/salePrice/variants above and nothing below.
@@ -824,6 +832,7 @@ model Product {
   @@unique([shopId, slug])
   @@index([shopId])
   @@index([shopId, status, isActive, createdAt])
+  @@index([shopId, status, isActive, effectivePrice])
 }
 
 model ProductVariant {

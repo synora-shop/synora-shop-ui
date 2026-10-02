@@ -181,6 +181,100 @@ check(
   "an id list is bounded by the cart; a table scan is not"
 );
 
+
+// ===========================================================================
+console.log("\nA DERIVED COLUMN THAT CANNOT DRIFT");
+// ===========================================================================
+/*
+ * `effectivePrice` is `salePrice ?? basePrice`, stored so the storefront can
+ * order by it — the listing could not be paginated while the sort lived in
+ * JavaScript, because you cannot take the first 24 of a list you have not
+ * finished sorting.
+ *
+ * A stored derived value is only as good as the paths that write it. A
+ * Postgres GENERATED column would make this impossible to get wrong, but
+ * Prisma puts every scalar it knows about into its INSERTs and the failure
+ * mode is every product save erroring in production. So the application
+ * maintains it, and this is what stops a sixth write path from forgetting.
+ */
+{
+  const writers = [
+    "app/admin/products/actions.ts",
+    "app/admin/products/import/actions.ts",
+    "prisma/seed.ts",
+    "scripts/seed-demo.ts",
+    "scripts/seed-theme-store.ts",
+  ];
+  for (const f of writers) {
+    const src = read(f);
+    if (!/basePrice:/.test(src)) continue;
+    check(
+      `${f.replace(/^.*\//, "")} writes effectivePrice wherever it writes a price`,
+      /effectivePrice/.test(src),
+      "a price saved without it keeps sorting at its old value, and nothing looks wrong"
+    );
+  }
+
+  // Any file that writes basePrice and is not on the list above is a path
+  // nobody thought about.
+  const all: string[] = [];
+  const walk = (dir: string) => {
+    for (const e of require("fs").readdirSync(join(ROOT, dir), { withFileTypes: true })) {
+      const rel = `${dir}/${e.name}`;
+      if (e.isDirectory()) {
+        if (!/node_modules|generated|\.next/.test(rel)) walk(rel);
+      } else if (/\.tsx?$/.test(e.name)) all.push(rel);
+    }
+  };
+  for (const root of ["app", "lib", "scripts", "prisma"]) walk(root);
+  // A *write* of a price, not a read of one. `basePrice: true` is a select,
+  // `basePrice: number` is a type, and both appear in files that never write
+  // a product — the first version of this check flagged nine of them. A write
+  // is a value assigned in a file that also calls a product write.
+  const writesAPrice = (f: string) => {
+    const src = read(f);
+    if (!/\bproduct\.(create|update|upsert|createMany|updateMany)\(/.test(src)) return false;
+    return /basePrice:\s*(?!true\b|number\b|boolean\b)\S/.test(src);
+  };
+  const unexpected = all.filter((f) => writesAPrice(f) && !writers.includes(f));
+  check(
+    "no other file writes a price",
+    unexpected.length === 0,
+    `${unexpected.join(", ")} — add it to this guard and set effectivePrice`
+  );
+
+  check(
+    "the listing orders by the stored column, not in JavaScript",
+    /orderBy[\s\S]{0,400}effectivePrice/.test(read("lib/data/products.ts")),
+    "sorting a page is not sorting"
+  );
+  check(
+    "the listing is paginated",
+    /take: perPage/.test(read("lib/data/products.ts")),
+    "the whole catalogue per request is what this is all for"
+  );
+  check(
+    "the count is of the same query as the page",
+    /client\.product\.count\(\{ where \}\)/.test(read("lib/data/products.ts")),
+    "a count of a looser query is a pagination bar that lies"
+  );
+  check(
+    "hide-out-of-stock is applied in SQL, not after paging",
+    /hideOutOfStock/.test(read("lib/data/products.ts")) &&
+      !/allProducts\.filter/.test(read("app/(storefront)/shop/page.tsx")),
+    "filtering after take returns short pages"
+  );
+  // Scoped to getProducts. getFeaturedProducts and getProductBySlug include
+  // whole rows on purpose — one is eight products, the other is one, and the
+  // product page renders nearly all of it.
+  const listing = /export async function getProducts[\s\S]*?\n\}/.exec(read("lib/data/products.ts"))?.[0] ?? "";
+  check(
+    "the listing selects only what a card draws",
+    /select: PRODUCT_CARD_SELECT/.test(listing) && !/include:/.test(listing),
+    "whole variant rows for every product on the page is payload nobody reads"
+  );
+}
+
 // ===========================================================================
 console.log("\nWORK DONE ONCE, NOT PER VISITOR");
 // ===========================================================================
@@ -225,6 +319,48 @@ console.log("\nWORK DONE ONCE, NOT PER VISITOR");
     );
   }
 }
+
+
+// ===========================================================================
+console.log("\nTHE CATALOGUE CACHE IS ACTUALLY DROPPED");
+// ===========================================================================
+/*
+ * check:cache asserts that a file writing a cached model contains the string
+ * `invalidateShop(`. That is weaker than it looks: this codebase now wraps the
+ * call in a local `dropCatalog()` helper, and with the helper present every
+ * call site can be deleted and that check still passes. Verified by deleting
+ * them — 34 passed, 0 failed, with nothing dropping the cache.
+ *
+ * So the pairing is asserted here by counting instead. Every mutation that
+ * revalidates the storefront must also drop the catalogue: those are the same
+ * events, and a merchant who renames a category and watches their shop not
+ * change for five minutes is the bug cache-tags.ts was written about.
+ */
+for (const f of [
+  "app/admin/products/actions.ts",
+  "app/admin/categories/actions.ts",
+  "app/admin/products/import/actions.ts",
+]) {
+  const src = read(f);
+  const revalidates = (src.match(/revalidatePath\("\/shop"\)/g) ?? []).length;
+  const drops = (src.match(/await dropCatalog\(\)/g) ?? []).length;
+  check(
+    `${f.replace(/^app\/admin\//, "")} drops the catalogue wherever it revalidates the shop`,
+    revalidates > 0 && drops >= revalidates,
+    `${revalidates} revalidatePath("/shop"), ${drops} dropCatalog()`
+  );
+}
+check(
+  "the catalogue is a declared cache kind",
+  /"catalog"/.test(read("lib/cache-tags.ts")),
+  "an undeclared tag is dropped by nobody"
+);
+check(
+  "the catalogue is read through one callback, not two under one kind",
+  (read("lib/data/section-context.ts").match(/cachedForShop\(/g) ?? []).length === 1,
+  "cachedForShop keys on shop and kind alone, so two callbacks under one kind are the same entry — " +
+    "whichever runs first wins and the second gets the wrong shape, which has already happened here once"
+);
 
 // ===========================================================================
 console.log("\nA PAGE VIEW IS NOT A WRITE");
@@ -312,10 +448,14 @@ console.log("\nWHAT CROSSES THE WIRE TO THE BROWSER");
     /minimumCacheTTL/.test(read("next.config.ts")),
     "at 60s the same photograph is re-optimised on nearly every view"
   );
-  finding(
-    "the listing ships every variant of every product",
-    "lib/data/products.ts getProducts() uses include: { variants: true, categories: true }. A product card needs a thumbnail, a " +
-      "title and a price. Every variant of every product is serialised into the RSC payload instead. FIX: select only what a card renders."
+  // Was a finding: the listing used include: { variants: true, categories: true },
+  // so every variant of every product on the page — options, SKU, barcode,
+  // weight, image URL and the CSV passthrough blob — went into the payload the
+  // browser downloads, and the category join was fetched for nobody.
+  check(
+    "a product card is sent only the fields it draws",
+    /variants: \{[\s\S]{0,400}select: \{/.test(read("lib/data/products.ts")),
+    "whole variant rows for every product is payload nobody reads"
   );
 }
 

@@ -11,10 +11,13 @@ import { getStoreSettings } from "@/lib/data/settings";
 import { getSiteText, text } from "@/lib/site-text";
 import { guardStorefront } from "@/lib/maintenance";
 import { findRedirect } from "@/lib/data/redirects";
-import { toGlobalEdits, totalStock, SHOP_GRID_LG_COLS_CLASS } from "@/lib/global-edits";
+import { toGlobalEdits, SHOP_GRID_LG_COLS_CLASS } from "@/lib/global-edits";
 import { cn } from "@/lib/utils";
 import { readFilter } from "@/lib/filters";
 import { getCurrency } from "@/lib/data/settings";
+import { readPage } from "@/lib/paging";
+import { ProductPagination } from "@/components/storefront/product-pagination";
+import { PRODUCTS_PER_PAGE } from "@/lib/data/products";
 
 function parseFilters(sp: Record<string, string | string[] | undefined>, category: string): Filters {
   const get = (k: string) => (Array.isArray(sp[k]) ? sp[k]?.[0] : sp[k]);
@@ -63,15 +66,12 @@ export default async function CollectionPage(props: PageProps<"/collections/[slu
   const filters = parseFilters(sp, slug);
   filters.sort = filters.sort ?? edits.defaultShopSort;
 
-  const [allProducts, options, siteText, layout] = await Promise.all([
-    getProducts(filters),
+  const [{ products, total }, options, siteText, layout] = await Promise.all([
+    getProducts(filters, { page: readPage(sp), hideOutOfStock: edits.outOfStockDisplay === "HIDE" }),
     getFilterOptions(),
     getSiteText(),
     getThemeLayout(),
   ]);
-  const products = allProducts.filter(
-    (p) => edits.outOfStockDisplay !== "HIDE" || totalStock(p.variants) > 0
-  );
 
   return (
     <Container className="py-12">
@@ -86,7 +86,7 @@ export default async function CollectionPage(props: PageProps<"/collections/[slu
       {category.description && (
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-soft">{category.description}</p>
       )}
-      <p className="mt-2 text-ink-soft">{products.length} products</p>
+      <p className="mt-2 text-ink-soft">{total} products</p>
 
       {edits.shopFilterBar && (
         <div className="mt-8">
@@ -118,6 +118,13 @@ export default async function CollectionPage(props: PageProps<"/collections/[slu
           ))}
         </div>
       )}
+
+      <ProductPagination
+        basePath={`/collections/${slug}`}
+        searchParams={sp}
+        total={total}
+        perPage={PRODUCTS_PER_PAGE}
+      />
     </Container>
   );
 }

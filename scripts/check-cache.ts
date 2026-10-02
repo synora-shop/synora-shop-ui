@@ -85,6 +85,11 @@ const CACHED_MODELS = [
   ["siteText", "site-text"],
   ["themeSettings", "theme"],
   ["stickyButton", "buttons"],
+  // The storefront's view of the catalogue: the category list every page draws
+  // and the home page's featured products. Not the admin's view of a product,
+  // which must never be cached — a merchant has to see their own edit at once.
+  ["product", "catalog"],
+  ["category", "catalog"],
 ] as const;
 
 for (const [model, kind] of CACHED_MODELS) {

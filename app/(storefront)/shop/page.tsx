@@ -9,10 +9,13 @@ import { KindFilter } from "@/components/storefront/kind-filter";
 import { getStoreSettings } from "@/lib/data/settings";
 import { getSiteText, text } from "@/lib/site-text";
 import { guardStorefront } from "@/lib/maintenance";
-import { toGlobalEdits, totalStock, SHOP_GRID_LG_COLS_CLASS } from "@/lib/global-edits";
+import { toGlobalEdits, SHOP_GRID_LG_COLS_CLASS } from "@/lib/global-edits";
 import { readFilter } from "@/lib/filters";
 import { cn } from "@/lib/utils";
 import { getCurrency } from "@/lib/data/settings";
+import { readPage } from "@/lib/paging";
+import { ProductPagination } from "@/components/storefront/product-pagination";
+import { PRODUCTS_PER_PAGE } from "@/lib/data/products";
 
 export const metadata: Metadata = { title: "Shop All" };
 
@@ -38,22 +41,19 @@ export default async function ShopPage(props: PageProps<"/shop">) {
   const filters = parseFilters(sp);
   filters.sort = filters.sort ?? edits.defaultShopSort;
 
-  const [allProducts, options, siteText, kindCounts, layout] = await Promise.all([
-    getProducts(filters),
+  const [{ products, total }, options, siteText, kindCounts, layout] = await Promise.all([
+    getProducts(filters, { page: readPage(sp), hideOutOfStock: edits.outOfStockDisplay === "HIDE" }),
     getFilterOptions(),
     getSiteText(),
     countByKind(),
     getThemeLayout(),
   ]);
-  const products = allProducts.filter(
-    (p) => edits.outOfStockDisplay !== "HIDE" || totalStock(p.variants) > 0
-  );
   const saleBadgeLabel = text(siteText, "product.saleBadge");
 
   return (
     <Container className="py-12">
       <h1 className="font-serif text-4xl font-semibold text-ink">{text(siteText, "shop.heading")}</h1>
-      <p className="mt-2 text-ink-soft">{products.length} products</p>
+      <p className="mt-2 text-ink-soft">{total} products</p>
 
       <div className="mt-6">
         <KindFilter counts={kindCounts} />
@@ -89,6 +89,13 @@ export default async function ShopPage(props: PageProps<"/shop">) {
           ))}
         </div>
       )}
+
+      <ProductPagination
+        basePath="/shop"
+        searchParams={sp}
+        total={total}
+        perPage={PRODUCTS_PER_PAGE}
+      />
     </Container>
   );
 }

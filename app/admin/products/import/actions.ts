@@ -1,11 +1,28 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { invalidateShop } from "@/lib/data/cached";
 import { requireRole } from "@/lib/auth-guard";
 import { currentShopId, db } from "@/lib/data/shop";
 import { readShopifyProducts, type ImportedProduct } from "@/lib/csv/import";
 import type { ImportPlan, ImportResult } from "@/lib/csv/plan";
 import { Prisma } from "@/lib/generated/prisma/client";
+import { effectivePrice } from "@/lib/product-pricing";
+
+/**
+ * Drops the storefront's cached catalogue.
+ *
+ * The category list and the featured products are cached per shop for five
+ * minutes (lib/data/section-context.ts), so a merchant who renames a category
+ * or features a product would otherwise watch their storefront not change —
+ * the exact bug lib/cache-tags.ts exists to prevent. Paired with the
+ * revalidatePath calls rather than left to memory, and check:cache fails the
+ * build if a writer in this file stops dropping it.
+ */
+async function dropCatalog() {
+  invalidateShop(await currentShopId(), "catalog");
+}
+
 
 /**
  * Loading a Shopify product CSV.
@@ -130,6 +147,7 @@ export async function applyProductImport(csv: string): Promise<ImportResult | { 
 
   revalidatePath("/admin/products");
   revalidatePath("/shop");
+  await dropCatalog();
   return { created, updated, failed };
 }
 
@@ -161,6 +179,10 @@ async function writeOne(
     isActive: product.isActive,
     basePrice: Math.round(product.basePrice),
     salePrice: product.salePrice === null ? null : Math.round(product.salePrice),
+    effectivePrice: effectivePrice({
+      basePrice: Math.round(product.basePrice),
+      salePrice: product.salePrice === null ? null : Math.round(product.salePrice),
+    }),
     costPrice: Math.round(product.costPrice),
     images: product.images,
     option1Name: product.option1Name,

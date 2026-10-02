@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { db, requireShop } from "@/lib/data/shop";
+import { cachedForShop } from "@/lib/data/cached";
 import { getFeaturedProducts } from "@/lib/data/products";
 import { getStoreSettings } from "@/lib/data/settings";
 import { getThemeLayout } from "@/lib/data/theme";
@@ -28,22 +29,49 @@ export const getSectionContext = cache(async (): Promise<SectionContext> => {
   const wantsArticles = shop.businessType === "BLOG";
   const wantsPlace = shop.businessType === "RESTAURANT";
 
-  const [categories, featuredProducts, siteText, settings, articles, hours, locations, dishes] =
+  const [catalog, siteText, settings, articles, hours, locations, dishes] =
     await Promise.all([
-    (await db()).category.findMany({
-      orderBy: { name: "asc" },
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        image: true,
-        // For the sections that offer to show it. One join, on a list that is
-        // already being fetched — cheaper than a setting that does nothing,
-        // which is what "show how many products" would otherwise have been.
-        _count: { select: { products: true } },
-      },
-    }),
-    getFeaturedProducts(),
+    // The two reads every storefront page made from the database, now made
+    // once per shop per five minutes instead of once per visitor.
+    //
+    // React's cache() above deduplicates within one render — which is what
+    // stopped each section querying for itself — and caches nothing between
+    // requests. So every visitor to a home page paid for a category list
+    // *with a product-count join* plus a featured-product read, and a thousand
+    // concurrent visitors paid for them a thousand times over, for rows that
+    // are identical for all of them.
+    //
+    // **One callback returning both halves, not two calls under one kind.**
+    // cachedForShop keys on the shop and the kind and nothing else, so two
+    // callbacks sharing a kind are the same entry: whichever ran first would
+    // win and the second would be handed the wrong shape. That has already
+    // happened once here, under "theme", and threw `rows.find is not a
+    // function` on every request. Adding a second kind would work too and is
+    // worse — two tags to drop, and a writer only has to forget one.
+    //
+    // Dropped by whoever writes a product or a category; check:cache asserts
+    // the pairing, the same as for the other six kinds.
+    cachedForShop(shop.id, "catalog", async (t) => ({
+      categories: await t.category.findMany({
+        orderBy: { name: "asc" },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          image: true,
+          // For the sections that offer to show it. One join, on a list that is
+          // already being fetched — cheaper than a setting that does nothing,
+          // which is what "show how many products" would otherwise have been.
+          _count: { select: { products: true } },
+        },
+      }),
+      featured: await t.product.findMany({
+        where: { isActive: true, isFeatured: true, status: "PUBLISHED", deletedAt: null },
+        include: { variants: true, categories: true },
+        omit: { costPrice: true },
+        take: 8,
+      }),
+    })),
     getSiteText(),
     getStoreSettings(),
 
@@ -106,6 +134,8 @@ export const getSectionContext = cache(async (): Promise<SectionContext> => {
 
   // Settings is already loaded above, so this is a lookup rather than a query.
   const { currency } = resolveStoreDefaults(settings);
+
+  const { categories, featured: featuredProducts } = catalog;
 
   return {
     categories: categories.map((c) => ({

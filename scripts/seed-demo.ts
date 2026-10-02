@@ -259,6 +259,7 @@ async function main() {
       description: `A ${p.title.toLowerCase()} that does the job. Demo data — safe to delete.`,
       images: [`${PHOTOS}${p.slug}/800/800`],
       basePrice: p.basePrice, salePrice: p.salePrice, costPrice: p.costPrice,
+      effectivePrice: p.salePrice ?? p.basePrice,
       // A quarter left as drafts, so the status filter has something to filter
       // and the list is not uniformly green.
       status: i % 4 === 0 ? ("DRAFT" as const) : ("PUBLISHED" as const),

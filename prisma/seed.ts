@@ -120,6 +120,7 @@ async function main() {
         details: "Fabric: Premium blend\nCare: Dry clean recommended\nMade in Pakistan",
         images: [PLACEHOLDER_IMG(p.slug), PLACEHOLDER_IMG(p.slug + "-2")],
         basePrice: p.price,
+        effectivePrice: p.price,
         salePrice: p.sale,
         categories: { connect: categoryIds.map((id) => ({ id })) },
         isFeatured: p.sale != null,

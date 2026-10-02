@@ -87,6 +87,21 @@ function build(basePath: string, qs: URLSearchParams): string {
   return query ? `${basePath}?${query}` : basePath;
 }
 
+/**
+ * Which page a storefront listing is on.
+ *
+ * `readPaging` is the admin's: it also reads a rows-per-page choice and needs
+ * the total to clamp against. A storefront has a fixed page size and no such
+ * control, and the clamp happens where the total is known — so this is just
+ * the number, defaulted and floored at 1 so a hand-edited `?page=0` or
+ * `?page=abc` lands on the first page rather than a negative offset.
+ */
+export function readPage(searchParams: SearchParams): number {
+  const raw = first(searchParams, "page");
+  const n = Number(raw);
+  return Number.isFinite(n) && n >= 1 ? Math.floor(n) : 1;
+}
+
 /** The href for another page of the same list, with every filter kept. */
 export function pageHref(basePath: string, searchParams: SearchParams, page: number): string {
   const qs = params(searchParams);

@@ -23,6 +23,16 @@ export const CACHE_KINDS = [
   "theme",
   "fonts",
   "buttons",
+  /**
+   * The catalogue as the *storefront* reads it: the category list every page
+   * shows, and the featured products on the home page.
+   *
+   * Not the admin's view of products — that must never be cached, because a
+   * merchant has to see their own edit the moment they make it. This is the
+   * handful of rows every visitor is shown identically, which is exactly what
+   * the other six kinds are too.
+   */
+  "catalog",
 ] as const;
 
 export type CacheKind = (typeof CACHE_KINDS)[number];
