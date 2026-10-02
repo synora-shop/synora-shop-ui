@@ -1,5 +1,6 @@
 import { SHOPIFY_PRODUCT_COLUMNS } from "@/lib/csv/shopify-columns";
 import { cellNumber, parseCsv, toRecords, type CsvRow } from "@/lib/csv/parse";
+import { looksLikeHtml, productHtmlToText, sanitizeProductHtml } from "@/lib/product-html";
 
 /**
  * Shopify's product CSV, read back.
@@ -35,6 +36,10 @@ export type ImportedVariant = {
   priceOverride: number | null;
   weightGrams: number | null;
   imageUrl: string | null;
+  /** Shopify's per-variant selling rules. See the Product model's comments. */
+  trackInventory: boolean;
+  continueSellingWhenOutOfStock: boolean;
+  requiresShipping: boolean;
   csvExtras: Record<string, string>;
 };
 
@@ -43,6 +48,10 @@ export type ImportedProduct = {
   slug: string;
   title: string;
   description: string;
+  /** Set only when the Description column actually contained markup. */
+  descriptionHtml: string | null;
+  seoTitle: string | null;
+  seoDescription: string | null;
   vendor: string | null;
   tags: string[];
   status: "DRAFT" | "PUBLISHED";
@@ -97,6 +106,11 @@ const CONSUMED = new Set<string>([
   "Cost per item",
   "Inventory quantity",
   "Weight value (grams)",
+  "SEO title",
+  "SEO description",
+  "Inventory tracker",
+  "Continue selling when out of stock",
+  "Requires shipping",
   "Product image URL",
   "Image position",
   "Variant image URL",
@@ -121,6 +135,37 @@ function boolean(value: string, fallback: boolean): boolean {
 }
 
 /** Everything on this row that the format does not define a meaning for. */
+/**
+ * Shopify's per-variant selling rules, read from one row.
+ *
+ * Each has a default that matches what this platform did before it read these
+ * columns at all, so a file that omits them — including one this platform
+ * wrote before today — imports to exactly the previous behaviour.
+ *
+ * `Inventory tracker` is a *name* in Shopify's format ("shopify") rather than
+ * a boolean, and blank means untracked. That is the trap in this column: an
+ * empty cell is a real answer, not a missing one, so it cannot be defaulted
+ * to true the way the other two are.
+ */
+function sellingRules(row: CsvRow): {
+  trackInventory: boolean;
+  continueSellingWhenOutOfStock: boolean;
+  requiresShipping: boolean;
+} {
+  const tracker = text(row, "Inventory tracker");
+  const policy = text(row, "Continue selling when out of stock").toLowerCase();
+  const shipping = text(row, "Requires shipping").toLowerCase();
+  return {
+    // Blank is "not tracked" in Shopify's format. A file that has no such
+    // column at all is a different case, and `has` tells them apart.
+    trackInventory: "Inventory tracker" in row ? tracker.length > 0 : true,
+    // Shopify writes "continue" or "deny"; its newer export writes TRUE/FALSE.
+    continueSellingWhenOutOfStock: policy === "continue" || policy === "true",
+    // Absent means physical, which is what every existing product is.
+    requiresShipping: shipping === "" ? true : shipping !== "false" && shipping !== "no",
+  };
+}
+
 function extras(row: CsvRow, header: string[]): Record<string, string> {
   const out: Record<string, string> = {};
   for (const column of header) {
@@ -202,10 +247,30 @@ export function readShopifyProducts(csv: string): ImportReading {
       const paid = price ?? 0;
       const wasHigher = typeof compareAt === "number" && compareAt > paid;
 
+      // Shopify's description is HTML; one typed into this platform's own
+      // admin is not. Both arrive in this column, so the markup case is
+      // detected rather than assumed — treating plain text as HTML would eat
+      // a "<" somebody typed on purpose, and "sizes < 10" is a real sentence.
+      const rawDescription = text(record, "Description");
+      const descriptionMarkup = looksLikeHtml(rawDescription)
+        ? sanitizeProductHtml(rawDescription)
+        : null;
+      // The plain column keeps the same words with the tags taken out, rather
+      // than being left empty. `description` is what the admin list, the
+      // search index and the meta description all read, and emptying it would
+      // make every imported product look blank in the panel while its page
+      // rendered fine.
+      const descriptionText = descriptionMarkup
+        ? productHtmlToText(descriptionMarkup)
+        : rawDescription;
+
       product = {
         slug,
         title,
-        description: text(record, "Description"),
+        description: descriptionText,
+        descriptionHtml: descriptionMarkup,
+        seoTitle: text(record, "SEO title") || null,
+        seoDescription: text(record, "SEO description") || null,
         vendor: text(record, "Vendor") || null,
         tags: text(record, "Tags")
           .split(",")
@@ -276,6 +341,7 @@ export function readShopifyProducts(csv: string): ImportReading {
         priceOverride: null,
         weightGrams: null,
         imageUrl: text(record, "Variant image URL") || null,
+        ...sellingRules(record),
         csvExtras: {},
       });
       return;
@@ -321,6 +387,7 @@ export function readShopifyProducts(csv: string): ImportReading {
       priceOverride,
       weightGrams: typeof weight === "number" ? Math.round(weight) : null,
       imageUrl: text(record, "Variant image URL") || null,
+      ...sellingRules(record),
       csvExtras: extras(record, header),
     });
   });

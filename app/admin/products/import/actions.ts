@@ -149,6 +149,12 @@ async function writeOne(
   const data = {
     title: product.title,
     description: product.description,
+    // Already sanitised when the file was read; stored as given. Null when the
+    // column held plain text, so a product typed in here keeps its plain
+    // description rather than gaining an empty HTML one.
+    descriptionHtml: product.descriptionHtml,
+    seoTitle: product.seoTitle,
+    seoDescription: product.seoDescription,
     vendor: product.vendor,
     tags: product.tags,
     status: product.status,
@@ -203,6 +209,9 @@ async function writeOne(
           v.sku ||
           `${product.slug}-${[v.option1, v.option2, v.option3].filter(Boolean).join("-") || "default"}`,
         barcode: v.barcode,
+        trackInventory: v.trackInventory,
+        continueSellingWhenOutOfStock: v.continueSellingWhenOutOfStock,
+        requiresShipping: v.requiresShipping,
         stock: v.stock,
         priceOverride: v.priceOverride === null ? null : Math.round(v.priceOverride),
         weightGrams: v.weightGrams,

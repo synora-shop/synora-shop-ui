@@ -13,11 +13,27 @@ import { getSiteText, text } from "@/lib/site-text";
 import { guardStorefront } from "@/lib/maintenance";
 import { toGlobalEdits } from "@/lib/global-edits";
 import { getCurrency } from "@/lib/data/settings";
+import { ProductDescription } from "@/components/storefront/product-description";
+import { productHtmlToText } from "@/lib/product-html";
 
 export async function generateMetadata(props: PageProps<"/product/[slug]">): Promise<Metadata> {
   const { slug } = await props.params;
   const product = await getProductBySlug(slug);
-  return { title: product?.title ?? "Product" };
+  if (!product) return { title: "Product" };
+  // A merchant's own search title and description when they set one — on
+  // Shopify or here — and the product's own words when they did not. Shopify
+  // carries both in its CSV and this platform read neither until 3 October,
+  // so every migrated product silently lost the ones it had.
+  return {
+    title: product.seoTitle?.trim() || product.title,
+    description:
+      product.seoDescription?.trim() ||
+      // Never the HTML: a meta description is plain text, and handing markup
+      // to the metadata API prints the tags in the search result.
+      productHtmlToText(product.descriptionHtml) ||
+      product.description ||
+      undefined,
+  };
 }
 
 export default async function ProductPage(props: PageProps<"/product/[slug]">) {
@@ -79,7 +95,11 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
           <div className="mt-10 space-y-4 border-t border-border pt-6">
             <div>
               <h2 className="text-sm font-semibold text-ink">Description</h2>
-              <p className="mt-1 whitespace-pre-line text-sm text-ink-soft">{product.description}</p>
+              <ProductDescription
+                html={product.descriptionHtml}
+                text={product.description}
+                className="mt-1 whitespace-pre-line text-sm text-ink-soft"
+              />
             </div>
             {product.details && (
               <div>

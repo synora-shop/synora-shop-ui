@@ -39,11 +39,9 @@ export async function GET() {
     salePrice: p.salePrice,
     costPrice: p.costPrice,
     images: p.images,
-    // A product has no SEO override in SHOP; categories and pages do. The
-    // columns are still written, empty and in place, so the file keeps its
-    // shape and a merchant who set them on Shopify sees where they go.
-    seoTitle: null,
-    seoDescription: null,
+    descriptionHtml: p.descriptionHtml,
+    seoTitle: p.seoTitle,
+    seoDescription: p.seoDescription,
     option1Name: p.option1Name,
     option2Name: p.option2Name,
     option3Name: p.option3Name,

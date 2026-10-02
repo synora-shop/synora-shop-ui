@@ -143,6 +143,83 @@ that both write `businessType` is two rules waiting to disagree.
 
 ---
 
+## The Shopify import read past four columns — fixed 3 October
+
+*The format was always complete: all 57 columns round-tripped, and unread ones
+rode in `csvExtras` byte-identical. So nothing was ever lost. What was lost was
+**behaviour**, which is worse, because the file looked perfect and nothing
+warned anybody.*
+
+Only 24 of the 57 columns were read into the database. Four of the remaining 33
+changed what a migrated shop actually did:
+
+- **`Description` is HTML in Shopify** and was rendered as text here, so every
+  imported product printed `<p>Soft <strong>cotton</strong> tee</p>` at the
+  customer. Now stored in its own `descriptionHtml` column — additive, so a
+  product typed into this admin keeps its plain description — and rendered by
+  `components/storefront/product-description.tsx`.
+- **`SEO title` / `SEO description` were read by nothing.** `Page`, `Category`
+  and `Article` all had them; `Product` did not. The *export* had been written
+  for them all along (`ExportableProduct` declared both as optional and the
+  route passed `null`), so the columns shipped empty and the half that stores
+  them was never built. Both halves exist now.
+- **`Continue selling when out of stock` was ignored**, so pre-order and
+  made-to-order products went from selling at zero stock to refusing the sale.
+- **`Inventory tracker` and `Requires shipping` were ignored**, so a download
+  or a service was given a stock count, a weight and a postage fee.
+
+**The three selling rules are per variant, not per product**, because that is
+how the CSV carries them — one row per variant, each with its own value.
+Hanging them off the product would read the first variant's value and write it
+back to all of them, silently flattening a catalogue that varies them. The
+admin edits them product-wide the way Shopify's own editor does; the storage
+stays faithful to the format. `check:csv` round-trips a product whose two
+variants disagree on all three, which is the case a product-level model fails.
+
+### The description fix is not `dangerouslySetInnerHTML`
+
+That string comes out of a CSV a merchant uploaded and is rendered on a public
+storefront. On a multi-tenant platform a script in it is one shop attacking its
+own customers, with our domain in the address bar.
+
+`lib/product-html.ts` sanitises with a real parser and an allowlist, and
+`sanitize-html` is a new dependency for exactly this. The regex approach used
+for uploaded SVGs in `lib/icon-validation.ts` is explicitly "the belt to that
+braces" there, because an SVG is also served through `<img>` where a browser
+will not run script. **HTML written into a page has no equivalent second
+defence**, and matching tags with regular expressions is the documented way to
+ship an XSS — mutation XSS, comment and CDATA tricks and malformed nesting all
+defeat it.
+
+Sanitised twice, on write and on read. Rows exist that were written before any
+of this did, and a future write path that forgets the call would otherwise put
+raw markup on a storefront. `check:csv` holds eight payloads against it —
+script tags, event handlers, `javascript:` and `data:` URLs, a style
+expression, an iframe, mutation XSS and an inline SVG — and asserts there is
+exactly one `dangerouslySetInnerHTML` that touches a description.
+
+**One bug found in my own helper while writing it:** stripping tags *escapes*
+the remaining text rather than decoding it, so "cotton & linen" came back as
+`cotton &amp; linen`. Handed to Next's metadata API, which escapes what it is
+given, that reaches a search result as `cotton &amp;amp; linen`. Decoded in a
+single pass now, so `&amp;lt;` stays literal rather than becoming `<`.
+
+### Still not read, and deliberately
+
+22 columns remain in `csvExtras`, unread and preserved: 13 Google Shopping
+fields, the 4 unit-price columns, `Product category`, the 3 `Option … Linked
+To` columns and `Fulfillment service`. None changes behaviour until there is a
+Google feed or a market with unit-price law. **`Charge tax` and `Tax code` are
+the two worth doing next** — they are the remaining pair that a merchant would
+notice, and they were not in the four because nothing in this platform charges
+tax yet.
+
+Image alt text is also still dropped: `images` is a bare `String[]` with
+nowhere to put it. That lands with the `ProductImage` table the per-colour
+image sets need anyway.
+
+---
+
 ## Performance: what was measured, fixed, and left — 23 September
 
 Measured before anything was changed, because the obvious answer was the wrong
@@ -1107,10 +1184,29 @@ the shape it took.
 
 ---
 
-## The storefront's two named fonts do not load
+## ~~The storefront's two named fonts do not load~~ — fixed 2 October
 
 *Found 11 September 2026 while moving the app to DM Sans. Pre-existing, and
-untouched by that change.*
+untouched by that change. Fixed 2 October, as the first design-independent step
+of making a theme able to declare its own look.*
+
+**What was done.** Inter and Cormorant Garamond are loaded through `next/font`
+in `app/layout.tsx`, both variable rather than cut, and both variables are
+carried on `<html>`. The last part is the whole fix: the theme's CSS is emitted
+as `:root{--font-sans:var(--font-inter),…}`, and a custom property is
+substituted *where it is declared* — so declaring these on the storefront
+layout, which is where they look like they belong, would have left `:root`
+resolving the fallback and the fix looking applied while changing nothing.
+
+Cormorant is loaded variable rather than as five static cuts because
+`headingWeight` is a merchant-editable token with a 100–900 range; any fixed
+set of cuts leaves weights the browser synthesises instead of draws.
+
+`check:themes` holds it up with four assertions — every `var()` named by a
+`FONT_STACKS` entry must be declared by a `next/font` loader, and
+`--font-inter` and `--font-heading` must both be on `<html>`. Negative-tested:
+removing the two variables from the `<html>` className fails the guard with
+exactly that message.
 
 `lib/theme-tokens.ts` offers a merchant two built-in typefaces:
 

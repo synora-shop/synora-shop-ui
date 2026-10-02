@@ -190,7 +190,22 @@ export async function POST(request: Request) {
             ).toLowerCase()}, please send an enquiry instead of checking out.`
           );
         }
-        if (variant.stock < cartItem.quantity) {
+        // Stock refuses a sale only when the merchant asked it to. Two
+        // switches, both Shopify's, both ignored here until 3 October:
+        //
+        //   * a variant that does not track inventory has no stock to be out
+        //     of — a service, or something made to order;
+        //   * one that continues selling when out of stock is a pre-order, and
+        //     refusing it is refusing the sale the merchant set up.
+        //
+        // Before this, a catalogue imported from Shopify had both flattened to
+        // "tracked, never oversold", so pre-orders stopped selling the day
+        // they moved and nothing said why.
+        if (
+          variant.trackInventory &&
+          !variant.continueSellingWhenOutOfStock &&
+          variant.stock < cartItem.quantity
+        ) {
           throw new Error(`"${variant.product.title}" (${variant.size}/${variant.color}) is out of stock`);
         }
         return {
@@ -206,8 +221,21 @@ export async function POST(request: Request) {
       });
 
       const subtotal = orderItemsData.reduce((sum, i) => sum + i.price * i.quantity, 0);
-      const baseShipping =
-        settings.freeShippingThreshold != null && subtotal >= settings.freeShippingThreshold
+
+      // Nothing in this order has to be posted — every line is a download, a
+      // service or a gift card — so there is nothing to charge for posting it.
+      // Shopify's `Requires shipping` was ignored here, which is how an e-book
+      // arrived with a delivery fee attached.
+      //
+      // Any one physical item brings the fee back: a parcel costs what it
+      // costs regardless of what else is in the basket.
+      const shipsAnything = orderItemsData.some((i) => {
+        const v = variants.find((x) => x.id === i.variantId);
+        return v ? v.requiresShipping : true;
+      });
+      const baseShipping = !shipsAnything
+        ? 0
+        : settings.freeShippingThreshold != null && subtotal >= settings.freeShippingThreshold
           ? 0
           : settings.shippingFee;
 
@@ -352,8 +380,15 @@ export async function POST(request: Request) {
         // updateMany rather than update: it is the form that accepts a
         // non-unique filter, and the shop belongs in the filter rather than
         // being assumed from the lookup above.
+        // A variant that does not track inventory has no count to move. The
+        // decrement would drive it negative and make every later "in stock"
+        // reading a lie about a thing that never runs out.
+        //
+        // A pre-order *does* decrement, deliberately: the merchant still wants
+        // to know how many are owed, and that shows as a negative number,
+        // which is the honest reading of "sold eight, have none".
         await tx.productVariant.updateMany({
-          where: { id: item.variantId, shopId: sid },
+          where: { id: item.variantId, shopId: sid, trackInventory: true },
           data: { stock: { decrement: item.quantity } },
         });
       }

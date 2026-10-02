@@ -18,6 +18,8 @@ import { SHOPIFY_COLUMN_COUNT, SHOPIFY_PRODUCT_COLUMNS } from "../lib/csv/shopif
 import { CSV_LINE_END, csvField, csvHeader, exportProductsCsv, neutralise, pricePair, type ExportableProduct } from "../lib/csv/export";
 import { cellNumber, parseCsv, toRecords } from "../lib/csv/parse";
 import { readShopifyProducts } from "../lib/csv/import";
+import { looksLikeHtml, productHtmlToText, sanitizeProductHtml } from "../lib/product-html";
+import { execSync } from "child_process";
 import { SHOPIFY_CUSTOMER_COLUMNS } from "../lib/csv/customer-columns";
 import { customerCsvHeader, exportCustomersCsv, joinName, readShopifyCustomers, splitName, type ExportableCustomer } from "../lib/csv/customers";
 import { SHOPIFY_ORDER_COLUMNS } from "../lib/csv/order-columns";
@@ -561,6 +563,164 @@ const attacked = readShopifyProducts(
   ])
 );
 check("and the title comes back exactly as it went out", attacked.products[0]?.title === "=cmd|'/c calc'!A0");
+
+
+// ---------------------------------------------------------------------------
+console.log("\nWHAT SHOPIFY CARRIES, THIS PLATFORM ACTS ON");
+// ---------------------------------------------------------------------------
+/*
+ * Four columns the import read past until 3 October.
+ *
+ * All 57 round-tripped the whole time — unread ones ride in `csvExtras` — so
+ * nothing was ever *lost*. What was lost was behaviour, which is worse,
+ * because the file looked perfect: descriptions printed their own tags at the
+ * customer, hand-written SEO vanished, pre-orders stopped selling, and
+ * e-books were charged postage.
+ *
+ * Asserted through a real round trip rather than by reading the source, and
+ * with the two variants deliberately disagreeing — a catalogue that varies
+ * these per variant is exactly what a product-level model would flatten.
+ */
+{
+  const rich: ExportableProduct = {
+    title: "Linen Shirt",
+    slug: "linen-shirt",
+    description: "Soft cotton & linen",
+    descriptionHtml: "<p>Soft <strong>cotton</strong> &amp; linen</p>",
+    vendor: "Acme",
+    tags: ["new"],
+    status: "PUBLISHED",
+    isActive: true,
+    basePrice: 5500,
+    salePrice: null,
+    costPrice: 2000,
+    images: [],
+    seoTitle: "Linen Shirt | Acme",
+    seoDescription: "A soft linen shirt.",
+    option1Name: "Size",
+    option2Name: null,
+    option3Name: null,
+    categories: [{ name: "Shirts" }],
+    variants: [
+      { option1: "S", option2: "", option3: "", sku: "LS-S", barcode: null, stock: 0,
+        priceOverride: null, weightGrams: 200, imageUrl: null,
+        trackInventory: true, continueSellingWhenOutOfStock: true, requiresShipping: true },
+      { option1: "M", option2: "", option3: "", sku: "LS-M", barcode: null, stock: 3,
+        priceOverride: null, weightGrams: 200, imageUrl: null,
+        trackInventory: false, continueSellingWhenOutOfStock: false, requiresShipping: false },
+    ],
+  };
+
+  const back = readShopifyProducts(exportProductsCsv([rich]));
+  const got = back.products[0];
+  check("a rich product reads back as one product", back.products.length === 1);
+  check("with nothing to report", back.problems.length === 0, JSON.stringify(back.problems));
+
+  check(
+    "an HTML description survives the round trip",
+    got?.descriptionHtml === "<p>Soft <strong>cotton</strong> &amp; linen</p>",
+    JSON.stringify(got?.descriptionHtml)
+  );
+  check(
+    "and leaves a plain-text copy behind",
+    got?.description === "Soft cotton & linen",
+    "the admin list, search and the meta description all read the plain column"
+  );
+  check("the search title survives", got?.seoTitle === "Linen Shirt | Acme");
+  check("the search description survives", got?.seoDescription === "A soft linen shirt.");
+
+  const s = got?.variants[0];
+  const m = got?.variants[1];
+  check("a pre-order variant keeps selling at zero stock", s?.continueSellingWhenOutOfStock === true);
+  check("a tracked variant stays tracked", s?.trackInventory === true);
+  check("a physical variant stays physical", s?.requiresShipping === true);
+  check("an untracked variant stays untracked", m?.trackInventory === false);
+  check("a variant that does not oversell stays that way", m?.continueSellingWhenOutOfStock === false);
+  check("a digital variant stays digital", m?.requiresShipping === false);
+
+  // Shopify's own spellings, not ours. "TRUE" in the tracker column loads back
+  // into Shopify as an untracked product, which is the opposite of what it says.
+  const header = exportProductsCsv([rich]).split("\r\n")[0].split(",");
+  const line = exportProductsCsv([rich]).split("\r\n")[1].split(",");
+  const cell = (name: string) => line[header.indexOf(name)];
+  check("the tracker column is a name, not a boolean", cell("Inventory tracker") === "shopify");
+  check(
+    "the sell-out-of-stock column is continue/deny",
+    cell("Continue selling when out of stock") === "continue"
+  );
+}
+
+// ---------------------------------------------------------------------------
+console.log("\nA DESCRIPTION CANNOT CARRY A SCRIPT");
+// ---------------------------------------------------------------------------
+/*
+ * A description is merchant-supplied markup rendered on a public storefront.
+ * On a multi-tenant platform a script in it is one shop attacking its own
+ * customers with our domain in the address bar, so the sanitiser is asserted
+ * directly against the payloads that defeat a regex.
+ */
+for (const [name, payload] of [
+  ["a script tag", "<p>hi</p><script>alert(1)</script>"],
+  ["an event handler", "<img src=x onerror=alert(1)>"],
+  ["a javascript: link", '<a href="javascript:alert(1)">click</a>'],
+  ["a data: image", '<img src="data:text/html,<script>alert(1)</script>">'],
+  ["a style expression", '<p style="background:url(javascript:alert(1))">x</p>'],
+  ["an iframe", '<iframe src="https://evil.test"></iframe>'],
+  ["mutation XSS", '<noscript><p title="</noscript><img src=x onerror=alert(1)>">'],
+  ["an inline svg", "<svg><script>alert(1)</script></svg>"],
+] as const) {
+  const out = sanitizeProductHtml(payload);
+  check(
+    `${name} does not survive sanitising`,
+    !/<script|on\w+\s*=|javascript:|<iframe|<svg/i.test(out),
+    JSON.stringify(out)
+  );
+}
+
+check(
+  "ordinary formatting does survive",
+  sanitizeProductHtml("<p>Soft <strong>cotton</strong></p>") === "<p>Soft <strong>cotton</strong></p>"
+);
+check(
+  "a size-guide table survives",
+  sanitizeProductHtml("<table><tr><td>S</td></tr></table>").includes("<td>S</td>")
+);
+check(
+  "plain text is left alone rather than treated as markup",
+  sanitizeProductHtml("sizes < 10 & up").length > 0 && !looksLikeHtml("sizes < 10 & up"),
+  "a merchant typing \"sizes < 10\" must not have it eaten"
+);
+check(
+  "plain text for a meta description decodes its entities",
+  productHtmlToText("<p>cotton &amp; linen</p>") === "cotton & linen",
+  "handing &amp; to the metadata API prints &amp;amp; in the search result"
+);
+
+// The sanitiser is called in exactly one render path, next to the one
+// dangerouslySetInnerHTML that writes a description into a page.
+{
+  const desc = readFileSync(join(process.cwd(), "components/storefront/product-description.tsx"), "utf8");
+  check(
+    "the description component sanitises before it writes HTML",
+    /sanitizeProductHtml\(/.test(desc) && /dangerouslySetInnerHTML/.test(desc)
+  );
+  const pages = execSync(
+    "grep -rl dangerouslySetInnerHTML app components || true",
+    { encoding: "utf8" }
+  )
+    .split("\n")
+    .filter(Boolean);
+  check(
+    "and nothing else writes a product description as HTML",
+    pages.every(
+      (f) =>
+        f.includes("product-description") ||
+        f.includes("theme-style") ||
+        !readFileSync(join(process.cwd(), f), "utf8").includes("description")
+    ),
+    pages.join(", ")
+  );
+}
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);

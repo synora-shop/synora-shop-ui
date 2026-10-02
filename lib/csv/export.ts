@@ -27,6 +27,8 @@ export type ExportableProduct = {
   title: string;
   slug: string;
   description: string;
+  /** The HTML form, when the product has one. Exported in preference. */
+  descriptionHtml?: string | null;
   vendor: string | null;
   tags: string[];
   status: "DRAFT" | "PUBLISHED";
@@ -55,6 +57,9 @@ export type ExportableVariant = {
   priceOverride: number | null;
   weightGrams: number | null;
   imageUrl: string | null;
+  trackInventory?: boolean;
+  continueSellingWhenOutOfStock?: boolean;
+  requiresShipping?: boolean;
   csvExtras?: Record<string, unknown> | null;
 };
 
@@ -173,6 +178,9 @@ export function exportProductsCsv(products: ExportableProduct[]): string {
               priceOverride: null,
               weightGrams: null,
               imageUrl: null,
+              trackInventory: true,
+              continueSellingWhenOutOfStock: false,
+              requiresShipping: true,
             },
           ];
 
@@ -197,7 +205,10 @@ export function exportProductsCsv(products: ExportableProduct[]): string {
           ...(first
             ? {
                 Title: product.title,
-                Description: product.description,
+                // The HTML form when there is one, so a description that
+                // arrived as markup leaves as markup. Falling back to the
+                // plain column keeps every product typed in here unchanged.
+                Description: product.descriptionHtml || product.description,
                 Vendor: product.vendor,
                 Type: product.categories[0]?.name,
                 Tags: product.tags.join(", "),
@@ -225,6 +236,13 @@ export function exportProductsCsv(products: ExportableProduct[]): string {
           "Cost per item": money(product.costPrice),
           "Inventory quantity": String(variant.stock),
           "Weight value (grams)": variant.weightGrams ?? "",
+          // Shopify's own spellings: a tracker *name* rather than a boolean,
+          // and "continue"/"deny" rather than true/false. Writing TRUE here
+          // would load back into Shopify as an untracked product.
+          "Inventory tracker": variant.trackInventory === false ? "" : "shopify",
+          "Continue selling when out of stock":
+            variant.continueSellingWhenOutOfStock ? "continue" : "deny",
+          "Requires shipping": variant.requiresShipping === false ? "FALSE" : "TRUE",
           "Variant image URL": variant.imageUrl,
 
           ...(image ? { "Product image URL": image, "Image position": String(index + 1) } : {}),
