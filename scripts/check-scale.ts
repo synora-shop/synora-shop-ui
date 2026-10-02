@@ -145,15 +145,17 @@ console.log("\nNOTHING READS A WHOLE TABLE TO RENDER ONE PAGE");
     "the home page would otherwise render every featured product"
   );
 
-  if (/getFilterOptions[\s\S]*?take:/.test(products)) {
-    check("the filter options query is bounded", true);
-  } else {
-    finding(
-      "the filter options query is unbounded",
-      "lib/data/products.ts getFilterOptions() reads every variant of every live product to build the size and colour lists. " +
-        "DISTINCT in Postgres still reads the rows. FIX: a cached per-shop read, or a facet table."
-    );
-  }
+  // Was unbounded: every variant of every live product, on every shop and
+  // collection page. `distinct` does not save the read — Postgres visits the
+  // rows and then de-duplicates — so it was the widest query the storefront
+  // made, for an answer identical for every visitor.
+  const filterOptions = /export async function getFilterOptions[\s\S]*?\n\}/.exec(products)?.[0] ?? "";
+  check(
+    "the filter options are cached per shop",
+    /cachedForShop\([\s\S]{0,60}"filters"/.test(filterOptions),
+    "the same answer for every visitor, read once per shop"
+  );
+  check("and bounded even so", /take: 500/.test(filterOptions));
 
   const sitemapUnbounded = unboundedFindMany("app/sitemap.ts");
   if (sitemapUnbounded === 0) check("the sitemap is bounded", true);
@@ -164,13 +166,11 @@ console.log("\nNOTHING READS A WHOLE TABLE TO RENDER ONE PAGE");
         "renders every product and category of a shop in one response. FIX: a take, and split past 50,000 URLs as the spec requires."
     );
 
-  const accountOrders = unboundedFindMany("app/(storefront)/account/orders/page.tsx");
-  if (accountOrders === 0) check("a customer's order history is bounded", true);
-  else
-    finding(
-      "a customer's order history is unbounded",
-      "app/(storefront)/account/orders/page.tsx reads every order a customer has ever placed. Grows forever, per customer. FIX: paginate."
-    );
+  check(
+    "a customer's order history is paginated",
+    unboundedFindMany("app/(storefront)/account/orders/page.tsx") === 0,
+    "it read every order a customer had ever placed, with every line item — a bill paid by the customer who shops most"
+  );
 }
 
 // Bounded by construction: these read a cart, which the client sends and the
@@ -376,19 +376,52 @@ console.log("\nA PAGE VIEW IS NOT A WRITE");
   check("crawlers are not recorded", /BOTS\.test\(userAgent\)/.test(visits));
   check("the visitor is stored as a salted hash, not an address", /createHash\("sha256"\)/.test(visits));
 
-  finding(
-    "every storefront page view inserts a row",
-    "lib/analytics/visits.ts writes one Visit per view, from the storefront layout. It is after() so nobody waits, but it still " +
-      "takes a pooled connection per view and grows the largest table in the database. 1,000 concurrent visitors at ~5 views each " +
-      "is ~5,000 inserts, and sustained traffic is hundreds of MB a day for ONE shop against a 0.5 GB database. " +
-      "NOT fixable by deduping: analytics reports views AND distinct people from the same rows, so collapsing them changes a " +
-      "merchant's numbers. FIX: batch the inserts, or roll up to a daily counter and keep raw rows briefly."
+  // Was a row per page view, kept 400 days, in the biggest table here. The
+  // naive fix — stop recording repeats — was wrong, because the screen reports
+  // views AND distinct people from these same rows. A counter keeps both and
+  // bounds growth to visitor-path-days instead of page views.
+  check(
+    "a repeat view increments a counter rather than inserting a row",
+    /visit\.upsert\(/.test(visits) && /views: \{ increment: 1 \}/.test(visits),
+    "growth was page views; it is now visitors x paths x days"
   );
-  finding(
-    "visits are kept for 400 days",
-    "lib/retention.ts RETENTION.visitDays = 400. Reasonable for a year-on-year comparison, impossible at this write rate on the " +
-      "current plan. FIX: pair a short raw-row retention with a rolled-up daily table."
+  check(
+    "the day is the shop's own, decided when the row is written",
+    /localDay\(settings\.timeZone/.test(visits),
+    "a UTC day in the key puts one row across two of the shop's days for any shop not on UTC"
   );
+  check(
+    "direct traffic has an empty referrer, not a null one",
+    /return "";/.test(visits) && hasIndex("Visit", "shopId,visitor,path,day,referrer"),
+    "Postgres counts two NULLs as distinct, so a nullable column in the key de-duplicates nothing for direct visits — most of them"
+  );
+  check(
+    "the live figure reads the latest sighting",
+    /lastSeenAt/.test(read("lib/analytics/queries.ts")),
+    "a counter row's createdAt is the first view, which would make \"right now\" wrong"
+  );
+  check(
+    "every figure that counted rows now sums the counter",
+    (read("lib/analytics/queries.ts").match(/sum\("views"\)/g) ?? []).length === 3,
+    "views, top paths and referrers all counted rows"
+  );
+
+  // Retention is not a free dial. The screen offers "Last 12 months", so
+  // anything under ~365 days silently empties that chart rather than saving
+  // space — which is exactly the sort of tidy-up that looks like an
+  // optimisation.
+  {
+    const retention = read("lib/retention.ts");
+    const kept = Number(/visitDays:\s*(\d+)/.exec(retention)?.[1] ?? 0);
+    const longestRange = Math.max(
+      ...[...read("lib/analytics.ts").matchAll(/days:\s*(\d+)/g)].map((m) => Number(m[1]))
+    );
+    check(
+      "visits are kept for at least as long as the longest range on offer",
+      kept >= longestRange,
+      `keeping ${kept} days, the analytics screen offers ${longestRange}`
+    );
+  }
 
   // Nothing else may write on a storefront render.
   const storefrontWrites = ["app/(storefront)/page.tsx", "app/(storefront)/shop/page.tsx", "app/(storefront)/product/[slug]/page.tsx"]
@@ -477,11 +510,30 @@ console.log("\nTABLES THAT ONLY GROW");
     /CRON_SECRET/.test(read("app/api/cron/prune/route.ts")),
     "an open prune endpoint is a denial-of-service lever"
   );
-  finding(
-    "one cron run a day is the plan's ceiling",
-    "vercel.json can carry nothing finer than daily — a deploy with an hourly expression is refused outright. The prune and the " +
-      "domain sweep both want to run more often, and at this write rate the prune wants to be hourly. Lifts with the plan."
-  );
+  // One run a day is the hosting plan's ceiling, not a bug, and a deploy
+  // carrying a finer expression is refused outright — which is how it was
+  // discovered. It is not fixable in code, so what is checked is that the
+  // system is *correct* at that cadence rather than merely tolerable:
+  //
+  //   * the prune has nothing it must catch within the day — visits are now a
+  //     bounded counter rather than unbounded rows, so a day's delay costs
+  //     storage that no longer accumulates dangerously;
+  //   * the domain sweep's backoff is written for an hourly schedule and says
+  //     so, and the route comment names the one line to change on Pro.
+  {
+    const crons = read("vercel.json");
+    const daily = [...crons.matchAll(/"schedule":\s*"([^"]+)"/g)].map((m) => m[1]);
+    check(
+      "every cron is daily or coarser, which is what the plan allows",
+      daily.length > 0 && daily.every((e) => /^\d+ \d+ \* \* \*$/.test(e)),
+      `${daily.join(", ")} — a finer expression is refused at deploy time, so this fails the deploy rather than the build`
+    );
+    check(
+      "the one line to change on a bigger plan is named where it lives",
+      /43 \* \* \* \*/.test(read("docs/QUEUE.md")) || /hourly/.test(read("app/api/cron/domains/route.ts")),
+      "a constraint nobody wrote down is one nobody lifts"
+    );
+  }
 }
 
 // ===========================================================================
@@ -515,29 +567,69 @@ console.log("\nWHAT HAPPENS WHEN TWO PEOPLE BUY THE LAST ONE");
     "rate limiting exists for the public write paths",
     /rateLimit\(/.test(read("app/api/orders/route.ts")) || /rateLimit/.test(read("lib/rate-limit.ts"))
   );
-  finding(
-    "rate limiting is a row in Postgres",
-    "lib/rate-limit.ts is table-backed and says so deliberately — it works on day one with the database that already exists. " +
-      "It is a read and a write on every limited request, on the same pool the storefront is using. Fine at tens of shops; the " +
-      "first thing to move to Redis when one shop is busy."
-  );
+  // This was recorded as a finding and the finding was overstated. Table-backed
+  // rate limiting is a read and a write per limited request, which would matter
+  // if it sat on the browse path. It does not: every call site is an action or
+  // a confirmation page — signing up, resetting a password, an enquiry, a
+  // discount preview, a payment callback. The thousand people browsing a shop
+  // never touch it.
+  //
+  // So what is asserted is the thing that must stay true: the pages those
+  // thousand people load do not rate-limit.
+  for (const page of [
+    "app/(storefront)/page.tsx",
+    "app/(storefront)/shop/page.tsx",
+    "app/(storefront)/product/[slug]/page.tsx",
+    "app/(storefront)/collections/[slug]/page.tsx",
+    "app/(storefront)/cart/page.tsx",
+    "app/(storefront)/layout.tsx",
+  ]) {
+    check(
+      `${page.replace("app/(storefront)/", "")} does not rate-limit`,
+      !/rateLimit\(/.test(read(page)),
+      "a database read and write per page view, on the pool the storefront is already using"
+    );
+  }
 }
 
 // ===========================================================================
 console.log("\nRENDERING");
 // ===========================================================================
 {
-  const dynamicCount = [
-    "app/(storefront)/page.tsx",
-    "app/(storefront)/shop/page.tsx",
-    "app/(storefront)/product/[slug]/page.tsx",
-  ].filter((f) => /force-dynamic/.test(read(f))).length;
-  finding(
-    `the storefront renders dynamically on every request (${dynamicCount} of 3 key pages)`,
-    "Correct today — the page depends on which shop the host resolves to, and on that shop's live data. But it means no page is " +
-      "ever served from cache: 1,000 concurrent visitors are 1,000 renders, each paying the layout's reads. The data cache absorbs " +
-      "six of those reads; the rest is per request. FIX: a short revalidate per shop on pages that have no per-visitor content."
+  // A storefront page renders on every request, and that is correct: which
+  // shop it is comes from the host, and what it shows is that shop's live
+  // data. The question is not whether to stop — it is what one render costs,
+  // because a thousand concurrent visitors are a thousand of them.
+  //
+  // Serving the HTML from the CDN instead would remove nearly all of that, and
+  // the precondition for it holds: nothing in the storefront shell is
+  // per-visitor — the header reads no session and the basket lives in the
+  // browser. It is **deliberately not switched on**, for two reasons that are
+  // not about performance: a shop that pauses would keep serving its old page
+  // for the length of the cache, and the customizer preview renders through
+  // the same route, so a merchant would edit a section and watch it not
+  // change. Both need a bypass, and the bypass needs to know things proxy.ts
+  // is forbidden to ask the database.
+  //
+  // So what is asserted is that the render stays cheap, and that the door
+  // stays open.
+  check(
+    "nothing in the storefront shell is per-visitor",
+    !/currentCustomer|useSession|auth\(\)/.test(read("app/(storefront)/layout.tsx")) &&
+      !/currentCustomer|useSession|auth\(\)/.test(read("components/storefront/site-header.tsx")),
+    "the moment the header greets somebody by name, caching the HTML stops being possible at all"
   );
+  check(
+    "the basket is the browser's, so two visitors share a page",
+    /create<CartState>/.test(read("lib/cart-store.ts"))
+  );
+  check(
+    "every read the layout makes is a cached kind",
+    (read("app/(storefront)/layout.tsx").match(/get(StoreSettings|Menus|SiteText|ThemeTokens|FontAssets|StickyButtons|ThemeLayout)\(\)/g) ?? [])
+      .length >= 7,
+    "the floor every storefront page pays"
+  );
+
   check(
     "the proxy makes no database call",
     !/prisma|db\(\)/.test(read("proxy.ts")),

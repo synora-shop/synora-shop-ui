@@ -1,5 +1,6 @@
 import type { Prisma } from "@/lib/generated/prisma/client";
-import { db } from "@/lib/data/shop";
+import { db, currentShopId } from "@/lib/data/shop";
+import { cachedForShop } from "@/lib/data/cached";
 
 // Re-exported so existing server-side callers of these don't need to change their import
 // path — see lib/product-pricing.ts for why they live in their own Prisma-free file.
@@ -212,12 +213,30 @@ export async function getCategories() {
 }
 
 /** Distinct sizes/colors across all active products, used to build filter options. */
+/**
+ * The sizes and colours the filter panel offers.
+ *
+ * Read on every shop and collection page, and it is the widest query the
+ * storefront makes: every variant of every live product. `distinct` does not
+ * save the read — Postgres still visits the rows and then de-duplicates — so
+ * at a thousand concurrent visitors this was a thousand full variant scans for
+ * an answer that is the same for all of them and changes only when a merchant
+ * edits a product.
+ *
+ * Cached per shop, dropped by the same writers that drop the catalogue.
+ */
 export async function getFilterOptions() {
-  const variants = await (await db()).productVariant.findMany({
-    where: { product: { isActive: true, status: "PUBLISHED", deletedAt: null } },
-    select: { size: true, color: true, colorHex: true },
-    distinct: ["size", "color"],
-  });
+  const variants = await cachedForShop(await currentShopId(), "filters", (t) =>
+    t.productVariant.findMany({
+      where: { product: { isActive: true, status: "PUBLISHED", deletedAt: null } },
+      select: { size: true, color: true, colorHex: true },
+      distinct: ["size", "color"],
+      // Bounded as well as cached. A shop with a pathological number of
+      // option combinations should make the filter panel useless slowly
+      // rather than make every page slow immediately.
+      take: 500,
+    })
+  );
   const sizes = Array.from(new Set(variants.map((v) => v.size))).sort();
   const colorMap = new Map<string, string | null>();
   for (const v of variants) colorMap.set(v.color, v.colorHex);

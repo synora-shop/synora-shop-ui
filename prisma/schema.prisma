@@ -1340,21 +1340,48 @@ model ReopenSignup {
 /// is the fastest-growing table on the platform and the one that eventually
 /// fills the disk.
 model Visit {
-  id        String   @id @default(cuid())
-  shop      Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  shopId    String
-  /// The page that was viewed, e.g. "/product/blue-shirt".
-  path      String
-  /// Salted SHA-256 of the visitor's address. Never the address itself.
-  visitor   String
-  /// Two-letter country from the edge, when the platform knows it.
-  country   String?
-  /// Where they came from — host only, never the full URL with its query.
-  referrer  String?
+  id      String  @id @default(cuid())
+  shop    Shop    @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId  String
+  path    String
+  visitor String
+  country String?
+
+  /// Empty for direct traffic, never null.
+  ///
+  /// It is part of the unique key below, and Postgres treats two NULLs as
+  /// distinct in a unique index — so a nullable column here would de-duplicate
+  /// nothing at all for direct visits, which are most of them. Same reasoning
+  /// as Metafield.ownerId.
+  referrer String @default("")
+
+  /// The date in the **shop's own time zone**, decided when the row is written.
+  ///
+  /// Every chart groups by this. It used to convert `createdAt AT TIME ZONE`
+  /// at read time, and with a UTC day in the key the two would disagree for
+  /// any shop not on UTC: one row would span two of that shop's days.
+  day DateTime @db.Date
+
+  /// How many times this visitor loaded this path on this day.
+  ///
+  /// A row per view was unbounded — see
+  /// 20261103000000_visits_counted_not_listed. `sum(views)` is what used to be
+  /// `count(*)`, so the screen's figures are unchanged.
+  views Int @default(1)
+
+  /// The latest of those views. Only "right now" needs it; everything else
+  /// reads `day`.
+  lastSeenAt DateTime @default(now())
+
   createdAt DateTime @default(now())
 
+  /// One row per visitor, per path, per day, per referrer. This is what turns
+  /// a write-per-view into a counter.
+  @@unique([shopId, visitor, path, day, referrer])
   @@index([shopId, createdAt])
   @@index([shopId, visitor])
+  @@index([shopId, day])
+  @@index([shopId, lastSeenAt])
   @@index([createdAt])
 }
 

@@ -18,9 +18,13 @@ import { effectivePrice } from "@/lib/product-pricing";
  * the exact bug lib/cache-tags.ts exists to prevent. Paired with the
  * revalidatePath calls rather than left to memory, and check:cache fails the
  * build if a writer in this file stops dropping it.
+ *
+ * "filters" goes with it: the shop page's size and colour lists are built from
+ * the same products, so a colour that has just stopped being sold has to leave
+ * the filter panel at the same moment it leaves the grid.
  */
 async function dropCatalog() {
-  invalidateShop(await currentShopId(), "catalog");
+  invalidateShop(await currentShopId(), "catalog", "filters");
 }
 
 

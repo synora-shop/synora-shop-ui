@@ -8,6 +8,8 @@ import { getSiteText, text, type SiteTextKey } from "@/lib/site-text";
 import type { OrderStatus } from "@/lib/generated/prisma/client";
 import { formatMoney } from "@/lib/money";
 import { getCurrency } from "@/lib/data/settings";
+import { readPage } from "@/lib/paging";
+import { ProductPagination } from "@/components/storefront/product-pagination";
 
 const STATUS_KEY: Record<OrderStatus, SiteTextKey> = {
   PENDING: "orderStatus.pending",
@@ -18,7 +20,18 @@ const STATUS_KEY: Record<OrderStatus, SiteTextKey> = {
   CANCELLED: "orderStatus.cancelled",
 };
 
-export default async function OrderHistoryPage() {
+/**
+ * How many orders one page of the history shows.
+ *
+ * The query had no bound: it read every order a customer had ever placed,
+ * with every line item of each, on every visit to this page. That grows
+ * forever and is paid by the customer who shops the most.
+ */
+const ORDERS_PER_PAGE = 20;
+
+export default async function OrderHistoryPage(props: PageProps<"/account/orders">) {
+  const sp = await props.searchParams;
+  const page = readPage(sp);
   // Prices in the store's own currency rather than in rupees, which every
   // screen printed regardless of what Settings said.
   const currency = await getCurrency();
@@ -26,12 +39,16 @@ export default async function OrderHistoryPage() {
   const me = await currentCustomer();
   if (!me) redirect("/account/login?callbackUrl=/account/orders");
 
-  const [orders, siteText] = await Promise.all([
-    (await db()).order.findMany({
+  const client = await db();
+  const [orders, total, siteText] = await Promise.all([
+    client.order.findMany({
       where: { customerId: me.id },
       include: { items: true },
       orderBy: { createdAt: "desc" },
+      take: ORDERS_PER_PAGE,
+      skip: (page - 1) * ORDERS_PER_PAGE,
     }),
+    client.order.count({ where: { customerId: me.id } }),
     getSiteText(),
   ]);
 
@@ -80,6 +97,13 @@ export default async function OrderHistoryPage() {
           ))}
         </div>
       )}
+
+      <ProductPagination
+        basePath="/account/orders"
+        searchParams={sp}
+        total={total}
+        perPage={ORDERS_PER_PAGE}
+      />
     </Container>
   );
 }

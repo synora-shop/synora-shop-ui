@@ -33,6 +33,15 @@ export const CACHE_KINDS = [
    * the other six kinds are too.
    */
   "catalog",
+  /**
+   * The size and colour lists the shop page's filter panel offers.
+   *
+   * Its own kind rather than part of "catalog", because cachedForShop keys on
+   * the shop and the kind and nothing else — two callbacks sharing a kind are
+   * the same entry, and whichever ran first would win. Dropped by the same
+   * writers, at the same moment.
+   */
+  "filters",
 ] as const;
 
 export type CacheKind = (typeof CACHE_KINDS)[number];

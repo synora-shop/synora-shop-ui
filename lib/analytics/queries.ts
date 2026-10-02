@@ -87,15 +87,23 @@ export type VisitPoint = { day: string; views: number; people: number };
  * Grouped in Postgres rather than in JS: a year of a busy shop's traffic is
  * more rows than a page should ever load to count them.
  */
-async function visitsByDay(shopId: string, from: Date, to: Date, timeZone: string): Promise<VisitPoint[]> {
+async function visitsByDay(shopId: string, from: Date, to: Date): Promise<VisitPoint[]> {
+  // `sum(views)` rather than `count(*)`: a row is one visitor's views of one
+  // path on one day, with a counter, since
+  // 20261103000000_visits_counted_not_listed. People is unchanged — the rows
+  // are still one per visitor — and the two figures are what they always were.
+  //
+  // Grouped by the stored `day`, which is already the date in the shop's own
+  // time zone, so the conversion this used to do at read time is gone. That
+  // was also the only reason this query could not use an index.
   const rows = await prisma.$queryRaw<{ day: string; views: bigint; people: bigint }[]>`
-    SELECT to_char(("createdAt" AT TIME ZONE ${timeZone})::date, 'YYYY-MM-DD') AS day,
-           count(*) AS views,
+    SELECT to_char("day", 'YYYY-MM-DD') AS day,
+           sum("views") AS views,
            count(DISTINCT "visitor") AS people
       FROM "Visit"
      WHERE "shopId" = ${shopId}
-       AND "createdAt" >= ${from}
-       AND "createdAt" <= ${to}
+       AND "day" >= ${from}::date
+       AND "day" <= ${to}::date
      GROUP BY 1
      ORDER BY 1
   `;
@@ -141,25 +149,26 @@ export async function analytics(days: number) {
   ]);
 
   const [visits, live, pages, referrers] = await Promise.all([
-    visitsByDay(shop.id, from, to, timeZone),
+    visitsByDay(shop.id, from, to),
     // "Right now" is the last five minutes. Shorter reads as empty on a quiet
     // shop; longer stops being "now".
     prisma.$queryRaw<{ people: bigint }[]>`
       SELECT count(DISTINCT "visitor") AS people
         FROM "Visit"
        WHERE "shopId" = ${shop.id}
-         AND "createdAt" >= ${new Date(Date.now() - 5 * 60_000)}
+         AND "lastSeenAt" >= ${new Date(Date.now() - 5 * 60_000)}
     `,
     prisma.$queryRaw<{ label: string; value: bigint }[]>`
-      SELECT "path" AS label, count(*) AS value
+      SELECT "path" AS label, sum("views") AS value
         FROM "Visit"
-       WHERE "shopId" = ${shop.id} AND "createdAt" >= ${from} AND "createdAt" <= ${to}
+       WHERE "shopId" = ${shop.id} AND "day" >= ${from}::date AND "day" <= ${to}::date
        GROUP BY 1 ORDER BY 2 DESC LIMIT 5
     `,
     prisma.$queryRaw<{ label: string; value: bigint }[]>`
-      SELECT coalesce("referrer", 'direct') AS label, count(*) AS value
+      SELECT CASE WHEN "referrer" = '' THEN 'direct' ELSE "referrer" END AS label,
+             sum("views") AS value
         FROM "Visit"
-       WHERE "shopId" = ${shop.id} AND "createdAt" >= ${from} AND "createdAt" <= ${to}
+       WHERE "shopId" = ${shop.id} AND "day" >= ${from}::date AND "day" <= ${to}::date
        GROUP BY 1 ORDER BY 2 DESC LIMIT 5
     `,
   ]);
