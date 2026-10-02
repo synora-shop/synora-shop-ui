@@ -668,6 +668,7 @@ model AuditLog {
 
   @@index([shopId, createdAt])
   @@index([shopId, entity, entityId])
+  @@index([createdAt])
 }
 
 // One row per issued admin login code. Never reused across requests — a fresh
@@ -685,6 +686,7 @@ model AdminOtp {
   createdAt  DateTime  @default(now())
 
   @@index([userId, createdAt])
+  @@index([expiresAt])
 }
 
 model Address {
@@ -729,6 +731,7 @@ model Category {
 
   @@unique([shopId, slug])
   @@index([shopId])
+  @@index([shopId, name])
 }
 
 model Product {
@@ -820,6 +823,7 @@ model Product {
 
   @@unique([shopId, slug])
   @@index([shopId])
+  @@index([shopId, status, isActive, createdAt])
 }
 
 model ProductVariant {
@@ -1342,6 +1346,7 @@ model Visit {
 
   @@index([shopId, createdAt])
   @@index([shopId, visitor])
+  @@index([createdAt])
 }
 
 /// One file a merchant has uploaded, and where it lives.
@@ -1660,6 +1665,7 @@ model Section {
   updatedAt DateTime    @updatedAt
 
   @@index([pageId])
+  @@index([pageId, order])
   @@index([shopId])
 }
 
