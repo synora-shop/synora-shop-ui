@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { DM_Sans, DM_Mono } from "next/font/google";
+import { DM_Sans, DM_Mono, Inter, Cormorant_Garamond } from "next/font/google";
 import { AuthSessionProvider } from "@/components/providers/session-provider";
 import { NavProgress } from "@/components/ui/nav-progress";
 import { ToastProvider } from "@/components/ui/toast";
@@ -47,6 +47,51 @@ const mono = DM_Mono({
   subsets: ["latin"],
   weight: ["400", "500"],
   display: "swap",
+});
+
+/**
+ * The two typefaces a *merchant's storefront* can choose, as opposed to the
+ * two above, which are this product's own.
+ *
+ * `FONT_STACKS` in lib/theme-tokens.ts has offered "Inter (clean sans)" and
+ * "Cormorant Garamond (serif)" since it was written, as `var(--font-inter)`
+ * and `var(--font-heading)` — and neither variable was defined anywhere in the
+ * codebase. Both silently fell through to their fallback, so a merchant who
+ * picked Inter got system-ui and one who picked Cormorant got Georgia. The
+ * picker saved, showed the right label, and changed nothing. Kite asks for
+ * Inter on both its heading and its body, so the one theme that was supposed
+ * to prove the registry works has never rendered in the face it names.
+ *
+ * They must be declared on <html>, not on the storefront layout. The theme's
+ * CSS is emitted as `:root{--font-sans:var(--font-inter),…}`, and a custom
+ * property is substituted where it is *declared* — so with --font-inter set on
+ * any element below <html>, :root would still resolve the fallback and the fix
+ * would look applied while changing nothing. That is the same shape as the bug
+ * itself.
+ *
+ * `preload: false` because the admin panel is the common case and wears
+ * neither of them: the @font-face rules ship, and a browser fetches a font
+ * file only when text actually uses it. Declaring the variable costs a
+ * merchant's admin nothing.
+ */
+const storefrontSans = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  weight: "variable",
+  display: "swap",
+  preload: false,
+});
+
+const storefrontSerif = Cormorant_Garamond({
+  variable: "--font-heading",
+  subsets: ["latin"],
+  // Variable, like the two above: one file covering 300–700 rather than five
+  // static cuts. It matters more here than it looks — `headingWeight` is a
+  // merchant-editable token with a 100–900 range, so any fixed set of cuts
+  // leaves weights that get synthesised by the browser instead of drawn.
+  weight: "variable",
+  display: "swap",
+  preload: false,
 });
 
 // The address relative metadata resolves against — og:image, og:url, and any
@@ -117,7 +162,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${sans.variable} ${mono.variable} h-full`}>
+    <html
+      lang="en"
+      className={`${sans.variable} ${mono.variable} ${storefrontSans.variable} ${storefrontSerif.variable} h-full`}
+    >
       <body className="min-h-full flex flex-col font-sans bg-canvas text-ink antialiased">
         <Suspense fallback={null}>
           <NavProgress />
