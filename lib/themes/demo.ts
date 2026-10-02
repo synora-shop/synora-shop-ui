@@ -31,8 +31,8 @@ export const THEME_STORE_ROOT = "/theme-store";
  * reason `ThemeDefinition.key` is separate from `name`.
  */
 export const THEME_STORE_SLUGS: Readonly<Record<string, string>> = {
-  kite: "atlas",
-  loom: "aurora",
+  kite: "kite",
+  loom: "loom",
 };
 
 /** Theme key to URL slug — the reverse of the table above. */

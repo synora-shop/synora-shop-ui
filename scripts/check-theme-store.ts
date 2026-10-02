@@ -93,7 +93,7 @@ check(
 
 {
   const route = parseThemeStorePath("/theme-store/kite");
-  check("a demo root parses", route?.themeKey === "atlas" && route?.rest === "/");
+  check("a demo root parses", route?.themeKey === "kite" && route?.rest === "/");
   check("and needs no redirect", route?.redirect === false);
 
   const inner = parseThemeStorePath("/theme-store/kite/product/heavyweight-box-tee");
@@ -123,7 +123,7 @@ check(
 {
   check(
     "a demo subdomain names its theme",
-    themeKeyForDemoSubdomain("kite-demo") === "atlas" &&
+    themeKeyForDemoSubdomain("kite-demo") === "kite" &&
       demoSlugForSubdomain("kite-demo") === "kite"
   );
   check(

@@ -27,6 +27,7 @@ import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 import { SECTION_TYPES } from "../lib/section-schema";
 import { THEME_GROUPS } from "../lib/theme-schema";
+import { FONT_STACKS } from "../lib/theme-tokens";
 import { THEMES, themeFor, themeLayout, themeTokens } from "../lib/themes/registry";
 import {
   CARD_ASPECT,
@@ -77,7 +78,7 @@ for (const [key, theme] of Object.entries(THEMES)) {
 
 check(
   "an unknown key falls back rather than breaking a storefront",
-  themeFor("no-such-theme").key === "aurora",
+  themeFor("no-such-theme").key === "loom",
   "refusing would take a shop offline over a string"
 );
 
@@ -131,8 +132,8 @@ check(
   "two variants that render identically are one variant with two names"
 );
 check(
-  "Aurora still arranges nothing",
-  !THEMES.aurora.layout || Object.keys(THEMES.aurora.layout).length === 0,
+  "Loom still arranges nothing",
+  !THEMES.loom.layout || Object.keys(THEMES.loom.layout).length === 0,
   "it is what every existing shop runs, so it has to stay a no-op"
 );
 
@@ -507,6 +508,59 @@ for (const theme of Object.values(THEMES)) {
   );
 }
 
+// ---------------------------------------------------------------------------
+console.log("\nA FONT A THEME NAMES IS A FONT THAT LOADS");
+// ---------------------------------------------------------------------------
+/*
+ * Every CSS variable a font stack names must actually be declared.
+ *
+ * FONT_STACKS offered Inter as `var(--font-inter)` and Cormorant as
+ * `var(--font-heading)`, and neither variable existed anywhere in the
+ * codebase. Both fell silently through to their fallback: picking "Inter
+ * (clean sans)" gave system-ui and picking "Cormorant Garamond (serif)" gave
+ * Georgia. The picker saved, showed the right label, and the shop never wore
+ * the font — and Kite, the theme that exists to prove a theme is more than a
+ * palette, asks for Inter on both its heading and its body.
+ *
+ * A type checker cannot see this, because the stack is a string. So the string
+ * is parsed here and every variable in it is held against the layout that has
+ * to declare it.
+ */
+{
+  const rootLayout = read("app/layout.tsx");
+  // next/font declares a variable by being told its name: `variable: "--x"`.
+  const declared = new Set(
+    [...rootLayout.matchAll(/variable:\s*"(--[a-z0-9-]+)"/gi)].map((m) => m[1])
+  );
+
+  for (const [key, { stack }] of Object.entries(FONT_STACKS)) {
+    for (const [, name] of stack.matchAll(/var\((--[a-z0-9-]+)\)/gi)) {
+      check(
+        `${key} names ${name}, and something defines it`,
+        declared.has(name),
+        "undefined, so this font silently falls back to the next stack entry"
+      );
+    }
+  }
+
+  // The variable existing is half of it: it has to be on <html>, because the
+  // theme's CSS is emitted at :root and a custom property is substituted where
+  // it is declared. Set on any element below <html>, :root resolves the
+  // fallback and the fix looks applied while changing nothing.
+  const htmlClass = /<html[^>]*className=\{`([^`]*)`\}/.exec(rootLayout)?.[1] ?? "";
+  for (const name of ["--font-inter", "--font-heading"]) {
+    const binding = new RegExp(
+      `const\\s+(\\w+)\\s*=\\s*\\w+\\(\\{[^}]*variable:\\s*"${name}"`,
+      "s"
+    ).exec(rootLayout)?.[1];
+    check(
+      `${name} is carried on <html>`,
+      !!binding && htmlClass.includes(`${binding}.variable`),
+      "declared below :root resolves to the fallback, which is the original bug"
+    );
+  }
+}
+
 /*
  * A theme's own picture.
  *
@@ -614,7 +668,7 @@ console.log("\nTHE DOCUMENT STILL DESCRIBES THE CODE");
   // why the 22 September rename touched only `name`.
   check(
     "the keys are the ones storefronts already store",
-    ["aurora", "atlas"].every((k) => k in THEMES),
+    ["loom", "kite"].every((k) => k in THEMES),
     "a renamed key is every shop on that theme silently losing its design"
   );
   check(

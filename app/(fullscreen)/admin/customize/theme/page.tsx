@@ -1,7 +1,7 @@
 import { liveCopyOf } from "@/lib/themes/live";
 import { getThemeTokens, getThemeLayout } from "@/lib/data/theme";
 import { db, requireShop } from "@/lib/data/shop";
-import { themeFor } from "@/lib/themes/registry";
+import { DEFAULT_THEME_KEY, themeFor } from "@/lib/themes/registry";
 import { resolveThemeTokens } from "@/lib/theme-tokens";
 import { resolveThemeLayout } from "@/lib/theme-layout";
 import { ThemePanel } from "@/components/customizer/theme-panel";
@@ -60,7 +60,7 @@ export default async function CustomizeThemePage(props: PageProps<"/admin/custom
   const liveId = liveCopyOf(installed, liveRow)?.id ?? null;
   const editingId = asked && installed.some((r) => r.id === asked) ? asked : liveId;
   const editingRow = installed.find((r) => r.id === editingId) ?? null;
-  const live = liveRow?.themeKey ?? "aurora";
+  const live = liveRow?.themeKey ?? DEFAULT_THEME_KEY;
   const editing = editingRow?.themeKey ?? live;
   const theme = themeFor(editing);
 

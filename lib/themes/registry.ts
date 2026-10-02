@@ -102,8 +102,8 @@ export type ThemeDefinition = {
   /**
    * How this theme *arranges* the storefront, and what it switches on.
    *
-   * The half that was missing. A theme with only tokens is a palette: Aurora
-   * and Meridian rendered the same HTML and differed in CSS variables alone.
+   * The half that was missing. A theme with only tokens is a palette: Loom
+   * and the retired Meridian rendered the same HTML and differed in CSS variables alone.
    * Omitted means "the original storefront", so a theme that says nothing here
    * behaves exactly as every theme did before this existed.
    */
@@ -115,20 +115,22 @@ export type ThemeDefinition = {
 /**
  * Loom — the storefront this platform has always had.
  *
- * Named Aurora until 22 September; the design files renamed it. The *key* is
- * unchanged and must stay unchanged: it is what every storefront has stored,
- * and renaming it would drop every shop running it back to a default. That is
- * precisely what `key` is for — "stable across renames", as the type says.
+ * Named Aurora until 22 September, and keyed `aurora` until 3 October, when
+ * the key was moved to match. The warning that used to sit here — that
+ * renaming the key would drop every shop back to a default — was answered
+ * rather than ignored: `20261030000000_theme_keys_match_names` moves the
+ * stored rows, and LEGACY_THEME_KEYS below keeps the old string resolving
+ * while any row or any build is still a deploy behind.
  *
  * Registered first and unchanged on purpose: it is what every existing shop is
  * already running, so making it a named theme must be a no-op for them. Its
  * tokens are the platform defaults, which is what "unthemed" has always meant.
  */
-const aurora: ThemeDefinition = {
-  key: "aurora",
+const loom: ThemeDefinition = {
+  key: "loom",
   version: "1.0.0",
   plate: { from: "#8ab4c5", to: "#dbe8ed" },
-  preview: "/themes/aurora.jpg",
+  preview: "/themes/loom.jpg",
   name: "Loom",
   description: "Clean and roomy, with large imagery. A safe first choice.",
   businessTypes: ["ecommerce"],
@@ -139,11 +141,12 @@ const aurora: ThemeDefinition = {
 /**
  * Kite — the first theme that is more than a palette.
  *
- * Named Atlas until 22 September. Key unchanged, for the reason above.
+ * Named Atlas until 22 September, rekeyed 3 October, for the reason above.
  *
- * Aurora and Meridian differ in colour, type and corner radius, and in nothing
- * else: the same header, the same card, the same grid, the same footer. Atlas
- * is the theme that proves the other half of the registry works, so it changes
+ * Loom and the retired Meridian differed in colour, type and corner radius and
+ * in nothing else: the same header, the same card, the same grid, the same
+ * footer. Kite is the theme that proves the other half of the registry works,
+ * so it changes
  * every one of those and switches on the behaviour a shop actually sells with.
  *
  * The choices hang together rather than being picked for variety. A centred
@@ -154,14 +157,14 @@ const aurora: ThemeDefinition = {
  * product page on a phone, which is where most of these shops are read.
  *
  * Colour is deliberately neither of the other two: a deep pine against a warm
- * off-white, with amber for the second voice — not Aurora's maroon, and not
+ * off-white, with amber for the second voice — not Loom's maroon, and not
  * Meridian's absence of colour.
  */
-const atlas: ThemeDefinition = {
-  key: "atlas",
+const kite: ThemeDefinition = {
+  key: "kite",
   version: "1.0.0",
   plate: { from: "#8fc9ae", to: "#b8efd6" },
-  preview: "/themes/atlas.jpg",
+  preview: "/themes/kite.jpg",
   name: "Kite",
   description: "Photography-led, with a tight grid and quick buying. For a shop with a look.",
   businessTypes: ["ecommerce"],
@@ -207,8 +210,8 @@ const atlas: ThemeDefinition = {
  *
  * Removed 10 September. All five were palettes — the same HTML in different
  * colours — and keeping five of those alongside two real themes made the picker
- * look full while offering one genuine choice. Aurora is what every shop is
- * already running; Atlas is the one that actually arranges the storefront
+ * look full while offering one genuine choice. Loom is what every shop is
+ * already running; Kite is the one that actually arranges the storefront
  * differently.
  *
  * Their consequence, written down because it is not obvious: **there are no
@@ -219,21 +222,21 @@ const atlas: ThemeDefinition = {
  * offering five recolours of a product grid.
  *
  * A shop still on a removed key does not break: themeFor() falls back to
- * Aurora rather than letting a retired string take a storefront offline.
+ * Loom rather than letting a retired string take a storefront offline.
  */
 
 export const THEMES: Record<string, ThemeDefinition> = {
-  aurora,
-  atlas,
+  loom,
+  kite,
 };
 
 /** The theme a shop gets when it has not chosen one and we know nothing else. */
-export const DEFAULT_THEME_KEY = "aurora";
+export const DEFAULT_THEME_KEY = "loom";
 
 /**
  * The theme a shop of this kind starts on.
  *
- * Not DEFAULT_THEME_KEY: that is Aurora, which is an ecommerce design. A blog
+ * Not DEFAULT_THEME_KEY: that is Loom, which is an ecommerce design. A blog
  * that has never opened the picker would otherwise fall back to a storefront
  * built around a product grid it has no products for.
  */
@@ -243,11 +246,45 @@ export function defaultThemeFor(businessType: BusinessType): string {
 
 /* -------------------------------------------------------------------------- */
 
+/**
+ * Keys that used to be stored, and what they are now.
+ *
+ * Aurora and Atlas were renamed Loom and Kite on 22 September and their keys
+ * were left alone, on the rule that a key is "stable across renames" because
+ * it is what every storefront has stored. That rule is right about the danger
+ * and wrong about the remedy: it left `/theme-store/loom` serving a theme
+ * whose key said `aurora`, and every document since has had to carry the
+ * translation. The keys moved on 3 October, with
+ * `20261030000000_theme_keys_match_names` moving the stored rows in the same
+ * deploy.
+ *
+ * This map is what makes that safe rather than merely done. Preview and
+ * Production share one database, so a row and the code that reads it can be a
+ * deploy apart in either direction:
+ *
+ *   * code ahead of data — a row still saying `atlas` resolves to Kite here,
+ *     instead of failing the lookup and falling back to the default, which
+ *     would serve a Kite shop the Loom design.
+ *   * data ahead of code — an older build does not know `kite`, falls back to
+ *     Aurora, and Aurora is Loom under its old name. Wrong theme for a Kite
+ *     shop for the length of a rollback, right for everyone else.
+ *
+ * Deletable once nothing in the database holds either string. That is one
+ * query to check and not worth guessing at, so it stays until someone has
+ * run it.
+ */
+const LEGACY_THEME_KEYS: Record<string, string> = {
+  aurora: "loom",
+  atlas: "kite",
+};
+
 /** A theme by key, or the default when the key is unknown. */
 export function themeFor(key: string | null | undefined): ThemeDefinition {
-  // An unknown key is a theme we retired, or a typo. Falling back keeps the
-  // storefront up; refusing would take a shop offline over a string.
-  return (key && THEMES[key]) || THEMES[DEFAULT_THEME_KEY];
+  if (!key) return THEMES[DEFAULT_THEME_KEY];
+  // An unknown key is a theme we retired, a typo, or a row written before the
+  // keys were renamed. Falling back keeps the storefront up; refusing would
+  // take a shop offline over a string.
+  return THEMES[key] || THEMES[LEGACY_THEME_KEYS[key] ?? ""] || THEMES[DEFAULT_THEME_KEY];
 }
 
 /** Themes suitable for a business type, for the picker. */

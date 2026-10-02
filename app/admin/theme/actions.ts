@@ -8,7 +8,7 @@ import { put } from "@vercel/blob";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { layoutChanges, resolveThemeLayout, type ThemeLayout } from "@/lib/theme-layout";
-import { themeLayout, themeTokens } from "@/lib/themes/registry";
+import { DEFAULT_THEME_KEY, themeLayout, themeTokens } from "@/lib/themes/registry";
 import { liveCopyOf } from "@/lib/themes/live";
 import { resolveThemeTokens, type ThemeTokens } from "@/lib/theme-tokens";
 import { validateIconFile, safeAssetUrl, MAX_LOGO_BYTES } from "@/lib/icon-validation";
@@ -224,6 +224,6 @@ export async function resetThemeTokens(copyId?: string) {
 
   // The theme's starting point, not the platform's — which is what the screen
   // said it would be, and what a merchant who picked Atlas expects to see.
-  const key = copy?.themeKey ?? "aurora";
+  const key = copy?.themeKey ?? DEFAULT_THEME_KEY;
   return { ...themeTokens(key), ...themeLayout(key) };
 }

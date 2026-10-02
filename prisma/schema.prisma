@@ -1501,7 +1501,7 @@ model ThemeSettings {
   /// an enum because themes ship and retire far more often than a migration is
   /// worth, and lib/themes/registry.ts falls back on an unknown key rather than
   /// letting a retired theme take a storefront offline.
-  themeKey  String   @default("aurora")
+  themeKey  String   @default("loom")
   /// Which *copy* of that theme is live.
   ///
   /// A shop can hold the same theme more than once, so themeKey above no longer

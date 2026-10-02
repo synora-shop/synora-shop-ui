@@ -344,10 +344,14 @@ departure rather than a necessary first step.
 
 ### Known faults, unfixed
 
-- **The two named font stacks do not load.** `FONT_STACKS` points "Inter" and
-  "Cormorant" at `--font-inter` and `--font-heading`, and neither variable is
-  defined anywhere. Both silently fall through to their fallback — `system-ui`
-  and Georgia. Every storefront is affected, including the defaults.
+- ~~**The two named font stacks do not load.**~~ Fixed 2 October. Both
+  families are loaded through `next/font` in `app/layout.tsx` and their
+  variables are carried on `<html>` — which is the load-bearing half: the
+  theme's CSS is emitted at `:root`, and a custom property is substituted
+  where it is declared, so the same two fonts declared on the storefront
+  layout would still have resolved to the fallback. `check:themes` now parses
+  every stack in `FONT_STACKS` and fails if a `var()` it names is undefined or
+  is not on `<html>`.
 - **The platform floor is another brand's palette.** §2.
 
 ---
