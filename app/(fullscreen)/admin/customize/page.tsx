@@ -68,7 +68,7 @@ export default async function CustomizePageRoute(props: PageProps<"/admin/custom
   // needs a search field rather than a longer list — see docs/QUEUE.md.
   const PICKER_LIMIT = 200;
   const client = await db();
-  const [pickCollections, pickProducts] = await Promise.all([
+  const [pickCollections, pickProducts, pickMenus] = await Promise.all([
     client.category.findMany({
       orderBy: { name: "asc" },
       take: PICKER_LIMIT,
@@ -80,10 +80,18 @@ export default async function CustomizePageRoute(props: PageProps<"/admin/custom
       take: PICKER_LIMIT,
       select: { id: true, title: true },
     }),
+    // Menus are per business type, and a section can only point at one that
+    // belongs to the storefront being edited.
+    client.menu.findMany({
+      orderBy: { name: "asc" },
+      take: PICKER_LIMIT,
+      select: { id: true, name: true },
+    }),
   ]);
   const pickers: PickerOptions = {
     collection: pickCollections.map((c) => ({ value: c.id, label: c.name })),
     product: pickProducts.map((p) => ({ value: p.id, label: p.title })),
+    menu: pickMenus.map((m) => ({ value: m.id, label: m.name })),
   };
 
   const sections = await (await db()).section.findMany({

@@ -30,9 +30,10 @@ export type PickerOption = {
 export type PickerOptions = {
   collection: PickerOption[];
   product: PickerOption[];
+  menu: PickerOption[];
 };
 
-const EMPTY: PickerOptions = { collection: [], product: [] };
+const EMPTY: PickerOptions = { collection: [], product: [], menu: [] };
 
 const PickerOptionsContext = createContext<PickerOptions>(EMPTY);
 
@@ -51,11 +52,12 @@ export function usePickerOptions(): PickerOptions {
 }
 
 /** Which kinds are answered by a list rather than by typing. */
-export const PICKER_KINDS = ["collection", "product"] as const;
+export const PICKER_KINDS = ["collection", "product", "menu"] as const;
 export type PickerKind = (typeof PICKER_KINDS)[number];
 
 /** Where a merchant goes to make one, when they have none. */
 export const PICKER_EMPTY_HINT: Record<PickerKind, string> = {
   collection: "No categories yet — add one under Products → Categories.",
   product: "No products yet — add one under Products.",
+  menu: "No menus yet — build one under Your App → Menus.",
 };

@@ -80,6 +80,14 @@ export type SectionContext = {
    */
   cardLayout?: CardLayout;
   cardFeatures?: { hoverSwapImage?: boolean; quickAdd?: boolean; swatchesOnCard?: boolean };
+  /**
+   * The shop's menus, by id, for sections that point at one.
+   *
+   * Already fetched for the header and footer, so this costs nothing beyond
+   * passing it down — and it is why a section can offer a menu picker at all
+   * without a query of its own per section.
+   */
+  menus?: Record<string, { id: string; href: string; label: string }[]>;
 };
 
 /** Sections that own their full-bleed shell and opt out of SectionFrame. */
@@ -161,6 +169,7 @@ function body(type: string, d: Record<string, unknown>, ctx: SectionContext) {
           heading={d.heading as string}
           limit={d.limit as number}
           columns={d.columns as number}
+          links={typeof d.menu === "string" && d.menu ? ctx.menus?.[d.menu] : undefined}
           products={ctx.featuredProducts}
           saleBadgeLabel={ctx.saleBadgeLabel}
           currency={ctx.currency}

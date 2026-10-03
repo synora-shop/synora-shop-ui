@@ -5,6 +5,7 @@ import { getFeaturedProducts } from "@/lib/data/products";
 import { getStoreSettings } from "@/lib/data/settings";
 import { getThemeLayout } from "@/lib/data/theme";
 import { getSiteText, text } from "@/lib/site-text";
+import { getMenus, headerLinks } from "@/lib/data/menus";
 import { toGlobalEdits } from "@/lib/global-edits";
 import { formatMoney } from "@/lib/money";
 import { resolveStoreDefaults } from "@/lib/store-defaults";
@@ -137,7 +138,27 @@ export const getSectionContext = cache(async (): Promise<SectionContext> => {
 
   const { categories, featured: featuredProducts } = catalog;
 
+  // Every menu the shop has, keyed by id, for sections that point at one.
+  //
+  // getMenus is already cached per shop and already fetched for the header and
+  // footer, so a section offering a menu costs no query of its own — which is
+  // the only reason a picker like this is affordable on a page that may hold a
+  // dozen sections.
+  //
+  // Flattened with headerLinks because a row of buttons has no second level:
+  // a nested menu renders its parents, and its children belong to the page the
+  // parent goes to.
+  const menus: Record<string, { id: string; href: string; label: string }[]> = {};
+  for (const menu of await getMenus()) {
+    menus[menu.id] = headerLinks(menu.items).map((l) => ({
+      id: l.id,
+      href: l.href,
+      label: l.label,
+    }));
+  }
+
   return {
+    menus,
     categories: categories.map((c) => ({
       id: c.id,
       name: c.name,

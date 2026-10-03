@@ -27,6 +27,15 @@ export type FieldKind =
   | "url"
   | "collection"
   | "product"
+  /**
+   * A menu the merchant built, chosen by name.
+   *
+   * Shopify's `link_list`, and the same reasoning: a row of category links
+   * above a product grid is not a filter widget to configure here, it is a
+   * menu — the merchant builds it once under Menus and points sections at it.
+   * Nothing on a storefront is typed in twice.
+   */
+  | "menu"
   /** A logo upload: SVG or PNG, sanitised and scanned before storage. */
   | "logo"
   /** A favicon upload. Same hardened path as a logo, previewed at tab size. */
@@ -403,6 +412,16 @@ export const SECTION_SCHEMAS: Record<string, SectionSchema> = {
         min: 2,
         max: 5,
         step: 1,
+      },
+      {
+        key: "menu",
+        kind: "menu",
+        label: "Links above the products",
+        info: "A menu to show as a row of buttons above this section — usually your categories. Leave it unset for no row at all.",
+        // Empty means no row, which is what every existing section has today.
+        // A default pointing at a menu would put a row of links on every
+        // featured-products section on every shop the moment this shipped.
+        default: "",
       },
     ],
   },

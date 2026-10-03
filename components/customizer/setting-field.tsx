@@ -243,7 +243,8 @@ export function SettingFieldInput({
     // The id is stored rather than the slug: a merchant renaming a category
     // should not silently repoint a section at a different one.
     case "collection":
-    case "product": {
+    case "product":
+    case "menu": {
       const list = pickerOptions[field.kind];
       if (list.length === 0) {
         return (

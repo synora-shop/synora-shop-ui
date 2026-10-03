@@ -196,5 +196,61 @@ check(
   "a section that vanished the moment it was added could never be filled in"
 );
 
+
+// ---------------------------------------------------------------------------
+console.log("\nA SETTING THAT POINTS AT SOMETHING IS READ AT THE OTHER END");
+// ---------------------------------------------------------------------------
+/*
+ * The three-place rule again, for entity settings rather than section types.
+ *
+ * A `kind: "menu"` field has to exist in three places and each absence fails
+ * differently and quietly:
+ *
+ *   the picker missing   -> a labelled gap the merchant cannot fill
+ *   the data missing     -> the picker saves an id nothing can resolve
+ *   the renderer missing -> it resolves and nothing appears on the page
+ *
+ * All three have happened on this codebase. `collection` was declared with no
+ * picker for the life of Category spotlight, so the section silently used
+ * whichever category sorted first; twenty-two section types existed with no
+ * enum entry and could not be added to a page at all. The cost of each is the
+ * same: the screen looks finished and does nothing.
+ */
+{
+  const schema = read("lib/section-schema.ts");
+  const context = read("lib/data/section-context.ts");
+  const dispatch = read("components/storefront/sections/render.tsx");
+  const panel = read("components/customizer/setting-field.tsx");
+  const options = read("components/customizer/picker-options.tsx");
+  const editor = read("app/(fullscreen)/admin/customize/page.tsx");
+
+  for (const kind of ["collection", "product", "menu"] as const) {
+    const usedBySection = new RegExp(`kind: "${kind}"`).test(schema);
+    if (!usedBySection) continue;
+
+    check(`a "${kind}" field has a picker`, new RegExp(`case "${kind}"`).test(panel));
+    check(`a "${kind}" field has a list to pick from`, new RegExp(`\\b${kind}:`).test(options));
+    check(`and that list is actually fetched`, new RegExp(`\\b${kind}:`).test(editor));
+  }
+
+  // The menu chain specifically, because it is the newest and the one with a
+  // renderer rather than a bare id lookup.
+  check(
+    "the shop's menus reach a section",
+    /menus\[menu\.id\]|menus\b/.test(context) && /ctx\.menus/.test(dispatch),
+    "a picker that saves an id nothing resolves is the same bug pointing the other way"
+  );
+  check(
+    "and something draws them",
+    /links\.map/.test(read("components/storefront/sections/featured-products.tsx")),
+    "it resolves, and nothing appears on the page"
+  );
+  check(
+    "the menu row is links rather than a second idea of filtering",
+    /StoreLink/.test(read("components/storefront/sections/featured-products.tsx")),
+    "a section-local filter would have to be kept in step with the real one on the shop page"
+  );
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);
