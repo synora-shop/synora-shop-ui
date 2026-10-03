@@ -1,7 +1,14 @@
 import { StoreLink as Link } from "@/components/storefront/store-link";
 import { SectionImage } from "@/components/storefront/section-image";
 
-type Tile = { image?: string; label?: string; href?: string };
+type Tile = {
+  image?: string;
+  label?: string;
+  href?: string;
+  title?: string;
+  body?: string;
+  ctaLabel?: string;
+};
 
 /**
  * A few images at different sizes, each a door into the shop.
@@ -34,7 +41,11 @@ export function Collage({
           const inner = (
             <div
               className={`group relative h-full overflow-hidden rounded-lg bg-subtle ${
-                large ? "aspect-square sm:aspect-auto" : "aspect-square"
+                large
+                  ? tile.title
+                    ? "aspect-[4/5] sm:aspect-auto sm:min-h-[520px]"
+                    : "aspect-square sm:aspect-auto"
+                  : "aspect-square"
               }`}
             >
               <SectionImage
@@ -43,13 +54,42 @@ export function Collage({
       className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
       sizes="(min-width: 1024px) 50vw, 100vw"
     />
-              {tile.label && (
+              {/* A headline turns the tile into the page's opening statement:
+                  the words move to the top, the wash covers the whole tile so
+                  a sentence stays readable over a busy photograph, and the
+                  button appears. Without one it is the small corner label it
+                  has always been, so no existing collage changes. */}
+              {tile.title ? (
                 <>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/55 to-transparent" />
-                  <span className="absolute bottom-3 left-3 text-sm font-medium text-white sm:text-base">
-                    {tile.label}
-                  </span>
+                  <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/35 to-transparent" />
+                  <div className="absolute inset-0 flex flex-col items-start justify-start gap-3 p-6 text-white sm:p-10">
+                    <h3 className="max-w-[12ch] text-balance font-serif text-3xl leading-[1.05] sm:text-5xl lg:text-6xl">
+                      {tile.title}
+                    </h3>
+                    {tile.body && (
+                      <p className="max-w-[34ch] text-sm opacity-80 sm:text-base">{tile.body}</p>
+                    )}
+                    {tile.ctaLabel && tile.href && (
+                      // A span, not a link. The whole tile is already an
+                      // anchor when it has an href, and an anchor inside an
+                      // anchor is invalid HTML that browsers repair by
+                      // splitting the outer one — so the tile would stop being
+                      // clickable everywhere except the button.
+                      <span className="mt-2 inline-flex items-center justify-center rounded-pill bg-ink px-7 py-3 text-xs font-medium uppercase tracking-[0.08em] text-canvas transition-opacity group-hover:opacity-90">
+                        {tile.ctaLabel}
+                      </span>
+                    )}
+                  </div>
                 </>
+              ) : (
+                tile.label && (
+                  <>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/55 to-transparent" />
+                    <span className="absolute bottom-3 left-3 text-sm font-medium text-white sm:text-base">
+                      {tile.label}
+                    </span>
+                  </>
+                )
               )}
             </div>
           );
