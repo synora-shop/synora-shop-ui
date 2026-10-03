@@ -138,6 +138,17 @@ async function main() {
             productId: product.id,
             size,
             color,
+            // The named-option columns, which this seeder never wrote.
+            //
+            // 20261011000000_variant_named_options added option1-3 and a
+            // unique index across them, moved every reader over, and left the
+            // seeders behind. They default to "", so the *second* variant of
+            // any product collided on ("", "", "") and the seed died —
+            // meaning a fresh database could not be filled at all. option1
+            // holds what size held and option2 what color held, which is the
+            // mapping the schema documents.
+            option1: size,
+            option2: color,
             colorHex: hex,
             sku,
             stock: 15,

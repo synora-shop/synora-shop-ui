@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { currentShop } from "@/lib/data/shop";
 import { cachedForShop } from "@/lib/data/cached";
 import { SHOP_PATH_HEADER } from "@/lib/shop-context";
-import { THEMES, themeFor } from "@/lib/themes/registry";
+import { THEMES, themeFor, defaultThemeFor, type BusinessType } from "@/lib/themes/registry";
 import { liveCopyOf } from "@/lib/themes/live";
 import { resolveThemeLayout, type ThemeLayout } from "@/lib/theme-layout";
 import { resolveThemeTokens, THEME_TOKEN_DEFAULTS, type ThemeTokens } from "@/lib/theme-tokens";
@@ -91,7 +91,17 @@ async function themeForRequest(shopId: string, businessType: string) {
     if (preview in THEMES) return { key: preview, edits: null };
   }
 
-  const key = settings?.themeKey ?? null;
+  // No stored key means a shop that has never opened the Themes screen —
+  // including every shop on its first render. It falls back to the *default
+  // theme*, not to the platform's bare defaults.
+  //
+  // Those used to be the same thing, which is why this read `?? null`: Loom
+  // declared no tokens and no layout, so "unthemed" and "on the default
+  // theme" rendered identically and nothing could tell them apart. The moment
+  // Loom became a design they stopped being the same, and this line quietly
+  // served every new shop an unthemed storefront — the one case the default
+  // theme exists for.
+  const key = settings?.themeKey ?? defaultThemeFor(businessType.toLowerCase() as BusinessType);
   if (!key) return { key: null, edits: null };
 
   // By id where the shop has one recorded, by theme key where it has not —

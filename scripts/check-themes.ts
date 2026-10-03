@@ -343,7 +343,12 @@ check(
 );
 check(
   "and a preview outranks the live design for that request only",
-  /if \(preview\) \{[\s\S]{0,400}\}\s*\n\s*const key = settings\?\.themeKey/.test(data),
+  // Read with the comments taken out, which is this file's own rule — a guard
+  // must not read its own prose. It was matching across at most 400 raw
+  // characters, so explaining *why* the stored key is read second was enough
+  // to fail it while the ordering it protects was untouched. What matters is
+  // that the preview branch returns before the stored key is consulted.
+  /if \(preview\) \{[\s\S]*?\}\s*const key = settings\?\.themeKey/.test(stripComments(data)),
   "nothing is stored, so no cached page can be left wearing somebody's preview"
 );
 

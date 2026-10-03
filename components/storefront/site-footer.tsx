@@ -110,8 +110,12 @@ export function SiteFooter({
 
         <div
           className={cn(
-            mode === "masthead" &&
-              "grid flex-1 grid-cols-2 gap-10 sm:grid-cols-3 lg:justify-items-end lg:gap-20",
+            // A row of columns, not a grid of them. `justify-items-end` put
+            // each column box at the right of an equal-width cell, so a short
+            // label and a long one started at different x positions and the
+            // whole block read as ragged — the columns are already pushed
+            // right as a group by the parent's justify-between.
+            mode === "masthead" && "flex flex-wrap gap-10 sm:gap-16 lg:gap-20",
             mode !== "masthead" && "contents"
           )}
         >
