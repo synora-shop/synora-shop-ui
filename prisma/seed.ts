@@ -47,12 +47,17 @@ async function main() {
   // lives on the membership rather than the user.
   const admin = await prisma.user.upsert({
     where: { email: adminEmail },
-    update: {},
     create: {
       name: "Shop Admin",
       email: adminEmail,
       passwordHash: await bcrypt.hash(adminPassword, 10),
+      // Without this the account cannot sign in at all — auth.ts refuses any
+      // user whose email is unverified — and this script ends by printing the
+      // credentials as though they work. A seeded account exists to be used;
+      // there is no inbox here to confirm from.
+      emailVerifiedAt: new Date(),
     },
+    update: { emailVerifiedAt: new Date() },
   });
 
   await prisma.membership.upsert({

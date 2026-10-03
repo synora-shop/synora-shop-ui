@@ -9,6 +9,7 @@ import {
   ChevronUp,
   ExternalLink,
   Eye,
+  GripVertical,
   EyeOff,
   Monitor,
   Copy,
@@ -264,6 +265,22 @@ export function Customizer({
     setChanged({ sectionId: id, seq: ++seqRef.current });
   }
 
+  /**
+   * Which row is being dragged, and which gap it is hovering over.
+   *
+   * Native HTML5 drag events rather than a library: this is one vertical
+   * list, the dependency would be the largest in the panel, and the hard part
+   * of drag-and-drop libraries — pointer capture across scroll containers — is
+   * work the browser already does here.
+   *
+   * The chevrons stay. Dragging is a mouse gesture and nothing else: there is
+   * no keyboard equivalent, and a list that can only be reordered by dragging
+   * cannot be reordered by somebody using a keyboard at all. Two ways in, one
+   * of which is accessible, is the whole reason the buttons were not replaced.
+   */
+  const [dragFrom, setDragFrom] = useState<number | null>(null);
+  const [dragOver, setDragOver] = useState<number | null>(null);
+
   function move(from: number, to: number) {
     if (to < 0 || to >= sections.length) return;
     const next = [...sections];
@@ -490,9 +507,15 @@ export function Customizer({
         {/* The pages, as a bar rather than a dropdown. A dropdown hides how
             many pages there are and takes two clicks to move between two of
             them, which is the single most common move in here. */}
+        {/* Hugs its tabs rather than filling the bar. With `flex-1` a shop
+            with one page — which is every shop until it makes a second —
+            drew nine hundred pixels of empty tinted pill across the top of
+            the editor, the largest single element on screen and a control
+            with nothing in it. It still scrolls when the tabs outgrow the
+            room, which is what flex-1 was reaching for. */}
         <nav
           aria-label="Pages"
-          className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto rounded-pill bg-subtle p-1"
+          className="flex min-w-0 max-w-full flex-initial items-center gap-1 overflow-x-auto rounded-pill bg-subtle p-1"
         >
           {pages.map((p) => {
             const current = p.id === page.id;
@@ -664,8 +687,47 @@ export function Customizer({
                 {sections.map((section, i) => (
                   <div
                     key={section.id}
-                    className="flex items-center gap-1 rounded-lg border border-border bg-white px-2 py-1.5"
+                    draggable
+                    onDragStart={(e) => {
+                      setDragFrom(i);
+                      e.dataTransfer.effectAllowed = "move";
+                      // Firefox refuses to start a drag without payload.
+                      e.dataTransfer.setData("text/plain", section.id);
+                    }}
+                    onDragOver={(e) => {
+                      if (dragFrom === null) return;
+                      e.preventDefault();
+                      e.dataTransfer.dropEffect = "move";
+                      if (dragOver !== i) setDragOver(i);
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      if (dragFrom !== null && dragFrom !== i) move(dragFrom, i);
+                      setDragFrom(null);
+                      setDragOver(null);
+                    }}
+                    onDragEnd={() => {
+                      setDragFrom(null);
+                      setDragOver(null);
+                    }}
+                    className={cn(
+                      "flex items-center gap-1 rounded-lg border bg-white px-2 py-1.5 transition-[border-color,box-shadow,opacity]",
+                      // The row being carried fades; the gap it would land in
+                      // is drawn as an edge. Without the second half a merchant
+                      // is dragging with no idea where it will go.
+                      dragFrom === i ? "opacity-40" : "border-border",
+                      dragOver === i && dragFrom !== null && dragFrom !== i
+                        ? "border-brand-500 shadow-sm"
+                        : ""
+                    )}
                   >
+                    <span
+                      aria-hidden="true"
+                      title="Drag to reorder"
+                      className="-ml-0.5 cursor-grab text-ink-faint active:cursor-grabbing"
+                    >
+                      <GripVertical className="h-4 w-4" />
+                    </span>
                     <button
                       type="button"
                       onClick={() => setSelectedId(section.id)}
