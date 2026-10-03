@@ -24,7 +24,7 @@
  * Dependency-free; reads the source and the schema rather than the database,
  * so it runs anywhere and needs no connection.
  */
-import { readFileSync, existsSync } from "fs";
+import { readFileSync, existsSync, readdirSync } from "fs";
 import { join } from "path";
 
 const ROOT = process.cwd();
@@ -588,6 +588,71 @@ console.log("\nWHAT HAPPENS WHEN TWO PEOPLE BUY THE LAST ONE");
       `${page.replace("app/(storefront)/", "")} does not rate-limit`,
       !/rateLimit\(/.test(read(page)),
       "a database read and write per page view, on the pool the storefront is already using"
+    );
+  }
+}
+
+
+// ===========================================================================
+console.log("\nTHE DATABASE CAN BE REBUILT FROM ITS MIGRATIONS");
+// ===========================================================================
+/*
+ * Every model needs a CREATE TABLE somewhere in the history.
+ *
+ * `AdminOtp` did not have one. It was in schema.prisma, written to on every
+ * admin sign-in code and deleted from by the nightly prune, and no migration
+ * ever created it — production has it because it got there some other way,
+ * most likely a `db push` before hand-written migrations became the rule.
+ *
+ * Nothing catches that from the inside. `prisma generate` reads the schema and
+ * is happy, every type checks, every query compiles, and the running system
+ * works. It only appears when the history is applied to an empty database:
+ * a fresh Preview branch, a rebuild from backup, a new environment. Admin
+ * sign-in then throws the first time anybody asks for a code.
+ *
+ * MASTER.md names this hazard — "_prisma_migrations can diverge from the real
+ * schema" — and warns against fixing it with `db push`, which would make the
+ * divergence permanent. This asserts it instead, statically, so the next
+ * missing table fails the build rather than a disaster recovery.
+ */
+{
+  const models = [...schema.matchAll(/^model (\w+) \{/gm)].map((m) => m[1]);
+  const dirs = readdirSync(join(ROOT, "prisma/migrations"), { withFileTypes: true })
+    .filter((e) => e.isDirectory())
+    .map((e) => e.name);
+  const history = dirs
+    .map((d) => read(`prisma/migrations/${d}/migration.sql`))
+    .join("\n");
+
+  check("there is a migration history to check", dirs.length > 0);
+  for (const model of models) {
+    check(
+      `${model} is created by a migration`,
+      new RegExp(`CREATE TABLE\\s+(IF NOT EXISTS\\s+)?"${model}"`).test(history),
+      "in the schema and in no migration — a fresh database comes up without it"
+    );
+  }
+
+  // A table has to be created by a file that sorts earlier than one indexing
+  // it, because migrations apply in filename order. This is how the missing
+  // table surfaced: an index migration failed on a relation that did not exist.
+  for (const model of models) {
+    const creator = dirs.sort().find((d) =>
+      new RegExp(`CREATE TABLE\\s+(IF NOT EXISTS\\s+)?"${model}"`).test(
+        read(`prisma/migrations/${d}/migration.sql`)
+      )
+    );
+    if (!creator) continue;
+    const toucher = dirs.sort().find((d) =>
+      new RegExp(`(CREATE INDEX|ALTER TABLE)[^;]*"${model}"`).test(
+        read(`prisma/migrations/${d}/migration.sql`)
+      )
+    );
+    if (!toucher) continue;
+    check(
+      `${model} is created before it is altered`,
+      creator <= toucher,
+      `created in ${creator}, touched in ${toucher}`
     );
   }
 }
