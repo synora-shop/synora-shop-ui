@@ -235,6 +235,10 @@ export default async function StorefrontLayout({ children }: LayoutProps<"/">) {
         logoSrcCompact={pickLogo(marks, { dark: headerIsDark, compact: true }) || undefined}
         logoHeight={tokens.logoHeight}
         storeName={storeDisplayName}
+        // Drawn only by the `utility` header, and the footer's own links on
+        // purpose — see the prop's comment. Flattened from the columns because
+        // the strip is one row, not three.
+        utilityLinks={footerColumns(footerMenu?.items ?? []).flatMap((c) => c.links)}
       />
       <main className="flex-1">{children}</main>
       <SiteFooter

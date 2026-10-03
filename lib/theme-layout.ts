@@ -41,6 +41,11 @@ export const HEADER_LAYOUTS = {
     label: "Minimal",
     description: "Logo and tools only, with links behind a button. Most room for the page itself.",
   },
+  utility: {
+    label: "Utility bar",
+    description:
+      "A thin strip of help links above the shop's own row, with search in the middle. For a shop whose customers ask where their order is.",
+  },
 } as const;
 
 /**
@@ -62,6 +67,11 @@ export const CARD_LAYOUTS = {
   compact: {
     label: "Compact",
     description: "Smaller photo and type, price beside the name. For a large catalogue.",
+  },
+  gallery: {
+    label: "Gallery",
+    description:
+      "A large photograph with the name set generously beneath it. Fewer products on screen, each of them worth looking at.",
   },
 } as const;
 
@@ -87,6 +97,11 @@ export const FOOTER_LAYOUTS = {
   band: {
     label: "Band",
     description: "A single centred row. Quieter, and much shorter on a phone.",
+  },
+  masthead: {
+    label: "Masthead",
+    description:
+      "The shop's name and a line about it on the left, menus in columns beside it. The longest of the three, and the only one that says anything.",
   },
 } as const;
 
@@ -227,4 +242,10 @@ export const CARD_ASPECT: Record<CardLayout, string> = {
   editorial: "aspect-[2/3]",
   /** Square: the most products in the least height. */
   compact: "aspect-square",
+  /**
+   * Barely taller than wide — 322x374 in the design this came from.
+   * Deliberately nothing like the other three: a shape that reads as "almost
+   * square" is a fourth variant nobody can tell from the first.
+   */
+  gallery: "aspect-[6/7]",
 };

@@ -2,6 +2,7 @@ import { StoreLink as Link } from "@/components/storefront/store-link";
 import { Container } from "@/components/ui/container";
 import { THEME_LAYOUT_DEFAULTS, type FooterLayout } from "@/lib/theme-layout";
 import { Logo } from "@/components/ui/logo";
+import { cn } from "@/lib/utils";
 
 
 type FooterLink = { id: string; href: string; label: string };
@@ -79,32 +80,75 @@ export function SiteFooter({
       {/* Band collapses the columns into one centred stack and halves the
           padding. On a phone the columns footer is most of a screen's worth of
           scrolling before the page ends, which is the thing this fixes. */}
+      {/* Band collapses the columns into one centred stack and halves the
+          padding. Masthead does the opposite: the shop's name and what it is
+          take the left, the menus sit together on the right, and the whole
+          thing is given room. */}
       <Container
         className={
           mode === "band"
             ? "flex flex-col items-center gap-6 py-8 text-center"
-            : "grid grid-cols-2 gap-8 py-12 sm:grid-cols-4"
+            : mode === "masthead"
+              ? "flex flex-col gap-12 py-14 lg:flex-row lg:items-start lg:justify-between lg:gap-20"
+              : "grid grid-cols-2 gap-8 py-12 sm:grid-cols-4"
         }
       >
-        <div className="col-span-2 sm:col-span-1">
+        <div className={cn(mode === "masthead" ? "max-w-[290px] shrink-0" : "col-span-2 sm:col-span-1")}>
           <Logo color={logoColor} height={24} src={logoSrc} fallbackText={storeName} />
-          <p className="mt-3 max-w-xs text-sm text-ink-soft">{tagline || FALLBACK_TAGLINE}</p>
+          <p
+            className={cn(
+              "mt-3 text-sm",
+              // The only place in this design where muting is opacity rather
+              // than a second colour — it has to sit on whatever ground the
+              // merchant chose for the footer, which a fixed grey cannot.
+              mode === "masthead" ? "max-w-none opacity-80" : "max-w-xs text-ink-soft"
+            )}
+          >
+            {tagline || FALLBACK_TAGLINE}
+          </p>
         </div>
 
-        {footerColumns.map((column) => (
-          <div key={column.heading}>
-            <h3 className="text-sm font-semibold text-ink">{column.heading}</h3>
-            <ul className="mt-3 space-y-2 text-sm text-ink-soft">
-              {column.links.map((link) => (
-                <li key={link.id}>
-                  <Link href={link.href} className="transition-colors hover:text-brand-600">
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
+        <div
+          className={cn(
+            mode === "masthead" &&
+              "grid flex-1 grid-cols-2 gap-10 sm:grid-cols-3 lg:justify-items-end lg:gap-20",
+            mode !== "masthead" && "contents"
+          )}
+        >
+          {footerColumns.map((column) => (
+            <div key={column.heading}>
+              <h3
+                className={cn(
+                  mode === "masthead"
+                    ? "text-[11px] font-semibold uppercase tracking-[0.09em]"
+                    : "text-sm font-semibold text-ink"
+                )}
+              >
+                {column.heading}
+              </h3>
+              <ul
+                className={cn(
+                  "mt-3 space-y-2",
+                  mode === "masthead" ? "text-[13px] opacity-[0.52]" : "text-sm text-ink-soft"
+                )}
+              >
+                {column.links.map((link) => (
+                  <li key={link.id}>
+                    <Link
+                      href={link.href}
+                      className={cn(
+                        "transition-colors",
+                        mode === "masthead" ? "hover:opacity-100" : "hover:text-brand-600"
+                      )}
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
       </Container>
 
       <div className="border-t border-border py-4">

@@ -201,7 +201,12 @@ export function ProductCard({
         className={cn(
           "space-y-1",
           shape === "compact" ? "mt-2" : "mt-3",
-          shape === "editorial" && "text-center"
+          shape === "editorial" && "text-center",
+          // Gallery gives the words room rather than tucking them under the
+          // photograph. The design this comes from sets the name at 24/32 and
+          // the price at 20/28 — on a card barely wider than it is tall, that
+          // is the whole difference between a catalogue and a shop window.
+          shape === "gallery" && "mt-5 space-y-1.5"
         )}
       >
         {swatches.length > 0 && (
@@ -229,7 +234,11 @@ export function ProductCard({
           className={cn(
             "font-medium text-ink",
             shape === "editorial" && "text-xs uppercase tracking-[0.14em]",
-            shape === "compact" ? "text-[13px] leading-snug" : "text-sm"
+            // Tight tracking on the large sizes, which is the signature of the
+            // design this variant is from — the display face runs negative and
+            // only the uppercase UI type runs positive.
+            shape === "gallery" && "text-[17px] leading-tight tracking-[-0.01em]",
+            shape === "compact" ? "text-[13px] leading-snug" : shape === "gallery" ? "" : "text-sm"
           )}
         >
           {product.title}
@@ -238,7 +247,8 @@ export function ProductCard({
           className={cn(
             "flex items-center gap-2",
             shape === "editorial" && "justify-center",
-            shape === "compact" ? "text-[13px]" : "text-sm"
+            shape === "gallery" && "text-[15px] tracking-[-0.01em] opacity-80",
+            shape === "compact" ? "text-[13px]" : shape === "gallery" ? "" : "text-sm"
           )}
         >
           {display.mode === "price" && (

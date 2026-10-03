@@ -33,8 +33,21 @@ export function SiteHeader({
   logoHeight = 24,
   storeName,
   layout,
+  utilityLinks,
 }: {
   links?: NavLink[];
+  /**
+   * The thin strip above the shop's own row, drawn only by the `utility`
+   * header.
+   *
+   * The merchant's footer menu, passed down rather than fetched again — and
+   * the same links deliberately. In the design this variant comes from, the
+   * strip and the footer's last column carry the same four destinations
+   * (tracking, FAQ, about, contact), which is what those links are: the ones
+   * somebody hunts for at either end of a page. A second menu slot would be a
+   * second thing for a merchant to fill in, to say the same thing twice.
+   */
+  utilityLinks?: NavLink[];
   /**
    * Where the logo and the links sit.
    *
@@ -123,6 +136,25 @@ export function SiteHeader({
       }}
       className="sticky top-0 z-30 border-b border-border backdrop-blur"
     >
+      {/* Hidden below the desktop breakpoint: on a phone this is four more
+          links between the customer and the shop, and every one of them is in
+          the footer already. */}
+      {mode === "utility" && utilityLinks && utilityLinks.length > 0 && (
+        <div className="hidden border-b border-border/60 lg:block">
+          <Container className="flex h-9 items-center justify-end gap-6">
+            {utilityLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="text-[12px] opacity-70 transition-opacity hover:opacity-100"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </Container>
+        </div>
+      )}
+
       <Container className={cn("flex h-16 items-center justify-between gap-4", mode === "centred" && "lg:relative")}>
         <button
           className={cn(
@@ -170,6 +202,32 @@ export function SiteHeader({
         </Link>
 
         {mode === "classic" && desktopNav}
+
+        {/* The search field is the middle of this header rather than an icon
+            that opens one. It posts to the shop page's own `q` filter — the
+            same parameter the filter panel uses — so it is the search that
+            already exists, not a second one. */}
+        {mode === "utility" && (
+          <form
+            action="/shop"
+            method="get"
+            role="search"
+            className="hidden min-w-0 flex-1 justify-center lg:flex"
+          >
+            <div className="flex w-full max-w-[312px] items-center gap-2 rounded-pill border border-border px-4 py-1.5">
+              <input
+                type="search"
+                name="q"
+                aria-label="Search products"
+                placeholder="Search here"
+                className="min-w-0 flex-1 bg-transparent text-[13px] outline-none placeholder:opacity-60"
+              />
+              <Search className="h-4 w-4 shrink-0 opacity-70" aria-hidden="true" />
+            </div>
+          </form>
+        )}
+
+        {mode === "utility" && desktopNav}
 
         {/* Pushed right by hand in the centred header.
 
