@@ -66,18 +66,35 @@ export type ThemeTokens = {
   containerWidth: number;
 };
 
+/**
+ * Layer one: a floor, not a look.
+ *
+ * These were the old business's colours — a maroon accent, a tan secondary and
+ * a cream page — and because Loom declared `tokens: {}`, every shop on this
+ * platform opened in them. "The default theme" was one shop's brand that
+ * nobody had chosen and no screen named.
+ *
+ * What a floor is for is different: it guarantees that every field has a
+ * readable value, so a theme may declare three colours and the other ten still
+ * resolve to something sane. It should look like nothing in particular,
+ * because anything it *does* look like is a brand a merchant did not pick.
+ *
+ * Neutral greys, therefore. A shop that reaches these is a shop whose theme
+ * forgot to say something, and the right outcome there is plain rather than
+ * surprising.
+ */
 export const THEME_TOKEN_DEFAULTS: ThemeTokens = {
-  accent: "#4c100f",
-  secondary: "#d4bea7", // the brand's tan secondary
+  accent: "#1c1c1e",
+  secondary: "#4a4a52",
   accentContrast: "#ffffff",
-  pageBackground: "#f8f5f1",
+  pageBackground: "#ffffff",
   surface: "#ffffff",
-  textPrimary: "#221a1a",
-  textMuted: "#4a3f3f",
-  border: "#e8ded4",
-  headerBackground: "#f8f5f1",
+  textPrimary: "#1c1c1e",
+  textMuted: "#6b6b73",
+  border: "#e4e4e7",
+  headerBackground: "#ffffff",
   headerText: AUTO,
-  footerBackground: "#f0e6db",
+  footerBackground: "#f4f4f5",
   footerText: AUTO,
   logoColor: "original",
   logoHeight: 28,

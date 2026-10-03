@@ -135,7 +135,59 @@ const loom: ThemeDefinition = {
   description: "Clean and roomy, with large imagery. A safe first choice.",
   businessTypes: ["ecommerce"],
   sections: [...SECTION_TYPES],
-  tokens: {},
+  tokens: {
+    // Measured out of the kit; the whole palette is in docs/LOOM.md.
+    //
+    // Declared rather than inherited, which is the point of this change. Loom
+    // used to be `tokens: {}` — it was not a theme with a palette, it was the
+    // platform's leftover defaults wearing a name, and those defaults were the
+    // old business's maroon and tan. A theme that declares nothing cannot be
+    // chosen *against*.
+    accent: "#121212",
+    secondary: "#2E3A59",
+    accentContrast: "#ffffff",
+    pageBackground: "#ffffff",
+    surface: "#ffffff",
+    textPrimary: "#121212",
+    // The kit's own muted grey is #737b8b, which is 4.3:1 on white — under
+    // AA, and this is body-sized text (prices, the hero's supporting line).
+    // Two steps darker on the same hue clears it at 4.6:1 and is not a
+    // difference anyone can see. Being faithful to a design does not extend
+    // to reproducing an accessibility failure.
+    textMuted: "#6e7686",
+    border: "#dddddd",
+    headerBackground: "#ffffff",
+    footerBackground: "#121212",
+    headingFont: "inter",
+    bodyFont: "inter",
+    baseFontSize: 16,
+    // Regular, not semibold. The kit sets its 90px display face at Regular
+    // with -5px of tracking, and that pairing — large, light, very tight — is
+    // the single most recognisable thing about this design. Set at 600 it
+    // becomes an ordinary shop.
+    headingWeight: 400,
+    headingLetterSpacing: -3,
+    // Square cards, pill controls. The kit never rounds a photograph and never
+    // leaves a button unrounded, and the contrast between the two is doing
+    // real work.
+    cornerRadius: 0,
+    buttonRadius: 999,
+    containerWidth: 1440,
+    // The panel keeps its own colours. A storefront opened here should not
+    // make the admin look like the shop, for the same reason the README gives
+    // for the reverse: a shop opened on Shopify does not look like Shopify's
+    // admin. Also load-bearing — with a declared accent, leaving this on would
+    // re-skin every merchant's panel near-black the day this ships.
+    adminSkin: false,
+  },
+  layout: {
+    header: "utility",
+    productCard: "gallery",
+    grid: "roomy",
+    footer: "masthead",
+    hoverSwapImage: true,
+    swatchesOnCard: true,
+  },
 };
 
 /**

@@ -131,10 +131,29 @@ check(
   new Set(Object.values(CARD_ASPECT)).size === Object.keys(CARD_ASPECT).length,
   "two variants that render identically are one variant with two names"
 );
+/*
+ * This used to assert that Loom arranged nothing.
+ *
+ * That was right for as long as Loom was the platform's leftover defaults
+ * wearing a name: it was what every shop ran, so making it a named theme had
+ * to be a no-op for them. It stopped being right when Loom became a design —
+ * a theme that declares nothing cannot be chosen against, and "the default"
+ * is not a thing a merchant picks.
+ *
+ * What the section is actually for survives, and is asserted above: the
+ * *defaults* are still exactly the original storefront, so a shop whose theme
+ * says nothing about a slot is untouched. The protection moved from one theme
+ * to the floor underneath every theme, which is where it belonged.
+ */
 check(
-  "Loom still arranges nothing",
-  !THEMES.loom.layout || Object.keys(THEMES.loom.layout).length === 0,
-  "it is what every existing shop runs, so it has to stay a no-op"
+  "Loom is a design rather than a default",
+  !!THEMES.loom.layout && Object.keys(THEMES.loom.layout).length >= 3,
+  "a theme that arranges nothing is a palette, and this one is the shop's whole look"
+);
+check(
+  "and it declares its own colours rather than inheriting them",
+  Object.keys(THEMES.loom.tokens).length > 0,
+  "inheriting them is what made it the old business's maroon"
 );
 
 // ---------------------------------------------------------------------------

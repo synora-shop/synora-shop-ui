@@ -101,9 +101,17 @@ export function readableTextOptions(background: string): { color: string; ratio:
     .sort((a, b) => b.ratio - a.ratio);
 }
 
-/** Auto text colour for a background — the readable extreme, light or dark. */
+/**
+ * Auto text colour for a background — the readable extreme, light or dark.
+ *
+ * The dark end was `#221a1a`, a warm near-black carried over from the old
+ * brand's palette. It is only ever used where a theme says "work it out", so
+ * it has to belong to no theme in particular — and on a design built from
+ * neutral greys, a red-tinted black on the header was visible as a wrongness
+ * nobody could name. Neutral now, and still 17:1 on white.
+ */
 export function autoTextColor(background: string): string {
-  return bestTextColor(background, ["#ffffff", "#221a1a"]);
+  return bestTextColor(background, ["#ffffff", "#1c1c1e"]);
 }
 
 /**
