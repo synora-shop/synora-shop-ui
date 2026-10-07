@@ -1,4 +1,5 @@
-import { LoomButton, LoomCard, LoomLove, LoomPhoto, LoomSwipeRow, px, type Placement } from "@/components/loom/primitives";
+import { LoomButton, LoomSwipeRow, px } from "@/components/loom/primitives";
+import { LoomProductCard, type LoomProduct } from "@/components/loom/product-card";
 
 /**
  * Trending — a filter row and an asymmetric product grid.
@@ -44,25 +45,11 @@ const CHIPS = [
   { label: "T-Shirt", w: 115, mw: 115 },
 ];
 
-type Product = {
-  title: string;
-  price: string;
-  /** Desktop card width. */
-  w: number;
-  /** Full width on the phone. */
-  wideOnPhone?: boolean;
-  src: string;
-  /** The image's own box inside the card, exactly as the file crops it. */
-  img: Placement;
-  /** The same on the phone. */
-  mImg: Placement;
-  loved?: boolean;
-};
 
 // The phone file names the last one "Spotwear Shoe" and prices the fourth at
 // $225. A product has one name and one price, so the desktop's are used for
 // both — those are typos in the kit, not a design.
-const PRODUCTS: Product[] = [
+const PRODUCTS: LoomProduct[] = [
   { title: "Casual Shoe", price: "$225", w: 322, src: IMG.casual, img: { w: 408, h: 572, x: -60, y: -99 }, mImg: { w: 196.8, h: 272.66, x: -29.3, y: -47.19 }, loved: true },
   { title: "Skateboard Shoe", price: "$125", w: 322, src: IMG.skate1, img: { w: 360, h: 450, x: -11 }, mImg: { w: 208.99, h: 197, x: -29.2 } },
   { title: "Skateboard Shoe", price: "$125", w: 654, wideOnPhone: true, src: IMG.skate2, img: { w: 654, h: 436, y: -42 }, mImg: { w: 343, h: 228.49, y: -22.01 } },
@@ -105,51 +92,10 @@ export function LoomTrending() {
           className="grid grid-cols-2 gap-x-[calc(8*var(--u))] gap-y-[calc(16*var(--u))] md:flex md:flex-wrap md:gap-x-[calc(10*var(--u))] md:gap-y-[calc(20*var(--u))]"
         >
           {PRODUCTS.map((p, i) => (
-            <ProductCard key={`${p.title}-${i}`} {...p} />
+            <LoomProductCard key={`${p.title}-${i}`} {...p} />
           ))}
         </div>
       </div>
     </section>
-  );
-}
-
-/**
- * A product card: the image, then the name at 24/32 Medium and the price at
- * 20/28 Regular muted to eighty per cent — 12 below a 374-tall image and 4
- * between the two lines on desktop.
- *
- * On the phone the image is 163.5 tall in a half-width card and 196 in a wide
- * one, the text 18/32 and 16/28, 8 below the image and nothing between. The
- * radius is 24 on the half-width card and 21 on the wide one; the file really
- * does draw those differently.
- */
-function ProductCard({ title, price, w, wideOnPhone, src, img, mImg, loved }: Product) {
-  return (
-    <article
-      className={`flex flex-col gap-[calc(8*var(--u))] md:w-[var(--w)] md:shrink-0 md:gap-0 ${wideOnPhone ? "col-span-2" : ""}`}
-      style={px({ w })}
-    >
-      <LoomCard
-        className="h-[var(--mh)] w-full rounded-[var(--mr)] md:h-[calc(374*var(--u))] md:rounded-[calc(40*var(--u))]"
-        style={px(wideOnPhone ? { mh: 196, mr: 20.98 } : { mh: 163.5, mr: 24 })}
-      >
-        <LoomPhoto src={src} alt={title} {...img} m={mImg} />
-        <LoomLove active={loved} />
-      </LoomCard>
-      <div>
-        <h3
-          data-m="product-name"
-          className="text-[max(calc(18*var(--u)),14.4px)] font-medium leading-[max(calc(32*var(--u)),25.6px)] tracking-[calc(-1*var(--u))] text-[#121212] md:mt-[calc(12*var(--u))] md:text-[max(calc(24*var(--u)),19.2px)]"
-        >
-          {title}
-        </h3>
-        <p
-          data-m="product-price"
-          className="text-[max(calc(16*var(--u)),12.8px)] font-normal leading-[max(calc(28*var(--u)),22.4px)] tracking-[calc(-1*var(--u))] text-[#121212]/80 md:mt-[calc(4*var(--u))] md:text-[max(calc(20*var(--u)),16px)]"
-        >
-          {price}
-        </p>
-      </div>
-    </article>
   );
 }

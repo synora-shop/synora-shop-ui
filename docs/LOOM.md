@@ -249,6 +249,47 @@ Each of these was built wrong first and found by measuring.
   "Spotwear" and prices the fourth $225; the desktop's name and price are used
   at both sizes. "Browse Inpirations" is spelt as the file spells it.
 
+### The kit's named styles
+
+The file's "Internal Only Canvas" page holds every text style by name. The
+pages the kit does not draw use these and nothing else —
+`components/loom/type.ts` has them as `T.display1` … `T.single2`.
+
+| Style | Weight | Size / line | Tracking |
+| --- | --- | --- | --- |
+| Display 1 · 2 · 3 · 4 | Regular | 90/75 · 56/56 · 40/40 · 32/32 | −5 · −5 · −3 · −3 |
+| Heading 1 · 2 · 3 | Regular | 65/65 · 60/65 · 40/48 | −4 · −3 · −3 |
+| Heading 4 (Reguler) · (Medium) | Regular · Medium | 30/38 · 30/40 | −1 |
+| Heading 5 | Medium | 24/40 | −1 |
+| Body 1 · 2 · 3 | Medium · Regular · Medium | 24/32 · 20/28 · 18/32 | −1 |
+| Body 4 · 5 · 6 | Regular | 18/26 · 16/28 · 16/26 | −0.3 · −1 · −0.3 |
+| Body 6 (Bold) | Semi Bold | 16/32 | −0.5 |
+| Single text 1 · 2 | Semi Bold · Medium | 24/32 · 14/24 | −0.5 · +1 |
+
+Colours on its "Color" page: Black 1 `#000000`, Black 2 `#121212`, Grey
+(`#121212` at 80%), Blue `#233c6b`, White, Soft red (`#f15353` at 80%), plus
+Shade 700 `#2e3a59` and Gray 600 `#4f5b67` on the internal canvas.
+
+### Pages the kit does not draw
+
+Designed here in the kit's language — its parts, its numbers, its named
+styles — and checked by `sweep-loom.mjs` like the home page. Every page is
+`<LoomShell>` (components/loom/shell.tsx) around its own sections, so header,
+footer and the screen unit are shared.
+
+**Product — `/loom/product`.** The blog row's split: 654 of photograph, 60,
+606 of words. Under the photograph four 156 thumbnails at radius 24, 10 apart;
+on the phone the photographs are a row to swipe, 311 wide so the next shows.
+The right column: eyebrow in Single text 2, the name in Heading 2 (Heading 3
+on the phone), price in Heading 4, copy as the blog's. Colour is the kit's
+own colour chip and size is the Trending chip, the chosen one filled with ink
+as the active Trending chip is. Quantity is a pill outlined `#dddddd`; Add to
+cart is the kit's button. The Service section's three glyphs become three
+one-line promises, and Details / Shipping & Returns open on the section rule
+with the kit's chevron. "You may also like" is the Trending header and the
+kit's product card, four across at 322. The kit has one photograph per
+product, so the gallery's views are crops of it.
+
 ### Still open
 
 - **One deliberate departure from the file:** on the phone hero the second
@@ -256,6 +297,7 @@ Each of these was built wrong first and found by measuring.
   and where they meet the file draws a hard line across the green. Its top
   edge fades over 40px. Every number is still the file's.
 - **What the phone's menu button opens** is not drawn in the kit.
+- **Still to design:** collection, cart, checkout, account.
 - Nothing here is wired to the theme yet. Porting means moving these numbers
   into the storefront's real section renderers (§5), not shipping this route.
 

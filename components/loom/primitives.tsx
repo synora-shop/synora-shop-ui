@@ -41,24 +41,20 @@ export function LoomButton({
   children,
   variant = "solid",
   className,
-  style,
+  type = "button",
   ...props
-}: {
+}: Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "children"> & {
   children: React.ReactNode;
   variant?: "solid" | "outline" | "outlineLight";
-  className?: string;
-  /** For the widths the file sets by hand — the Trending chips, mainly. */
-  style?: React.CSSProperties;
   /** A measurement handle for scripts/figma/verify-loom.mjs. */
   "data-m"?: string;
 }) {
   return (
     <button
-      type="button"
-      data-m={props["data-m"]}
-      style={style}
+      type={type}
+      {...props}
       className={cn(
-        "flex h-[max(calc(50*var(--u)),40px)] min-w-[calc(280*var(--u))] shrink-0 self-start items-center justify-center whitespace-nowrap rounded-[200px] px-[calc(19*var(--u))] text-[max(calc(14*var(--u)),11.2px)] font-medium uppercase leading-[max(calc(24*var(--u)),19.2px)] tracking-[calc(1*var(--u))]",
+        "flex h-[max(calc(50*var(--u)),40px)] min-w-[calc(280*var(--u))] shrink-0 self-start items-center justify-center whitespace-nowrap rounded-[200px] px-[calc(19*var(--u))] text-[max(calc(14*var(--u)),11.2px)] font-medium uppercase leading-[max(calc(24*var(--u)),19.2px)] tracking-[calc(1*var(--u))] disabled:cursor-not-allowed",
         variant === "solid" && "bg-[#121212] text-white",
         variant === "outline" && "border border-[#121212] text-[#121212]",
         variant === "outlineLight" && "border border-[#dddddd] text-[#121212]/80",
@@ -175,7 +171,9 @@ export function LoomArrow({ className }: { className?: string }) {
  * The favourite button on a product card: a 40px circle, inset 20 from the
  * card's top-right on desktop and 8 on the phone.
  *
- * It never draws smaller than 32px, which is still a tap target.
+ * It never draws smaller than 32px, which is still a tap target, and it sits
+ * above the card's whole-card link (`z-[1]`) so pressing the heart favourites
+ * the product instead of opening it.
  *
  * Inactive is `#121212` at twenty per cent — translucent ink over the
  * photograph, not a grey — and active is the kit's one accent, `#f15353`,
@@ -188,7 +186,7 @@ export function LoomLove({ active = false }: { active?: boolean }) {
       aria-label={active ? "Remove from wishlist" : "Add to wishlist"}
       aria-pressed={active}
       className={cn(
-        "absolute right-[calc(8*var(--u))] top-[calc(8*var(--u))] flex h-[max(calc(40*var(--u)),32px)] w-[max(calc(40*var(--u)),32px)] items-center justify-center rounded-full text-white md:right-[calc(20*var(--u))] md:top-[calc(20*var(--u))]",
+        "absolute right-[calc(8*var(--u))] top-[calc(8*var(--u))] z-[1] flex h-[max(calc(40*var(--u)),32px)] w-[max(calc(40*var(--u)),32px)] items-center justify-center rounded-full text-white md:right-[calc(20*var(--u))] md:top-[calc(20*var(--u))]",
         active ? "bg-[#f15353]" : "bg-[#121212]/20"
       )}
     >
