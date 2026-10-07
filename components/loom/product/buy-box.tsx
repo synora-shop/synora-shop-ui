@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { LOOM_RULE, LoomButton, LoomSwipeRow } from "@/components/loom/primitives";
-import { LoomChevronDown, LoomHeartFill, LoomHeartOutline, LoomPhoneIcon, LoomRefreshIcon } from "@/components/loom/icons";
+import { LoomChevronDown, LoomHeartFill, LoomHeartOutline } from "@/components/loom/icons";
+import { LoomPromises, LoomStepper } from "@/components/loom/commerce";
 import { T } from "@/components/loom/type";
 
 export type BuyBoxProduct = {
@@ -134,46 +135,13 @@ export function LoomBuyBox({ product }: { product: BuyBoxProduct }) {
 
       {/* Quantity and the one primary action */}
       <div className="flex gap-[calc(10*var(--u))]">
-        <div className="flex h-[max(calc(50*var(--u)),40px)] w-[calc(140*var(--u))] min-w-[112px] shrink-0 items-center justify-between rounded-[200px] border border-[#dddddd] px-[calc(8*var(--u))]">
-          <button
-            type="button"
-            aria-label="One fewer"
-            disabled={qty <= 1}
-            onClick={() => setQty((q) => Math.max(1, q - 1))}
-            className={cn(T.body4, "flex h-full w-[calc(36*var(--u))] min-w-[28px] items-center justify-center text-[#121212] disabled:text-[#121212]/30")}
-          >
-            −
-          </button>
-          <span data-m="pdp-qty" className={cn(T.body4, "text-[#121212]")} aria-live="polite">
-            {qty}
-          </span>
-          <button
-            type="button"
-            aria-label="One more"
-            onClick={() => setQty((q) => q + 1)}
-            className={cn(T.body4, "flex h-full w-[calc(36*var(--u))] min-w-[28px] items-center justify-center text-[#121212]")}
-          >
-            +
-          </button>
-        </div>
+        <LoomStepper value={qty} onChange={setQty} />
         <LoomButton data-m="pdp-add" className="min-w-0 flex-1">
           Add to cart
         </LoomButton>
       </div>
 
-      {/* The Service section's three promises, a line each */}
-      <ul className="flex flex-col gap-[calc(16*var(--u))]">
-        {[
-          { Icon: LoomHeartFill, text: "Packed with care, like a birthday gift" },
-          { Icon: LoomPhoneIcon, text: "Questions answered, any time you ask" },
-          { Icon: LoomRefreshIcon, text: "Free returns within 30 days" },
-        ].map(({ Icon, text }) => (
-          <li key={text} className={cn(T.body6, "flex items-center gap-[calc(12*var(--u))] text-[#121212]/80")}>
-            <Icon className="h-[max(calc(24*var(--u)),19px)] w-[max(calc(24*var(--u)),19px)] shrink-0 text-[#2e3a59]" />
-            {text}
-          </li>
-        ))}
-      </ul>
+      <LoomPromises />
 
       {/* Details, on the section rule */}
       <div>

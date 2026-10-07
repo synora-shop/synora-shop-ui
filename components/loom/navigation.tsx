@@ -92,10 +92,10 @@ export function LoomNavigation() {
         <a href="#" aria-label="Wishlist">
           <LoomHeartOutline className="h-[max(calc(24*var(--u)),20px)] w-[max(calc(24*var(--u)),20px)]" />
         </a>
-        <a href="#" aria-label="Account">
+        <a href="/loom/account/sign-in" aria-label="Account">
           <LoomUserIcon className="h-[max(calc(24*var(--u)),20px)] w-[max(calc(24*var(--u)),20px)]" />
         </a>
-        <a href="#" aria-label="Cart">
+        <a href="/loom/cart" aria-label="Cart">
           <LoomCartIcon className="h-[max(calc(21*var(--u)),17.5px)] w-[max(calc(21*var(--u)),17.5px)]" />
         </a>
       </div>

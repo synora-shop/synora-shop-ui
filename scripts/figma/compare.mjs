@@ -36,3 +36,7 @@ const expr = `JSON.stringify(${JSON.stringify(spec)}.map ? null : Object.entries
 }))`;
 console.log(JSON.parse(await ev(expr)).map((r) => JSON.stringify(r)).join("\n"));
 ws.close();
+// Close the tab as well as the socket. Leaving it open costs nothing once;
+// after a session of runs there were 55, still reloading on every edit, and
+// the browser was too busy to make a new page interactive.
+await fetch(`http://127.0.0.1:9222/json/close/${t.id}`);

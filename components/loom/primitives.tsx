@@ -42,25 +42,32 @@ export function LoomButton({
   variant = "solid",
   className,
   type = "button",
+  href,
   ...props
 }: Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "children"> & {
   children: React.ReactNode;
   variant?: "solid" | "outline" | "outlineLight";
+  /** Given an address it is a link drawn as the button — never a button inside a link. */
+  href?: string;
   /** A measurement handle for scripts/figma/verify-loom.mjs. */
   "data-m"?: string;
 }) {
+  const classes = cn(
+    "flex h-[max(calc(50*var(--u)),40px)] min-w-[calc(280*var(--u))] shrink-0 self-start items-center justify-center whitespace-nowrap rounded-[200px] px-[calc(19*var(--u))] text-[max(calc(14*var(--u)),11.2px)] font-medium uppercase leading-[max(calc(24*var(--u)),19.2px)] tracking-[calc(1*var(--u))] disabled:cursor-not-allowed",
+    variant === "solid" && "bg-[#121212] text-white",
+    variant === "outline" && "border border-[#121212] text-[#121212]",
+    variant === "outlineLight" && "border border-[#dddddd] text-[#121212]/80",
+    className
+  );
+  if (href) {
+    return (
+      <a href={href} data-m={props["data-m"]} className={classes}>
+        {children}
+      </a>
+    );
+  }
   return (
-    <button
-      type={type}
-      {...props}
-      className={cn(
-        "flex h-[max(calc(50*var(--u)),40px)] min-w-[calc(280*var(--u))] shrink-0 self-start items-center justify-center whitespace-nowrap rounded-[200px] px-[calc(19*var(--u))] text-[max(calc(14*var(--u)),11.2px)] font-medium uppercase leading-[max(calc(24*var(--u)),19.2px)] tracking-[calc(1*var(--u))] disabled:cursor-not-allowed",
-        variant === "solid" && "bg-[#121212] text-white",
-        variant === "outline" && "border border-[#121212] text-[#121212]",
-        variant === "outlineLight" && "border border-[#dddddd] text-[#121212]/80",
-        className
-      )}
-    >
+    <button type={type} {...props} className={classes}>
       {children}
     </button>
   );

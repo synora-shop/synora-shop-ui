@@ -91,5 +91,9 @@ for (const width of WIDTHS) {
   }
 }
 ws.close();
+// Close the tab as well as the socket. Leaving it open costs nothing once;
+// after a session of runs there were 55, still reloading on every edit, and
+// the browser was too busy to make a new page interactive.
+await fetch(`http://127.0.0.1:9222/json/close/${t.id}`);
 console.log(`\n${fails === 0 ? "all clear" : `${fails} width(s) failing`}`);
 process.exit(fails === 0 ? 0 : 1);

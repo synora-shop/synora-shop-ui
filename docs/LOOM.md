@@ -304,14 +304,49 @@ The filters really filter. "Show more" appears only when there is more.
 The pages link to each other: the wordmark goes home, "All Category" and the
 footer's "Shoes" open the collection, and the red high-top opens the product.
 
+**Cart — `/loom/cart`.** The collection turned round: lines on the left at
+three cards' width, the summary at one card's width, 322, on the right. Each
+line sits on the section rule with the gallery's 156 thumbnail, the name and
+its colour and size, the stepper, and the line price. The summary says free
+delivery when the order earns it and, when it does not, how far off it is —
+never "worked out at checkout" beside "free". An empty cart says so and offers
+the way back.
+
+**Checkout — `/loom/checkout`.** `<LoomShell checkout>` drops the menus,
+search and footer — links away from paying — and keeps the wordmark and
+"Back to cart". The blog split again: 654 of form, 606 of order. Four
+numbered steps on the section rule (contact, where it goes, how fast, how to
+pay). Fields are the header's search pill grown to 50 with a visible label;
+a pick-one is a card at radius 24 with the price filter's round marker. Card
+payment goes to the provider's page — no card number is typed here, which is
+the platform's payment rule. On the phone the order folds to one line at the
+top. Errors are said in words under each field and focus moves to the first.
+
+**Account — `/loom/account`, `/loom/account/sign-in`.** Sign in and create
+an account are one page that turns between them, in the hero copy column's
+411. Signed in: the collection's frame — a 322 column of stacked Trending
+chips for Orders, Addresses and Details, content beside it. An order's state
+is a word with a dot ("On its way" in the kit's Blue, "Delivered" in ink).
+
+Two decisions the kit could not make:
+
+- **Error text is `#cc3a3a`, not the kit's `#f15353`.** The kit's red is 3.4:1
+  on white — fine for the field's outline, too faint for words (4.5 is the
+  floor; this is 4.96).
+- **Several controls are drawn but go nowhere yet** — an order's View, Edit and
+  Add an address, Forgot your password, Show more. They are the design; the
+  behaviour is the platform's when Loom is ported.
+
 ### Still open
 
 - **One deliberate departure from the file:** on the phone hero the second
   copy of the photograph is laid over a five-times enlargement of the first,
   and where they meet the file draws a hard line across the green. Its top
   edge fades over 40px. Every number is still the file's.
-- **What the phone's menu button opens** is not drawn in the kit.
-- **Still to design:** cart, checkout, account.
+- **Still to design:** the wishlist, an order's own page, what the phone's
+  menu opens, and the search results.
+- **The kit's photographs are 1–10MB PNGs.** Fine for a reference page; the
+  ported theme serves them through the platform's image pipeline.
 - Nothing here is wired to the theme yet. Porting means moving these numbers
   into the storefront's real section renderers (§5), not shipping this route.
 

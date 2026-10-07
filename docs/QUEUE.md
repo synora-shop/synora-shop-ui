@@ -152,8 +152,9 @@ breaking (`scripts/figma/sweep-loom.mjs`, twenty widths). Everything is in
 `docs/LOOM.md` §7.
 
 **Next, agreed:** the pages the kit does not contain, designed in the same
-language. **Product and collection are done** (`/loom/product`, `/loom/collection`);
-cart, checkout and account remain. **Then:** moving
+language. **Done:** product, collection, cart, checkout and account (`/loom/…`), each
+checked at twenty widths and driven in a browser. **Left:** the wishlist, an
+order's own page, the phone menu, search results. **Then:** moving
 these numbers into the storefront's real section renderers so the Loom a
 merchant adds is this one. That step also decides whether every shop's Inter
 gains its optical-size axis (LOOM.md §7), which changes live headings.
