@@ -58,9 +58,12 @@ a theme should not. Kits are code Synora ships; there is still no upload.
 
 **A kit starts at a version.** A shop's copy draws from the kit only at that
 version or later; every copy made before records an older version and renders
-exactly as it always has. Loom 1.x is the platform's own storefront in Loom's
-colours; **Loom 2.0.0 is the kit**, and how a shop moves to it is not yet
-decided — the registry still ships 1.0.0, so no live shop changes.
+exactly as it always has, until the merchant presses Update. That is for the
+next theme that gains a kit after merchants already wear it.
+
+**Loom's kit starts at 1.0.0 — every Loom is the kit.** Decided 8 October:
+there are no merchants yet, so the new design is simply Loom, with no older
+storefront to keep. The registry ships Loom 2.0.0, marking the change.
 
 **A merchant's edits live on their copy** — `InstalledTheme.templates`, only
 the templates they changed. A template they never touched is the kit's

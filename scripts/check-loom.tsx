@@ -193,7 +193,8 @@ const AFTER_INTERACTION = new Set<string>([
 {
   const kit = kitFor("loom", "2.0.0")!;
   check("kits: Loom 2.0.0 has a kit", !!kit);
-  check("kits: Loom 1.0.0 has none — no live shop changes", kitFor("loom", "1.0.0") === null);
+  check("kits: every Loom copy is the kit, 1.0.0 included", kitFor("loom", "1.0.0") !== null);
+  check("kits: a theme without a kit has none", kitFor("kite", "9.9.9") === null);
   check("kits: versions compare by number", versionAtLeast("2.10.0", "2.9.0") && !versionAtLeast("1.10.0", "2.0.0"));
   const product = kit.templates.product;
   const ok = (sections: unknown) => checkTemplate(kit, "product", { sections });

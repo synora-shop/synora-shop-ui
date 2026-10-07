@@ -128,7 +128,9 @@ export type ThemeDefinition = {
  */
 const loom: ThemeDefinition = {
   key: "loom",
-  version: "1.0.0",
+  // 2.0.0: Loom became its own sections (lib/themes/kits.ts) — the design a
+  // merchant sees changed throughout.
+  version: "2.0.0",
   plate: { from: "#8ab4c5", to: "#dbe8ed" },
   preview: "/themes/loom.jpg",
   name: "Loom",

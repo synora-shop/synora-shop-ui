@@ -10,9 +10,9 @@ import { LOOM_TEXT } from "@/components/loom/text";
  * theme draws from the kit only once the copy is at `since` or later. That is
  * what keeps a kit from changing a single live storefront the day it ships —
  * every copy made before it records an older version, renders exactly as it
- * always has, and moves only when the merchant presses Update (or however the
- * release is decided). Loom 1.x is the platform's original storefront wearing
- * Loom's colours; Loom 2.0 is the kit.
+ * always has, and moves only when the merchant presses Update. Loom's kit
+ * starts at 1.0.0 — every Loom is the kit — because it shipped before any
+ * merchant existed.
  *
  * Server-side only: the kit's sections are React components.
  */
@@ -30,7 +30,11 @@ export type ThemeKit = {
 export const KITS: ThemeKit[] = [
   {
     themeKey: "loom",
-    since: "2.0.0",
+    // Every copy of Loom. Decided 8 October: with no merchants yet, the new
+    // design is simply Loom — there is no older storefront to protect. The
+    // version gate stays for the next theme that gains a kit after shops
+    // already wear it.
+    since: "1.0.0",
     sections: LOOM_SECTIONS,
     templates: {
       index: LOOM.HOME,

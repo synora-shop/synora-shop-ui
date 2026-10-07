@@ -169,10 +169,11 @@ product and wishlist (LOOM.md §7).
 **Next — stage 2:** cart, checkout, account and order pages drawn by the kit on
 the platform's real cart, checkout and sign-in.
 
-**Undecided — the release:** every shop is on Loom 1.0.0 and renders as it did.
-How a shop moves to 2.0.0 (Update button, new shops only, or a separate theme
-in the store) is a decision to take before anything deploys. The migration is
-additive, but deploying it is what applies it to the live database.
+**Release, decided 8 October:** there are no merchants, so every Loom copy is
+the new design (the kit starts at 1.0.0; the registry ships 2.0.0). Deploying
+still applies migration 20261104000000 to the live database — additive, one
+column with a default — and changes the demo shops' storefronts, which run
+Loom.
 
 **Known small gaps:** a collection shows its first page of products (no paging
 yet); the customizer's page switch drops `?copy=` when editing a copy that is

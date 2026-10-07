@@ -429,10 +429,11 @@ a menu the merchant picks, drawn as Trending chips; results four across. Found
 nothing says so, says what to try, and shows the suggestions; "Trending now"
 follows so the page always has products.
 
-### On the real storefront — Loom 2.0.0
+### On the real storefront
 
-Loom is the first theme with a kit (THEMES.md §1). A shop whose copy is at
-2.0.0 draws Loom on its real storefront, from its own data:
+Loom is the first theme with a kit (THEMES.md §1), and every Loom copy draws
+it — decided 8 October, with no merchants yet. A shop on Loom draws it on its
+real storefront, from its own data:
 
 | Page | Address | Status |
 | --- | --- | --- |
@@ -448,15 +449,15 @@ Prices are in the shop's currency through the platform's formatter; links go
 through the shop's own addresses (a link setting may say `route:cart`); inside
 a theme demo every link carries the demo's prefix.
 
-**The live customizer edits it.** For a 2.0.0 copy the page switcher lists
+**The live customizer edits it.** For a Loom copy the page switcher lists
 Loom's pages (header, home, collection, product, search, wishlist, footer),
 the panel is each section's own settings, sections can be added, hidden,
 reordered and removed — except a page's main section — and the preview redraws
 as you type, the header and footer included. Saving writes the copy's
 template and clears the storefront's cache; the storefront shows it at once.
 
-Verified on the local database only: the local shop moved to 2.0.0, a
-headline edited and saved in the customizer, the storefront showing it.
+Verified on the local database only: a headline edited and saved in the
+customizer, the storefront showing it.
 
 ### Still open
 
@@ -468,7 +469,6 @@ headline edited and saved in the customizer, the storefront showing it.
   ported theme serves them through the platform's image pipeline.
 - **Stage 2:** cart, checkout, account and order on the real storefront, on
   the platform's real cart, checkout and sign-in.
-- **Release:** how a shop moves from Loom 1.0.0 to 2.0.0 is undecided.
 
 ---
 
