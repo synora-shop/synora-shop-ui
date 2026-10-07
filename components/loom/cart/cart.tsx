@@ -6,6 +6,7 @@ import { LOOM_RULE, LoomButton, LoomCard } from "@/components/loom/primitives";
 import { LoomPromises, LoomStepper, LoomTotals } from "@/components/loom/commerce";
 import { FREE_DELIVERY_FROM, money } from "@/components/loom/money";
 import { T } from "@/components/loom/type";
+import { useKitCart } from "@/lib/themes/kit-actions";
 import { on, route, type LoomCartLine, type LoomContext } from "@/components/loom/contract";
 import { tx } from "@/components/loom/text";
 
@@ -26,13 +27,23 @@ export type CartLine = LoomCartLine;
  * Phone: lines stack with a 104 thumbnail, the summary below them.
  */
 export function LoomCart({ data, ctx }: { data: Record<string, unknown>; ctx: LoomContext }) {
-  const [lines, setLines] = useState<CartLine[]>(ctx.cart ?? []);
+  // A real shop's cart is the platform's (lib/themes/kit-actions.ts); the
+  // reference build has no cart behind it, so it plays with its sample lines.
+  const real = useKitCart();
+  const [demoLines, setDemoLines] = useState<CartLine[]>(ctx.cart ?? []);
+  const live = !!ctx.live;
+  const lines = live ? real.lines.map((l) => ({ ...l, href: (ctx.base ?? "") + l.href })) : demoLines;
+  const ready = live ? real.ready : true;
+  const setQty = (id: string, qty: number) =>
+    live ? real.setQty(id, qty) : setDemoLines((ls) => ls.map((l) => (l.id === id ? { ...l, qty } : l)));
+  const remove = (id: string) => (live ? real.remove(id) : setDemoLines((ls) => ls.filter((l) => l.id !== id)));
+
   const subtotal = lines.reduce((n, l) => n + l.price * l.qty, 0);
   const count = lines.reduce((n, l) => n + l.qty, 0);
-  const short = FREE_DELIVERY_FROM - subtotal;
-
-  const setQty = (id: string, qty: number) => setLines((ls) => ls.map((l) => (l.id === id ? { ...l, qty } : l)));
-  const remove = (id: string) => setLines((ls) => ls.filter((l) => l.id !== id));
+  // The shop's own terms where there is a shop; the kit's sample terms otherwise.
+  const threshold = live ? (ctx.checkout?.freeShippingFrom ?? null) : FREE_DELIVERY_FROM;
+  const short = threshold === null ? 0 : threshold - subtotal;
+  const delivery = live ? (short > 0 || threshold === null ? (ctx.checkout?.shippingFee ?? null) : 0) : short > 0 ? null : 0;
 
   return (
     <section className="px-[calc(16*var(--u))] pb-[calc(40*var(--u))] md:px-[calc(60*var(--u))] md:pb-[calc(120*var(--u))]">
@@ -41,11 +52,14 @@ export function LoomCart({ data, ctx }: { data: Record<string, unknown>; ctx: Lo
           {tx(ctx, "cart.heading")}
         </h1>
         <p className={cn(T.body6, "text-[#121212]/80 md:text-[max(calc(18*var(--u)),14.4px)]")} aria-live="polite">
-          {count === 1 ? tx(ctx, "cart.itemCountOne") : tx(ctx, "cart.itemCount", { count })}
+          {ready && (count === 1 ? tx(ctx, "cart.itemCountOne") : tx(ctx, "cart.itemCount", { count }))}
         </p>
       </header>
 
-      {lines.length === 0 ? (
+      {!ready ? (
+        // The browser's cart has not been read yet — say nothing rather than "empty".
+        <div className="min-h-[calc(240*var(--u))]" aria-busy="true" />
+      ) : lines.length === 0 ? (
         <div className={cn("flex flex-col items-start gap-[calc(24*var(--u))] py-[calc(40*var(--u))]", LOOM_RULE)}>
           <p className={cn(T.h4, "text-[#121212]")}>{tx(ctx, "cart.emptyHeading")}</p>
           <LoomButton variant="outline" href={route(ctx, "collection")}>
@@ -98,7 +112,7 @@ export function LoomCart({ data, ctx }: { data: Record<string, unknown>; ctx: Lo
             {/* Free is known here, so it is said; a charge depends on the
                 address, so it waits for checkout — and the note says how far
                 off free is, which is the reason the number matters. */}
-            <LoomTotals ctx={ctx} subtotal={subtotal} delivery={short > 0 ? null : 0} />
+            <LoomTotals ctx={ctx} subtotal={subtotal} delivery={delivery} />
             {short > 0 && on(data, "showFreeDeliveryNote") && (
               <p data-m="cart-note" className={cn(T.body6, "text-[#121212]/80")}>
                 {tx(ctx, "cart.freeDeliveryNote", { amount: money(short, ctx.currency) })}

@@ -3,7 +3,7 @@
 import { useId } from "react";
 import { cn } from "@/lib/utils";
 import { LOOM_RULE } from "@/components/loom/primitives";
-import { LoomHeartFill, LoomPhoneIcon, LoomRefreshIcon } from "@/components/loom/icons";
+import { LoomChevronDown, LoomHeartFill, LoomPhoneIcon, LoomRefreshIcon } from "@/components/loom/icons";
 import { T } from "@/components/loom/type";
 import { money } from "@/components/loom/money";
 import { tx } from "@/components/loom/text";
@@ -136,6 +136,54 @@ export function LoomField({
 }
 
 /**
+ * A choice from a list — the same pill and label as LoomField, with the kit's
+ * chevron. For the checkout's city, which must be one the shop delivers to.
+ */
+export function LoomSelectField({
+  label,
+  error,
+  options,
+  placeholder,
+  className,
+  ...select
+}: React.SelectHTMLAttributes<HTMLSelectElement> & { label: string; error?: string; options: string[]; placeholder: string }) {
+  const id = useId();
+  return (
+    <div className={cn("flex min-w-0 flex-col gap-[calc(8*var(--u))]", className)}>
+      <label htmlFor={id} className={cn(T.single2, "uppercase text-[#121212]/80")}>
+        {label}
+      </label>
+      <div className="relative">
+        <select
+          id={id}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? `${id}-e` : undefined}
+          {...select}
+          className={cn(
+            T.body6,
+            "h-[max(calc(50*var(--u)),40px)] w-full min-w-0 cursor-pointer appearance-none rounded-[2000px] border bg-transparent pl-[calc(20*var(--u))] pr-[calc(48*var(--u))] text-[#121212] outline-none focus:border-[#121212]",
+            error ? "border-[#f15353]" : "border-[#e3e3e3]"
+          )}
+        >
+          <option value="">{placeholder}</option>
+          {options.map((o) => (
+            <option key={o} value={o}>
+              {o}
+            </option>
+          ))}
+        </select>
+        <LoomChevronDown className="pointer-events-none absolute right-[calc(16*var(--u))] top-1/2 h-[max(calc(24*var(--u)),19px)] w-[max(calc(24*var(--u)),19px)] -translate-y-1/2 text-[#121212]" />
+      </div>
+      {error && (
+        <p id={`${id}-e`} role="alert" className={cn(T.body6, "text-[#cc3a3a]")}>
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
+/**
  * Subtotal, delivery and total, on the section rule. Labels in Body 6 at 80%,
  * figures right-aligned; the total in Heading 4, the size the product page
  * prints its price in, because it is the one number the page is about.
@@ -143,18 +191,22 @@ export function LoomField({
 export function LoomTotals({
   subtotal,
   delivery,
+  discount,
   className,
   ctx,
 }: {
   subtotal: number;
   delivery: number | null;
+  /** A code the server priced, taken off the total. */
+  discount?: { code: string; saving: number } | null;
   className?: string;
   ctx: Pick<LoomContext, "text" | "currency">;
 }) {
-  const total = subtotal + (delivery ?? 0);
+  const total = Math.max(0, subtotal + (delivery ?? 0) - (discount?.saving ?? 0));
   return (
     <dl className={cn("flex flex-col gap-[calc(12*var(--u))] pt-[calc(24*var(--u))]", LOOM_RULE, className)}>
       <Row label={tx(ctx, "checkout.subtotal")} value={money(subtotal, ctx.currency)} />
+      {discount && <Row label={`${tx(ctx, "checkout.discount")} · ${discount.code}`} value={`−${money(discount.saving, ctx.currency)}`} />}
       <Row
         label={tx(ctx, "checkout.shipping")}
         value={delivery === null ? tx(ctx, "checkout.shippingLater") : delivery === 0 ? tx(ctx, "checkout.freeShipping") : money(delivery, ctx.currency)}

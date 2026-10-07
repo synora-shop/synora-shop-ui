@@ -174,6 +174,14 @@ const AFTER_INTERACTION = new Set<string>([
   "filters.clearAll", "filters.clear", "filters.close", "filters.showResults", "filters.showResultsOne",
   "product.removeFromWishlist", "product.addedToCart", "product.unavailable",
 ]);
+// Words only a real shop draws, once the browser has read its cart — which a
+// server render never has (the cart lives in the browser's storage). The
+// checkout's real-shop path was tried by hand on the local database.
+const LIVE_ONLY = new Set<string>([
+  "checkout.discount", "checkout.discountCode", "checkout.apply", "checkout.removeDiscount",
+  "checkout.cityPlaceholder", "checkout.delivery", "checkout.stepDelivery", "checkout.deliveryNote",
+  "checkout.emptyCart",
+]);
 {
   const markers = Object.fromEntries(Object.keys(LOOM_TEXT).map((k) => [k, `TXT${k.replace(/\W/g, "")}TXT`]));
   const pool = Object.keys(LOOM_SECTIONS)
@@ -182,10 +190,10 @@ const AFTER_INTERACTION = new Set<string>([
   // The checkout header lives in the shell, not a section; its one word is checked by reading the shell.
   const reached = (Object.keys(LOOM_TEXT) as LoomTextKey[]).filter((k) => pool.includes(markers[k]) || k === "checkout.backToCart");
   for (const k of Object.keys(LOOM_TEXT) as LoomTextKey[]) {
-    if (AFTER_INTERACTION.has(k)) continue;
+    if (AFTER_INTERACTION.has(k) || LIVE_ONLY.has(k)) continue;
     check(`site text ${k}: reaches the page`, reached.includes(k), "set in Site text, changes nothing");
   }
-  console.log(`site text: ${reached.length} of ${Object.keys(LOOM_TEXT).length} keys reached by a server render; ${AFTER_INTERACTION.size} appear only after an interaction`);
+  console.log(`site text: ${reached.length} of ${Object.keys(LOOM_TEXT).length} keys reached by a server render; ${AFTER_INTERACTION.size} appear only after an interaction, ${LIVE_ONLY.size} only on a real shop`);
 }
 
 // 6. The server's save rules (lib/themes/kit-templates.ts) — what stands

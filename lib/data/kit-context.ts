@@ -7,7 +7,15 @@ import { formatMoney } from "@/lib/money";
 import { getCurrency } from "@/lib/data/settings";
 import { productHtmlToText } from "@/lib/product-html";
 import { storeBase } from "@/lib/theme-store";
-import type { KitLink, KitRoutes } from "@/lib/themes/kit";
+import type { KitCheckout, KitLink, KitRoutes } from "@/lib/themes/kit";
+import { getStoreSettings } from "@/lib/data/settings";
+import { currentShopId, db } from "@/lib/data/shop";
+import { shopSession } from "@/lib/auth-guard";
+import { offerableGateways } from "@/lib/payments/offer";
+import { checkoutMethods } from "@/lib/payment-methods";
+import { resolveStoreDefaults } from "@/lib/store-defaults";
+import { currentCustomer } from "@/lib/data/customer";
+import { CITIES } from "@/lib/cities";
 
 /**
  * The shop's data in the shapes a theme kit's sections read (lib/themes/kit.ts).
@@ -139,5 +147,46 @@ export const kitBaseContext = cache(async (): Promise<KitContext> => {
   const kitMenus = toKitMenus(menus);
   for (const k of Object.keys(kitMenus)) kitMenus[k] = { ...kitMenus[k], items: baseLinks(base, kitMenus[k].items) };
   const routes = Object.fromEntries(Object.entries(STORE_ROUTES).map(([k, v]) => [k, withBase(base, v)])) as KitRoutes;
-  return { menus: kitMenus, routes, products: [], text, base, currency };
+  return { live: true, menus: kitMenus, routes, products: [], text, base, currency };
 });
+
+/**
+ * The checkout's terms as the shop has set them up — exactly what the
+ * platform's own checkout page reads (app/(storefront)/checkout/page.tsx), so a
+ * kit cannot offer a method, a city or a fee the order API would refuse.
+ */
+export async function kitCheckoutTerms(): Promise<KitCheckout> {
+  const settings = await getStoreSettings();
+  const shopId = await currentShopId();
+  const staff = await shopSession();
+  const gateways = await offerableGateways(shopId, resolveStoreDefaults(settings).currency, !!staff && staff.shop.id === shopId);
+  const methods = checkoutMethods(settings.enabledPaymentMethods, settings, gateways);
+
+  const me = await currentCustomer();
+  const customer = me
+    ? await (await db()).customer.findFirst({
+        where: { id: me.id },
+        include: { addresses: { orderBy: [{ isDefault: "desc" }, { createdAt: "desc" }], take: 1 } },
+      })
+    : null;
+  const address = customer?.addresses[0];
+  const [first, ...rest] = (customer?.name ?? "").trim().split(/\s+/);
+
+  return {
+    methods: methods.map((m) => ({ value: m.value, label: m.label, hint: m.hint, instructions: m.instructions, redirects: m.redirects })),
+    shippingFee: settings.shippingFee,
+    freeShippingFrom: settings.freeShippingThreshold ?? null,
+    cities: CITIES.map((c) => c.name),
+    initial: customer
+      ? {
+          firstName: first ?? "",
+          lastName: rest.join(" "),
+          email: customer.email,
+          phone: address?.phone ?? customer.phone ?? "",
+          line1: address?.line1 ?? "",
+          city: address?.city ?? "",
+          postcode: address?.postalCode ?? "",
+        }
+      : undefined,
+  };
+}

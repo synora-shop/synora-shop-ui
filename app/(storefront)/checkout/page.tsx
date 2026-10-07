@@ -14,13 +14,27 @@ import { releaseExpiredForShop } from "@/lib/payments/reservations";
 import { resolveStoreDefaults } from "@/lib/store-defaults";
 import { shopSession } from "@/lib/auth-guard";
 import { currentShopId } from "@/lib/data/shop";
+import { getKitForRequest } from "@/lib/data/theme";
+import { kitBaseContext, kitCheckoutTerms } from "@/lib/data/kit-context";
+import { KitPage } from "@/components/storefront/kit-page";
+import { isPreview } from "@/lib/preview-mode";
 
 export const metadata: Metadata = { title: "Checkout" };
 // Bank/JazzCash/EasyPaisa details can change in the admin panel — never serve a stale snapshot.
 export const dynamic = "force-dynamic";
 
-export default async function CheckoutPage() {
+export default async function CheckoutPage(props: PageProps<"/checkout">) {
   await guardStorefront();
+
+  // A theme with its own sections draws its checkout template — on the
+  // platform's cart and order API, offering only what this shop takes.
+  const live = await getKitForRequest();
+  if (live) {
+    await releaseExpiredForShop(await currentShopId()).catch(() => {});
+    const ctx = { ...(await kitBaseContext()), checkout: await kitCheckoutTerms() };
+    return <KitPage kit={live.kit} templates={live.templates} name="checkout" ctx={ctx} preview={isPreview(await props.searchParams)} />;
+  }
+
   const [settings, siteText] = await Promise.all([getStoreSettings(), getSiteText()]);
   const session = await auth();
 

@@ -4,10 +4,13 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { LOOM_RULE, LoomButton, LoomCard } from "@/components/loom/primitives";
 import { LoomChevronDown } from "@/components/loom/icons";
-import { LoomField, LoomPromises, LoomTotals } from "@/components/loom/commerce";
+import { LoomField, LoomPromises, LoomSelectField, LoomTotals } from "@/components/loom/commerce";
 import { FREE_DELIVERY_FROM, money } from "@/components/loom/money";
 import type { CartLine } from "@/components/loom/cart/cart";
 import { T } from "@/components/loom/type";
+import { useRouter } from "next/navigation";
+import { isValidPakistaniPhone } from "@/lib/validation";
+import { kitPlaceOrder, kitPreviewDiscount, useKitCart } from "@/lib/themes/kit-actions";
 import { on, route, type LoomContext } from "@/components/loom/contract";
 import { tx } from "@/components/loom/text";
 
@@ -33,16 +36,58 @@ type Form = Record<"email" | "first" | "last" | "address" | "city" | "postcode" 
 const EMPTY: Form = { email: "", first: "", last: "", address: "", city: "", postcode: "", phone: "" };
 
 export function LoomCheckout({ data, ctx }: { data: Record<string, unknown>; ctx: LoomContext }) {
-  const lines: CartLine[] = ctx.cart ?? [];
+  // On a real shop: the platform's cart, the shop's own terms and the order
+  // API (lib/themes/kit-actions.ts), every rule they enforce enforced here
+  // too. In the reference build: sample lines and a pretend order.
+  const live = !!ctx.live;
+  const terms = ctx.checkout;
+  const cart = useKitCart();
+  const router = useRouter();
+  const lines: CartLine[] = live ? cart.lines : (ctx.cart ?? []);
   const subtotal = lines.reduce((n, l) => n + l.price * l.qty, 0);
-  const [form, setForm] = useState<Form>(EMPTY);
+  const start = terms?.initial;
+  const [form, setForm] = useState<Form>(
+    start
+      ? { email: start.email, first: start.firstName, last: start.lastName, address: start.line1, city: start.city, postcode: start.postcode, phone: start.phone }
+      : EMPTY
+  );
   const [errors, setErrors] = useState<Partial<Form>>({});
   const [speed, setSpeed] = useState<"standard" | "express">("standard");
-  const [pay, setPay] = useState<"card" | "cod">("card");
+  const [pay, setPay] = useState<string>(live ? (terms?.methods[0]?.value ?? "") : "card");
   const [placed, setPlaced] = useState<string | null>(null);
+  const [discount, setDiscount] = useState<{ code: string; saving: number } | null>(null);
+  const [codeInput, setCodeInput] = useState("");
+  const [codeError, setCodeError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
 
-  const standard = subtotal >= FREE_DELIVERY_FROM ? 0 : 10;
-  const delivery = speed === "express" ? 15 : standard;
+  // The shop's one delivery charge, free over its threshold; the demo's
+  // sample choice of two speeds.
+  const standard = live
+    ? terms && terms.freeShippingFrom !== null && subtotal >= terms.freeShippingFrom
+      ? 0
+      : (terms?.shippingFee ?? 0)
+    : subtotal >= FREE_DELIVERY_FROM
+      ? 0
+      : 10;
+  const delivery = !live && speed === "express" ? 15 : standard;
+  const total = Math.max(0, subtotal + delivery - (discount?.saving ?? 0));
+  const method = terms?.methods.find((m) => m.value === pay);
+  const leavesForProvider = live ? !!method?.redirects : pay === "card";
+
+  async function applyCode() {
+    const code = codeInput.trim();
+    if (!code) return;
+    setCodeError(null);
+    const result = await kitPreviewDiscount(code, cart.orderItems().map((i) => ({ variantId: i.variantId, quantity: i.quantity })));
+    if (!result.ok) {
+      setDiscount(null);
+      setCodeError(result.error);
+      return;
+    }
+    setDiscount({ code: result.code, saving: result.saving });
+    setCodeInput("");
+  }
 
   const field = (k: keyof Form) => ({
     value: form[k],
@@ -65,8 +110,12 @@ export function LoomCheckout({ data, ctx }: { data: Record<string, unknown>; ctx
       ["postcode", tx(ctx, "checkout.postcodeError")],
       ["phone", tx(ctx, "checkout.phoneError")],
     ] as const) {
+      // The platform's order takes a postcode as optional; the demo asks for one.
+      if (live && k === "postcode") continue;
       if (!form[k].trim()) next[k] = msg;
     }
+    // The same phone rule the order API holds to — said here, before the trip.
+    if (live && form.phone.trim() && !isValidPakistaniPhone(form.phone)) next.phone = tx(ctx, "checkout.phoneError");
     setErrors(next);
     if (Object.keys(next).length) {
       // Take the customer to the first thing to fix rather than leaving them
@@ -74,8 +123,33 @@ export function LoomCheckout({ data, ctx }: { data: Record<string, unknown>; ctx
       requestAnimationFrame(() => (document.querySelector("[aria-invalid=true]") as HTMLElement | null)?.focus());
       return;
     }
-    setPlaced(`LM-${10000 + Math.floor(subtotal * 7 + delivery * 13)}`);
-    window.scrollTo({ top: 0 });
+    if (!live) {
+      setPlaced(`LM-${10000 + Math.floor(subtotal * 7 + delivery * 13)}`);
+      window.scrollTo({ top: 0 });
+      return;
+    }
+    setSubmitting(true);
+    setServerError(null);
+    void kitPlaceOrder({
+      customerName: `${form.first} ${form.last}`.trim(),
+      customerEmail: form.email.trim(),
+      customerPhone: form.phone.trim(),
+      shippingLine1: form.address.trim(),
+      shippingCity: form.city,
+      shippingPostalCode: form.postcode.trim(),
+      paymentMethod: pay,
+      discountCode: discount?.code,
+      items: cart.orderItems(),
+    }).then((result) => {
+      if (!result.ok) {
+        setServerError(result.error);
+        setSubmitting(false);
+        return;
+      }
+      cart.clear();
+      // A card payment has already left for the provider's page.
+      if (!result.leaving) router.push(`${ctx.base ?? ""}/order-confirmation/${result.orderId}`);
+    });
   };
 
   if (placed) {
@@ -100,6 +174,65 @@ export function LoomCheckout({ data, ctx }: { data: Record<string, unknown>; ctx
     );
   }
 
+  if (live && (!cart.ready || lines.length === 0)) {
+    return (
+      <section className="px-[calc(16*var(--u))] pb-[calc(80*var(--u))] md:px-[calc(60*var(--u))] md:pb-[calc(120*var(--u))]">
+        {cart.ready && (
+          <div className="flex flex-col items-start gap-[calc(24*var(--u))]">
+            <p className={cn(T.h4, "text-[#121212]")}>{tx(ctx, "checkout.emptyCart")}</p>
+            <LoomButton variant="outline" href={route(ctx, "collection")}>
+              {tx(ctx, "cart.continueShopping")}
+            </LoomButton>
+          </div>
+        )}
+      </section>
+    );
+  }
+
+  const summary = (
+    <Summary
+      ctx={ctx}
+      showPromises={on(data, "showPromises")}
+      lines={lines}
+      subtotal={subtotal}
+      delivery={delivery}
+      discount={discount}
+      codeArea={
+        live ? (
+          discount ? (
+            <button
+              type="button"
+              onClick={() => setDiscount(null)}
+              className={cn(T.single2, "self-start uppercase text-[#121212]/80 underline underline-offset-4")}
+            >
+              {tx(ctx, "checkout.removeDiscount")} {discount.code}
+            </button>
+          ) : (
+            <div className="flex flex-col gap-[calc(8*var(--u))]">
+              <div className="flex gap-[calc(10*var(--u))]">
+                <input
+                  value={codeInput}
+                  onChange={(e) => setCodeInput(e.target.value)}
+                  aria-label={tx(ctx, "checkout.discountCode")}
+                  placeholder={tx(ctx, "checkout.discountCode")}
+                  className={cn(T.body6, "h-[max(calc(50*var(--u)),40px)] min-w-0 flex-1 rounded-[2000px] border border-[#e3e3e3] bg-transparent px-[calc(20*var(--u))] text-[#121212] outline-none placeholder:text-[#121212]/50 focus:border-[#121212]")}
+                />
+                <LoomButton type="button" variant="outlineLight" className="min-w-[calc(100*var(--u))]" onClick={applyCode} disabled={!codeInput.trim()}>
+                  {tx(ctx, "checkout.apply")}
+                </LoomButton>
+              </div>
+              {codeError && (
+                <p role="alert" className={cn(T.body6, "text-[#cc3a3a]")}>
+                  {codeError}
+                </p>
+              )}
+            </div>
+          )
+        ) : null
+      }
+    />
+  );
+
   return (
     <section className="px-[calc(16*var(--u))] pb-[calc(40*var(--u))] md:px-[calc(60*var(--u))] md:pb-[calc(120*var(--u))]">
       {/* Phone: the order, folded. */}
@@ -109,10 +242,10 @@ export function LoomCheckout({ data, ctx }: { data: Record<string, unknown>; ctx
             {tx(ctx, "cart.orderSummary")}
             <LoomChevronDown className="h-[max(calc(24*var(--u)),19px)] w-[max(calc(24*var(--u)),19px)] transition-transform group-open:rotate-180" />
           </span>
-          <span>{money(subtotal + delivery, ctx.currency)}</span>
+          <span>{money(total, ctx.currency)}</span>
         </summary>
         <div className="pb-[calc(24*var(--u))]">
-          <Summary ctx={ctx} showPromises={on(data, "showPromises")} lines={lines} subtotal={subtotal} delivery={delivery} />
+          {summary}
         </div>
       </details>
 
@@ -129,13 +262,40 @@ export function LoomCheckout({ data, ctx }: { data: Record<string, unknown>; ctx
               <LoomField label={tx(ctx, "checkout.firstName")} autoComplete="given-name" {...field("first")} />
               <LoomField label={tx(ctx, "checkout.lastName")} autoComplete="family-name" {...field("last")} />
               <LoomField label={tx(ctx, "checkout.address")} autoComplete="street-address" className="md:col-span-2" {...field("address")} />
-              <LoomField label={tx(ctx, "checkout.city")} autoComplete="address-level2" {...field("city")} />
+              {live && terms ? (
+                <LoomSelectField
+                  label={tx(ctx, "checkout.city")}
+                  autoComplete="address-level2"
+                  options={terms.cities}
+                  placeholder={tx(ctx, "checkout.cityPlaceholder")}
+                  value={form.city}
+                  error={errors.city}
+                  onChange={(e) => {
+                    setForm((f) => ({ ...f, city: e.target.value }));
+                    if (errors.city) setErrors((x) => ({ ...x, city: undefined }));
+                  }}
+                />
+              ) : (
+                <LoomField label={tx(ctx, "checkout.city")} autoComplete="address-level2" {...field("city")} />
+              )}
               <LoomField label={tx(ctx, "checkout.postcode")} autoComplete="postal-code" {...field("postcode")} />
               <LoomField label={tx(ctx, "checkout.phone")} type="tel" autoComplete="tel" inputMode="tel" className="md:col-span-2" {...field("phone")} />
             </div>
           </Step>
 
-          <Step n={3} title={tx(ctx, "checkout.stepSpeed")}>
+          <Step n={3} title={tx(ctx, live ? "checkout.stepDelivery" : "checkout.stepSpeed")}>
+            {live ? (
+              // The shop has one delivery charge: a fact to read, not a choice to make.
+              <div className="flex items-center gap-[calc(16*var(--u))] rounded-[calc(24*var(--u))] border border-[#e3e3e3] px-[calc(20*var(--u))] py-[calc(16*var(--u))]">
+                <span className="flex min-w-0 flex-1 flex-col">
+                  <span className={cn(T.body3, "text-[#121212]")}>{tx(ctx, "checkout.delivery")}</span>
+                  <span className={cn(T.body6, "text-[#121212]/80")}>{tx(ctx, "checkout.deliveryNote")}</span>
+                </span>
+                <span data-m="checkout-delivery" className={cn(T.body5, "shrink-0 text-[#121212]")}>
+                  {delivery === 0 ? tx(ctx, "checkout.freeShipping") : money(delivery, ctx.currency)}
+                </span>
+              </div>
+            ) : (
             <Choices
               name="speed"
               value={speed}
@@ -145,26 +305,42 @@ export function LoomCheckout({ data, ctx }: { data: Record<string, unknown>; ctx
                 { value: "express", title: tx(ctx, "checkout.express"), note: tx(ctx, "checkout.expressNote"), price: money(15, ctx.currency) },
               ]}
             />
+            )}
           </Step>
 
           <Step n={4} title={tx(ctx, "checkout.stepPayment")}>
             <Choices
               name="pay"
               value={pay}
-              onChange={(v) => setPay(v as typeof pay)}
-              options={[
-                { value: "card", title: tx(ctx, "checkout.card"), note: tx(ctx, "checkout.cardNote") },
-                { value: "cod", title: tx(ctx, "checkout.cod"), note: tx(ctx, "checkout.codNote") },
-              ]}
+              onChange={(v) => setPay(v)}
+              options={
+                live && terms
+                  ? terms.methods.map((m) => ({ value: m.value, title: m.label, note: m.hint }))
+                  : [
+                      { value: "card", title: tx(ctx, "checkout.card"), note: tx(ctx, "checkout.cardNote") },
+                      { value: "cod", title: tx(ctx, "checkout.cod"), note: tx(ctx, "checkout.codNote") },
+                    ]
+              }
             />
+            {/* What the shop tells a customer who picks this — its bank details and so on. */}
+            {live && method?.instructions && (
+              <p className={cn(T.body6, "whitespace-pre-line rounded-[calc(24*var(--u))] bg-[#121212]/5 px-[calc(20*var(--u))] py-[calc(16*var(--u))] text-[#121212]/80")}>
+                {method.instructions}
+              </p>
+            )}
           </Step>
 
           <div className="flex flex-col gap-[calc(16*var(--u))]">
-            <LoomButton type="submit" data-m="checkout-place" className="w-full min-w-0">
-              {tx(ctx, pay === "card" ? "checkout.continueToPayment" : "checkout.placeOrder", { amount: money(subtotal + delivery, ctx.currency) })}
+            {serverError && (
+              <p role="alert" data-m="checkout-error" className={cn(T.body6, "text-[#cc3a3a]")}>
+                {serverError}
+              </p>
+            )}
+            <LoomButton type="submit" data-m="checkout-place" className="w-full min-w-0" disabled={submitting}>
+              {tx(ctx, leavesForProvider ? "checkout.continueToPayment" : "checkout.placeOrder", { amount: money(total, ctx.currency) })}
             </LoomButton>
             <p className={cn(T.body6, "text-center text-[#121212]/80")}>
-              {tx(ctx, pay === "card" ? "checkout.nothingChargedCard" : "checkout.nothingCharged")}
+              {tx(ctx, leavesForProvider ? "checkout.nothingChargedCard" : "checkout.nothingCharged")}
             </p>
           </div>
         </form>
@@ -172,7 +348,7 @@ export function LoomCheckout({ data, ctx }: { data: Record<string, unknown>; ctx
         {/* Desktop: the order, beside the form, where the blog's words sit. */}
         <aside aria-label={tx(ctx, "checkout.orderSummary")} className="hidden md:sticky md:top-[calc(24*var(--u))] md:block md:w-[calc(606*var(--u))] md:shrink-0">
           <h2 className={cn(T.h4, "pb-[calc(24*var(--u))] text-[#121212]")}>{tx(ctx, "checkout.orderSummary")}</h2>
-          <Summary ctx={ctx} showPromises={on(data, "showPromises")} lines={lines} subtotal={subtotal} delivery={delivery} />
+          {summary}
         </aside>
       </div>
     </section>
@@ -241,12 +417,17 @@ function Summary({
   lines,
   subtotal,
   delivery,
+  discount,
+  codeArea,
   ctx,
   showPromises,
 }: {
   lines: CartLine[];
   subtotal: number;
   delivery: number;
+  discount?: { code: string; saving: number } | null;
+  /** The discount code field, on a real shop. */
+  codeArea?: React.ReactNode;
   ctx: LoomContext;
   showPromises: boolean;
 }) {
@@ -277,7 +458,8 @@ function Summary({
           </li>
         ))}
       </ul>
-      <LoomTotals ctx={ctx} subtotal={subtotal} delivery={delivery} />
+      {codeArea}
+      <LoomTotals ctx={ctx} subtotal={subtotal} delivery={delivery} discount={discount} />
       {showPromises && <LoomPromises ctx={ctx} />}
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { signIn, signOut } from "next-auth/react";
 import { useCartStore } from "@/lib/cart-store";
 import { previewDiscount } from "@/app/(storefront)/checkout/actions";
@@ -26,8 +26,11 @@ export function useKitCart() {
   // The cart lives in this browser's storage, which the server cannot read:
   // until the page has mounted, what the server drew (an empty cart) and what
   // the browser holds differ, so a kit waits for `ready` before saying "empty".
-  const [ready, setReady] = useState(false);
-  useEffect(() => setReady(true), []);
+  const ready = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
 
   const lines: KitCartLine[] = items.map((i) => ({
     id: i.key,

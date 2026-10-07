@@ -42,6 +42,15 @@ export const LOOM_TEXT = {
   "checkout.shipping": "Delivery",
   "checkout.total": "Total",
   "checkout.freeShipping": "Free",
+  "checkout.discount": "Discount",
+  "checkout.discountCode": "Discount code",
+  "checkout.apply": "Apply",
+  "checkout.removeDiscount": "Remove",
+  "checkout.cityPlaceholder": "Choose your city",
+  "checkout.delivery": "Delivery",
+  "checkout.stepDelivery": "Delivery",
+  "checkout.deliveryNote": "To the address above",
+  "checkout.emptyCart": "There is nothing in your cart to check out.",
   "checkout.shippingLater": "Worked out at checkout",
 
   // Cart
