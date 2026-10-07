@@ -3,7 +3,9 @@ import { notFound, redirect } from "next/navigation";
 import Image from "next/image";
 import { Container } from "@/components/ui/container";
 import { GRID_CLASSES } from "@/lib/theme-layout";
-import { getThemeLayout } from "@/lib/data/theme";
+import { getThemeLayout, getKitForRequest } from "@/lib/data/theme";
+import { kitBaseContext, toKitProducts } from "@/lib/data/kit-context";
+import { KitPage } from "@/components/storefront/kit-page";
 import { ProductCard } from "@/components/storefront/product-card";
 import { ProductFilters } from "@/components/storefront/product-filters";
 import { getProducts, getFilterOptions, getCategories, type ProductFilters as Filters } from "@/lib/data/products";
@@ -72,6 +74,18 @@ export default async function CollectionPage(props: PageProps<"/collections/[slu
     getSiteText(),
     getThemeLayout(),
   ]);
+
+  // A theme with its own sections draws its collection template.
+  const live = await getKitForRequest();
+  if (live) {
+    const base = await kitBaseContext();
+    const ctx = {
+      ...base,
+      products: toKitProducts(products as never, base.base),
+      collection: { title: category.name, description: category.description ?? "" },
+    };
+    return <KitPage kit={live.kit} templates={live.templates} name="collection" ctx={ctx} />;
+  }
 
   return (
     <Container className="py-12">

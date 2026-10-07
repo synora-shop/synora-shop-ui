@@ -3,7 +3,7 @@ import { LOOM_RULE, LoomButton, LoomCard } from "@/components/loom/primitives";
 import { LoomTotals } from "@/components/loom/commerce";
 import { money } from "@/components/loom/money";
 import { LoomPhoneIcon } from "@/components/loom/icons";
-import { str, on, type LoomContext } from "@/components/loom/contract";
+import { href, route, str, on, type LoomContext } from "@/components/loom/contract";
 import { T } from "@/components/loom/type";
 import { tx } from "@/components/loom/text";
 import { LoomPageHeading, PAGE_SECTION } from "@/components/loom/sections/page-heading";
@@ -33,7 +33,7 @@ export function LoomOrderView({ data, ctx }: { data: Record<string, unknown>; ct
 
   return (
     <section className={PAGE_SECTION}>
-      <a href="/loom/account" className={cn(T.small, "mb-[calc(16*var(--u))] inline-block text-black/50 underline underline-offset-4 md:mb-[calc(24*var(--u))]")}>
+      <a href={route(ctx, "account")} className={cn(T.small, "mb-[calc(16*var(--u))] inline-block text-black/50 underline underline-offset-4 md:mb-[calc(24*var(--u))]")}>
         ← {str(data, "backLabel")}
       </a>
       <LoomPageHeading
@@ -80,7 +80,7 @@ export function LoomOrderView({ data, ctx }: { data: Record<string, unknown>; ct
           </LoomButton>
         )}
         {str(data, "buyAgainLabel") && (
-          <LoomButton variant="outline" href="/loom/cart" className="min-w-[calc(220*var(--u))]">
+          <LoomButton variant="outline" href={route(ctx, "cart")} className="min-w-[calc(220*var(--u))]">
             {str(data, "buyAgainLabel")}
           </LoomButton>
         )}
@@ -105,7 +105,7 @@ export function LoomOrderView({ data, ctx }: { data: Record<string, unknown>; ct
                       {l.colour} · {l.size} · × {l.qty}
                     </p>
                   </div>
-                  <p className={cn(T.body5, "shrink-0 text-[#121212] md:text-[max(calc(20*var(--u)),16px)]")}>{money(l.price * l.qty)}</p>
+                  <p className={cn(T.body5, "shrink-0 text-[#121212] md:text-[max(calc(20*var(--u)),16px)]")}>{money(l.price * l.qty, ctx.currency)}</p>
                 </div>
               </li>
             ))}
@@ -130,7 +130,7 @@ export function LoomOrderView({ data, ctx }: { data: Record<string, unknown>; ct
             <p className={cn(T.h5, "text-[#121212] md:text-[calc(30*var(--u))] md:leading-[calc(40*var(--u))]")}>{str(data, "helpHeading")}</p>
             <p className={cn(T.body6, "text-[#121212]/80 md:max-w-[calc(654*var(--u))] md:text-[max(calc(18*var(--u)),14.4px)]")}>{str(data, "helpText")}</p>
           </div>
-          <LoomButton variant="outline" href={str(data, "helpButtonLink")} className="min-w-[calc(220*var(--u))] md:self-center">
+          <LoomButton variant="outline" href={href(data, "helpButtonLink", ctx)} className="min-w-[calc(220*var(--u))] md:self-center">
             {str(data, "helpButtonLabel")}
           </LoomButton>
         </div>

@@ -6,21 +6,14 @@ import { LOOM_RULE, LoomButton, LoomSwipeRow } from "@/components/loom/primitive
 import { LoomChevronDown, LoomHeartFill, LoomHeartOutline } from "@/components/loom/icons";
 import { LoomPromises, LoomStepper } from "@/components/loom/commerce";
 import { T } from "@/components/loom/type";
+import type { KitProductPage } from "@/lib/themes/kit";
 import { on, str, type LoomContext } from "@/components/loom/contract";
 import { tx } from "@/components/loom/text";
 import { useWishlist } from "@/components/loom/wishlist";
+import { useKitCart } from "@/lib/themes/kit-actions";
 
-export type BuyBoxProduct = {
-  /** The catalogue id — what the heart saves. */
-  id: string;
-  eyebrow: string;
-  title: string;
-  price: string;
-  description: string;
-  colours: { label: string; color: string }[];
-  sizes: { label: string; soldOut?: boolean }[];
-  details: { title: string; body: string }[];
-};
+/** The product the panel describes — the platform's KitProductPage. */
+export type BuyBoxProduct = KitProductPage;
 
 /**
  * Everything to the right of the photographs. Not in the kit — built only
@@ -45,6 +38,8 @@ export type BuyBoxProduct = {
  */
 export function LoomBuyBox({ product, data, ctx }: { product: BuyBoxProduct; data: Record<string, unknown>; ctx: LoomContext }) {
   const wishlist = useWishlist();
+  const cart = useKitCart();
+  const [added, setAdded] = useState<"idle" | "added" | "refused">("idle");
   const [colour, setColour] = useState(0);
   const [size, setSize] = useState(product.sizes.findIndex((s) => !s.soldOut));
   const [qty, setQty] = useState(1);
@@ -65,7 +60,9 @@ export function LoomBuyBox({ product, data, ctx }: { product: BuyBoxProduct; dat
             type="button"
             aria-pressed={loved}
             aria-label={tx(ctx, loved ? "product.removeFromWishlist" : "product.addToWishlist")}
-            onClick={() => wishlist.toggle(product.id)}
+            onClick={() =>
+              wishlist.toggle({ id: product.id, title: product.title, price: product.amount, src: product.photos[0]?.src ?? "", href: window.location.pathname })
+            }
             className={cn(
               "mt-[calc(4*var(--u))] flex h-[max(calc(50*var(--u)),40px)] w-[max(calc(50*var(--u)),40px)] shrink-0 items-center justify-center rounded-full",
               loved ? "bg-[#f15353] text-white" : "border border-[#dddddd] text-[#121212]"
@@ -86,9 +83,9 @@ export function LoomBuyBox({ product, data, ctx }: { product: BuyBoxProduct; dat
         </p>
       </div>
 
-      {/* Options */}
-      <div className={cn("flex flex-col gap-[calc(24*var(--u))] pt-[calc(32*var(--u))]", LOOM_RULE)}>
-        <Option label={tx(ctx, "product.colourLabel")} value={product.colours[colour].label}>
+      {/* Options — only those the product has. */}
+      {(product.colours.length > 0 || product.sizes.length > 0) && <div className={cn("flex flex-col gap-[calc(24*var(--u))] pt-[calc(32*var(--u))]", LOOM_RULE)}>
+        {product.colours.length > 0 && <Option label={tx(ctx, "product.colourLabel")} value={product.colours[colour]?.label ?? ""}>
           {/* A row to swipe on the phone, like the Trending chips: three of
               these do not fit 343 across, and wrapped they stood one per line. */}
           <LoomSwipeRow className="gap-[calc(6*var(--u))] md:flex-wrap md:gap-[calc(10*var(--u))]">
@@ -118,9 +115,9 @@ export function LoomBuyBox({ product, data, ctx }: { product: BuyBoxProduct; dat
               </button>
             ))}
           </LoomSwipeRow>
-        </Option>
+        </Option>}
 
-        <Option label={tx(ctx, "product.sizeLabel")} value={product.sizes[size]?.label ?? ""}>
+        {product.sizes.length > 0 && <Option label={tx(ctx, "product.sizeLabel")} value={product.sizes[size]?.label ?? ""}>
           <div className="flex flex-wrap gap-[calc(8*var(--u))] md:gap-[calc(10*var(--u))]">
             {product.sizes.map((s, i) => (
               <LoomButton
@@ -136,14 +133,28 @@ export function LoomBuyBox({ product, data, ctx }: { product: BuyBoxProduct; dat
               </LoomButton>
             ))}
           </div>
-        </Option>
-      </div>
+        </Option>}
+      </div>}
 
       {/* Quantity and the one primary action */}
       <div className="flex gap-[calc(10*var(--u))]">
         <LoomStepper ctx={ctx} value={qty} onChange={setQty} />
-        <LoomButton data-m="pdp-add" className="min-w-0 flex-1">
-          {tx(ctx, "product.addToCart")}
+        <LoomButton
+          data-m="pdp-add"
+          className="min-w-0 flex-1"
+          onClick={() => {
+            const ok = cart.add(
+              product,
+              { colour: product.colours[colour]?.label, size: product.sizes[size]?.label },
+              qty
+            );
+            setAdded(ok ? "added" : "refused");
+            setTimeout(() => setAdded("idle"), 1500);
+          }}
+        >
+          <span aria-live="polite">
+            {tx(ctx, added === "added" ? "product.addedToCart" : added === "refused" ? "product.unavailable" : "product.addToCart")}
+          </span>
         </LoomButton>
       </div>
 

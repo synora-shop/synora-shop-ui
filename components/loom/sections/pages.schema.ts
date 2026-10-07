@@ -34,7 +34,7 @@ export const wishlistSchema: SectionSchema = {
     text("emptyHeading", "When empty: heading", "Shown when nothing is saved.", "Nothing saved yet."),
     text("emptyText", "When empty: line", "Under that heading.", "Tap the heart on anything you like and it waits for you here."),
     text("emptyButtonLabel", "When empty: button", "The way back to the products.", "Browse shoes"),
-    { key: "emptyButtonLink", kind: "url", label: "When empty: button link", info: "Where that button goes.", default: "/loom/collection" },
+    { key: "emptyButtonLink", kind: "url", label: "When empty: button link", info: "Where that button goes.", default: "route:collection" },
   ],
 };
 

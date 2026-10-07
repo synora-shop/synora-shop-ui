@@ -47,7 +47,7 @@ export function LoomSignIn({ ctx }: { data: Record<string, unknown>; ctx: LoomCo
       return;
     }
     // A reference build: there is no account behind this, so arriving is the demo.
-    router.push("/loom/account");
+    router.push(ctx.routes.account);
   };
 
   return (

@@ -10,6 +10,8 @@ import { SHOES } from "@/components/loom/catalogue";
  * read it from the context; nothing here is reached for directly.
  */
 
+const HIGH_TOP = "/loom/7150a0e902536ab1a554d315fc11f4ef6f9c1302.png";
+
 export const DEMO_PRODUCT: LoomProductPage = {
   id: "skate-hi",
   eyebrow: "Shoes",
@@ -23,6 +25,17 @@ export const DEMO_PRODUCT: LoomProductPage = {
     { label: "Navy Blue", color: "#233c6b" },
   ],
   sizes: [{ label: "US 7" }, { label: "US 8" }, { label: "US 9" }, { label: "US 10" }, { label: "US 11" }, { label: "US 12", soldOut: true }],
+  slug: "skateboard-shoe",
+  amount: 125,
+  // The demo's variants: three colours in six sizes, the twelve sold out.
+  variants: ["Red Pastel", "Clean White", "Navy Blue"].flatMap((color) =>
+    ["US 7", "US 8", "US 9", "US 10", "US 11", "US 12"].map((size) => ({
+      id: `demo-${color}-${size}`.toLowerCase().replace(/\s+/g, "-"),
+      color,
+      size,
+      stock: size === "US 12" ? 0 : 5,
+    }))
+  ),
   // The product's own details. Delivery and returns are the same on every
   // product, so they are the product section's setting, not the product's.
   details: [
@@ -31,12 +44,12 @@ export const DEMO_PRODUCT: LoomProductPage = {
       body: "Full-grain leather upper. Padded collar and tongue. Vulcanised rubber sole. Flat cotton laces, with a spare pair in the box.",
     },
   ],
-  src: "/loom/7150a0e902536ab1a554d315fc11f4ef6f9c1302.png",
-  views: [
-    { at: "42% 50%", zoom: 1, alt: "Skateboard Shoe, both shoes" },
-    { at: "22% 72%", zoom: 1.9, alt: "The sole" },
-    { at: "50% 33%", zoom: 2.2, alt: "The collar and wing logo" },
-    { at: "78% 74%", zoom: 2.1, alt: "The toe" },
+  // The kit has one photograph per product, so the views are crops of it.
+  photos: [
+    { src: HIGH_TOP, at: "42% 50%", zoom: 1, alt: "Skateboard Shoe, both shoes" },
+    { src: HIGH_TOP, at: "22% 72%", zoom: 1.9, alt: "The sole" },
+    { src: HIGH_TOP, at: "50% 33%", zoom: 2.2, alt: "The collar and wing logo" },
+    { src: HIGH_TOP, at: "78% 74%", zoom: 2.1, alt: "The toe" },
   ],
 };
 
@@ -105,10 +118,25 @@ export const DEMO_CUSTOMER: LoomCustomer = {
   ],
 };
 
+/** Where the reference build serves each of the shop's pages. */
+export const DEMO_ROUTES: LoomContext["routes"] = {
+  home: "/loom",
+  collection: "/loom/collection",
+  search: "/loom/search",
+  cart: "/loom/cart",
+  checkout: "/loom/checkout",
+  account: "/loom/account",
+  signIn: "/loom/account/sign-in",
+  wishlist: "/loom/wishlist",
+};
+
 /** Everything a demo page hands its sections. */
 export function demoContext(extra: Partial<LoomContext> = {}): LoomContext {
   return {
     menus: DEMO_MENUS,
+    routes: DEMO_ROUTES,
+    // The kit draws the Casual Shoe hearted.
+    wishlist: [{ id: "casual", title: "Casual Shoe", price: 225, src: "/loom/5a88e5962507976b1988e6d9a08599fcba5247bd.png", href: "#" }],
     products: SHOES,
     product: DEMO_PRODUCT,
     collection: DEMO_COLLECTION,

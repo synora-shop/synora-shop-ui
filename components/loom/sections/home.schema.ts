@@ -37,7 +37,7 @@ export const heroSchema: SectionSchema = {
     ta("headline", "Headline", "The opening line. Each new line here is a new line on the page.", "Color of\nSummer\nOutfit"),
     t("text", "Line under the headline", "Leave empty to show none.", "100+ Collections for your outfit inspirations in this summer"),
     t("buttonLabel", "Button", "The words on the button. Leave empty to hide it.", "View Collections"),
-    url("buttonLink", "Button link", "Where the button goes.", "/loom/collection"),
+    url("buttonLink", "Button link", "Where the button goes.", "route:collection"),
     flag("showCards", "Show the two category cards", "The pair beside the main photograph — a row to swipe on the phone."),
     img("card1Image", "First card: photograph", "The upper card.", KIT.outdoor),
     ta("card1Caption", "First card: caption", "Each new line is a new line.", "Outdoor\nActive"),

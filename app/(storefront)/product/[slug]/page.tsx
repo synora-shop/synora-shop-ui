@@ -3,7 +3,9 @@ import { notFound } from "next/navigation";
 import { Container } from "@/components/ui/container";
 import { ProductCard } from "@/components/storefront/product-card";
 import { ProductGallery } from "@/components/storefront/product-gallery";
-import { getThemeLayout } from "@/lib/data/theme";
+import { getThemeLayout, getKitForRequest } from "@/lib/data/theme";
+import { kitBaseContext, toKitProductPage, toKitProducts } from "@/lib/data/kit-context";
+import { KitPage } from "@/components/storefront/kit-page";
 import { ProductPurchasePanel } from "@/components/storefront/product-purchase-panel";
 import { EnquiryPanel } from "@/components/storefront/enquiry-panel";
 import { isEnquiryOnly } from "@/lib/product-kind";
@@ -55,6 +57,21 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
     getThemeLayout(),
   ]);
   const edits = toGlobalEdits(settings);
+
+  // A theme with its own sections draws its product template. An enquiry-only
+  // product keeps the platform's page for now: the kit's panel has Add to cart
+  // and nothing to ask a question with, and a button that cannot do what it
+  // says is the one thing a page must not show (docs/DESIGN.md §9).
+  const live = await getKitForRequest();
+  if (live && !isEnquiryOnly(product.kind)) {
+    const base = await kitBaseContext();
+    const ctx = {
+      ...base,
+      product: toKitProductPage(product as never, currency),
+      products: toKitProducts(related as never, base.base),
+    };
+    return <KitPage kit={live.kit} templates={live.templates} name="product" ctx={ctx} />;
+  }
 
   return (
     <Container className="py-12">

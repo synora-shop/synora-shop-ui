@@ -1,3 +1,4 @@
+import { money } from "@/components/loom/money";
 import { cn } from "@/lib/utils";
 import { LOOM_RULE } from "@/components/loom/primitives";
 import { LoomProductCard } from "@/components/loom/product-card";
@@ -21,7 +22,7 @@ export function LoomRecommendations({ data, ctx }: { data: Record<string, unknow
         <h2 className={cn(T.h4, "text-[#121212]")}>{str(data, "heading")}</h2>
         <div className="grid grid-cols-2 gap-x-[calc(8*var(--u))] gap-y-[calc(16*var(--u))] md:grid-cols-4 md:gap-x-[calc(10*var(--u))]">
           {products.map((p) => (
-            <LoomProductCard key={p.id} id={p.id} title={p.title} price={`$${p.price}`} w={322.5} src={p.src} href={p.href} />
+            <LoomProductCard key={p.id} id={p.id} title={p.title} price={money(p.price, ctx.currency)} amount={p.price} w={322.5} src={p.src} href={p.href} />
           ))}
         </div>
       </div>

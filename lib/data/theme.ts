@@ -5,6 +5,7 @@ import { cachedForShop } from "@/lib/data/cached";
 import { SHOP_PATH_HEADER } from "@/lib/shop-context";
 import { THEMES, themeFor, defaultThemeFor, type BusinessType } from "@/lib/themes/registry";
 import { liveCopyOf } from "@/lib/themes/live";
+import { kitFor } from "@/lib/themes/kits";
 import { resolveThemeLayout, type ThemeLayout } from "@/lib/theme-layout";
 import { resolveThemeTokens, THEME_TOKEN_DEFAULTS, type ThemeTokens } from "@/lib/theme-tokens";
 import { getStoreSettings } from "@/lib/data/settings";
@@ -58,7 +59,7 @@ const themeState = cache(async (shopId: string, businessType: string) => {
       // request rather than whatever the database happened to return.
       t.installedTheme.findMany({
         orderBy: { installedAt: "asc" },
-        select: { id: true, themeKey: true, tokens: true, layout: true },
+        select: { id: true, themeKey: true, tokens: true, layout: true, version: true, templates: true },
       }),
     ]);
     return { settings, installed };
@@ -199,4 +200,25 @@ export const getThemeLayout = cache(async (): Promise<ThemeLayout> => {
     ...themeFor(key).layout,
     ...((edits?.layout ?? {}) as Record<string, unknown>),
   });
+});
+
+
+/**
+ * The kit this request draws from, and the copy whose edits it draws with —
+ * or null when the storefront is the platform's own (every theme without a
+ * kit, and every copy older than its theme's kit; see lib/themes/kits.ts).
+ *
+ * A preview of a theme the shop does not own (a store card's `?__theme=key`)
+ * draws the kit at the version the theme ships, with no edits.
+ */
+export const getKitForRequest = cache(async () => {
+  const shop = await currentShop();
+  if (!shop) return null;
+  const { key, edits } = await themeForRequest(shop.id, shop.businessType);
+  if (!key) return null;
+  const version = edits && "version" in edits ? (edits.version as string) : themeFor(key).version;
+  const kit = kitFor(key, version);
+  if (!kit) return null;
+  const copy = edits && "id" in edits ? (edits as { id: string; templates: unknown }) : null;
+  return { kit, copyId: copy?.id ?? null, templates: copy?.templates ?? {} };
 });

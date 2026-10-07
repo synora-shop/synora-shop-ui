@@ -124,6 +124,21 @@ export async function getSiteText(): Promise<Record<string, string>> {
   return { ...defaults, ...overrides };
 }
 
+/**
+ * Only what this shop has changed — no defaults.
+ *
+ * A theme with its own wording (lib/themes/kits.ts) layers it between the
+ * platform's defaults and the shop's edits, so it needs the edits alone:
+ * merged with the platform's defaults first, "Add to Cart" would always win
+ * over the theme's "Add to cart", whether or not anybody chose it.
+ */
+export async function getSiteTextOverrides(): Promise<Record<string, string>> {
+  const shop = await currentShop();
+  if (!shop) return {};
+  const rows = await cachedForShop(shop.id, "site-text", (t) => t.siteText.findMany({}));
+  return Object.fromEntries(rows.map((r) => [r.key, r.value]));
+}
+
 /** Look up one key from an already-resolved map, falling back to its default if somehow absent. */
 export function text(map: Record<string, string>, key: SiteTextKey): string {
   return map[key] ?? SITE_TEXT_DEFAULTS[key]?.value ?? key;

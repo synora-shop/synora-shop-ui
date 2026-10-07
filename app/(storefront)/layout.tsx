@@ -1,3 +1,5 @@
+import { kitBaseContext } from "@/lib/data/kit-context";
+import { KitPage } from "@/components/storefront/kit-page";
 import { SiteHeader } from "@/components/storefront/site-header";
 import { SiteFooter } from "@/components/storefront/site-footer";
 import { WhatsAppButton } from "@/components/storefront/whatsapp-button";
@@ -6,7 +8,7 @@ import { ThemeStyle } from "@/components/storefront/theme-style";
 import { AnnouncementBar } from "@/components/storefront/announcement-bar";
 import { getStoreSettings } from "@/lib/data/settings";
 import { CurrencyProvider } from "@/components/ui/currency";
-import { getThemeTokens, getThemeLayout } from "@/lib/data/theme";
+import { getThemeTokens, getThemeLayout, getKitForRequest } from "@/lib/data/theme";
 import { getFontAssets } from "@/lib/data/fonts";
 import { getStickyButtons } from "@/lib/data/sticky-buttons";
 import { getMenus, menuForSlot, headerLinks, footerColumns } from "@/lib/data/menus";
@@ -196,6 +198,34 @@ export default async function StorefrontLayout({ children }: LayoutProps<"/">) {
     settings,
     footerGateways
   ).map((m) => m.label);
+
+  // A theme that brings its own sections draws its own frame, header and
+  // footer — see lib/themes/kits.ts. Everything around them that is the
+  // platform's rather than the theme's stays: the currency, the demo's bar,
+  // the link prefix, the sticky buttons. A shop whose theme copy predates its
+  // kit never reaches this branch and renders exactly as it always has.
+  const live = await getKitForRequest();
+  if (live) {
+    const ctx = await kitBaseContext();
+    const Frame = live.kit.Frame;
+    return (
+      <CurrencyProvider currency={resolveStoreDefaults(settings).currency}>
+        {demo && <ThemeDemoBar themeName={themeFor(demo.themeKey).name} slug={demo.slug} />}
+        <StoreBaseProvider base={await storeBase()}>
+          <Frame>
+            <KitPage kit={live.kit} templates={live.templates} name="header" ctx={ctx} />
+            {children}
+            <KitPage kit={live.kit} templates={live.templates} name="footer" ctx={ctx} />
+          </Frame>
+          {stickyButtons.length > 0 ? (
+            <StickyButtons buttons={stickyButtons} />
+          ) : (
+            <WhatsAppButton number={settings.whatsappNumber} />
+          )}
+        </StoreBaseProvider>
+      </CurrencyProvider>
+    );
+  }
 
   const headerMenu = menuForSlot(menus, settings.headerMenuId, "header");
   const footerMenu = menuForSlot(menus, settings.footerMenuId, "footer");

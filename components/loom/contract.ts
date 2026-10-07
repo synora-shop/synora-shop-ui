@@ -1,7 +1,16 @@
-import type { SectionSchema } from "@/lib/section-schema";
-import { resolveSchemaData } from "@/lib/section-schema";
-import type { CatalogueItem } from "@/components/loom/catalogue";
-import type { LoomProductPage } from "@/components/loom/sections/product";
+import {
+  kitHref,
+  resolveKitSection,
+  type KitCartLine,
+  type KitContext,
+  type KitCustomer,
+  type KitLink,
+  type KitMenu,
+  type KitOrder,
+  type KitSectionDef,
+  type KitSectionEntry,
+  type KitTemplate,
+} from "@/lib/themes/kit";
 
 /**
  * How a Loom section is shaped, so that the live customizer can drive it.
@@ -29,96 +38,20 @@ import type { LoomProductPage } from "@/components/loom/sections/product";
  * carries the phone menu — are built on it from the start.
  */
 
-/** One link in a menu, with its dropdown. The platform's MenuItem allows two levels and refuses a third. */
-export type LoomLink = { id: string; label: string; href: string; children?: LoomLink[] };
-
-/** A menu the merchant built, by the id a `menu` setting stores. */
-export type LoomMenu = { id: string; name: string; items: LoomLink[] };
-
-/** An order as the order page shows it. */
-export type LoomOrder = {
-  id: string;
-  placed: string;
-  /** Where it has got to, 0–3: ordered, packed, on its way, delivered. */
-  stage: number;
-  /** When each stage happened, or is expected. */
-  dates: [string, string, string, string];
-  arriving: string;
-  lines: { id: string; title: string; src: string; colour: string; size: string; qty: number; price: number; href: string }[];
-  delivery: number;
-  speed: string;
-  address: string[];
-  payment: string;
-  tracking: string;
-};
-
-/** A signed-in customer: who they are, their orders, their addresses. */
-export type LoomCustomer = {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  orders: {
-    id: string;
-    date: string;
-    state: "shipped" | "delivered";
-    total: number;
-    items: { title: string; src: string }[];
-    href: string;
-  }[];
-  addresses: { id: string; label: string; lines: string[]; main: boolean }[];
-};
-
-/** One line in a cart. */
-export type LoomCartLine = {
-  id: string;
-  title: string;
-  price: number;
-  src: string;
-  colour: string;
-  size: string;
-  qty: number;
-  href: string;
-};
-
-/** The shop's data every section may read. Passed in, never fetched by a section. */
-export type LoomContext = {
-  menus: Record<string, LoomMenu>;
-  /** The shop's products, for sections that list or look them up. */
-  products: CatalogueItem[];
-  /** The page's own query, for the search template. */
-  query?: string;
-  /** The order being looked at, on the order page. */
-  order?: LoomOrder;
-  /** The product being looked at, on the product page. */
-  product?: LoomProductPage;
-  /** The collection being looked at: its name and its line of copy. */
-  collection?: { title: string; description: string };
-  /** The signed-in customer, on the account pages. */
-  customer?: LoomCustomer;
-  /** The customer's cart, on the cart and checkout pages. */
-  cart?: LoomCartLine[];
-  /**
-   * The shop's own Site text edits, by key. Absent keys fall back to Loom's
-   * wording (components/loom/text.ts) — read with `tx`.
-   */
-  text?: Record<string, string>;
-};
-
-/** One section in a template: its type, its stored settings, and whether it is shown. */
-export type LoomSectionEntry = { id: string; type: string; visible?: boolean; data?: Record<string, unknown> };
-
-/** A page: its sections, in order. Stored as data when ported, exactly like this. */
-export type LoomTemplate = { name: string; sections: LoomSectionEntry[] };
-
-/** A section's definition: what it can be set to, and how it draws. */
-export type LoomSectionDef = {
-  schema: SectionSchema;
-  Render: (props: { data: Record<string, unknown>; ctx: LoomContext }) => React.ReactNode;
-};
+// The shapes are the platform's (lib/themes/kit.ts) — every theme with its own
+// sections is handed the same data. Loom's names for them:
+export type LoomLink = KitLink;
+export type LoomMenu = KitMenu;
+export type LoomOrder = KitOrder;
+export type LoomCustomer = KitCustomer;
+export type LoomCartLine = KitCartLine;
+export type LoomContext = KitContext;
+export type LoomSectionEntry = KitSectionEntry;
+export type LoomTemplate = KitTemplate;
+export type LoomSectionDef = KitSectionDef;
 
 /** Settings with every default filled, by the platform's own rules. */
-export const resolve = (def: LoomSectionDef, stored?: Record<string, unknown>) => resolveSchemaData(def.schema, stored);
+export const resolve = (def: LoomSectionDef, stored?: Record<string, unknown>) => resolveKitSection(def, stored);
 
 /** Read a setting as a string / boolean, tolerating whatever was stored. */
 export const str = (d: Record<string, unknown>, k: string) => (typeof d[k] === "string" ? (d[k] as string) : "");
@@ -126,4 +59,8 @@ export const on = (d: Record<string, unknown>, k: string) => d[k] !== false;
 /** A setting's words with `{query}` and the like filled in — "Results for “{query}”". */
 export const fill = (text: string, vars: Record<string, string | number>) =>
   text.replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? String(vars[k]) : m));
+/** A link setting as a real address — `route:cart` becomes the shop's cart. */
+export const href = (d: Record<string, unknown>, k: string, ctx: LoomContext) => kitHref(ctx, str(d, k));
+/** One of the shop's own pages. */
+export const route = (ctx: LoomContext, name: keyof LoomContext["routes"]) => ctx.routes[name];
 export const menu = (d: Record<string, unknown>, k: string, ctx: LoomContext) => ctx.menus[str(d, k)]?.items ?? [];

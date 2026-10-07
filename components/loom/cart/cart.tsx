@@ -6,7 +6,7 @@ import { LOOM_RULE, LoomButton, LoomCard } from "@/components/loom/primitives";
 import { LoomPromises, LoomStepper, LoomTotals } from "@/components/loom/commerce";
 import { FREE_DELIVERY_FROM, money } from "@/components/loom/money";
 import { T } from "@/components/loom/type";
-import { on, type LoomCartLine, type LoomContext } from "@/components/loom/contract";
+import { on, route, type LoomCartLine, type LoomContext } from "@/components/loom/contract";
 import { tx } from "@/components/loom/text";
 
 export type CartLine = LoomCartLine;
@@ -48,7 +48,7 @@ export function LoomCart({ data, ctx }: { data: Record<string, unknown>; ctx: Lo
       {lines.length === 0 ? (
         <div className={cn("flex flex-col items-start gap-[calc(24*var(--u))] py-[calc(40*var(--u))]", LOOM_RULE)}>
           <p className={cn(T.h4, "text-[#121212]")}>{tx(ctx, "cart.emptyHeading")}</p>
-          <LoomButton variant="outline" href="/loom/collection">
+          <LoomButton variant="outline" href={route(ctx, "collection")}>
             {tx(ctx, "cart.continueShopping")}
           </LoomButton>
         </div>
@@ -72,7 +72,7 @@ export function LoomCart({ data, ctx }: { data: Record<string, unknown>; ctx: Lo
                       </p>
                     </div>
                     <p data-m="cart-line-price" className={cn(T.body5, "shrink-0 text-[#121212] md:text-[max(calc(20*var(--u)),16px)]")}>
-                      {money(l.price * l.qty)}
+                      {money(l.price * l.qty, ctx.currency)}
                     </p>
                   </div>
                   <div className="flex items-center justify-between gap-[calc(16*var(--u))]">
@@ -101,10 +101,10 @@ export function LoomCart({ data, ctx }: { data: Record<string, unknown>; ctx: Lo
             <LoomTotals ctx={ctx} subtotal={subtotal} delivery={short > 0 ? null : 0} />
             {short > 0 && on(data, "showFreeDeliveryNote") && (
               <p data-m="cart-note" className={cn(T.body6, "text-[#121212]/80")}>
-                {tx(ctx, "cart.freeDeliveryNote", { amount: money(short) })}
+                {tx(ctx, "cart.freeDeliveryNote", { amount: money(short, ctx.currency) })}
               </p>
             )}
-            <LoomButton data-m="cart-checkout" href="/loom/checkout" className="w-full min-w-0">
+            <LoomButton data-m="cart-checkout" href={route(ctx, "checkout")} className="w-full min-w-0">
               {tx(ctx, "cart.proceedToCheckout")}
             </LoomButton>
             {on(data, "showPromises") && <LoomPromises ctx={ctx} />}

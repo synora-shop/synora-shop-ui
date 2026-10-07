@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { money } from "@/components/loom/money";
 import { cn } from "@/lib/utils";
 import { LOOM_RULE, LoomButton, LoomSwipeRow } from "@/components/loom/primitives";
 import { LoomChevronDown } from "@/components/loom/icons";
@@ -129,7 +130,7 @@ export function LoomCollection({ data, ctx }: { data: Record<string, unknown>; c
               className="grid grid-cols-2 gap-x-[calc(8*var(--u))] gap-y-[calc(16*var(--u))] md:grid-cols-3 md:gap-x-[calc(10*var(--u))] md:gap-y-[calc(20*var(--u))]"
             >
               {shown.map((p) => (
-                <LoomProductCard key={p.id} id={p.id} title={p.title} price={`$${p.price}`} w={322.67} src={p.src} href={p.href} loved={p.loved} />
+                <LoomProductCard key={p.id} id={p.id} title={p.title} price={money(p.price, ctx.currency)} amount={p.price} w={322.67} src={p.src} href={p.href} loved={p.loved} />
               ))}
             </div>
           ) : (

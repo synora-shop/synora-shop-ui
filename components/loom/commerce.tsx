@@ -149,20 +149,20 @@ export function LoomTotals({
   subtotal: number;
   delivery: number | null;
   className?: string;
-  ctx: Pick<LoomContext, "text">;
+  ctx: Pick<LoomContext, "text" | "currency">;
 }) {
   const total = subtotal + (delivery ?? 0);
   return (
     <dl className={cn("flex flex-col gap-[calc(12*var(--u))] pt-[calc(24*var(--u))]", LOOM_RULE, className)}>
-      <Row label={tx(ctx, "checkout.subtotal")} value={money(subtotal)} />
+      <Row label={tx(ctx, "checkout.subtotal")} value={money(subtotal, ctx.currency)} />
       <Row
         label={tx(ctx, "checkout.shipping")}
-        value={delivery === null ? tx(ctx, "checkout.shippingLater") : delivery === 0 ? tx(ctx, "checkout.freeShipping") : money(delivery)}
+        value={delivery === null ? tx(ctx, "checkout.shippingLater") : delivery === 0 ? tx(ctx, "checkout.freeShipping") : money(delivery, ctx.currency)}
       />
       <div className={cn("mt-[calc(12*var(--u))] flex items-baseline justify-between pt-[calc(24*var(--u))]", LOOM_RULE)}>
         <dt className={cn(T.body3, "text-[#121212]")}>{tx(ctx, "checkout.total")}</dt>
         <dd data-m="total" className={cn(T.h4, "text-[#121212]")}>
-          {money(total)}
+          {money(total, ctx.currency)}
         </dd>
       </div>
     </dl>

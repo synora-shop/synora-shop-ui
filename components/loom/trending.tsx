@@ -1,3 +1,4 @@
+import { money } from "@/components/loom/money";
 import { LoomButton, LoomSwipeRow, px, type Placement } from "@/components/loom/primitives";
 import { menu, str, type LoomContext } from "@/components/loom/contract";
 import { LoomProductCard } from "@/components/loom/product-card";
@@ -121,7 +122,7 @@ export function LoomTrending({ data, ctx }: { data: Record<string, unknown>; ctx
                 key={p.id}
                 id={p.id}
                 title={p.title}
-                price={`$${p.price}`}
+                price={money(p.price, ctx.currency)} amount={p.price}
                 href={p.href}
                 src={p.src}
                 w={slot.w}

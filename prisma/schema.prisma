@@ -1555,6 +1555,17 @@ model InstalledTheme {
   tokens Json @default("{}")
   layout Json @default("{}")
 
+  /// This copy's own page layouts, for a theme that brings its own sections —
+  /// Shopify's templates/*.json and section groups, by name: "index",
+  /// "product", "header", … → { sections: [{ id, type, visible, data }] }.
+  ///
+  /// Only the templates a merchant has edited are here; any other is the
+  /// theme's own default from the code (lib/themes/kits.ts). So shipping a
+  /// better default reaches every shop that never touched that page, and a
+  /// shop that did keeps its edit. Empty for a theme without its own
+  /// sections, and for every copy made before themes could have them.
+  templates Json @default("{}")
+
   // No unique on (shopId, themeKey), and that absence is the feature.
   //
   // Add makes a copy. A shop can hold KITE twice — two sets of edits, two

@@ -6,7 +6,7 @@ import { LOOM_RULE, LoomButton, LoomCard, LoomSwipeRow } from "@/components/loom
 import { LoomField } from "@/components/loom/commerce";
 import { money } from "@/components/loom/money";
 import { T } from "@/components/loom/type";
-import { fill, str, type LoomContext, type LoomCustomer } from "@/components/loom/contract";
+import { fill, route, str, type LoomContext, type LoomCustomer } from "@/components/loom/contract";
 import { tx } from "@/components/loom/text";
 
 /**
@@ -59,7 +59,7 @@ export function LoomAccount({ data, ctx }: { data: Record<string, unknown>; ctx:
                 {tx(ctx, t.key)}
               </button>
             ))}
-            <a href="/loom/account/sign-in" className={cn(CHIP, "text-[#121212]/80 underline underline-offset-4")}>
+            <a href={route(ctx, "signIn")} className={cn(CHIP, "text-[#121212]/80 underline underline-offset-4")}>
               {tx(ctx, "account.signOut")}
             </a>
           </LoomSwipeRow>
@@ -99,7 +99,7 @@ function Orders({ me, ctx }: { me: LoomCustomer; ctx: LoomContext }) {
           <div className="min-w-0 flex-1">
             <p className={cn(T.body3, "text-[#121212]")}>{tx(ctx, "account.order", { id: o.id })}</p>
             <p className={cn(T.body6, "text-[#121212]/80")}>
-              {o.date} · {o.items.length === 1 ? tx(ctx, "cart.itemCountOne") : tx(ctx, "cart.itemCount", { count: o.items.length })} · {money(o.total)}
+              {o.date} · {o.items.length === 1 ? tx(ctx, "cart.itemCountOne") : tx(ctx, "cart.itemCount", { count: o.items.length })} · {money(o.total, ctx.currency)}
             </p>
           </div>
           <div className="flex items-center justify-between gap-[calc(24*var(--u))] md:justify-end">

@@ -12,7 +12,7 @@ import {
   LoomUserIcon,
 } from "@/components/loom/icons";
 import { T } from "@/components/loom/type";
-import { menu, on, str, type LoomContext, type LoomLink } from "@/components/loom/contract";
+import { menu, on, route, str, type LoomContext, type LoomLink } from "@/components/loom/contract";
 
 /**
  * The header — the kit's "Navbar" strip and "Navigation" row, as one section a
@@ -44,7 +44,7 @@ export function LoomHeader({ data, ctx }: { data: Record<string, unknown>; ctx: 
       {on(data, "showUtility") && (
         <div className="hidden h-[calc(64*var(--u))] items-center justify-between border-b border-black/5 px-[calc(60*var(--u))] md:flex">
           <div className="flex items-center gap-[calc(36*var(--u))]">
-            {[str(data, "languageLabel"), str(data, "currencyLabel")].filter(Boolean).map((t) => (
+            {[str(data, "languageLabel"), (str(data, "currencyLabel") || ctx.currency || "Dollar")].filter(Boolean).map((t) => (
               <button key={t} type="button" className={cn(T.small, "text-black/50")}>
                 {t}
               </button>
@@ -64,7 +64,7 @@ export function LoomHeader({ data, ctx }: { data: Record<string, unknown>; ctx: 
         {/* 161 wide on purpose: Figma's text box, not the glyph run, so the
             search lands where the file puts it. */}
         <a
-          href="/loom"
+          href={route(ctx, "home")}
           data-m="nav-wordmark"
           className="min-w-[calc(161*var(--u))] whitespace-nowrap text-[max(calc(24*var(--u)),19.2px)] font-extrabold leading-[max(calc(30*var(--u)),24px)] tracking-normal text-black"
         >
@@ -72,7 +72,7 @@ export function LoomHeader({ data, ctx }: { data: Record<string, unknown>; ctx: 
         </a>
 
         <div className="ml-[calc(24*var(--u))] hidden items-center gap-[calc(40*var(--u))] md:flex">
-          {on(data, "showSearch") && <SearchField placeholder={str(data, "searchPlaceholder")} />}
+          {on(data, "showSearch") && <SearchField action={route(ctx, "search")} placeholder={str(data, "searchPlaceholder")} />}
           <nav data-m="nav-categories" aria-label="Main" className="hidden items-center gap-[calc(40*var(--u))] lg:flex">
             {main.map((l) => (
               <TopLink key={l.id} link={l} />
@@ -83,17 +83,17 @@ export function LoomHeader({ data, ctx }: { data: Record<string, unknown>; ctx: 
         {/* 117x24, gap 24, bottom-aligned — so the 21px cart sits 3px lower. */}
         <div className="ml-auto hidden items-end gap-[calc(24*var(--u))] text-[#2e3a59] md:flex">
           {on(data, "showWishlist") && (
-            <a href="/loom/wishlist" aria-label="Wishlist">
+            <a href={route(ctx, "wishlist")} aria-label="Wishlist">
               <LoomHeartOutline className="h-[max(calc(24*var(--u)),20px)] w-[max(calc(24*var(--u)),20px)]" />
             </a>
           )}
           {on(data, "showAccount") && (
-            <a href="/loom/account/sign-in" aria-label="Account">
+            <a href={route(ctx, "account")} aria-label="Account">
               <LoomUserIcon className="h-[max(calc(24*var(--u)),20px)] w-[max(calc(24*var(--u)),20px)]" />
             </a>
           )}
           {on(data, "showCart") && (
-            <a href="/loom/cart" aria-label="Cart">
+            <a href={route(ctx, "cart")} aria-label="Cart">
               <LoomCartIcon className="h-[max(calc(21*var(--u)),17.5px)] w-[max(calc(21*var(--u)),17.5px)]" />
             </a>
           )}
@@ -112,17 +112,17 @@ export function LoomHeader({ data, ctx }: { data: Record<string, unknown>; ctx: 
         </button>
       </div>
 
-      {drawer && <Drawer data={data} main={main} utility={utility} onClose={() => setDrawer(false)} />}
+      {drawer && <Drawer data={data} ctx={ctx} main={main} utility={utility} onClose={() => setDrawer(false)} />}
     </header>
   );
 }
 
 /** The header's search: 312x34, a true pill outlined #e3e3e3. It submits to the search page. */
-function SearchField({ placeholder, big = false }: { placeholder: string; big?: boolean }) {
+function SearchField({ placeholder, action, big = false }: { placeholder: string; action: string; big?: boolean }) {
   return (
     <form
       role="search"
-      action="/loom/search"
+      action={action}
       className={cn(
         "flex items-center justify-between rounded-[2000px] border border-[#e3e3e3] px-[calc(20*var(--u))]",
         big ? "h-[max(calc(50*var(--u)),40px)] w-full" : "h-[max(calc(34*var(--u)),32px)] w-[calc(312*var(--u))]"
@@ -207,11 +207,13 @@ function TopLink({ link }: { link: LoomLink }) {
  */
 function Drawer({
   data,
+  ctx,
   main,
   utility,
   onClose,
 }: {
   data: Record<string, unknown>;
+  ctx: LoomContext;
   main: LoomLink[];
   utility: LoomLink[];
   onClose: () => void;
@@ -235,7 +237,7 @@ function Drawer({
     <div role="dialog" aria-modal="true" aria-label="Menu" data-m="drawer" className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-white lg:hidden">
       <div className="mx-auto flex w-full flex-col md:w-[calc(1440*var(--u))]">
         <div className="flex h-[calc(94*var(--u))] shrink-0 items-center px-[calc(24*var(--u))] pb-[calc(24*var(--u))] pt-[calc(40*var(--u))] md:h-[calc(80*var(--u))] md:px-[calc(60*var(--u))] md:py-0">
-          <a href="/loom" className="whitespace-nowrap text-[max(calc(24*var(--u)),19.2px)] font-extrabold leading-[max(calc(30*var(--u)),24px)] text-black">
+          <a href={route(ctx, "home")} className="whitespace-nowrap text-[max(calc(24*var(--u)),19.2px)] font-extrabold leading-[max(calc(30*var(--u)),24px)] text-black">
             {str(data, "logoText")}
           </a>
           <button
@@ -253,7 +255,7 @@ function Drawer({
         </div>
 
         <div className="flex flex-col gap-[calc(32*var(--u))] px-[calc(16*var(--u))] pb-[calc(40*var(--u))] md:px-[calc(60*var(--u))]">
-          {on(data, "showSearch") && <SearchField placeholder={str(data, "searchPlaceholder")} big />}
+          {on(data, "showSearch") && <SearchField action={route(ctx, "search")} placeholder={str(data, "searchPlaceholder")} big />}
 
           <nav aria-label="Main">
             <ul>
@@ -302,9 +304,9 @@ function Drawer({
 
           <ul className={cn("flex flex-col gap-[calc(16*var(--u))] pt-[calc(24*var(--u))]", LOOM_RULE)}>
             {[
-              on(data, "showWishlist") && { href: "/loom/wishlist", label: "Wishlist", Icon: LoomHeartOutline },
-              on(data, "showAccount") && { href: "/loom/account/sign-in", label: "Account", Icon: LoomUserIcon },
-              on(data, "showCart") && { href: "/loom/cart", label: "Cart", Icon: LoomCartIcon },
+              on(data, "showWishlist") && { href: route(ctx, "wishlist"), label: "Wishlist", Icon: LoomHeartOutline },
+              on(data, "showAccount") && { href: route(ctx, "account"), label: "Account", Icon: LoomUserIcon },
+              on(data, "showCart") && { href: route(ctx, "cart"), label: "Cart", Icon: LoomCartIcon },
             ]
               .filter((x): x is { href: string; label: string; Icon: typeof LoomCartIcon } => !!x)
               .map(({ href, label, Icon }) => (
@@ -328,7 +330,7 @@ function Drawer({
               ))}
             </ul>
             <p className={cn(T.small, "text-black/50")}>
-              {[str(data, "languageLabel"), str(data, "currencyLabel")].filter(Boolean).join(" · ")}
+              {[str(data, "languageLabel"), (str(data, "currencyLabel") || ctx.currency || "Dollar")].filter(Boolean).join(" · ")}
             </p>
           </div>
         </div>

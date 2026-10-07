@@ -16,7 +16,7 @@ export const headerSchema: SectionSchema = {
     { key: "showUtility", kind: "checkbox", label: "Show the strip above", info: "The thin row of help links and language above the header. Desktop only.", default: true },
     { key: "utilityMenu", kind: "menu", label: "Strip menu", info: "The links on the right of the strip, and at the foot of the phone menu.", default: "help", disabledWhen: { field: "showUtility", equals: false, message: "The strip is hidden." } },
     { key: "languageLabel", kind: "text", label: "Language", info: "The language shown at the left of the strip.", default: "English" },
-    { key: "currencyLabel", kind: "text", label: "Currency", info: "The currency shown beside the language.", default: "Dollar" },
+    { key: "currencyLabel", kind: "text", label: "Currency", info: "Shown beside the language. Leave empty to show the shop's own currency.", default: "" },
     { key: "showSearch", kind: "checkbox", label: "Show search", info: "The search field in the header and at the top of the phone menu.", default: true },
     { key: "searchPlaceholder", kind: "text", label: "Search hint", info: "The grey words inside the empty search field.", default: "Search here" },
     { key: "showWishlist", kind: "checkbox", label: "Show wishlist", info: "The heart at the right of the header.", default: true },

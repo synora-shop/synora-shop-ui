@@ -1,10 +1,11 @@
 "use client";
 
+import { money } from "@/components/loom/money";
 import { cn } from "@/lib/utils";
 import { LOOM_RULE, LoomButton } from "@/components/loom/primitives";
 import { LoomProductCard } from "@/components/loom/product-card";
 import { useWishlist } from "@/components/loom/wishlist";
-import { fill, on, str, type LoomContext } from "@/components/loom/contract";
+import { fill, href, on, route, str, type LoomContext } from "@/components/loom/contract";
 import { T } from "@/components/loom/type";
 import { LoomPageHeading, PAGE_SECTION } from "@/components/loom/sections/page-heading";
 
@@ -18,8 +19,11 @@ import { LoomPageHeading, PAGE_SECTION } from "@/components/loom/sections/page-h
  * Empty, it says so in Heading 4 and offers the way back, as the cart does.
  */
 export function LoomWishlist({ data, ctx }: { data: Record<string, unknown>; ctx: LoomContext }) {
-  const list = useWishlist();
-  const saved = list.ids.map((id) => ctx.products.find((p) => p.id === id)).filter((p): p is NonNullable<typeof p> => !!p);
+  // The page draws what was saved — each heart keeps a snapshot — starting
+  // from what the page was handed (the demo's starting heart; nothing on a
+  // real shop) until the browser's own list takes over.
+  const list = useWishlist(ctx.wishlist ?? []);
+  const saved = list.items;
 
   return (
     <section className={PAGE_SECTION}>
@@ -43,7 +47,7 @@ export function LoomWishlist({ data, ctx }: { data: Record<string, unknown>; ctx
           <div className="flex flex-col items-start gap-[calc(16*var(--u))] py-[calc(24*var(--u))]">
             <p className={cn(T.h4, "text-[#121212]")}>{str(data, "emptyHeading")}</p>
             <p className={cn(T.body6, "text-[#121212]/80")}>{str(data, "emptyText")}</p>
-            <LoomButton variant="outline" href={str(data, "emptyButtonLink")} className="mt-[calc(8*var(--u))]">
+            <LoomButton variant="outline" href={href(data, "emptyButtonLink", ctx)} className="mt-[calc(8*var(--u))]">
               {str(data, "emptyButtonLabel")}
             </LoomButton>
           </div>
@@ -54,9 +58,9 @@ export function LoomWishlist({ data, ctx }: { data: Record<string, unknown>; ctx
           >
             {saved.map((p) => (
               <li key={p.id} className="flex flex-col gap-[calc(12*var(--u))]">
-                <LoomProductCard id={p.id} title={p.title} price={`$${p.price}`} w={322.5} src={p.src} href={p.href} />
+                <LoomProductCard id={p.id} title={p.title} price={money(p.price, ctx.currency)} amount={p.price} w={322.5} src={p.src} href={p.href} />
                 {on(data, "showAddToCart") && (
-                  <LoomButton variant="outlineLight" href="/loom/cart" className="relative z-[1] w-full min-w-0">
+                  <LoomButton variant="outlineLight" href={route(ctx, "cart")} className="relative z-[1] w-full min-w-0">
                     {str(data, "addToCartLabel")}
                   </LoomButton>
                 )}

@@ -164,7 +164,7 @@ const AFTER_INTERACTION = new Set<string>([
   "cart.emptyHeading", "cart.continueShopping", "cart.itemCountOne",
   "collections.emptyState", "collections.countOne", "collections.showMore", "filters.clearFilters",
   "filters.clearAll", "filters.clear", "filters.close", "filters.showResults", "filters.showResultsOne",
-  "product.removeFromWishlist",
+  "product.removeFromWishlist", "product.addedToCart", "product.unavailable",
 ]);
 {
   const markers = Object.fromEntries(Object.keys(LOOM_TEXT).map((k) => [k, `TXT${k.replace(/\W/g, "")}TXT`]));

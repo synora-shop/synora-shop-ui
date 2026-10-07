@@ -1,8 +1,9 @@
+import { money } from "@/components/loom/money";
 import { cn } from "@/lib/utils";
 import { LOOM_RULE, LoomSwipeRow } from "@/components/loom/primitives";
 import { LoomSearchIcon } from "@/components/loom/icons";
 import { LoomProductCard } from "@/components/loom/product-card";
-import { fill, menu, on, str, type LoomContext } from "@/components/loom/contract";
+import { fill, menu, on, route, str, type LoomContext } from "@/components/loom/contract";
 import type { CatalogueItem } from "@/components/loom/catalogue";
 import { T } from "@/components/loom/type";
 import { LoomPageHeading, PAGE_SECTION } from "@/components/loom/sections/page-heading";
@@ -64,7 +65,7 @@ export function LoomSearch({ data, ctx }: { data: Record<string, unknown>; ctx: 
       />
 
       <div className="flex flex-col gap-[calc(24*var(--u))] pb-[calc(32*var(--u))]">
-        <form role="search" action="/loom/search" className="flex h-[max(calc(50*var(--u)),40px)] w-full items-center rounded-[2000px] border border-[#e3e3e3] px-[calc(20*var(--u))] focus-within:border-[#121212] md:w-[calc(654*var(--u))]">
+        <form role="search" action={route(ctx, "search")} className="flex h-[max(calc(50*var(--u)),40px)] w-full items-center rounded-[2000px] border border-[#e3e3e3] px-[calc(20*var(--u))] focus-within:border-[#121212] md:w-[calc(654*var(--u))]">
           <input
             type="search"
             name="q"
@@ -89,7 +90,7 @@ export function LoomSearch({ data, ctx }: { data: Record<string, unknown>; ctx: 
               className="grid grid-cols-2 gap-x-[calc(8*var(--u))] gap-y-[calc(16*var(--u))] md:grid-cols-4 md:gap-x-[calc(10*var(--u))] md:gap-y-[calc(20*var(--u))]"
             >
               {found.map((p) => (
-                <LoomProductCard key={p.id} id={p.id} title={p.title} price={`$${p.price}`} w={322.5} src={p.src} href={p.href} />
+                <LoomProductCard key={p.id} id={p.id} title={p.title} price={money(p.price, ctx.currency)} amount={p.price} w={322.5} src={p.src} href={p.href} />
               ))}
             </div>
           ) : (

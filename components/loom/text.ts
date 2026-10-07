@@ -20,6 +20,8 @@ import type { LoomContext } from "@/components/loom/contract";
 export const LOOM_TEXT = {
   // Product
   "product.addToCart": "Add to cart",
+  "product.addedToCart": "Added to cart",
+  "product.unavailable": "Not available in that size",
   "product.colourLabel": "Colour",
   "product.sizeLabel": "Size",
   "product.soldOut": "{size}, sold out",

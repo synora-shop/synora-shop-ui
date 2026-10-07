@@ -3,14 +3,10 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { LoomCard, LoomSwipeRow } from "@/components/loom/primitives";
+import type { KitPhoto } from "@/lib/themes/kit";
 
-export type GalleryView = {
-  /** Where the photo is anchored, as `object-position`. */
-  at: string;
-  /** How far in — 1 is the whole photo. */
-  zoom: number;
-  alt: string;
-};
+/** A photograph on the product page — the platform's KitPhoto. */
+export type GalleryView = KitPhoto;
 
 /**
  * The product's photographs. Not in the kit — designed here from its parts.
@@ -30,12 +26,10 @@ export type GalleryView = {
  * real product would carry real views; the layout does not change.
  */
 export function LoomGallery({
-  src,
   views,
   label,
   thumbnails = true,
 }: {
-  src: string;
   views: GalleryView[];
   /** What a screen reader calls the row of thumbnails. */
   label: string;
@@ -48,7 +42,7 @@ export function LoomGallery({
     <div className="flex flex-col gap-[calc(10*var(--u))] md:w-[calc(654*var(--u))] md:shrink-0">
       {/* Desktop: the chosen view, large. */}
       <LoomCard data-m="pdp-image" className="hidden md:block md:h-[calc(654*var(--u))] md:w-full">
-        <View src={src} view={views[chosen]} />
+        <View view={views[chosen]} />
       </LoomCard>
 
       {thumbnails && <div className="hidden gap-[calc(10*var(--u))] md:flex" role="tablist" aria-label={label}>
@@ -65,7 +59,7 @@ export function LoomGallery({
               i === chosen && "after:absolute after:inset-0 after:rounded-[inherit] after:shadow-[inset_0_0_0_1px_#121212]"
             )}
           >
-            <View src={src} view={v} />
+            <View view={v} />
           </button>
         ))}
       </div>}
@@ -74,7 +68,7 @@ export function LoomGallery({
       <LoomSwipeRow data-m="pdp-swipe" className="snap-x snap-mandatory scroll-pl-[calc((100cqw-375*var(--u))/2+16*var(--u))] gap-[calc(8*var(--u))] md:hidden">
         {views.map((v) => (
           <LoomCard key={v.alt} className="h-[calc(343*var(--u))] w-[calc(311*var(--u))] snap-start rounded-[calc(24*var(--u))]">
-            <View src={src} view={v} />
+            <View view={v} />
           </LoomCard>
         ))}
       </LoomSwipeRow>
@@ -82,14 +76,14 @@ export function LoomGallery({
   );
 }
 
-function View({ src, view }: { src: string; view: GalleryView }) {
+function View({ view }: { view: GalleryView }) {
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={src}
+      src={view.src}
       alt={view.alt}
       className="absolute inset-0 h-full w-full object-cover"
-      style={{ objectPosition: view.at, transform: `scale(${view.zoom})`, transformOrigin: view.at }}
+      style={{ objectPosition: view.at ?? "50% 50%", transform: `scale(${view.zoom ?? 1})`, transformOrigin: view.at ?? "50% 50%" }}
     />
   );
 }

@@ -1,3 +1,4 @@
+import type { KitProduct } from "@/lib/themes/kit";
 /**
  * The demo catalogue the pages the kit does not draw are filled with: the
  * kit's six shoes, with the facts a collection page filters on.
@@ -23,18 +24,8 @@ export type Swatch = keyof typeof SWATCHES;
 
 export const SIZES = ["US 7", "US 8", "US 9", "US 10", "US 11", "US 12"] as const;
 
-export type CatalogueItem = {
-  id: string;
-  title: string;
-  price: number;
-  src: string;
-  colours: Swatch[];
-  sizes: (typeof SIZES)[number][];
-  /** Lower is newer — the order "Newest" sorts by. */
-  age: number;
-  href: string;
-  loved?: boolean;
-};
+/** A product as Loom's lists show it — the platform's KitProduct, plus the kit's starting heart. */
+export type CatalogueItem = KitProduct & { loved?: boolean };
 
 export const SHOES: CatalogueItem[] = [
   { id: "casual", title: "Casual Shoe", price: 225, src: "/loom/5a88e5962507976b1988e6d9a08599fcba5247bd.png", colours: ["Navy Blue", "Clean White"], sizes: ["US 7", "US 8", "US 9", "US 10", "US 11"], age: 3, href: "#", loved: true },

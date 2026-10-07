@@ -5,7 +5,10 @@ export type LoomProduct = {
   /** The catalogue id — what the heart saves to the wishlist. */
   id?: string;
   title: string;
+  /** Formatted in the shop's currency. */
   price: string;
+  /** The same price as a number — what the wishlist keeps. */
+  amount?: number;
   /** Desktop card width. */
   w: number;
   /** Full width on the phone. */
@@ -33,7 +36,7 @@ export type LoomProduct = {
  * radius is 24 on the half-width card and 21 on the wide one; the file really
  * does draw those differently.
  */
-export function LoomProductCard({ id, title, price, w, wideOnPhone, src, img, mImg, loved, href = "#" }: LoomProduct) {
+export function LoomProductCard({ id, title, price, amount, w, wideOnPhone, src, img, mImg, loved, href = "#" }: LoomProduct) {
   return (
     <article
       className={`relative flex flex-col gap-[calc(8*var(--u))] md:w-[var(--w)] md:shrink-0 md:gap-0 ${wideOnPhone ? "col-span-2" : ""}`}
@@ -49,7 +52,7 @@ export function LoomProductCard({ id, title, price, w, wideOnPhone, src, img, mI
           // eslint-disable-next-line @next/next/no-img-element
           <img src={src} alt={title} className="absolute inset-0 h-full w-full object-cover" />
         )}
-        <LoomLove productId={id} active={loved} />
+        <LoomLove product={id ? { id, title, price: amount ?? 0, src, href } : undefined} active={loved} />
       </LoomCard>
       <div>
         <h3

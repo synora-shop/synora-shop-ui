@@ -8,7 +8,7 @@ import { LoomField, LoomPromises, LoomTotals } from "@/components/loom/commerce"
 import { FREE_DELIVERY_FROM, money } from "@/components/loom/money";
 import type { CartLine } from "@/components/loom/cart/cart";
 import { T } from "@/components/loom/type";
-import { on, type LoomContext } from "@/components/loom/contract";
+import { on, route, type LoomContext } from "@/components/loom/contract";
 import { tx } from "@/components/loom/text";
 
 /**
@@ -92,7 +92,7 @@ export function LoomCheckout({ data, ctx }: { data: Record<string, unknown>; ctx
               when: tx(ctx, speed === "express" ? "checkout.whenExpress" : "checkout.whenStandard"),
             })}
           </p>
-          <LoomButton variant="outline" href="/loom/collection">
+          <LoomButton variant="outline" href={route(ctx, "collection")}>
             {tx(ctx, "cart.continueShopping")}
           </LoomButton>
         </div>
@@ -109,7 +109,7 @@ export function LoomCheckout({ data, ctx }: { data: Record<string, unknown>; ctx
             {tx(ctx, "cart.orderSummary")}
             <LoomChevronDown className="h-[max(calc(24*var(--u)),19px)] w-[max(calc(24*var(--u)),19px)] transition-transform group-open:rotate-180" />
           </span>
-          <span>{money(subtotal + delivery)}</span>
+          <span>{money(subtotal + delivery, ctx.currency)}</span>
         </summary>
         <div className="pb-[calc(24*var(--u))]">
           <Summary ctx={ctx} showPromises={on(data, "showPromises")} lines={lines} subtotal={subtotal} delivery={delivery} />
@@ -141,8 +141,8 @@ export function LoomCheckout({ data, ctx }: { data: Record<string, unknown>; ctx
               value={speed}
               onChange={(v) => setSpeed(v as typeof speed)}
               options={[
-                { value: "standard", title: tx(ctx, "checkout.standard"), note: tx(ctx, "checkout.standardNote"), price: standard === 0 ? tx(ctx, "checkout.freeShipping") : money(standard) },
-                { value: "express", title: tx(ctx, "checkout.express"), note: tx(ctx, "checkout.expressNote"), price: money(15) },
+                { value: "standard", title: tx(ctx, "checkout.standard"), note: tx(ctx, "checkout.standardNote"), price: standard === 0 ? tx(ctx, "checkout.freeShipping") : money(standard, ctx.currency) },
+                { value: "express", title: tx(ctx, "checkout.express"), note: tx(ctx, "checkout.expressNote"), price: money(15, ctx.currency) },
               ]}
             />
           </Step>
@@ -161,7 +161,7 @@ export function LoomCheckout({ data, ctx }: { data: Record<string, unknown>; ctx
 
           <div className="flex flex-col gap-[calc(16*var(--u))]">
             <LoomButton type="submit" data-m="checkout-place" className="w-full min-w-0">
-              {tx(ctx, pay === "card" ? "checkout.continueToPayment" : "checkout.placeOrder", { amount: money(subtotal + delivery) })}
+              {tx(ctx, pay === "card" ? "checkout.continueToPayment" : "checkout.placeOrder", { amount: money(subtotal + delivery, ctx.currency) })}
             </LoomButton>
             <p className={cn(T.body6, "text-center text-[#121212]/80")}>
               {tx(ctx, pay === "card" ? "checkout.nothingChargedCard" : "checkout.nothingCharged")}
@@ -273,7 +273,7 @@ function Summary({
                 {l.colour} · {l.size}
               </p>
             </div>
-            <p className={cn(T.body5, "shrink-0 text-[#121212]")}>{money(l.price * l.qty)}</p>
+            <p className={cn(T.body5, "shrink-0 text-[#121212]")}>{money(l.price * l.qty, ctx.currency)}</p>
           </li>
         ))}
       </ul>

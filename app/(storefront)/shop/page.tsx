@@ -5,6 +5,9 @@ import { getThemeLayout } from "@/lib/data/theme";
 import { ProductCard } from "@/components/storefront/product-card";
 import { ProductFilters } from "@/components/storefront/product-filters";
 import { getProducts, getFilterOptions, countByKind, type ProductFilters as Filters } from "@/lib/data/products";
+import { getKitForRequest } from "@/lib/data/theme";
+import { kitBaseContext, toKitProducts } from "@/lib/data/kit-context";
+import { KitPage } from "@/components/storefront/kit-page";
 import { KindFilter } from "@/components/storefront/kind-filter";
 import { getStoreSettings } from "@/lib/data/settings";
 import { getSiteText, text } from "@/lib/site-text";
@@ -49,6 +52,22 @@ export default async function ShopPage(props: PageProps<"/shop">) {
     getThemeLayout(),
   ]);
   const saleBadgeLabel = text(siteText, "product.saleBadge");
+
+  // A theme with its own sections: the all-products page is its collection
+  // template, and a search (`?q=`) its search template — one address, as on
+  // Shopify, with the products already filtered by the platform.
+  const live = await getKitForRequest();
+  if (live) {
+    const base = await kitBaseContext();
+    const q = typeof sp.q === "string" ? sp.q.slice(0, 100) : "";
+    const ctx = {
+      ...base,
+      products: toKitProducts(products as never, base.base),
+      query: q || undefined,
+      collection: { title: text(siteText, "shop.heading"), description: "" },
+    };
+    return <KitPage kit={live.kit} templates={live.templates} name={q ? "search" : "collection"} ctx={ctx} />;
+  }
 
   return (
     <Container className="py-12">
