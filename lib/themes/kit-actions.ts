@@ -1,17 +1,53 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { signIn, signOut } from "next-auth/react";
 import { useCartStore } from "@/lib/cart-store";
-import type { KitProductPage } from "@/lib/themes/kit";
+import { previewDiscount } from "@/app/(storefront)/checkout/actions";
+import { deleteAddress } from "@/app/(storefront)/account/addresses/actions";
+import type { KitCartLine, KitProductPage } from "@/lib/themes/kit";
 
 /**
- * What a theme kit's sections may *do*, as opposed to read: the platform's
- * own cart, behind the one door every kit uses. A kit never imports the cart
- * store directly, so the cart can change underneath without every theme
- * changing with it.
+ * What a theme kit's sections may *do*, as opposed to read: the platform's own
+ * cart, checkout and sign-in, behind the one door every kit uses. A kit never
+ * imports the cart store, an API route or a server action directly, so those
+ * can change underneath without every theme changing with them — and every
+ * rule they enforce (stock, delivery cities, payment methods, rate limits) is
+ * enforced for a kit exactly as for the platform's own pages.
  */
+
+/** The cart: its lines in a kit's shape, and the changes a customer can make. */
 export function useKitCart() {
+  const items = useCartStore((s) => s.items);
   const addItem = useCartStore((s) => s.addItem);
+  const setQuantity = useCartStore((s) => s.setQuantity);
+  const removeItem = useCartStore((s) => s.removeItem);
+  const clear = useCartStore((s) => s.clear);
+  // The cart lives in this browser's storage, which the server cannot read:
+  // until the page has mounted, what the server drew (an empty cart) and what
+  // the browser holds differ, so a kit waits for `ready` before saying "empty".
+  const [ready, setReady] = useState(false);
+  useEffect(() => setReady(true), []);
+
+  const lines: KitCartLine[] = items.map((i) => ({
+    id: i.key,
+    title: i.title,
+    price: i.price,
+    src: i.image,
+    colour: i.color,
+    size: i.size,
+    qty: i.quantity,
+    href: `/product/${i.slug}`,
+  }));
+
   return {
+    ready,
+    lines,
+    /** The most of a line the shop has — the stepper stops there. */
+    stockOf: (key: string) => items.find((i) => i.key === key)?.stock ?? 1,
+    setQty: (key: string, qty: number) => setQuantity(key, qty),
+    remove: (key: string) => removeItem(key),
+    clear,
     /**
      * Add the variant with this colour and size. Returns false — and adds
      * nothing — when there is no such variant or it is out of stock: the same
@@ -36,5 +72,94 @@ export function useKitCart() {
       });
       return true;
     },
+    /** What the order API needs from the cart. */
+    orderItems: () => items.map((i) => ({ productId: i.productId, variantId: i.variantId, quantity: i.quantity })),
   };
+}
+
+/** Check a discount code against the cart, priced by the server. */
+export async function kitPreviewDiscount(code: string, items: { variantId: string; quantity: number }[]) {
+  return previewDiscount(code, items);
+}
+
+/**
+ * Place an order through the platform's order API — the same one the
+ * platform's checkout uses, with every rule it enforces. A card payment comes
+ * back as a provider's form, which is submitted here: the customer leaves for
+ * the provider's own page and no card number is ever typed into the shop's.
+ */
+export async function kitPlaceOrder(payload: {
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  shippingLine1: string;
+  shippingLine2?: string;
+  shippingCity: string;
+  shippingPostalCode: string;
+  paymentMethod: string;
+  notes?: string;
+  discountCode?: string;
+  items: { productId: string; variantId: string; quantity: number }[];
+}): Promise<{ ok: true; orderId: string; leaving: boolean } | { ok: false; error: string }> {
+  try {
+    const res = await fetch("/api/orders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok) return { ok: false, error: data.error ?? "The order could not be placed." };
+    if (data.redirect?.url && data.redirect.fields) {
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.action = data.redirect.url;
+      form.style.display = "none";
+      for (const [name, value] of Object.entries(data.redirect.fields as Record<string, string>)) {
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = name;
+        input.value = value;
+        form.appendChild(input);
+      }
+      document.body.appendChild(form);
+      form.submit();
+      return { ok: true, orderId: data.orderId, leaving: true };
+    }
+    return { ok: true, orderId: data.orderId, leaving: false };
+  } catch {
+    return { ok: false, error: "The order could not be placed. Check your connection and try again." };
+  }
+}
+
+/** Sign a customer in. False when the email and password do not match. */
+export async function kitSignIn(email: string, password: string): Promise<boolean> {
+  const result = await signIn("credentials", { email, password, redirect: false });
+  return !result?.error;
+}
+
+/** Create a customer account and sign it in. */
+export async function kitRegister(name: string, email: string, password: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  const res = await fetch("/api/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, email, password }),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    return { ok: false, error: data.error ?? "The account could not be created." };
+  }
+  await signIn("credentials", { email, password, redirect: false });
+  return { ok: true };
+}
+
+/** Sign the customer out and return to the shop's home page. */
+export async function kitSignOut(home: string) {
+  await signOut({ redirectTo: home });
+}
+
+/** Remove one of the signed-in customer's addresses. */
+export async function kitDeleteAddress(id: string) {
+  const form = new FormData();
+  form.set("id", id);
+  await deleteAddress(form);
 }

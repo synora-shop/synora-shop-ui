@@ -152,8 +152,36 @@ export function kitHref(ctx: Pick<KitContext, "routes">, value: string): string 
   return ctx.routes[m[1] as KitRoute] ?? "#";
 }
 
+/** What a checkout offers, as the shop has set it up. */
+export type KitCheckout = {
+  /** The ways to pay this shop takes, in the order the shop lists them. */
+  methods: { value: string; label: string; hint: string; instructions: string | null; redirects: boolean }[];
+  /** In the shop's currency, whole units. */
+  shippingFee: number;
+  /** Free delivery from this subtotal; null when there is no such threshold. */
+  freeShippingFrom: number | null;
+  /** The cities this shop delivers to. The order is refused for any other. */
+  cities: string[];
+  /** A signed-in customer's details, to start the form from. */
+  initial?: { firstName: string; lastName: string; email: string; phone: string; line1: string; city: string; postcode: string };
+};
+
 /** The shop's data every section may read. Handed in, never fetched by a section. */
 export type KitContext = {
+  /**
+   * True on a real storefront, where the platform's cart, checkout and
+   * sign-in are behind the kit's actions; absent in a theme's own reference
+   * build, which shows how things look with nothing behind them.
+   */
+  live?: boolean;
+  /** The checkout's terms, on the cart and checkout pages. */
+  checkout?: KitCheckout;
+  /** Which half of the sign-in page to open on. */
+  authMode?: "in" | "up";
+  /** Where to go once signed in. */
+  afterSignIn?: string;
+  /** Which tab of the account to open on. */
+  accountTab?: "orders" | "addresses" | "details";
   menus: Record<string, KitMenu>;
   routes: KitRoutes;
   /** The products the page is about — a collection's, a search's, the shop's featured. */
