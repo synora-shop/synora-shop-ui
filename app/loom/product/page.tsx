@@ -6,6 +6,7 @@ import { LoomGallery } from "@/components/loom/product/gallery";
 import { LoomBuyBox, type BuyBoxProduct } from "@/components/loom/product/buy-box";
 import { LoomProductCard, type LoomProduct } from "@/components/loom/product-card";
 import { T } from "@/components/loom/type";
+import { LoomBreadcrumb } from "@/components/loom/breadcrumb";
 
 export const metadata: Metadata = { title: "Skateboard Shoe — Loom reference build" };
 
@@ -58,16 +59,13 @@ const RELATED: LoomProduct[] = [
 export default function LoomProductPage() {
   return (
     <LoomShell>
-      <nav
-        aria-label="Breadcrumb"
-        className={cn(T.small, "px-[calc(16*var(--u))] pb-[calc(16*var(--u))] text-black/50 md:px-[calc(60*var(--u))] md:py-[calc(24*var(--u))]")}
-      >
-        <ol className="flex flex-wrap gap-[calc(8*var(--u))]">
-          <li><a href="/loom">Home</a> /</li>
-          <li><a href="/loom">Shoes</a> /</li>
-          <li aria-current="page" className="text-black/80">{PRODUCT.title}</li>
-        </ol>
-      </nav>
+      <LoomBreadcrumb
+        trail={[
+          { label: "Home", href: "/loom" },
+          { label: "Shoes", href: "/loom/collection" },
+        ]}
+        current={PRODUCT.title}
+      />
 
       <section
         data-m="pdp-main"

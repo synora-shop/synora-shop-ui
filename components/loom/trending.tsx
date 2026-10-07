@@ -52,7 +52,7 @@ const CHIPS = [
 const PRODUCTS: LoomProduct[] = [
   { title: "Casual Shoe", price: "$225", w: 322, src: IMG.casual, img: { w: 408, h: 572, x: -60, y: -99 }, mImg: { w: 196.8, h: 272.66, x: -29.3, y: -47.19 }, loved: true },
   { title: "Skateboard Shoe", price: "$125", w: 322, src: IMG.skate1, img: { w: 360, h: 450, x: -11 }, mImg: { w: 208.99, h: 197, x: -29.2 } },
-  { title: "Skateboard Shoe", price: "$125", w: 654, wideOnPhone: true, src: IMG.skate2, img: { w: 654, h: 436, y: -42 }, mImg: { w: 343, h: 228.49, y: -22.01 } },
+  { title: "Skateboard Shoe", price: "$125", w: 654, wideOnPhone: true, href: "/loom/product", src: IMG.skate2, img: { w: 654, h: 436, y: -42 }, mImg: { w: 343, h: 228.49, y: -22.01 } },
   { title: "Skateboard Shoe", price: "$125", w: 654, src: IMG.skate3, img: { w: 770, h: 513, x: -53, y: -112 }, mImg: { w: 167, h: 164 } },
   { title: "Basket Shoe", price: "$125", w: 324, src: IMG.basket, img: { w: 474, h: 593, x: -80, y: -119 }, mImg: { w: 219, h: 222, x: -29.5, y: -25 } },
   { title: "Sportwear Shoe", price: "$159", w: 322, wideOnPhone: true, src: IMG.sport, img: { w: 527, h: 421, x: -91, y: -19 }, mImg: { w: 356, h: 237, x: -4, y: -21 } },

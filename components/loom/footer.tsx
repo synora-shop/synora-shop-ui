@@ -65,7 +65,7 @@ export function LoomFooter() {
             {c.links.map((l) => (
               <a
                 key={l}
-                href="#"
+                href={l === "Shoes" || l === "All Category" ? "/loom/collection" : "#"}
                 data-m="footer-link"
                 className="whitespace-nowrap text-[max(calc(13*var(--u)),11px)] font-medium leading-[max(calc(16*var(--u)),12.8px)] text-white/[0.52]"
               >

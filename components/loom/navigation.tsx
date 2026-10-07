@@ -32,7 +32,9 @@ import {
  * category links do not fit beside the search field at that size — so they
  * give way to the same menu button the phone has, and come back at 1024.
  */
+// Only "All Category" has a page so far — the collection.
 const CATEGORIES = ["All Category", "Gift Cards", "Special Event"];
+const CATEGORY_HREF: Record<string, string> = { "All Category": "/loom/collection" };
 
 export function LoomNavigation() {
   return (
@@ -43,7 +45,7 @@ export function LoomNavigation() {
           the box the field lands 1.67px left of the design and everything
           after inherits the error. */}
       <a
-        href="#"
+        href="/loom"
         data-m="nav-wordmark"
         className="min-w-[calc(161*var(--u))] whitespace-nowrap text-[max(calc(24*var(--u)),19.2px)] font-extrabold leading-[max(calc(30*var(--u)),24px)] tracking-normal text-black"
       >
@@ -74,7 +76,7 @@ export function LoomNavigation() {
           {CATEGORIES.map((c) => (
             <a
               key={c}
-              href="#"
+              href={CATEGORY_HREF[c] ?? "#"}
               className="flex h-[calc(34*var(--u))] items-center gap-[calc(8*var(--u))] text-[max(calc(14*var(--u)),11.2px)] font-semibold leading-[max(calc(16*var(--u)),12.8px)] text-black/80"
             >
               {c}

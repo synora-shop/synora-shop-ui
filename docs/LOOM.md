@@ -290,6 +290,20 @@ with the kit's chevron. "You may also like" is the Trending header and the
 kit's product card, four across at 322. The kit has one photograph per
 product, so the gallery's views are crops of it.
 
+**Collection — `/loom/collection`.** On the kit's 322 module: filters take
+one card's width, then the 10px gutter, then three cards of 322.67 — the
+sidebar reads as one of the cards. A Heading 1 title with Body 4 beside it
+(the hero's second band), the Trending chips as the category menu, and
+everything under them on the section rule. Colour is the colour chip's swatch
+alone (nine full chips would stand one per line in 322), size is the Trending
+chip, price a one-choice list, sort a chip-outlined pill with the kit's
+chevron. On the phone: two columns of the small card, the filters in a
+full-screen sheet whose button says how many products the choice leaves.
+The filters really filter. "Show more" appears only when there is more.
+
+The pages link to each other: the wordmark goes home, "All Category" and the
+footer's "Shoes" open the collection, and the red high-top opens the product.
+
 ### Still open
 
 - **One deliberate departure from the file:** on the phone hero the second
@@ -297,7 +311,7 @@ product, so the gallery's views are crops of it.
   and where they meet the file draws a hard line across the green. Its top
   edge fades over 40px. Every number is still the file's.
 - **What the phone's menu button opens** is not drawn in the kit.
-- **Still to design:** collection, cart, checkout, account.
+- **Still to design:** cart, checkout, account.
 - Nothing here is wired to the theme yet. Porting means moving these numbers
   into the storefront's real section renderers (§5), not shipping this route.
 
