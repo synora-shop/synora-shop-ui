@@ -20,7 +20,12 @@ function flag(name) {
   argv.splice(i, 2);
   return v;
 }
-const under = flag("--under");
+// `--under` may be given more than once, and every one must match some
+// ancestor. The 375 screen is "Responsive" on the page *and* in the cover art,
+// so a single regex cannot single out the real one; "⚡" plus "^Responsive$"
+// can.
+const unders = [];
+for (let u = flag("--under"); u !== null; u = flag("--under")) unders.push(u);
 const pick = flag("--pick");
 const rest = argv;
 const [treePath, wanted, depthArg] = rest;
@@ -29,6 +34,10 @@ const doc = JSON.parse(readFileSync(treePath, "utf8"));
 const nodes = doc.nodeChanges;
 
 const key = (g) => g && `${g.sessionID}:${g.localID}`;
+// Figma orders siblings by a fractional-index string, compared byte by byte.
+// localeCompare is not that: it folds case and ignores some punctuation, so it
+// shuffles children — the 375 Trending grid listed its rows out of order.
+const cmpPos = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
 const kids = new Map();
 for (const n of nodes) {
   const p = key(n.parentIndex?.guid);
@@ -37,7 +46,7 @@ for (const n of nodes) {
   kids.get(p).push(n);
 }
 for (const [, l] of kids) {
-  l.sort((a, b) => String(a.parentIndex?.position ?? "").localeCompare(String(b.parentIndex?.position ?? "")));
+  l.sort((a, b) => cmpPos(a.parentIndex?.position ?? "", b.parentIndex?.position ?? ""));
 }
 
 const hex = (c) =>
@@ -82,7 +91,19 @@ function describe(n) {
   const fills = (n.fillPaints ?? []).map(paint).filter(Boolean);
   if (fills.length) bits.push(`fill:${fills.join(",")}`);
   const strokes = (n.strokePaints ?? []).map(paint).filter(Boolean);
-  if (strokes.length) bits.push(`stroke:${strokes.join(",")} ${round(n.strokeWeight)}px ${n.strokeAlign ?? ""}`);
+  // Which *sides* carry the stroke, not just that one exists. The kit's
+  // section rules are single-edge borders — `borderStrokeWeightsIndependent`
+  // with only `borderTopWeight` set — and a frame that reports "stroke: 1px"
+  // without that detail gets built as a box outline, which is four rules
+  // where the design has one.
+  if (strokes.length) {
+    let where = "";
+    if (n.borderStrokeWeightsIndependent) {
+      const sides = { t: n.borderTopWeight, r: n.borderRightWeight, b: n.borderBottomWeight, l: n.borderLeftWeight };
+      where = " " + Object.entries(sides).filter(([, w]) => w).map(([k, w]) => `${k}:${round(w)}`).join(" ");
+    }
+    bits.push(`stroke:${strokes.join(",")} ${round(n.strokeWeight)}px ${n.strokeAlign ?? ""}${where}`);
+  }
   if (n.opacity !== undefined && n.opacity < 1) bits.push(`opacity:${n.opacity}`);
   if (n.type === "TEXT") {
     const f = n.fontName ?? {};
@@ -111,10 +132,10 @@ function ancestry(n) {
 // real one and is not. `--under` is how the loop names which it means.
 let matches = nodes.filter((n) => (n.name ?? "") === wanted);
 if (matches.length === 0) matches = nodes.filter((n) => new RegExp(wanted, "i").test(n.name ?? ""));
-if (under) matches = matches.filter((n) => ancestry(n).some((a) => new RegExp(under, "i").test(a)));
+for (const u of unders) matches = matches.filter((n) => ancestry(n).some((a) => new RegExp(u, "i").test(a)));
 
 if (matches.length === 0) {
-  console.error(`no node matching "${wanted}"${under ? ` under "${under}"` : ""}.`);
+  console.error(`no node matching "${wanted}"${unders.length ? ` under "${unders.join('" and "')}"` : ""}.`);
   process.exit(1);
 }
 if (matches.length > 1 && !pick) {

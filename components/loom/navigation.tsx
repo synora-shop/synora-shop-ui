@@ -1,64 +1,106 @@
-import { Heart, Search, ShoppingCart, User } from "lucide-react";
-
-const CATEGORIES = ["All category", "Gift Cards", "Special Event"];
+import {
+  LoomCartIcon,
+  LoomChevronDown,
+  LoomHeartOutline,
+  LoomMenuIcon,
+  LoomSearchIcon,
+  LoomUserIcon,
+} from "@/components/loom/icons";
 
 /**
- * The shop's own row — Navigation in the file, 1440x80.
+ * The shop's own row — "Navigation" in the file, 1440x80.
  *
- * Not auto-layout in Figma: its three groups are placed absolutely at x=60,
- * 245 and 1263. Rebuilt as a flex row because the positions are consistent
- * with one — logo at the 60px gutter, the search group 24px after it, icons
- * ending at 1380, which is 1440 less the same gutter. Reproducing absolute
- * coordinates would be exact at 1440 and broken at every other width.
+ * Absolutely positioned in Figma, at x=60, 245 and 1263, and rebuilt as a
+ * flex row because those positions *are* a flex row: the wordmark at the 60px
+ * gutter, the search group 24 after it, the icon cluster ending at 1380 —
+ * 1440 less the same gutter. Copying coordinates would be exact at 1440 and
+ * broken at every other width.
  *
- * The search field is the signature: 312x34, radius 2000 so it is a true
- * pill, outlined #e3e3e3 — a lighter hairline than the #ddd the buttons use,
- * which is the kit's own inconsistency and is kept rather than tidied.
+ * The category items hug: label, 8, then a 24px chevron. The file's stored
+ * widths for two of the three are stale (they record the label alone, with
+ * the chevron left at a position copied from a sibling), and "All Category"
+ * is the one with fresh numbers — 116 = 84 + 8 + 24, chevron at 92. That is
+ * the layout the design means, so that is what is built.
  *
- * Icons are lucide stand-ins. The file's own glyphs live in binary path
- * blobs that this build does not yet decode, so these are the one knowingly
- * approximate thing on the page.
+ * On the 375 screen it is 94 tall — 40 above, 24 below and at either side —
+ * holding only the wordmark and a 24px menu button. Search, the categories and
+ * the three icons are not on the phone screen at all; what the menu opens is
+ * not drawn in the kit either, so the button is the file's and the drawer
+ * behind it is a design still to do.
+ *
+ * Between 768 and 1023 the desktop row is drawn scaled down, and the three
+ * category links do not fit beside the search field at that size — so they
+ * give way to the same menu button the phone has, and come back at 1024.
  */
+const CATEGORIES = ["All Category", "Gift Cards", "Special Event"];
+
 export function LoomNavigation() {
   return (
-    <div className="flex h-[80px] items-center px-[60px]">
-      {/* The width is explicit, and that is deliberate. Figma gives this text
-          box 161px; the same string in the same face measures 159.33 in a
-          browser, and the next group is positioned after it — so without the
-          box the search field lands 1.67px left of where the design puts it,
-          and everything after inherits the error. Matching the box rather
-          than the glyph run is what keeps the row's geometry exact. */}
+    <div className="flex h-[calc(94*var(--u))] items-center px-[calc(24*var(--u))] pb-[calc(24*var(--u))] pt-[calc(40*var(--u))] md:h-[calc(80*var(--u))] md:px-[calc(60*var(--u))] md:py-0">
+      {/* The width is explicit, and deliberately so. Figma gives this text box
+          161px; the same string in the same face measures 159.33 in a
+          browser, and the search group is positioned after it — so without
+          the box the field lands 1.67px left of the design and everything
+          after inherits the error. */}
       <a
         href="#"
-        className="w-[161px] text-[24px] font-extrabold leading-[30px] tracking-normal text-black"
+        data-m="nav-wordmark"
+        className="min-w-[calc(161*var(--u))] whitespace-nowrap text-[max(calc(24*var(--u)),19.2px)] font-extrabold leading-[max(calc(30*var(--u)),24px)] tracking-normal text-black"
       >
         ECOMMERCE
       </a>
 
-      <div className="ml-[24px] flex items-center gap-[40px]">
-        <div className="flex h-[34px] w-[312px] items-center justify-between rounded-[2000px] border border-[#e3e3e3] px-[20px]">
-          <span className="text-[13px] leading-[18px] text-[#737b8b]">Search here</span>
-          <Search className="h-[20px] w-[20px] opacity-50" strokeWidth={1.5} />
+      <div className="ml-[calc(24*var(--u))] hidden items-center gap-[calc(40*var(--u))] md:flex">
+        {/* 312x34, radius 2000 so it is a true pill, outlined #e3e3e3 — a
+            lighter hairline than the #dddddd the buttons use. That is the
+            kit's own inconsistency, kept rather than reconciled. */}
+        {/* A div, not a form. This page is a server component and a
+            reference build — there is nothing to submit to, and an onSubmit
+            here would force the whole header to the client for no behaviour. */}
+        <div
+          role="search"
+          className="flex h-[max(calc(34*var(--u)),32px)] w-[calc(312*var(--u))] items-center justify-between rounded-[2000px] border border-[#e3e3e3] px-[calc(20*var(--u))]"
+        >
+          <input
+            type="search"
+            placeholder="Search here"
+            aria-label="Search"
+            className="w-full bg-transparent text-[max(calc(13*var(--u)),11px)] leading-[max(calc(18*var(--u)),14.4px)] text-[#121212] outline-none placeholder:text-[#737b8b]"
+          />
+          <LoomSearchIcon className="h-[max(calc(20*var(--u)),16px)] w-[max(calc(20*var(--u)),16px)] shrink-0 text-[#2e3a59] opacity-50" />
         </div>
 
-        <nav className="flex items-center gap-[40px]">
+        <nav data-m="nav-categories" className="hidden items-center lg:flex gap-[calc(40*var(--u))]">
           {CATEGORIES.map((c) => (
             <a
               key={c}
               href="#"
-              className="flex h-[34px] items-center text-[14px] font-semibold leading-[22px] text-black/80"
+              className="flex h-[calc(34*var(--u))] items-center gap-[calc(8*var(--u))] text-[max(calc(14*var(--u)),11.2px)] font-semibold leading-[max(calc(16*var(--u)),12.8px)] text-black/80"
             >
               {c}
+              <LoomChevronDown className="h-[calc(24*var(--u))] w-[calc(24*var(--u))]" />
             </a>
           ))}
         </nav>
       </div>
 
-      <div className="ml-auto flex items-center gap-[24px] text-[#2e3a59]">
-        <Heart className="h-[24px] w-[24px]" strokeWidth={1.6} />
-        <User className="h-[24px] w-[24px]" strokeWidth={1.6} />
-        <ShoppingCart className="h-[21px] w-[21px]" strokeWidth={1.6} />
+      {/* 117x24, gap 24, bottom-aligned — which is why the 21px cart sits 3px
+          lower than the two 24px glyphs beside it. */}
+      <div className="ml-auto hidden items-end gap-[calc(24*var(--u))] text-[#2e3a59] md:flex">
+        <a href="#" aria-label="Wishlist">
+          <LoomHeartOutline className="h-[max(calc(24*var(--u)),20px)] w-[max(calc(24*var(--u)),20px)]" />
+        </a>
+        <a href="#" aria-label="Account">
+          <LoomUserIcon className="h-[max(calc(24*var(--u)),20px)] w-[max(calc(24*var(--u)),20px)]" />
+        </a>
+        <a href="#" aria-label="Cart">
+          <LoomCartIcon className="h-[max(calc(21*var(--u)),17.5px)] w-[max(calc(21*var(--u)),17.5px)]" />
+        </a>
       </div>
+
+      <button type="button" aria-label="Menu" className="ml-auto text-black md:ml-[calc(24*var(--u))] lg:hidden">
+        <LoomMenuIcon className="h-[max(calc(24*var(--u)),20px)] w-[max(calc(24*var(--u)),20px)]" />
+      </button>
     </div>
   );
 }

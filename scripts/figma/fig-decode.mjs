@@ -5,7 +5,7 @@
 // encoded against it. The schema travels with the file, so nothing here is
 // guessed or version-pinned: the file describes its own shape and this reads
 // what it says.
-import { inflateRawSync, zstdDecompressSync, createInflateRaw } from "zlib";
+import { inflateRawSync, zstdDecompressSync } from "zlib";
 
 /**
  * The two blocks, each decompressed with whatever it actually uses.

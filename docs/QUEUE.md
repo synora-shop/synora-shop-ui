@@ -143,6 +143,24 @@ that both write `businessType` is two rules waiting to disagree.
 
 ---
 
+## Loom, rebuilt from the Figma file — 7 October
+
+`/loom` reproduces the Paperpillar LOOM kit's home page exactly at both sizes
+the kit draws (375 and 1440, checked box by box against the `.fig` by
+`scripts/figma/verify-loom.mjs`) and scales between and beyond them without
+breaking (`scripts/figma/sweep-loom.mjs`, twenty widths). Everything is in
+`docs/LOOM.md` §7.
+
+**Next, agreed:** the pages the kit does not contain — product, collection,
+cart, checkout, account — designed in the same language. **Then:** moving
+these numbers into the storefront's real section renderers so the Loom a
+merchant adds is this one. That step also decides whether every shop's Inter
+gains its optical-size axis (LOOM.md §7), which changes live headings.
+
+**Undesigned in the kit:** what the phone's menu button opens.
+
+---
+
 ## The Shopify import read past four columns — fixed 3 October
 
 *The format was always complete: all 57 columns round-tripped, and unread ones

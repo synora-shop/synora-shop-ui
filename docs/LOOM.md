@@ -4,10 +4,15 @@ Everything needed to build the Loom theme, recovered from the Paperpillar
 "LOOM E-commerce Website UI Kit" on Figma Community
 (`csV3m62TcCVG4e96uLho9i`) and written down here so it survives.
 
-It is written down because the extraction is the expensive half and it is not
-repeatable on demand: Figma's Starter plan allows **20 MCP tool calls a
-month**, and reading these values used most of one month's allowance. Nothing
-below needs Figma again.
+It was first written down because the extraction was the expensive half:
+Figma's Starter plan allows **20 MCP tool calls a month**, and reading these
+values used most of one month's allowance.
+
+**That constraint is gone.** The `.fig` itself lives at
+`~/Business/Figmaa/LOOM E-commerce Website UI Kit.fig` and is read with no
+Figma account at all — see §7. It carries the full-size artboards the
+Community view hides, so §1's "only inside the cover artwork" describes what
+the MCP server could see, not what the file holds.
 
 ---
 
@@ -146,7 +151,117 @@ Two things in it are behaviour rather than styling:
 
 ---
 
-## 7. What this does not answer
+## 7. The reference build — `/loom`
+
+A standalone page that reproduces the kit's home screen exactly, at both of its
+sizes, with nothing of the platform in it: no shop, no theme tokens, no data.
+It is the measuring stick the real theme renderers get checked against.
+`app/loom/`, `components/loom/`, the photographs in `public/loom/` (the file's
+own bytes, named by their Figma hash), the icons in `public/loom/icons/`.
+
+### Reading the file
+
+```
+node scripts/figma/read-fig.mjs "<the .fig>" /tmp/loom.json      # decode once
+node scripts/figma/inspect.mjs /tmp/loom.json "^Trending$" 6 \
+     --under "⚡" --under "^Responsive$"                         # one frame, exactly
+node scripts/figma/icons.mjs /tmp/loom.json <out> "<icon name>"  # real vector paths
+node scripts/figma/verify-loom.mjs [url] [desktop|phone]        # measure the page
+node scripts/figma/sweep-loom.mjs [url] [--shots <dir>]         # every other width
+```
+
+The 375 screen is the frame named **Responsive** under the page `⚡ E-commerce
+website`; the cover carries a second "Responsive" at 49%, which is why
+`--under` can be given twice. `verify-loom.mjs` needs Chrome with
+`--remote-debugging-port=9222` and the dev server; it checks every section's
+box and every text style at both sizes, and that nothing scrolls sideways.
+`sweep-loom.mjs` loads twenty widths from 320 to 2560 and fails on sideways
+scrolling, text outside the box that clips it, or text under 11px.
+**Both pass, 7 October 2026.**
+
+### The two screens
+
+375 is the base and 1440 is `lg:`, in one tree — never a phone copy and a
+desktop copy. Heights, as the file has them:
+
+| | Desktop 1440 | Phone 375 |
+| --- | --- | --- |
+| Header | Navbar 64 + Navigation 80 | 94 — wordmark and a menu button only |
+| Hero | 1192 | 1253 — the two wide cards are not on the phone |
+| Trending | 1058 | 1255 — two columns, a wide card after every pair |
+| Explore by Colors | 210 | 416 |
+| Testimoni | 636 | 704 — gains a 64px portrait |
+| Service | 558 | 1020 — columns stack |
+| Blog | 555 | 742 |
+| Footer | 341 | 838 |
+| **Total** | **4694** | **6322** |
+
+Rows that run off the phone's right edge in the file — the hero's two category
+cards and the Trending chips — are rows you swipe.
+
+### Every other width
+
+The kit draws two widths; the page has to work at all of them. Every length is
+written as the file's number times `--u`, one design pixel at the current
+screen, set on `<main>`:
+
+| Screen | Design shown | `--u` |
+| --- | --- | --- |
+| under 768 | the phone's | width ÷ 375, at most 1.2px — past 450 the phone design is a centred column, swipe rows still reaching the screen edge |
+| 768 and up | the desktop's | width ÷ 1440, at most 1px — past 1440 it is centred, the footer's ground running edge to edge |
+
+So at 375 and at 1440 `--u` is exactly 1px and the page is the file, and in
+between everything — a photograph's hand-placed crop included — scales
+together. Three guards keep a scaled page usable rather than merely smaller:
+
+- **Type up to 24px never drops below 80% of its design size**, nor under
+  11px, and its line height floors with it.
+- **Buttons and chips take the file's width as a minimum** and never stand
+  under 40px tall, so a floored label grows its button rather than spilling.
+- **Boxes holding text have minimum heights, not fixed ones** — the
+  testimonial and the hero's copy grow on a small laptop instead of clipping.
+
+From 768 to 1023 the three category links in the header do not fit beside the
+search field, so they give way to the phone's menu button and return at 1024.
+
+### Things the file says that are easy to read wrongly
+
+Each of these was built wrong first and found by measuring.
+
+- **Inter needs its optical-size axis.** Figma draws large text from Inter's
+  display cut. Without `opsz`, "Explore by" measured 269px against the 256px
+  box the file wraps it in, and the section broke onto three lines. `/loom`
+  loads Inter with `axes: ["opsz"]` for itself only. **The storefront's own
+  Inter does not have it** — turning it on changes every live shop's
+  headings, so it is a decision to take when Loom is ported, not a side effect.
+- **Strokes are drawn inside and take no room.** The section rules are inset
+  shadows, not borders; as borders each section came out 1px too tall.
+- **Two photo modes.** *Fill* covers its rectangle from the centre
+  (`object-cover`). *Crop* (`STRETCH` in the file) is a window onto part of the
+  photo, stored as a transform; the drawn size is the rectangle divided by the
+  transform's scale. The desktop's "Say it with Shirt" and "Funky never get
+  old" are crops and were squashed 12% and 33% until this was read.
+- **A component's text style lives on the master.** The colour chips' labels
+  are 16/24 Semi Bold with +1 tracking on desktop (14/24, +1 on the phone);
+  the instances override only the words, so reading them alone suggests 14
+  and no tracking.
+- **The kit's own typos are not design.** The phone names the last shoe
+  "Spotwear" and prices the fourth $225; the desktop's name and price are used
+  at both sizes. "Browse Inpirations" is spelt as the file spells it.
+
+### Still open
+
+- **One deliberate departure from the file:** on the phone hero the second
+  copy of the photograph is laid over a five-times enlargement of the first,
+  and where they meet the file draws a hard line across the green. Its top
+  edge fades over 40px. Every number is still the file's.
+- **What the phone's menu button opens** is not drawn in the kit.
+- Nothing here is wired to the theme yet. Porting means moving these numbers
+  into the storefront's real section renderers (§5), not shipping this route.
+
+---
+
+## 8. What this does not answer
 
 The licence. The kit is a Figma Community file, and shipping it as a theme
 inside a paid platform is commercial redistribution — a different permission
