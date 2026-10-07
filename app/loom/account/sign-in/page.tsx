@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
 import { LoomShell } from "@/components/loom/shell";
-import { LoomSignIn } from "@/components/loom/account/sign-in";
+import { LoomTemplateView } from "@/components/loom/template";
+import { SIGN_IN } from "@/components/loom/templates";
+import { demoContext } from "@/components/loom/demo";
 
 export const metadata: Metadata = { title: "Sign in — Loom reference build" };
 
-/** Sign in and create an account — the design is on LoomSignIn. */
+/** This page is its template, drawn — what it is made of is in components/loom/templates.ts. */
 export default function LoomSignInPage() {
   return (
     <LoomShell>
-      <LoomSignIn />
+      <LoomTemplateView template={SIGN_IN} ctx={demoContext()} />
     </LoomShell>
   );
 }

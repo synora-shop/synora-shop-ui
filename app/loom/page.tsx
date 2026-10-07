@@ -1,10 +1,7 @@
 import { LoomShell } from "@/components/loom/shell";
-import { LoomHero } from "@/components/loom/hero";
-import { LoomTrending } from "@/components/loom/trending";
-import { LoomExploreColors } from "@/components/loom/explore-colors";
-import { LoomTestimonial } from "@/components/loom/testimonial";
-import { LoomService } from "@/components/loom/service";
-import { LoomBlog } from "@/components/loom/blog";
+import { LoomTemplateView } from "@/components/loom/template";
+import { HOME } from "@/components/loom/templates";
+import { demoContext } from "@/components/loom/demo";
 
 /**
  * The Loom reference page — the kit's home screen, rebuilt from the file.
@@ -29,12 +26,7 @@ import { LoomBlog } from "@/components/loom/blog";
 export default function LoomPage() {
   return (
     <LoomShell>
-      <LoomHero />
-      <LoomTrending />
-      <LoomExploreColors />
-      <LoomTestimonial />
-      <LoomService />
-      <LoomBlog />
+      <LoomTemplateView template={HOME} ctx={demoContext()} />
     </LoomShell>
   );
 }

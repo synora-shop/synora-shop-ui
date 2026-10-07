@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
 import { LoomShell } from "@/components/loom/shell";
 import { LoomBreadcrumb } from "@/components/loom/breadcrumb";
-import { LoomCart } from "@/components/loom/cart/cart";
-import { DEMO_LINES } from "@/components/loom/cart/lines";
+import { LoomTemplateView } from "@/components/loom/template";
+import { CART } from "@/components/loom/templates";
+import { demoContext } from "@/components/loom/demo";
 
 export const metadata: Metadata = { title: "Your cart — Loom reference build" };
 
-
-/** The cart — the third page the kit does not draw. The design is on LoomCart. */
+/** This page is its template, drawn — what it is made of is in components/loom/templates.ts. */
 export default function LoomCartPage() {
   return (
     <LoomShell>
       <LoomBreadcrumb trail={[{ label: "Home", href: "/loom" }]} current="Cart" />
-      <LoomCart initial={DEMO_LINES} />
+      <LoomTemplateView template={CART} ctx={demoContext()} />
     </LoomShell>
   );
 }

@@ -1,16 +1,18 @@
 import type { Metadata } from "next";
 import { LoomShell } from "@/components/loom/shell";
 import { LoomBreadcrumb } from "@/components/loom/breadcrumb";
-import { LoomAccount } from "@/components/loom/account/account";
+import { LoomTemplateView } from "@/components/loom/template";
+import { ACCOUNT } from "@/components/loom/templates";
+import { demoContext } from "@/components/loom/demo";
 
 export const metadata: Metadata = { title: "Your account — Loom reference build" };
 
-/** The account, signed in — the design is on LoomAccount. */
+/** This page is its template, drawn — what it is made of is in components/loom/templates.ts. */
 export default function LoomAccountPage() {
   return (
     <LoomShell>
       <LoomBreadcrumb trail={[{ label: "Home", href: "/loom" }]} current="Account" />
-      <LoomAccount />
+      <LoomTemplateView template={ACCOUNT} ctx={demoContext()} />
     </LoomShell>
   );
 }

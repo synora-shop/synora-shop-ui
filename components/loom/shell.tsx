@@ -5,6 +5,7 @@ import type { LoomContext } from "@/components/loom/contract";
 import { SHOES } from "@/components/loom/catalogue";
 import { cn } from "@/lib/utils";
 import { T } from "@/components/loom/type";
+import { tx } from "@/components/loom/text";
 
 /**
  * The frame every Loom page sits in: the header rows above, the footer below,
@@ -47,7 +48,7 @@ export function LoomShell({
             ECOMMERCE
           </a>
           <a href="/loom/cart" className={cn(T.small, "text-black/50 underline underline-offset-4")}>
-            Back to cart
+            {tx(ctx, "checkout.backToCart")}
           </a>
         </div>
       ) : (

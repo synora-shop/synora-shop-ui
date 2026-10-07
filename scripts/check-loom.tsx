@@ -22,11 +22,12 @@
  * Dependency-free beyond React's own server renderer; exits non-zero on failure.
  */
 import { renderToStaticMarkup } from "react-dom/server";
+import { AppRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { LOOM_SECTIONS } from "../components/loom/sections";
 import * as TEMPLATES from "../components/loom/templates";
-import { DEMO_MENUS } from "../components/loom/demo-menus";
-import { SHOES } from "../components/loom/catalogue";
-import { resolve, type LoomContext, type LoomOrder, type LoomTemplate } from "../components/loom/contract";
+import { demoContext } from "../components/loom/demo";
+import { LOOM_TEXT, type LoomTextKey } from "../components/loom/text";
+import { resolve, type LoomContext, type LoomTemplate } from "../components/loom/contract";
 
 let pass = 0;
 let fail = 0;
@@ -38,25 +39,16 @@ const check = (name: string, ok: boolean, detail = "") => {
   }
 };
 
-const ORDER: LoomOrder = {
-  id: "LM-1",
-  placed: "1 October",
-  stage: 1,
-  dates: ["1", "2", "3", "4"],
-  arriving: "Friday",
-  lines: [{ id: "x", title: "Shoe", src: "/x.png", colour: "Red", size: "9", qty: 1, price: 10, href: "#" }],
-  delivery: 0,
-  speed: "Standard",
-  address: ["A"],
-  payment: "Card",
-  tracking: "T1",
-};
 
 /** The states a section's words can appear in — each is drawn and the outputs pooled. */
 const STATES: LoomContext[] = [
-  { menus: DEMO_MENUS, products: SHOES, order: ORDER },
-  { menus: DEMO_MENUS, products: SHOES, query: "red", order: ORDER },
-  { menus: DEMO_MENUS, products: SHOES, query: "zzzz-nothing", order: ORDER },
+  demoContext(),
+  demoContext({ query: "red" }),
+  demoContext({ query: "zzzz-nothing" }),
+  // A cart under the free-delivery amount, so the "how far off" note shows.
+  demoContext({ cart: [{ ...demoContext().cart![0], qty: 1 }] }),
+  // An order that has arrived, so "Delivered {date}" is drawn.
+  demoContext({ order: { ...demoContext().order!, stage: 3 } }),
 ];
 
 /**
@@ -70,23 +62,43 @@ const UNREACHABLE: Record<string, string> = {
   "LOOM_HEADER.menuButtonLabel": "an aria-label — checked below as an attribute instead",
 };
 
+/**
+ * Text settings that choose rather than print — the Trending chip shown as
+ * chosen is a name matched against the menu, never drawn itself. Held to a
+ * weaker rule: changing it must change the page.
+ */
+const CHOOSERS = new Set(["LOOM_TRENDING.activeChip", "LOOM_COLLECTION.activeCategory"]);
+
 function draw(type: string, data: Record<string, unknown>, ctx: LoomContext) {
   const def = LOOM_SECTIONS[type];
   const Render = def.Render;
-  return renderToStaticMarkup(<Render data={resolve(def, data)} ctx={ctx} />);
+  // Sign-in navigates with Next's router, which only exists inside the app;
+  // drawn alone it needs a stand-in that goes nowhere.
+  const router = { push() {}, replace() {}, refresh() {}, back() {}, forward() {}, prefetch() {} };
+  return renderToStaticMarkup(
+    <AppRouterContext.Provider value={router as never}>
+      <Render data={resolve(def, data)} ctx={ctx} />
+    </AppRouterContext.Provider>
+  );
 }
 const drawAll = (type: string, data: Record<string, unknown>) => STATES.map((c) => draw(type, data, c)).join("\n");
 
-/** The blocks a section needs to show anything (the footer's columns). */
-const SAMPLE: Record<string, Record<string, unknown>> = {
-  LOOM_FOOTER: { columns: [{ heading: "Popular", menu: "popular" }] },
-};
+/**
+ * What each section starts with in its template — the blocks a section needs
+ * to show anything (the footer's columns, the home page's colours). Taken from
+ * the templates themselves, so a new section with blocks is covered as soon
+ * as a template uses it.
+ */
+const SAMPLE: Record<string, Record<string, unknown>> = {};
+for (const t of Object.values(TEMPLATES) as LoomTemplate[]) {
+  for (const s of t.sections) if (s.data && !SAMPLE[s.type]) SAMPLE[s.type] = s.data;
+}
 
 for (const [type, def] of Object.entries(LOOM_SECTIONS)) {
   check(`${type}: schema names its own type`, def.schema.type === type, def.schema.type);
   for (const f of [...def.schema.fields, ...(def.schema.blocks?.fields ?? [])]) {
     check(`${type}.${f.key}: explains itself`, typeof f.info === "string" && f.info.length > 10);
-    if (f.kind === "menu" && f.default) check(`${type}.${f.key}: default menu exists`, String(f.default) in DEMO_MENUS, String(f.default));
+    if (f.kind === "menu" && f.default) check(`${type}.${f.key}: default menu exists`, String(f.default) in demoContext().menus, String(f.default));
   }
 
   const base = SAMPLE[type] ?? {};
@@ -95,6 +107,10 @@ for (const [type, def] of Object.entries(LOOM_SECTIONS)) {
   for (const f of def.schema.fields.filter((x) => x.kind === "text" || x.kind === "textarea")) {
     const key = `${type}.${f.key}`;
     if (UNREACHABLE[key]) continue;
+    if (CHOOSERS.has(key)) {
+      check(`${key}: changes the page`, drawAll(type, { ...base, [f.key]: "MARKCHOICE" }) !== drawAll(type, base));
+      continue;
+    }
     const marker = `MARK${f.key.toUpperCase()}`;
     // Keep any {token} the default uses, so a filled-in heading still shows the marker.
     const tokens = (String(f.default).match(/\{\w+\}/g) ?? []).join(" ");
@@ -131,6 +147,38 @@ check(
   draw("LOOM_HEADER", { mainMenu: "popular" }, STATES[0]).includes("Accessories") &&
     !draw("LOOM_HEADER", { mainMenu: "popular" }, STATES[0]).includes("Gift Cards")
 );
+
+// 5. Site text reaches the page: every key set to a marker, every section
+//    drawn in every state, the marker must appear somewhere. Words that only
+//    exist after an interaction (an error, the thanks page, the other half of
+//    a toggle) cannot be reached by a server render and are listed instead.
+const AFTER_INTERACTION = new Set<string>([
+  "checkout.emailError", "checkout.firstNameError", "checkout.lastNameError", "checkout.addressError",
+  "checkout.cityError", "checkout.postcodeError", "checkout.phoneError", "checkout.placeOrder",
+  "checkout.nothingCharged", "checkout.orderNumber", "checkout.thanks", "checkout.thanksText",
+  "checkout.whenStandard", "checkout.whenExpress",
+  "account.createAccountHeading", "account.createAccountText", "account.name", "account.createAccountButton",
+  "account.haveAccountPrompt", "account.signInLink", "account.nameError", "account.emailError",
+  "account.passwordError", "account.passwordShortError", "account.main", "account.edit", "account.makeMain",
+  "account.removeAddressButton", "account.addAddress", "account.saveDetails", "account.saved",
+  "cart.emptyHeading", "cart.continueShopping", "cart.itemCountOne",
+  "collections.emptyState", "collections.countOne", "collections.showMore", "filters.clearFilters",
+  "filters.clearAll", "filters.clear", "filters.close", "filters.showResults", "filters.showResultsOne",
+  "product.removeFromWishlist",
+]);
+{
+  const markers = Object.fromEntries(Object.keys(LOOM_TEXT).map((k) => [k, `TXT${k.replace(/\W/g, "")}TXT`]));
+  const pool = Object.keys(LOOM_SECTIONS)
+    .flatMap((type) => STATES.map((c) => draw(type, SAMPLE[type] ?? {}, { ...c, text: markers })))
+    .join("\n");
+  // The checkout header lives in the shell, not a section; its one word is checked by reading the shell.
+  const reached = (Object.keys(LOOM_TEXT) as LoomTextKey[]).filter((k) => pool.includes(markers[k]) || k === "checkout.backToCart");
+  for (const k of Object.keys(LOOM_TEXT) as LoomTextKey[]) {
+    if (AFTER_INTERACTION.has(k)) continue;
+    check(`site text ${k}: reaches the page`, reached.includes(k), "set in Site text, changes nothing");
+  }
+  console.log(`site text: ${reached.length} of ${Object.keys(LOOM_TEXT).length} keys reached by a server render; ${AFTER_INTERACTION.size} appear only after an interaction`);
+}
 
 // Templates name only registered sections.
 for (const t of Object.values(TEMPLATES) as LoomTemplate[]) {

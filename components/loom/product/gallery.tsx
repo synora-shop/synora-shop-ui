@@ -29,7 +29,19 @@ export type GalleryView = {
  * different crops — a close-up of the sole, the wing, the midsole. A merchant's
  * real product would carry real views; the layout does not change.
  */
-export function LoomGallery({ src, views }: { src: string; views: GalleryView[] }) {
+export function LoomGallery({
+  src,
+  views,
+  label,
+  thumbnails = true,
+}: {
+  src: string;
+  views: GalleryView[];
+  /** What a screen reader calls the row of thumbnails. */
+  label: string;
+  /** The four small photographs under the large one, on desktop. */
+  thumbnails?: boolean;
+}) {
   const [chosen, setChosen] = useState(0);
 
   return (
@@ -39,7 +51,7 @@ export function LoomGallery({ src, views }: { src: string; views: GalleryView[] 
         <View src={src} view={views[chosen]} />
       </LoomCard>
 
-      <div className="hidden gap-[calc(10*var(--u))] md:flex" role="tablist" aria-label="Product photographs">
+      {thumbnails && <div className="hidden gap-[calc(10*var(--u))] md:flex" role="tablist" aria-label={label}>
         {views.map((v, i) => (
           <button
             key={v.alt}
@@ -56,7 +68,7 @@ export function LoomGallery({ src, views }: { src: string; views: GalleryView[] 
             <View src={src} view={v} />
           </button>
         ))}
-      </div>
+      </div>}
 
       {/* Phone: every view, to swipe. */}
       <LoomSwipeRow data-m="pdp-swipe" className="snap-x snap-mandatory scroll-pl-[calc((100cqw-375*var(--u))/2+16*var(--u))] gap-[calc(8*var(--u))] md:hidden">

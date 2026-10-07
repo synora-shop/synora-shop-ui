@@ -3,8 +3,7 @@ import { LoomShell } from "@/components/loom/shell";
 import { LoomBreadcrumb } from "@/components/loom/breadcrumb";
 import { LoomTemplateView } from "@/components/loom/template";
 import { SEARCH } from "@/components/loom/templates";
-import { DEMO_MENUS } from "@/components/loom/demo-menus";
-import { SHOES } from "@/components/loom/catalogue";
+import { demoContext } from "@/components/loom/demo";
 
 export const metadata: Metadata = { title: "Search — Loom reference build" };
 
@@ -15,7 +14,7 @@ export default async function LoomSearchPage({ searchParams }: { searchParams: P
   return (
     <LoomShell>
       <LoomBreadcrumb trail={[{ label: "Home", href: "/loom" }]} current="Search" />
-      <LoomTemplateView template={SEARCH} ctx={{ menus: DEMO_MENUS, products: SHOES, query }} />
+      <LoomTemplateView template={SEARCH} ctx={demoContext({ query })} />
     </LoomShell>
   );
 }

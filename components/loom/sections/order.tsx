@@ -5,9 +5,10 @@ import { money } from "@/components/loom/money";
 import { LoomPhoneIcon } from "@/components/loom/icons";
 import { str, on, type LoomContext } from "@/components/loom/contract";
 import { T } from "@/components/loom/type";
+import { tx } from "@/components/loom/text";
 import { LoomPageHeading, PAGE_SECTION } from "@/components/loom/sections/page-heading";
 
-const STAGES = ["Ordered", "Packed", "On its way", "Delivered"];
+const STAGES = ["orderStatus.ordered", "orderStatus.packed", "orderStatus.shipped", "orderStatus.delivered"] as const;
 
 /**
  * One order — not in the kit.
@@ -37,9 +38,9 @@ export function LoomOrderView({ data, ctx }: { data: Record<string, unknown>; ct
       </a>
       <LoomPageHeading
         m="order-title"
-        eyebrow={`Order ${o.id} · ${o.placed}`}
-        title={STAGES[o.stage]}
-        aside={o.stage < 3 ? `Arriving ${o.arriving}, ${o.speed.toLowerCase()}.` : `Delivered ${o.dates[3]}.`}
+        eyebrow={tx(ctx, "order.eyebrow", { id: o.id, date: o.placed })}
+        title={tx(ctx, STAGES[o.stage])}
+        aside={o.stage < 3 ? tx(ctx, "order.arriving", { date: o.arriving, speed: o.speed.toLowerCase() }) : tx(ctx, "order.deliveredOn", { date: o.dates[3] })}
       />
 
       {on(data, "showProgress") && (
@@ -61,9 +62,9 @@ export function LoomOrderView({ data, ctx }: { data: Record<string, unknown>; ct
                   )}
                 />
                 <span className="flex flex-col">
-                  <span className={cn(T.single2, "uppercase", state === "later" ? "text-[#121212]/50" : "text-[#121212]")}>{s}</span>
+                  <span className={cn(T.single2, "uppercase", state === "later" ? "text-[#121212]/50" : "text-[#121212]")}>{tx(ctx, s)}</span>
                   <span className={cn(T.body6, "text-[#121212]/80")}>
-                    {state === "later" ? `Expected ${o.dates[i]}` : o.dates[i]}
+                    {state === "later" ? tx(ctx, "order.expected", { date: o.dates[i] }) : o.dates[i]}
                   </span>
                 </span>
               </li>
@@ -112,7 +113,7 @@ export function LoomOrderView({ data, ctx }: { data: Record<string, unknown>; ct
         </div>
 
         <div className="flex flex-col gap-[calc(24*var(--u))] md:w-[calc(606*var(--u))] md:shrink-0">
-          <LoomTotals subtotal={subtotal} delivery={o.delivery} />
+          <LoomTotals ctx={ctx} subtotal={subtotal} delivery={o.delivery} />
           <div className="grid grid-cols-1 gap-[calc(10*var(--u))] md:grid-cols-2">
             <Card heading={str(data, "addressHeading")} lines={o.address} />
             <Card heading={str(data, "paymentHeading")} lines={[o.payment, o.speed]} />

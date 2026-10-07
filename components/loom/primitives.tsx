@@ -227,3 +227,31 @@ export const LOOM_RULE = "shadow-[inset_0_1px_0_rgba(0,0,0,0.1)]";
 
 /** The same rule along the bottom edge — the phone hero's last block has it. */
 export const LOOM_RULE_BOTTOM = "shadow-[inset_0_-1px_0_rgba(0,0,0,0.1)]";
+
+/**
+ * A setting's text, with its line breaks kept. The kit breaks its headings by
+ * hand ("Color of / Summer / Outfit"), so a heading setting holds those
+ * breaks as new lines and this puts them back.
+ */
+export function LoomLines({ text }: { text: string }) {
+  const lines = text.split("\n");
+  return (
+    <>
+      {lines.map((l, i) => (
+        <span key={i}>
+          {l}
+          {i < lines.length - 1 && <br />}
+        </span>
+      ))}
+    </>
+  );
+}
+
+/** A photograph that is not the kit's: it fills its card from the centre. */
+export function LoomCover({ src, alt = "" }: { src: string; alt?: string }) {
+  if (!src) return null;
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={src} alt={alt} className="pointer-events-none absolute inset-0 h-full w-full select-none object-cover" />
+  );
+}

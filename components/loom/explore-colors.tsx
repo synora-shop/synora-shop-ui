@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { LOOM_RULE, px } from "@/components/loom/primitives";
+import { str, type LoomContext } from "@/components/loom/contract";
 
 /**
  * Explore by Colors — the title beside a wrapping row of swatch chips, on the
@@ -31,21 +32,21 @@ import { LOOM_RULE, px } from "@/components/loom/primitives";
  * The swatch colours are the component's nine variants, read from the file:
  * none of them is a token, and none of them appears anywhere else in the kit.
  */
-type Swatch = { label: string; color: string; w: number; mw: number };
+/** The file's hand-set chip widths, for the kit's nine colours; any other label hugs. */
+const WIDTHS: Record<string, { w: number; mw: number }> = {
+  "Red Pastel": { w: 182, mw: 162 },
+  "Lime Green": { w: 182, mw: 164 },
+  "Navy Blue": { w: 175, mw: 155 },
+  "Clean White": { w: 198, mw: 178 },
+  "Blue Sky": { w: 162, mw: 152 },
+  Purple: { w: 144, mw: 136 },
+  Pink: { w: 118, mw: 113 },
+  Yellow: { w: 149, mw: 141 },
+  "Dark Green": { w: 188, mw: 175 },
+};
 
-const SWATCHES: Swatch[] = [
-  { label: "Red Pastel", color: "#e25f5f", w: 182, mw: 162 },
-  { label: "Lime Green", color: "#b8e25f", w: 182, mw: 164 },
-  { label: "Navy Blue", color: "#233c6b", w: 175, mw: 155 },
-  { label: "Clean White", color: "#ffffff", w: 198, mw: 178 },
-  { label: "Blue Sky", color: "#5fabe2", w: 162, mw: 152 },
-  { label: "Purple", color: "#b54ef4", w: 144, mw: 136 },
-  { label: "Pink", color: "#f44e8a", w: 118, mw: 113 },
-  { label: "Yellow", color: "#f4cf4e", w: 149, mw: 141 },
-  { label: "Dark Green", color: "#44936d", w: 188, mw: 175 },
-];
-
-export function LoomExploreColors() {
+export function LoomExploreColors({ data }: { data: Record<string, unknown>; ctx: LoomContext }) {
+  const swatches = (Array.isArray(data.swatches) ? data.swatches : []) as Record<string, unknown>[];
   return (
     <section className="px-[calc(16*var(--u))] md:px-[calc(60*var(--u))]">
       <div
@@ -58,30 +59,35 @@ export function LoomExploreColors() {
           data-m="explore-title"
           className="text-[calc(40*var(--u))] font-normal leading-[calc(48*var(--u))] tracking-[calc(-3*var(--u))] text-[#121212] md:w-[calc(256*var(--u))] md:shrink-0 md:text-[calc(60*var(--u))] md:leading-[calc(65*var(--u))]"
         >
-          Explore by Colors
+          {str(data, "heading")}
         </h2>
         <div data-m="explore-chips" className="flex flex-wrap gap-[calc(6*var(--u))] md:w-[calc(841*var(--u))] md:gap-[calc(10*var(--u))]">
-          {SWATCHES.map((s) => (
-            <button
-              key={s.label}
-              type="button"
-              style={px({ w: s.w, mw: s.mw })}
-              className="flex h-[max(calc(48*var(--u)),40px)] min-w-[var(--mw)] shrink-0 items-center gap-[calc(12*var(--u))] rounded-[200px] border border-[#121212] pl-[calc(12*var(--u))] pr-[calc(12*var(--u))] md:h-[max(calc(57*var(--u)),40px)] md:min-w-[var(--w)]"
-            >
-              {/* Clean White carries the file's own #dedede ring, drawn
-                  inside the circle; the other eight have none. */}
-              <span
-                className="h-[calc(33*var(--u))] w-[calc(33*var(--u))] shrink-0 rounded-full"
-                style={{
-                  backgroundColor: s.color,
-                  boxShadow: s.color === "#ffffff" ? "inset 0 0 0 1px #dedede" : undefined,
-                }}
-              />
-              <span className="whitespace-nowrap text-[max(calc(14*var(--u)),11.2px)] font-semibold uppercase leading-[max(calc(24*var(--u)),19.2px)] tracking-[calc(1*var(--u))] text-[#121212] md:text-[max(calc(16*var(--u)),12.8px)]">
-                {s.label}
-              </span>
-            </button>
-          ))}
+          {swatches.map((sw, n) => {
+            const label = str(sw, "label");
+            const color = str(sw, "color");
+            const w = WIDTHS[label];
+            return (
+              <a
+                key={`${label}-${n}`}
+                href={str(sw, "link") || "#"}
+                style={w ? px(w) : undefined}
+                className={`flex h-[max(calc(48*var(--u)),40px)] shrink-0 items-center gap-[calc(12*var(--u))] rounded-[200px] border border-[#121212] pl-[calc(12*var(--u))] pr-[calc(12*var(--u))] md:h-[max(calc(57*var(--u)),40px)] ${w ? "min-w-[var(--mw)] md:min-w-[var(--w)]" : "pr-[calc(20*var(--u))]"}`}
+              >
+                {/* White carries the file's own #dedede ring, drawn inside the
+                    circle; a colour that is not white has none. */}
+                <span
+                  className="h-[calc(33*var(--u))] w-[calc(33*var(--u))] shrink-0 rounded-full"
+                  style={{
+                    backgroundColor: color,
+                    boxShadow: color.toLowerCase() === "#ffffff" ? "inset 0 0 0 1px #dedede" : undefined,
+                  }}
+                />
+                <span className="whitespace-nowrap text-[max(calc(14*var(--u)),11.2px)] font-semibold uppercase leading-[max(calc(24*var(--u)),19.2px)] tracking-[calc(1*var(--u))] text-[#121212] md:text-[max(calc(16*var(--u)),12.8px)]">
+                  {label}
+                </span>
+              </a>
+            );
+          })}
         </div>
       </div>
     </section>

@@ -6,8 +6,13 @@ import { LOOM_RULE, LoomButton, LoomSwipeRow } from "@/components/loom/primitive
 import { LoomChevronDown, LoomHeartFill, LoomHeartOutline } from "@/components/loom/icons";
 import { LoomPromises, LoomStepper } from "@/components/loom/commerce";
 import { T } from "@/components/loom/type";
+import { on, str, type LoomContext } from "@/components/loom/contract";
+import { tx } from "@/components/loom/text";
+import { useWishlist } from "@/components/loom/wishlist";
 
 export type BuyBoxProduct = {
+  /** The catalogue id — what the heart saves. */
+  id: string;
   eyebrow: string;
   title: string;
   price: string;
@@ -38,11 +43,12 @@ export type BuyBoxProduct = {
  * Desktop it is a 606 column, 60 from the photographs — the blog's split.
  * The phone stacks it under them in the 16px gutter.
  */
-export function LoomBuyBox({ product }: { product: BuyBoxProduct }) {
+export function LoomBuyBox({ product, data, ctx }: { product: BuyBoxProduct; data: Record<string, unknown>; ctx: LoomContext }) {
+  const wishlist = useWishlist();
   const [colour, setColour] = useState(0);
   const [size, setSize] = useState(product.sizes.findIndex((s) => !s.soldOut));
   const [qty, setQty] = useState(1);
-  const [loved, setLoved] = useState(false);
+  const loved = wishlist.has(product.id);
 
   return (
     <div data-m="pdp-buy" className="flex flex-col gap-[calc(32*var(--u))] md:w-[calc(606*var(--u))] md:shrink-0">
@@ -50,7 +56,7 @@ export function LoomBuyBox({ product }: { product: BuyBoxProduct }) {
       <div className="flex flex-col gap-[calc(16*var(--u))] md:gap-[calc(24*var(--u))]">
         <div className="flex items-start justify-between gap-[calc(16*var(--u))]">
           <div className="flex flex-col gap-[calc(8*var(--u))]">
-            <p className={cn(T.single2, "uppercase text-[#121212]/80")}>{product.eyebrow}</p>
+            {on(data, "showEyebrow") && <p className={cn(T.single2, "uppercase text-[#121212]/80")}>{product.eyebrow}</p>}
             <h1 data-m="pdp-title" className={cn(T.h3, "text-[#121212] md:text-[calc(60*var(--u))] md:leading-[calc(65*var(--u))]")}>
               {product.title}
             </h1>
@@ -58,8 +64,8 @@ export function LoomBuyBox({ product }: { product: BuyBoxProduct }) {
           <button
             type="button"
             aria-pressed={loved}
-            aria-label={loved ? "Remove from wishlist" : "Add to wishlist"}
-            onClick={() => setLoved((v) => !v)}
+            aria-label={tx(ctx, loved ? "product.removeFromWishlist" : "product.addToWishlist")}
+            onClick={() => wishlist.toggle(product.id)}
             className={cn(
               "mt-[calc(4*var(--u))] flex h-[max(calc(50*var(--u)),40px)] w-[max(calc(50*var(--u)),40px)] shrink-0 items-center justify-center rounded-full",
               loved ? "bg-[#f15353] text-white" : "border border-[#dddddd] text-[#121212]"
@@ -82,7 +88,7 @@ export function LoomBuyBox({ product }: { product: BuyBoxProduct }) {
 
       {/* Options */}
       <div className={cn("flex flex-col gap-[calc(24*var(--u))] pt-[calc(32*var(--u))]", LOOM_RULE)}>
-        <Option label="Colour" value={product.colours[colour].label}>
+        <Option label={tx(ctx, "product.colourLabel")} value={product.colours[colour].label}>
           {/* A row to swipe on the phone, like the Trending chips: three of
               these do not fit 343 across, and wrapped they stood one per line. */}
           <LoomSwipeRow className="gap-[calc(6*var(--u))] md:flex-wrap md:gap-[calc(10*var(--u))]">
@@ -114,7 +120,7 @@ export function LoomBuyBox({ product }: { product: BuyBoxProduct }) {
           </LoomSwipeRow>
         </Option>
 
-        <Option label="Size" value={product.sizes[size]?.label ?? ""}>
+        <Option label={tx(ctx, "product.sizeLabel")} value={product.sizes[size]?.label ?? ""}>
           <div className="flex flex-wrap gap-[calc(8*var(--u))] md:gap-[calc(10*var(--u))]">
             {product.sizes.map((s, i) => (
               <LoomButton
@@ -124,7 +130,7 @@ export function LoomBuyBox({ product }: { product: BuyBoxProduct }) {
                 disabled={s.soldOut}
                 onClick={() => setSize(i)}
                 aria-pressed={i === size}
-                aria-label={s.soldOut ? `${s.label}, sold out` : s.label}
+                aria-label={s.soldOut ? tx(ctx, "product.soldOut", { size: s.label }) : s.label}
               >
                 {s.label}
               </LoomButton>
@@ -135,17 +141,20 @@ export function LoomBuyBox({ product }: { product: BuyBoxProduct }) {
 
       {/* Quantity and the one primary action */}
       <div className="flex gap-[calc(10*var(--u))]">
-        <LoomStepper value={qty} onChange={setQty} />
+        <LoomStepper ctx={ctx} value={qty} onChange={setQty} />
         <LoomButton data-m="pdp-add" className="min-w-0 flex-1">
-          Add to cart
+          {tx(ctx, "product.addToCart")}
         </LoomButton>
       </div>
 
-      <LoomPromises />
+      {on(data, "showPromises") && <LoomPromises ctx={ctx} />}
 
       {/* Details, on the section rule */}
       <div>
-        {product.details.map((d, i) => (
+        {[
+          ...product.details,
+          ...(str(data, "shippingHeading") ? [{ title: str(data, "shippingHeading"), body: str(data, "shippingText") }] : []),
+        ].map((d, i) => (
           <details key={d.title} open={i === 0} className={cn("group", LOOM_RULE)}>
             <summary
               className={cn(

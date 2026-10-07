@@ -6,6 +6,8 @@ import { LOOM_RULE } from "@/components/loom/primitives";
 import { LoomHeartFill, LoomPhoneIcon, LoomRefreshIcon } from "@/components/loom/icons";
 import { T } from "@/components/loom/type";
 import { money } from "@/components/loom/money";
+import { tx } from "@/components/loom/text";
+import type { LoomContext } from "@/components/loom/contract";
 
 /**
  * The parts the shopping pages share — product, cart, checkout, account.
@@ -22,18 +24,21 @@ export function LoomStepper({
   onChange,
   min = 1,
   className,
-  label = "Quantity",
+  label,
+  ctx,
 }: {
   value: number;
   onChange: (n: number) => void;
   min?: number;
   className?: string;
+  /** What a screen reader calls the control; "Quantity" from Site text when absent. */
   label?: string;
+  ctx: Pick<LoomContext, "text">;
 }) {
   return (
     <div
       role="group"
-      aria-label={label}
+      aria-label={label ?? tx(ctx, "product.quantity")}
       className={cn(
         "flex h-[max(calc(50*var(--u)),40px)] w-[calc(140*var(--u))] min-w-[112px] shrink-0 items-center justify-between rounded-[200px] border border-[#dddddd] px-[calc(8*var(--u))]",
         className
@@ -41,7 +46,7 @@ export function LoomStepper({
     >
       <button
         type="button"
-        aria-label="One fewer"
+        aria-label={tx(ctx, "product.oneFewer")}
         disabled={value <= min}
         onClick={() => onChange(Math.max(min, value - 1))}
         className={cn(T.body4, "flex h-full w-[calc(36*var(--u))] min-w-[28px] items-center justify-center text-[#121212] disabled:text-[#121212]/30")}
@@ -53,7 +58,7 @@ export function LoomStepper({
       </span>
       <button
         type="button"
-        aria-label="One more"
+        aria-label={tx(ctx, "product.oneMore")}
         onClick={() => onChange(value + 1)}
         className={cn(T.body4, "flex h-full w-[calc(36*var(--u))] min-w-[28px] items-center justify-center text-[#121212]")}
       >
@@ -67,13 +72,13 @@ export function LoomStepper({
  * The Service section's three promises, a line each, in the header's
  * `#2e3a59` — the kit's only named glyph colour.
  */
-export function LoomPromises({ className }: { className?: string }) {
+export function LoomPromises({ className, ctx }: { className?: string; ctx: Pick<LoomContext, "text"> }) {
   return (
     <ul className={cn("flex flex-col gap-[calc(16*var(--u))]", className)}>
       {[
-        { Icon: LoomHeartFill, text: "Packed with care, like a birthday gift" },
-        { Icon: LoomPhoneIcon, text: "Questions answered, any time you ask" },
-        { Icon: LoomRefreshIcon, text: "Free returns within 30 days" },
+        { Icon: LoomHeartFill, text: tx(ctx, "promise.care") },
+        { Icon: LoomPhoneIcon, text: tx(ctx, "promise.help") },
+        { Icon: LoomRefreshIcon, text: tx(ctx, "promise.returns") },
       ].map(({ Icon, text }) => (
         <li key={text} className={cn(T.body6, "flex items-center gap-[calc(12*var(--u))] text-[#121212]/80")}>
           <Icon className="h-[max(calc(24*var(--u)),19px)] w-[max(calc(24*var(--u)),19px)] shrink-0 text-[#2e3a59]" />
@@ -135,14 +140,27 @@ export function LoomField({
  * figures right-aligned; the total in Heading 4, the size the product page
  * prints its price in, because it is the one number the page is about.
  */
-export function LoomTotals({ subtotal, delivery, className }: { subtotal: number; delivery: number | null; className?: string }) {
+export function LoomTotals({
+  subtotal,
+  delivery,
+  className,
+  ctx,
+}: {
+  subtotal: number;
+  delivery: number | null;
+  className?: string;
+  ctx: Pick<LoomContext, "text">;
+}) {
   const total = subtotal + (delivery ?? 0);
   return (
     <dl className={cn("flex flex-col gap-[calc(12*var(--u))] pt-[calc(24*var(--u))]", LOOM_RULE, className)}>
-      <Row label="Subtotal" value={money(subtotal)} />
-      <Row label="Delivery" value={delivery === null ? "Worked out at checkout" : delivery === 0 ? "Free" : money(delivery)} />
+      <Row label={tx(ctx, "checkout.subtotal")} value={money(subtotal)} />
+      <Row
+        label={tx(ctx, "checkout.shipping")}
+        value={delivery === null ? tx(ctx, "checkout.shippingLater") : delivery === 0 ? tx(ctx, "checkout.freeShipping") : money(delivery)}
+      />
       <div className={cn("mt-[calc(12*var(--u))] flex items-baseline justify-between pt-[calc(24*var(--u))]", LOOM_RULE)}>
-        <dt className={cn(T.body3, "text-[#121212]")}>Total</dt>
+        <dt className={cn(T.body3, "text-[#121212]")}>{tx(ctx, "checkout.total")}</dt>
         <dd data-m="total" className={cn(T.h4, "text-[#121212]")}>
           {money(total)}
         </dd>

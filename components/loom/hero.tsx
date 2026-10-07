@@ -4,17 +4,14 @@ import {
   LoomArrow,
   LoomButton,
   LoomCard,
+  LoomCover,
+  LoomLines,
   LoomPhoto,
   LoomSwipeRow,
 } from "@/components/loom/primitives";
+import { on, str, type LoomContext } from "@/components/loom/contract";
+import { KIT } from "@/components/loom/sections/home.schema";
 
-const IMG = {
-  summer: "/loom/3071b1fc729091cd0452fb9d0b89106ceec16368.png",
-  outdoor: "/loom/17aa3a2f29a85f64d93c41afa6b64d31b3a88038.png",
-  casual: "/loom/837e11f00233936f837e7b69d6a545511b1ba132.png",
-  shirt: "/loom/5e143183ca0df25c3d226a223269e70541e09760.png",
-  funky: "/loom/b0b782c02a24c60e5479cec788203caf906828d8.png",
-};
 
 /**
  * Hero — 1440x1192 on desktop, 375x1253 on the phone, two content bands.
@@ -35,7 +32,12 @@ const IMG = {
  * captions to 40/40 at -3 — the display scale tightens as it shrinks, which is
  * the whole system.
  */
-export function LoomHero() {
+export function LoomHero({ data }: { data: Record<string, unknown>; ctx: LoomContext }) {
+  const main = str(data, "image");
+  const c1 = str(data, "card1Image");
+  const c2 = str(data, "card2Image");
+  const w1 = str(data, "wide1Image");
+  const w2 = str(data, "wide2Image");
   return (
     <section className="flex flex-col md:gap-[calc(10*var(--u))] md:pb-[calc(32*var(--u))]">
       {/* Band 1 — 1440x770; on the phone 375x893 */}
@@ -48,7 +50,9 @@ export function LoomHero() {
               the file's own construction, and on the phone the first is a
               crop rather than a fill: a 343-wide window onto a 1831-wide
               drawing of the photo, worked out from the paint's transform. */}
-          <LoomPhoto src={IMG.summer} w={1155} h={770} m={{ w: 1831.32, h: 1163.95, x: -190.56, y: -93.46 }} />
+          {main === KIT.summer ? (
+            <>
+          <LoomPhoto src={KIT.summer} w={1155} h={770} m={{ w: 1831.32, h: 1163.95, x: -190.56, y: -93.46 }} />
           {/* On the phone the second copy starts 359 down, over a backdrop that is
               the first copy enlarged five times — and where a sharp photo meets
               its own blurred enlargement the file draws a hard line across the
@@ -56,13 +60,17 @@ export function LoomHero() {
               file in this build, made on purpose: the composition and every
               number are the file's, only the seam is gone. */}
           <LoomPhoto
-            src={IMG.summer}
+            src={KIT.summer}
             w={1155}
             h={770}
             x={70}
             m={{ w: 546, h: 364, x: -76, y: 359 }}
             className="[mask-image:linear-gradient(to_bottom,transparent,black_calc(40*var(--u)))] md:[mask-image:none]"
           />
+            </>
+          ) : (
+            <LoomCover src={main} />
+          )}
           <div
             data-m="hero-title"
             className="absolute left-[calc(24*var(--u))] top-[calc(24*var(--u))] flex w-[calc(279*var(--u))] flex-col gap-[calc(32*var(--u))] md:left-[calc(60*var(--u))] md:top-[calc(60*var(--u))] md:w-[calc(328*var(--u))] md:gap-[calc(28*var(--u))]"
@@ -72,46 +80,52 @@ export function LoomHero() {
                 data-m="hero-headline"
                 className="w-[calc(252*var(--u))] text-[calc(56*var(--u))] font-normal leading-[calc(56*var(--u))] tracking-[calc(-5*var(--u))] text-white md:w-auto md:text-[calc(90*var(--u))] md:leading-[calc(75*var(--u))]"
               >
-                Color of
-                <br />
-                Summer
-                <br />
-                Outfit
+                <LoomLines text={str(data, "headline")} />
               </h1>
-              <p
+              {str(data, "text") && <p
                 data-m="hero-body"
                 className="text-[max(calc(16*var(--u)),12.8px)] font-normal leading-[max(calc(26*var(--u)),20.8px)] tracking-[calc(-0.3*var(--u))] text-white/80 md:text-[max(calc(18*var(--u)),14.4px)]"
               >
-                100+ Collections for your outfit inspirations in this summer
-              </p>
+                {str(data, "text")}
+              </p>}
             </div>
-            <LoomButton data-m="hero-cta" className="min-w-[calc(279*var(--u))] md:min-w-[calc(280*var(--u))]">
-              View Collections
-            </LoomButton>
+            {str(data, "buttonLabel") && (
+              <LoomButton data-m="hero-cta" href={str(data, "buttonLink")} className="min-w-[calc(279*var(--u))] md:min-w-[calc(280*var(--u))]">
+                {str(data, "buttonLabel")}
+              </LoomButton>
+            )}
           </div>
         </LoomCard>
 
-        <LoomSwipeRow
+        {on(data, "showCards") && <LoomSwipeRow
           data-m="hero-photos"
           className="gap-[calc(8*var(--u))] md:h-[calc(770*var(--u))] md:w-[calc(352*var(--u))] md:flex-col md:gap-[calc(10*var(--u))]"
         >
-          <LoomCard className={CATEGORY_CARD}>
-            <LoomPhoto src={IMG.outdoor} w={644} h={405} x={-107} y={-24} m={{ w: 321, h: 224, x: -23, y: 0 }} />
-            <p data-m="hero-category" className={CATEGORY_CAPTION}>
-              Outdoor
-              <br />
-              Active
-            </p>
-          </LoomCard>
-          <LoomCard className={CATEGORY_CARD}>
-            <LoomPhoto src={IMG.casual} w={845} h={565} x={-192} y={-98} m={{ w: 329, h: 280, x: -19, y: -14 }} />
-            <p className={CATEGORY_CAPTION}>
-              Casual
-              <br />
-              Comfort
-            </p>
-          </LoomCard>
-        </LoomSwipeRow>
+          <a href={str(data, "card1Link")} className="contents">
+            <LoomCard className={CATEGORY_CARD}>
+              {c1 === KIT.outdoor ? (
+                <LoomPhoto src={c1} w={644} h={405} x={-107} y={-24} m={{ w: 321, h: 224, x: -23, y: 0 }} />
+              ) : (
+                <LoomCover src={c1} />
+              )}
+              <p data-m="hero-category" className={CATEGORY_CAPTION}>
+                <LoomLines text={str(data, "card1Caption")} />
+              </p>
+            </LoomCard>
+          </a>
+          <a href={str(data, "card2Link")} className="contents">
+            <LoomCard className={CATEGORY_CARD}>
+              {c2 === KIT.casual ? (
+                <LoomPhoto src={c2} w={845} h={565} x={-192} y={-98} m={{ w: 329, h: 280, x: -19, y: -14 }} />
+              ) : (
+                <LoomCover src={c2} />
+              )}
+              <p className={CATEGORY_CAPTION}>
+                <LoomLines text={str(data, "card2Caption")} />
+              </p>
+            </LoomCard>
+          </a>
+        </LoomSwipeRow>}
       </div>
 
       {/* Band 2 — 1440x380. The copy column is 411 wide including its own 60
@@ -119,7 +133,7 @@ export function LoomHero() {
           above it while the cards beside it run to the page edge. On the
           phone it is the copy alone, 343x360, centred, with 40 under it and
           the hairline under that. */}
-      <div data-m="hero-band-2" className="flex flex-col md:min-h-[calc(380*var(--u))] md:flex-row md:items-center">
+      {on(data, "showInspiration") && <div data-m="hero-band-2" className="flex flex-col md:min-h-[calc(380*var(--u))] md:flex-row md:items-center">
         <div
           data-m="hero-copy"
           className={cn(
@@ -130,16 +144,17 @@ export function LoomHero() {
         >
           <div className="flex w-full flex-col gap-[calc(20*var(--u))] md:w-[calc(311*var(--u))] md:gap-[calc(24*var(--u))]">
             <h2 data-m="hero-sub-headline" className="text-[calc(65*var(--u))] font-normal leading-[calc(65*var(--u))] tracking-[calc(-4*var(--u))] text-[#121212]">
-              Casual
-              <br />
-              Inspirations
+              <LoomLines text={str(data, "inspirationHeading")} />
             </h2>
             <p className="text-[max(calc(18*var(--u)),14.4px)] font-normal leading-[max(calc(26*var(--u)),20.8px)] tracking-[calc(-0.3*var(--u))] text-[#121212]/80">
-              Our favorite combinations for casual outfit that can inspire you to apply on your daily
-              activity.
+              {str(data, "inspirationText")}
             </p>
           </div>
-          <LoomButton variant="outline">Browse Inpirations</LoomButton>
+          {str(data, "inspirationButtonLabel") && (
+            <LoomButton variant="outline" href={str(data, "inspirationButtonLink")}>
+              {str(data, "inspirationButtonLabel")}
+            </LoomButton>
+          )}
         </div>
 
         {/* Not on the phone screen at all. */}
@@ -150,16 +165,20 @@ export function LoomHero() {
               at the rectangle's size they were squashed 12% and 33%. Drawn at
               the photo's own proportions, with the card clipping it, they are
               what the file shows. */}
-          <LoomCard data-m="hero-wide-1" className="h-[calc(380*var(--u))] w-[calc(479*var(--u))]">
-            <LoomPhoto src={IMG.shirt} w={480} h={429.86} />
-            <HeroCardCaption line1="Say it " line2="with Shirt" />
-          </LoomCard>
-          <LoomCard data-m="hero-wide-2" className="h-[calc(380*var(--u))] w-[calc(480*var(--u))]">
-            <LoomPhoto src={IMG.funky} w={480} h={720} y={-104} />
-            <HeroCardCaption line1="Funky never " line2="get old" />
-          </LoomCard>
+          <a href={str(data, "wide1Link")} className="contents">
+            <LoomCard data-m="hero-wide-1" className="h-[calc(380*var(--u))] w-[calc(479*var(--u))]">
+              {w1 === KIT.shirt ? <LoomPhoto src={w1} w={480} h={429.86} /> : <LoomCover src={w1} />}
+              <HeroCardCaption text={str(data, "wide1Caption")} />
+            </LoomCard>
+          </a>
+          <a href={str(data, "wide2Link")} className="contents">
+            <LoomCard data-m="hero-wide-2" className="h-[calc(380*var(--u))] w-[calc(480*var(--u))]">
+              {w2 === KIT.funky ? <LoomPhoto src={w2} w={480} h={720} y={-104} /> : <LoomCover src={w2} />}
+              <HeroCardCaption text={str(data, "wide2Caption")} />
+            </LoomCard>
+          </a>
         </div>
-      </div>
+      </div>}
     </section>
   );
 }
@@ -175,13 +194,11 @@ const CATEGORY_CAPTION =
  * glyph is the kit's diagonal `arrow / short_right`, rotated 45 degrees in
  * the file rather than being a separate icon.
  */
-function HeroCardCaption({ line1, line2 }: { line1: string; line2: string }) {
+function HeroCardCaption({ text }: { text: string }) {
   return (
     <div className="absolute bottom-[calc(30*var(--u))] left-[calc(30*var(--u))] flex h-[calc(80*var(--u))] w-[calc(420*var(--u))] items-end text-white">
       <p data-m="hero-caption" className="w-[calc(225*var(--u))] text-[calc(40*var(--u))] font-normal leading-[calc(40*var(--u))] tracking-[calc(-3*var(--u))]">
-        {line1}
-        <br />
-        {line2}
+        <LoomLines text={text} />
       </p>
       <LoomArrow className="ml-auto" />
     </div>

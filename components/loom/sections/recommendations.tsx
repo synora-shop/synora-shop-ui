@@ -13,7 +13,8 @@ import { T } from "@/components/loom/type";
  */
 export function LoomRecommendations({ data, ctx }: { data: Record<string, unknown>; ctx: LoomContext }) {
   const count = typeof data.count === "number" ? data.count : 4;
-  const products = ctx.products.slice(0, count);
+  // Never recommend the product the page is about.
+  const products = ctx.products.filter((p) => p.id !== ctx.product?.id).slice(0, count);
   return (
     <section className="px-[calc(16*var(--u))] pb-[calc(40*var(--u))] md:px-[calc(60*var(--u))] md:pb-[calc(120*var(--u))]">
       <div className={cn("flex flex-col gap-[calc(16*var(--u))] pt-[calc(32*var(--u))] md:gap-[calc(24*var(--u))]", LOOM_RULE)}>

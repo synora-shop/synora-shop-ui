@@ -1,6 +1,7 @@
 import type { SectionSchema } from "@/lib/section-schema";
 import { resolveSchemaData } from "@/lib/section-schema";
 import type { CatalogueItem } from "@/components/loom/catalogue";
+import type { LoomProductPage } from "@/components/loom/sections/product";
 
 /**
  * How a Loom section is shaped, so that the live customizer can drive it.
@@ -51,6 +52,35 @@ export type LoomOrder = {
   tracking: string;
 };
 
+/** A signed-in customer: who they are, their orders, their addresses. */
+export type LoomCustomer = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  orders: {
+    id: string;
+    date: string;
+    state: "shipped" | "delivered";
+    total: number;
+    items: { title: string; src: string }[];
+    href: string;
+  }[];
+  addresses: { id: string; label: string; lines: string[]; main: boolean }[];
+};
+
+/** One line in a cart. */
+export type LoomCartLine = {
+  id: string;
+  title: string;
+  price: number;
+  src: string;
+  colour: string;
+  size: string;
+  qty: number;
+  href: string;
+};
+
 /** The shop's data every section may read. Passed in, never fetched by a section. */
 export type LoomContext = {
   menus: Record<string, LoomMenu>;
@@ -60,6 +90,19 @@ export type LoomContext = {
   query?: string;
   /** The order being looked at, on the order page. */
   order?: LoomOrder;
+  /** The product being looked at, on the product page. */
+  product?: LoomProductPage;
+  /** The collection being looked at: its name and its line of copy. */
+  collection?: { title: string; description: string };
+  /** The signed-in customer, on the account pages. */
+  customer?: LoomCustomer;
+  /** The customer's cart, on the cart and checkout pages. */
+  cart?: LoomCartLine[];
+  /**
+   * The shop's own Site text edits, by key. Absent keys fall back to Loom's
+   * wording (components/loom/text.ts) — read with `tx`.
+   */
+  text?: Record<string, string>;
 };
 
 /** One section in a template: its type, its stored settings, and whether it is shown. */

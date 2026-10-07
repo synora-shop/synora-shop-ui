@@ -51,9 +51,10 @@ export const PRICE_BANDS = [
   { label: "Over $200", test: (p: number) => p > 200 },
 ] as const;
 
-export const SORTS = [
-  { label: "Featured", by: (a: CatalogueItem, b: CatalogueItem) => SHOES.indexOf(a) - SHOES.indexOf(b) },
-  { label: "Newest", by: (a: CatalogueItem, b: CatalogueItem) => a.age - b.age },
-  { label: "Lowest price", by: (a: CatalogueItem, b: CatalogueItem) => a.price - b.price },
-  { label: "Highest price", by: (a: CatalogueItem, b: CatalogueItem) => b.price - a.price },
-] as const;
+export const SORTS: { label: string; key: "sort.featured" | "sort.newest" | "sort.priceLow" | "sort.priceHigh"; by: (a: CatalogueItem, b: CatalogueItem) => number }[] = [
+  // Featured is the order the collection arrives in; sort() keeps it for ties.
+  { label: "Featured", key: "sort.featured", by: () => 0 },
+  { label: "Newest", key: "sort.newest", by: (a: CatalogueItem, b: CatalogueItem) => a.age - b.age },
+  { label: "Lowest price", key: "sort.priceLow", by: (a: CatalogueItem, b: CatalogueItem) => a.price - b.price },
+  { label: "Highest price", key: "sort.priceHigh", by: (a: CatalogueItem, b: CatalogueItem) => b.price - a.price },
+];

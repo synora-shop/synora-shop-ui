@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { LoomHeartFill, LoomPhoneIcon, LoomRefreshIcon } from "@/components/loom/icons";
-import { LOOM_RULE } from "@/components/loom/primitives";
+import { LOOM_RULE, LoomLines } from "@/components/loom/primitives";
+import { str, type LoomContext } from "@/components/loom/contract";
 
 /**
  * Service — 1440x558: a 60/65 heading, then three 410 columns 45 apart.
@@ -18,46 +19,34 @@ import { LOOM_RULE } from "@/components/loom/primitives";
  * above them; the circles are the component's Mobile variant, 80 with a 32
  * glyph, and the column text drops to 24/40 and 16/26.
  */
-const COLUMNS = [
-  {
-    Icon: LoomHeartFill,
-    title: "Take care with love",
-    body: "We take care your package with full of attention and of course full of love. We want to make sure you’ll receive your package like you receive your birthday gift.",
-  },
-  {
-    Icon: LoomPhoneIcon,
-    title: "Friendly Customer Service",
-    body: "You do not need to worry when you want to check your package. We will always answer whatever your questions. Just click on the chat icon and we will talk.",
-  },
-  {
-    Icon: LoomRefreshIcon,
-    title: "Refund Process",
-    body: "Refund is a such bad experience and we don’t want that thing happen to you. But when it’s happen we will make sure you will through smooth and friendly process.",
-  },
-];
+const ICONS = { love: LoomHeartFill, phone: LoomPhoneIcon, refund: LoomRefreshIcon } as const;
 
-export function LoomService() {
+export function LoomService({ data }: { data: Record<string, unknown>; ctx: LoomContext }) {
+  const columns = (Array.isArray(data.columns) ? data.columns : []) as Record<string, unknown>[];
   return (
     <section className={cn("flex flex-col gap-[calc(24*var(--u))] px-[calc(16*var(--u))] py-[calc(40*var(--u))] md:gap-[calc(56*var(--u))] md:px-[calc(60*var(--u))]", LOOM_RULE)}>
       <h2 data-m="service-heading" className="text-[calc(40*var(--u))] font-normal leading-[calc(48*var(--u))] tracking-[calc(-3*var(--u))] text-[#121212] md:w-[calc(558*var(--u))] md:text-[calc(60*var(--u))] md:leading-[calc(65*var(--u))]">
-        Why you’ll love to shop on our website
+        <LoomLines text={str(data, "heading")} />
       </h2>
       <div data-m="service-row" className="flex flex-col gap-[calc(32*var(--u))] md:flex-row md:items-center md:gap-[calc(45*var(--u))]">
-        {COLUMNS.map(({ Icon, title, body }) => (
-          <div key={title} className="flex shrink-0 flex-col gap-[calc(24*var(--u))] md:w-[calc(410*var(--u))]">
+        {columns.map((c, n) => {
+          const Icon = ICONS[str(c, "icon") as keyof typeof ICONS] ?? LoomHeartFill;
+          return (
+          <div key={`${str(c, "title")}-${n}`} className="flex shrink-0 flex-col gap-[calc(24*var(--u))] md:w-[calc(410*var(--u))]">
             <span className="flex h-[calc(80*var(--u))] w-[calc(80*var(--u))] items-center justify-center rounded-full bg-[#121212] md:h-[calc(120*var(--u))] md:w-[calc(120*var(--u))]">
               <Icon className="h-[calc(32*var(--u))] w-[calc(32*var(--u))] text-white md:h-[calc(48*var(--u))] md:w-[calc(48*var(--u))]" />
             </span>
             <div className="flex flex-col gap-[calc(4*var(--u))]">
               <h3 data-m="service-title" className="text-[max(calc(24*var(--u)),19.2px)] font-medium leading-[calc(40*var(--u))] tracking-[calc(-1*var(--u))] text-[#121212] md:text-[calc(30*var(--u))]">
-                {title}
+                {str(c, "title")}
               </h3>
               <p className="text-[max(calc(16*var(--u)),12.8px)] font-normal leading-[max(calc(26*var(--u)),20.8px)] tracking-[calc(-0.3*var(--u))] text-[#121212]/80 md:text-[max(calc(18*var(--u)),14.4px)]">
-                {body}
+                {str(c, "text")}
               </p>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </section>
   );

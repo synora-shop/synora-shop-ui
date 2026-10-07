@@ -92,8 +92,10 @@ const PHONE = [
   ["hero title block",  "[data-m='hero-title']",                 { w: 279, h: 322,  x: 40, y: 118 }],
   ["hero headline",     "[data-m='hero-headline']",              { w: 252, h: 168 }],
   ["hero cta",          "[data-m='hero-cta']",                   { w: 279, h: 50 }],
-  ["hero category",     "[data-m='hero-photos'] > *:nth-child(1)", { w: 211, h: 189, x: 16, y: 758 }],
-  ["hero category 2",   "[data-m='hero-photos'] > *:nth-child(2)", { w: 211, h: 189, x: 235, y: 758 }],
+  // The card inside each link — the links are `display: contents`, so they
+  // have no box of their own and measured as 0x0 once the cards became links.
+  ["hero category",     "[data-m='hero-photos'] > :nth-child(1) > *", { w: 211, h: 189, x: 16, y: 758 }],
+  ["hero category 2",   "[data-m='hero-photos'] > :nth-child(2) > *", { w: 211, h: 189, x: 235, y: 758 }],
   ["hero band 2",       "[data-m='hero-band-2']",                { w: 375, h: 360,  y: 987 }],
   ["hero copy col",     "[data-m='hero-copy']",                  { w: 343, h: 360,  x: 16, y: 987 }],
   ["trending",          "main > section:nth-of-type(2)",         { w: 375, h: 1255, y: 1347 }],

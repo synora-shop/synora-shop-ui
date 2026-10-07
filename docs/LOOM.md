@@ -362,11 +362,33 @@ must appear on the drawn page, every switch must change the page, every menu
 default must exist, every template must name registered sections.
 Negative-tested by typing a sentence into the search section.
 
-**On the format today:** the header, footer, wishlist, order, search and
-recommendations sections. **Not yet:** the home page's sections and the
-product, collection, cart, checkout and account pages, which predate it and
-still spell their words out. They move onto it before the port — the work is
-mechanical, the design does not change.
+**Every Loom page is on it** — home, product, collection, cart, checkout,
+account and sign-in, wishlist, order, search, and the header and footer every
+page shares. Each page file is three lines: the shell, a breadcrumb, its
+template.
+
+**Words come from three places, as on Shopify:**
+
+| Where | What | Example |
+| --- | --- | --- |
+| The data | What a product, collection, order or customer says about itself | the product's name, price and description |
+| Section settings | What a merchant designs per section: headings, what shows, which menu | the hero's headline, "Show filters", the header's menu |
+| Site text | The interface words used on many pages, changed once | "Add to cart", "Subtotal", "Remove" |
+
+Site text is the platform's own (`lib/site-text.ts`, the Site text screen):
+Loom uses its keys where they exist, so a shop's edits carry over, and adds
+the rest in `components/loom/text.ts` with Loom's wording as the default.
+
+**Photographs.** While an image setting holds the kit's own photo, the section
+keeps the file's hand-made crop; any other photo fills its card from the
+centre, so a merchant's upload never inherits a crop made for another picture.
+The home page with every default is still the file to the pixel.
+
+`check:loom` (333) now also sets every Site text key to a marker and requires
+it on the page: 83 of 126 are reached by drawing each section in five states;
+the 44 that exist only after an interaction (a checkout error, the thank-you
+page, the create-account half) are listed in the check and were driven in a
+browser instead.
 
 **What the platform still needs, which is not Loom's to decide:** the home page
 and custom pages are already section-built and edited in the customizer; the

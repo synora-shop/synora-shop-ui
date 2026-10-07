@@ -156,9 +156,9 @@ language. **Done:** product, collection, cart, checkout, account, wishlist, orde
 search and the phone menu (`/loom/…`), each checked at twenty widths and driven
 in a browser.
 
-**The customizer format is fixed** (LOOM.md §7, `check:loom`): sections with
-schemas, pages as templates, menus with children. **Next:** move the home page's
-sections and the five earlier pages onto it — mechanical, no design change.
+**The customizer format is fixed and every Loom page is on it** (LOOM.md §7,
+`check:loom`): sections with schemas, pages as templates, menus with children,
+interface words in Site text.
 
 **A platform decision, not Loom's:** Shopify makes every page type (product,
 collection, cart, search, account) a template of sections, and the header a

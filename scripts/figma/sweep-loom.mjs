@@ -30,8 +30,16 @@ ws.addEventListener("message", (e) => {
   if (m.id && pending.has(m.id)) { pending.get(m.id)(m); pending.delete(m.id); }
 });
 await new Promise((r) => ws.addEventListener("open", r));
+// Every browser step has 30 seconds. A sweep once sat for twenty minutes on a
+// page whose fonts promise never settled; a stall should fail with its name,
+// not wait forever.
 const send = (method, params = {}) =>
-  new Promise((res) => { const i = ++id; pending.set(i, res); ws.send(JSON.stringify({ id: i, method, params })); });
+  new Promise((res, rej) => {
+    const i = ++id;
+    const timer = setTimeout(() => { pending.delete(i); rej(new Error(`browser did not answer ${method} in 30s`)); }, 30000);
+    pending.set(i, (m) => { clearTimeout(timer); res(m); });
+    ws.send(JSON.stringify({ id: i, method, params }));
+  });
 const ev = async (e) =>
   (await send("Runtime.evaluate", { expression: e, returnByValue: true, awaitPromise: true })).result?.result?.value;
 

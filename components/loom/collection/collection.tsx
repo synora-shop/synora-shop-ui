@@ -6,7 +6,9 @@ import { LOOM_RULE, LoomButton, LoomSwipeRow } from "@/components/loom/primitive
 import { LoomChevronDown } from "@/components/loom/icons";
 import { LoomProductCard } from "@/components/loom/product-card";
 import { T } from "@/components/loom/type";
-import { PRICE_BANDS, SHOES, SIZES, SORTS, SWATCHES, type CatalogueItem, type Swatch } from "@/components/loom/catalogue";
+import { menu, on, str, type LoomContext } from "@/components/loom/contract";
+import { tx } from "@/components/loom/text";
+import { PRICE_BANDS, SIZES, SORTS, SWATCHES, type CatalogueItem, type Swatch } from "@/components/loom/catalogue";
 
 /**
  * A collection: the products, filters that really filter, and a sort.
@@ -30,23 +32,19 @@ import { PRICE_BANDS, SHOES, SIZES, SORTS, SWATCHES, type CatalogueItem, type Sw
 type Filters = { colours: Swatch[]; sizes: string[]; price: number | null };
 const NONE: Filters = { colours: [], sizes: [], price: null };
 
-const CATEGORIES = [
-  { label: "Shorts", href: "#" },
-  { label: "Hat", href: "#" },
-  { label: "Jackets", href: "#" },
-  { label: "Shoes", href: "/loom/collection", active: true },
-  { label: "T-Shirt", href: "#" },
-];
 
-/** The colours and sizes some product actually has — an option that matches nothing is not offered. */
-const OFFERED_COLOURS = (Object.keys(SWATCHES) as Swatch[]).filter((c) => SHOES.some((s) => s.colours.includes(c)));
+/** The colours some product actually has — an option that matches nothing is not offered. */
+const offeredColours = (products: CatalogueItem[]) =>
+  (Object.keys(SWATCHES) as Swatch[]).filter((c) => products.some((s) => s.colours.includes(c)));
 
-export function LoomCollection() {
+export function LoomCollection({ data, ctx }: { data: Record<string, unknown>; ctx: LoomContext }) {
+  const categories = menu(data, "categoriesMenu", ctx);
+  const activeCategory = str(data, "activeCategory").toLowerCase();
   const [filters, setFilters] = useState<Filters>(NONE);
   const [sort, setSort] = useState(0);
   const [sheet, setSheet] = useState(false);
 
-  const shown = useMemo(() => apply(SHOES, filters).sort(SORTS[sort].by), [filters, sort]);
+  const shown = useMemo(() => apply(ctx.products, filters).sort(SORTS[sort].by), [ctx.products, filters, sort]);
   // Every matching product is on this one page; with real paging this is the
   // collection's full count and `shown` is the page.
   const total = shown.length;
@@ -57,53 +55,58 @@ export function LoomCollection() {
       {/* Heading — the hero's second band: a Heading 1 statement and Body 4 under it. */}
       <header className="flex flex-col gap-[calc(16*var(--u))] pb-[calc(24*var(--u))] md:flex-row md:items-end md:justify-between md:pb-[calc(32*var(--u))]">
         <h1 data-m="collection-title" className={cn(T.h3, "text-[#121212] md:text-[calc(65*var(--u))] md:leading-[calc(65*var(--u))] md:tracking-[calc(-4*var(--u))]")}>
-          Shoes
+          {ctx.collection?.title}
         </h1>
-        <p className={cn(T.body6, "text-[#121212]/80 md:w-[calc(411*var(--u))] md:text-[max(calc(18*var(--u)),14.4px)]")}>
-          Everyday pairs and the ones you save for the weekend — from the board to the court.
-        </p>
+        {on(data, "showDescription") && ctx.collection?.description && (
+          <p className={cn(T.body6, "text-[#121212]/80 md:w-[calc(411*var(--u))] md:text-[max(calc(18*var(--u)),14.4px)]")}>
+            {ctx.collection.description}
+          </p>
+        )}
       </header>
 
       {/* The category menu — the Trending chips, as links. */}
-      <LoomSwipeRow data-m="collection-categories" className="gap-[calc(8*var(--u))] pb-[calc(24*var(--u))] md:gap-[calc(10*var(--u))] md:pb-[calc(32*var(--u))]">
-        {CATEGORIES.map((c) => (
+      {categories.length > 0 && <LoomSwipeRow data-m="collection-categories" className="gap-[calc(8*var(--u))] pb-[calc(24*var(--u))] md:gap-[calc(10*var(--u))] md:pb-[calc(32*var(--u))]">
+        {categories.map((c) => (
           <a
-            key={c.label}
+            key={c.id}
             href={c.href}
-            aria-current={c.active ? "page" : undefined}
+            aria-current={c.label.toLowerCase() === activeCategory ? "page" : undefined}
             className={cn(
               CHIP,
-              c.active ? "bg-[#121212] text-white" : "border border-[#dddddd] text-[#121212]/80"
+              c.label.toLowerCase() === activeCategory ? "bg-[#121212] text-white" : "border border-[#dddddd] text-[#121212]/80"
             )}
           >
             {c.label}
           </a>
         ))}
-      </LoomSwipeRow>
+      </LoomSwipeRow>}
 
       <div className={cn("flex gap-[calc(10*var(--u))] pt-[calc(24*var(--u))] md:pt-[calc(32*var(--u))]", LOOM_RULE)}>
         {/* Desktop: the filters are a column the width of one card. */}
-        <aside aria-label="Filters" className="hidden md:block md:w-[calc(322*var(--u))] md:shrink-0">
-          <FilterGroups filters={filters} onChange={setFilters} />
-        </aside>
+        {on(data, "showFilters") && (
+          <aside aria-label={tx(ctx, "filters.heading")} className="hidden md:block md:w-[calc(322*var(--u))] md:shrink-0">
+            <FilterGroups ctx={ctx} filters={filters} onChange={setFilters} />
+          </aside>
+        )}
 
         <div className="flex min-w-0 flex-1 flex-col gap-[calc(16*var(--u))] md:gap-[calc(24*var(--u))]">
           {/* Toolbar. Desktop: the count, then Sort at the right. Phone: the count
               on its own line, then Filter and Sort sharing the next. */}
           <div className="flex flex-wrap items-center gap-[calc(8*var(--u))] md:min-h-[calc(50*var(--u))] md:gap-[calc(10*var(--u))]">
             <p data-m="collection-count" className={cn(T.body6, "w-full text-[#121212]/80 md:mr-auto md:w-auto md:text-[max(calc(18*var(--u)),14.4px)]")} aria-live="polite">
-              {shown.length} {shown.length === 1 ? "product" : "products"}
+              {shown.length === 1 ? tx(ctx, "collections.countOne") : tx(ctx, "collections.count", { count: shown.length })}
             </p>
             <button
               type="button"
               onClick={() => setSheet(true)}
               aria-haspopup="dialog"
-              className={cn(CHIP, "border border-[#dddddd] text-[#121212]/80 md:hidden")}
+              className={cn(CHIP, "border border-[#dddddd] text-[#121212]/80 md:hidden", !on(data, "showFilters") && "hidden")}
             >
-              Filter{active ? ` (${active})` : ""}
+              {tx(ctx, "filters.filtersButton")}
+              {active ? ` (${active})` : ""}
             </button>
             <label className="relative min-w-0 flex-1 md:flex-none">
-              <span className="sr-only">Sort by</span>
+              <span className="sr-only">{tx(ctx, "filters.sortBy")}</span>
               <select
                 data-m="collection-sort"
                 value={sort}
@@ -111,8 +114,8 @@ export function LoomCollection() {
                 className={cn(CHIP, "w-full cursor-pointer appearance-none justify-start border border-[#dddddd] bg-transparent pr-[calc(48*var(--u))] text-[#121212]/80")}
               >
                 {SORTS.map((s, i) => (
-                  <option key={s.label} value={i}>
-                    {s.label}
+                  <option key={s.key} value={i}>
+                    {tx(ctx, s.key)}
                   </option>
                 ))}
               </select>
@@ -131,9 +134,9 @@ export function LoomCollection() {
             </div>
           ) : (
             <div className="flex flex-col items-start gap-[calc(24*var(--u))] py-[calc(40*var(--u))]">
-              <p className={cn(T.h4, "text-[#121212]")}>Nothing matches all of that.</p>
+              <p className={cn(T.h4, "text-[#121212]")}>{tx(ctx, "collections.emptyState")}</p>
               <LoomButton variant="outline" onClick={() => setFilters(NONE)}>
-                Clear filters
+                {tx(ctx, "filters.clearFilters")}
               </LoomButton>
             </div>
           )}
@@ -144,11 +147,11 @@ export function LoomCollection() {
           {shown.length > 0 && (
             <div className="flex flex-col items-center gap-[calc(16*var(--u))] pt-[calc(16*var(--u))] md:pt-[calc(24*var(--u))]">
               <p className={cn(T.body6, "text-[#121212]/80")}>
-                Showing {shown.length} of {total}
+                {tx(ctx, "collections.showing", { shown: shown.length, total })}
               </p>
               {shown.length < total && (
                 <LoomButton variant="outline" className="self-center">
-                  Show more
+                  {tx(ctx, "collections.showMore")}
                 </LoomButton>
               )}
             </div>
@@ -158,6 +161,7 @@ export function LoomCollection() {
 
       {sheet && (
         <FilterSheet
+          ctx={ctx}
           filters={filters}
           onChange={setFilters}
           count={shown.length}
@@ -191,13 +195,23 @@ function toggle<T>(list: T[], v: T) {
  * a short list, one choice at a time.
  */
 /** `clear` is off in the phone sheet, whose foot already has a Clear button. */
-function FilterGroups({ filters, onChange, clear = true }: { filters: Filters; onChange: (f: Filters) => void; clear?: boolean }) {
+function FilterGroups({
+  filters,
+  onChange,
+  clear = true,
+  ctx,
+}: {
+  filters: Filters;
+  onChange: (f: Filters) => void;
+  clear?: boolean;
+  ctx: LoomContext;
+}) {
   const any = clear && (filters.colours.length || filters.sizes.length || filters.price !== null);
   return (
     <div className="flex flex-col">
-      <Group label="Colour" first>
+      <Group label={tx(ctx, "filters.colorLabel")} first>
         <div className="flex flex-wrap gap-[calc(12*var(--u))]">
-          {OFFERED_COLOURS.map((c) => {
+          {offeredColours(ctx.products).map((c) => {
             const on = filters.colours.includes(c);
             return (
               <button
@@ -222,7 +236,7 @@ function FilterGroups({ filters, onChange, clear = true }: { filters: Filters; o
         </div>
       </Group>
 
-      <Group label="Size">
+      <Group label={tx(ctx, "filters.sizeLabel")}>
         <div className="flex flex-wrap gap-[calc(8*var(--u))] md:gap-[calc(10*var(--u))]">
           {SIZES.map((s) => {
             const on = filters.sizes.includes(s);
@@ -241,8 +255,8 @@ function FilterGroups({ filters, onChange, clear = true }: { filters: Filters; o
         </div>
       </Group>
 
-      <Group label="Price">
-        <div className="flex flex-col" role="radiogroup" aria-label="Price">
+      <Group label={tx(ctx, "filters.priceLabel")}>
+        <div className="flex flex-col" role="radiogroup" aria-label={tx(ctx, "filters.priceLabel")}>
           {PRICE_BANDS.map((b, i) => {
             const on = filters.price === i;
             return (
@@ -270,7 +284,7 @@ function FilterGroups({ filters, onChange, clear = true }: { filters: Filters; o
           onClick={() => onChange(NONE)}
           className={cn(T.single2, "self-start pt-[calc(8*var(--u))] uppercase text-[#121212] underline underline-offset-4")}
         >
-          Clear all
+          {tx(ctx, "filters.clearAll")}
         </button>
       ) : null}
     </div>
@@ -298,7 +312,9 @@ function FilterSheet({
   onChange,
   count,
   onClose,
+  ctx,
 }: {
+  ctx: LoomContext;
   filters: Filters;
   onChange: (f: Filters) => void;
   count: number;
@@ -318,28 +334,28 @@ function FilterSheet({
   }, [onClose]);
 
   return (
-    <div role="dialog" aria-modal="true" aria-label="Filters" className="fixed inset-0 z-50 flex flex-col bg-white md:hidden">
+    <div role="dialog" aria-modal="true" aria-label={tx(ctx, "filters.heading")} className="fixed inset-0 z-50 flex flex-col bg-white md:hidden">
       <div className="flex min-h-[calc(94*var(--u))] items-center justify-between px-[calc(16*var(--u))] pt-[calc(16*var(--u))]">
-        <p className={cn(T.h4, "text-[#121212]")}>Filter</p>
+        <p className={cn(T.h4, "text-[#121212]")}>{tx(ctx, "filters.heading")}</p>
         <button
           ref={close}
           type="button"
           onClick={onClose}
-          aria-label="Close filters"
+          aria-label={tx(ctx, "filters.close")}
           className="flex h-[44px] w-[44px] items-center justify-center text-[28px] leading-none text-[#121212]"
         >
           ×
         </button>
       </div>
       <div className="flex-1 overflow-y-auto px-[calc(16*var(--u))]">
-        <FilterGroups filters={filters} onChange={onChange} clear={false} />
+        <FilterGroups ctx={ctx} filters={filters} onChange={onChange} clear={false} />
       </div>
       <div className={cn("flex gap-[calc(10*var(--u))] px-[calc(16*var(--u))] py-[calc(16*var(--u))]", LOOM_RULE)}>
         <LoomButton variant="outline" className="min-w-0" onClick={() => onChange(NONE)}>
-          Clear
+          {tx(ctx, "filters.clear")}
         </LoomButton>
         <LoomButton className="min-w-0 flex-1" onClick={onClose}>
-          Show {count} {count === 1 ? "product" : "products"}
+          {count === 1 ? tx(ctx, "filters.showResultsOne") : tx(ctx, "filters.showResults", { count })}
         </LoomButton>
       </div>
     </div>

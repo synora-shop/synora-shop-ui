@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
 import { LoomShell } from "@/components/loom/shell";
-import { LoomCheckout } from "@/components/loom/checkout/checkout";
-import { DEMO_LINES } from "@/components/loom/cart/lines";
+import { LoomTemplateView } from "@/components/loom/template";
+import { CHECKOUT } from "@/components/loom/templates";
+import { demoContext } from "@/components/loom/demo";
 
 export const metadata: Metadata = { title: "Checkout — Loom reference build" };
 
-/** Checkout — the fourth page the kit does not draw. The design is on LoomCheckout. */
+/** This page is its template, drawn — what it is made of is in components/loom/templates.ts. */
 export default function LoomCheckoutPage() {
   return (
     <LoomShell checkout>
-      <LoomCheckout lines={DEMO_LINES} />
+      <LoomTemplateView template={CHECKOUT} ctx={demoContext()} />
     </LoomShell>
   );
 }

@@ -8,6 +8,8 @@ import { LoomField, LoomPromises, LoomTotals } from "@/components/loom/commerce"
 import { FREE_DELIVERY_FROM, money } from "@/components/loom/money";
 import type { CartLine } from "@/components/loom/cart/cart";
 import { T } from "@/components/loom/type";
+import { on, type LoomContext } from "@/components/loom/contract";
+import { tx } from "@/components/loom/text";
 
 /**
  * Checkout. Not in the kit — the blog row's split again, 654 of form, 60,
@@ -30,7 +32,8 @@ import { T } from "@/components/loom/type";
 type Form = Record<"email" | "first" | "last" | "address" | "city" | "postcode" | "phone", string>;
 const EMPTY: Form = { email: "", first: "", last: "", address: "", city: "", postcode: "", phone: "" };
 
-export function LoomCheckout({ lines }: { lines: CartLine[] }) {
+export function LoomCheckout({ data, ctx }: { data: Record<string, unknown>; ctx: LoomContext }) {
+  const lines: CartLine[] = ctx.cart ?? [];
   const subtotal = lines.reduce((n, l) => n + l.price * l.qty, 0);
   const [form, setForm] = useState<Form>(EMPTY);
   const [errors, setErrors] = useState<Partial<Form>>({});
@@ -53,14 +56,14 @@ export function LoomCheckout({ lines }: { lines: CartLine[] }) {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const next: Partial<Form> = {};
-    if (!/^\S+@\S+\.\S+$/.test(form.email)) next.email = "An email address we can send the receipt to.";
+    if (!/^\S+@\S+\.\S+$/.test(form.email)) next.email = tx(ctx, "checkout.emailError");
     for (const [k, msg] of [
-      ["first", "Your first name."],
-      ["last", "Your last name."],
-      ["address", "The street and number."],
-      ["city", "The town or city."],
-      ["postcode", "The postcode."],
-      ["phone", "A number the courier can ring."],
+      ["first", tx(ctx, "checkout.firstNameError")],
+      ["last", tx(ctx, "checkout.lastNameError")],
+      ["address", tx(ctx, "checkout.addressError")],
+      ["city", tx(ctx, "checkout.cityError")],
+      ["postcode", tx(ctx, "checkout.postcodeError")],
+      ["phone", tx(ctx, "checkout.phoneError")],
     ] as const) {
       if (!form[k].trim()) next[k] = msg;
     }
@@ -79,16 +82,18 @@ export function LoomCheckout({ lines }: { lines: CartLine[] }) {
     return (
       <section className="px-[calc(16*var(--u))] pb-[calc(80*var(--u))] md:px-[calc(60*var(--u))] md:pb-[calc(120*var(--u))]">
         <div className="flex flex-col gap-[calc(24*var(--u))] md:w-[calc(654*var(--u))]">
-          <p className={cn(T.single2, "uppercase text-[#121212]/80")}>Order {placed}</p>
+          <p className={cn(T.single2, "uppercase text-[#121212]/80")}>{tx(ctx, "checkout.orderNumber", { id: placed })}</p>
           <h1 data-m="checkout-thanks" className={cn(T.h3, "text-[#121212] md:text-[calc(65*var(--u))] md:leading-[calc(65*var(--u))] md:tracking-[calc(-4*var(--u))]")}>
-            Thank you, {form.first}.
+            {tx(ctx, "checkout.thanks", { name: form.first })}
           </h1>
           <p className={cn(T.body6, "text-[#121212]/80 md:text-[max(calc(18*var(--u)),14.4px)]")}>
-            We have your order and a receipt is on its way to {form.email}. We will write again when it leaves us
-            {speed === "express" ? " — express, so in a day or two." : " — usually within three to five working days."}
+            {tx(ctx, "checkout.thanksText", {
+              email: form.email,
+              when: tx(ctx, speed === "express" ? "checkout.whenExpress" : "checkout.whenStandard"),
+            })}
           </p>
           <LoomButton variant="outline" href="/loom/collection">
-            Continue shopping
+            {tx(ctx, "cart.continueShopping")}
           </LoomButton>
         </div>
       </section>
@@ -101,73 +106,73 @@ export function LoomCheckout({ lines }: { lines: CartLine[] }) {
       <details className={cn("group mb-[calc(24*var(--u))] md:hidden", "border-y border-black/10")}>
         <summary className={cn(T.body3, "flex cursor-pointer list-none items-center justify-between py-[calc(16*var(--u))] text-[#121212] [&::-webkit-details-marker]:hidden")}>
           <span className="flex items-center gap-[calc(8*var(--u))]">
-            Order summary
+            {tx(ctx, "cart.orderSummary")}
             <LoomChevronDown className="h-[max(calc(24*var(--u)),19px)] w-[max(calc(24*var(--u)),19px)] transition-transform group-open:rotate-180" />
           </span>
           <span>{money(subtotal + delivery)}</span>
         </summary>
         <div className="pb-[calc(24*var(--u))]">
-          <Summary lines={lines} subtotal={subtotal} delivery={delivery} />
+          <Summary ctx={ctx} showPromises={on(data, "showPromises")} lines={lines} subtotal={subtotal} delivery={delivery} />
         </div>
       </details>
 
       <div className="flex flex-col gap-[calc(40*var(--u))] md:flex-row md:items-start md:gap-[calc(60*var(--u))]">
         <form noValidate onSubmit={submit} data-m="checkout-form" className="flex flex-col gap-[calc(40*var(--u))] md:w-[calc(654*var(--u))] md:shrink-0">
-          <h1 className={cn(T.h3, "text-[#121212] md:text-[calc(65*var(--u))] md:leading-[calc(65*var(--u))] md:tracking-[calc(-4*var(--u))]")}>Checkout</h1>
+          <h1 className={cn(T.h3, "text-[#121212] md:text-[calc(65*var(--u))] md:leading-[calc(65*var(--u))] md:tracking-[calc(-4*var(--u))]")}>{tx(ctx, "checkout.heading")}</h1>
 
-          <Step n={1} title="Contact">
-            <LoomField label="Email" type="email" autoComplete="email" inputMode="email" {...field("email")} />
+          <Step n={1} title={tx(ctx, "checkout.stepContact")}>
+            <LoomField label={tx(ctx, "checkout.email")} type="email" autoComplete="email" inputMode="email" {...field("email")} />
           </Step>
 
-          <Step n={2} title="Where it goes">
+          <Step n={2} title={tx(ctx, "checkout.stepAddress")}>
             <div className="grid grid-cols-1 gap-[calc(16*var(--u))] md:grid-cols-2 md:gap-[calc(20*var(--u))]">
-              <LoomField label="First name" autoComplete="given-name" {...field("first")} />
-              <LoomField label="Last name" autoComplete="family-name" {...field("last")} />
-              <LoomField label="Address" autoComplete="street-address" className="md:col-span-2" {...field("address")} />
-              <LoomField label="City" autoComplete="address-level2" {...field("city")} />
-              <LoomField label="Postcode" autoComplete="postal-code" {...field("postcode")} />
-              <LoomField label="Phone" type="tel" autoComplete="tel" inputMode="tel" className="md:col-span-2" {...field("phone")} />
+              <LoomField label={tx(ctx, "checkout.firstName")} autoComplete="given-name" {...field("first")} />
+              <LoomField label={tx(ctx, "checkout.lastName")} autoComplete="family-name" {...field("last")} />
+              <LoomField label={tx(ctx, "checkout.address")} autoComplete="street-address" className="md:col-span-2" {...field("address")} />
+              <LoomField label={tx(ctx, "checkout.city")} autoComplete="address-level2" {...field("city")} />
+              <LoomField label={tx(ctx, "checkout.postcode")} autoComplete="postal-code" {...field("postcode")} />
+              <LoomField label={tx(ctx, "checkout.phone")} type="tel" autoComplete="tel" inputMode="tel" className="md:col-span-2" {...field("phone")} />
             </div>
           </Step>
 
-          <Step n={3} title="How fast">
+          <Step n={3} title={tx(ctx, "checkout.stepSpeed")}>
             <Choices
               name="speed"
               value={speed}
               onChange={(v) => setSpeed(v as typeof speed)}
               options={[
-                { value: "standard", title: "Standard", note: "Three to five working days", price: standard === 0 ? "Free" : money(standard) },
-                { value: "express", title: "Express", note: "One to two working days", price: money(15) },
+                { value: "standard", title: tx(ctx, "checkout.standard"), note: tx(ctx, "checkout.standardNote"), price: standard === 0 ? tx(ctx, "checkout.freeShipping") : money(standard) },
+                { value: "express", title: tx(ctx, "checkout.express"), note: tx(ctx, "checkout.expressNote"), price: money(15) },
               ]}
             />
           </Step>
 
-          <Step n={4} title="How to pay">
+          <Step n={4} title={tx(ctx, "checkout.stepPayment")}>
             <Choices
               name="pay"
               value={pay}
               onChange={(v) => setPay(v as typeof pay)}
               options={[
-                { value: "card", title: "Card", note: "You will pay on the card provider's own secure page" },
-                { value: "cod", title: "Cash on delivery", note: "Pay the courier when it arrives" },
+                { value: "card", title: tx(ctx, "checkout.card"), note: tx(ctx, "checkout.cardNote") },
+                { value: "cod", title: tx(ctx, "checkout.cod"), note: tx(ctx, "checkout.codNote") },
               ]}
             />
           </Step>
 
           <div className="flex flex-col gap-[calc(16*var(--u))]">
             <LoomButton type="submit" data-m="checkout-place" className="w-full min-w-0">
-              {pay === "card" ? `Continue to payment · ${money(subtotal + delivery)}` : `Place order · ${money(subtotal + delivery)}`}
+              {tx(ctx, pay === "card" ? "checkout.continueToPayment" : "checkout.placeOrder", { amount: money(subtotal + delivery) })}
             </LoomButton>
             <p className={cn(T.body6, "text-center text-[#121212]/80")}>
-              Nothing is charged until you confirm{pay === "card" ? " on the payment page" : ""}.
+              {tx(ctx, pay === "card" ? "checkout.nothingChargedCard" : "checkout.nothingCharged")}
             </p>
           </div>
         </form>
 
         {/* Desktop: the order, beside the form, where the blog's words sit. */}
-        <aside aria-label="Your order" className="hidden md:sticky md:top-[calc(24*var(--u))] md:block md:w-[calc(606*var(--u))] md:shrink-0">
-          <h2 className={cn(T.h4, "pb-[calc(24*var(--u))] text-[#121212]")}>Your order</h2>
-          <Summary lines={lines} subtotal={subtotal} delivery={delivery} />
+        <aside aria-label={tx(ctx, "checkout.orderSummary")} className="hidden md:sticky md:top-[calc(24*var(--u))] md:block md:w-[calc(606*var(--u))] md:shrink-0">
+          <h2 className={cn(T.h4, "pb-[calc(24*var(--u))] text-[#121212]")}>{tx(ctx, "checkout.orderSummary")}</h2>
+          <Summary ctx={ctx} showPromises={on(data, "showPromises")} lines={lines} subtotal={subtotal} delivery={delivery} />
         </aside>
       </div>
     </section>
@@ -232,7 +237,19 @@ function Choices({
  * circle on the corner — the card's favourite button, carrying a number —
  * then the totals and the promises.
  */
-function Summary({ lines, subtotal, delivery }: { lines: CartLine[]; subtotal: number; delivery: number }) {
+function Summary({
+  lines,
+  subtotal,
+  delivery,
+  ctx,
+  showPromises,
+}: {
+  lines: CartLine[];
+  subtotal: number;
+  delivery: number;
+  ctx: LoomContext;
+  showPromises: boolean;
+}) {
   return (
     <div className="flex flex-col gap-[calc(24*var(--u))]">
       <ul className="flex flex-col gap-[calc(16*var(--u))]">
@@ -260,8 +277,8 @@ function Summary({ lines, subtotal, delivery }: { lines: CartLine[]; subtotal: n
           </li>
         ))}
       </ul>
-      <LoomTotals subtotal={subtotal} delivery={delivery} />
-      <LoomPromises />
+      <LoomTotals ctx={ctx} subtotal={subtotal} delivery={delivery} />
+      {showPromises && <LoomPromises ctx={ctx} />}
     </div>
   );
 }

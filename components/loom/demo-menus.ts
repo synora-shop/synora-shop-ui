@@ -72,6 +72,13 @@ export const DEMO_MENUS: Record<string, LoomMenu> = Object.fromEntries(
       { id: "o-contact", label: "Contact Us", href: "#" },
       { id: "o-terms", label: "Terms and Conditions", href: "#" },
     ]),
+    m("trending-chips", "Trending chips", [
+      { id: "t-shorts", label: "Shorts", href: "#" },
+      { id: "t-hat", label: "Hat", href: "#" },
+      { id: "t-jackets", label: "Jackets", href: "#" },
+      { id: "t-shoes", label: "Shoes", href: "/loom/collection" },
+      { id: "t-tshirt", label: "T-Shirt", href: "#" },
+    ]),
     m("popular-searches", "Popular searches", [
       { id: "s-skate", label: "Skateboard", href: "/loom/search?q=skateboard" },
       { id: "s-red", label: "Red", href: "/loom/search?q=red" },
