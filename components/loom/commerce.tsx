@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { LOOM_RULE } from "@/components/loom/primitives";
 import { LoomHeartFill, LoomPhoneIcon, LoomRefreshIcon } from "@/components/loom/icons";
 import { T } from "@/components/loom/type";
+import { money } from "@/components/loom/money";
 
 /**
  * The parts the shopping pages share — product, cart, checkout, account.
@@ -129,9 +130,6 @@ export function LoomField({
   );
 }
 
-/** Money, the way the kit prints it: "$125". */
-export const money = (n: number) => `$${n.toLocaleString("en-US")}`;
-
 /**
  * Subtotal, delivery and total, on the section rule. Labels in Body 6 at 80%,
  * figures right-aligned; the total in Heading 4, the size the product page
@@ -161,6 +159,3 @@ function Row({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
-
-/** Free delivery from $200 — the threshold the cart and checkout both use. */
-export const FREE_DELIVERY_FROM = 200;

@@ -337,14 +337,82 @@ Two decisions the kit could not make:
   Add an address, Forgot your password, Show more. They are the design; the
   behaviour is the platform's when Loom is ported.
 
+### Built for the live customizer — the format
+
+Loom must be editable the way a Shopify theme is: sections added, hidden and
+reordered, every word changed, any menu built under Admin → Menus (nested or
+flat) chosen for the header, footer or a section. That is a format, and the
+format cannot change later — so it is fixed now, in
+`components/loom/contract.ts`, on the platform's own types:
+
+| Piece | What it is | Where |
+| --- | --- | --- |
+| **Section** | A `SectionSchema` (the platform's format, the one the customizer already builds its panel from) plus a renderer that draws only from its settings and the shop's data | `components/loom/sections/` — `*.schema.ts` beside each drawing |
+| **Template** | A page as an ordered list of sections with their stored settings — Shopify's JSON template | `components/loom/templates.ts` |
+| **Group** | The header and footer, shared by every page | `HEADER_GROUP`, `FOOTER_GROUP` |
+| **Menu** | A merchant's menu, two levels deep (the platform's MenuItem refuses a third) | `LoomMenu`; demo menus in `demo-menus.ts` |
+| **Context** | The shop's data handed to every section — menus, products, the query, the order. A section fetches nothing, so the customizer can redraw it on every keystroke | `LoomContext` |
+
+Settings fill their defaults through `resolveSchemaData` in
+lib/section-schema.ts — the platform's own function, so a Loom section and a
+platform section can never resolve differently.
+
+`npm run check:loom` holds it up: every text setting is set to a marker and
+must appear on the drawn page, every switch must change the page, every menu
+default must exist, every template must name registered sections.
+Negative-tested by typing a sentence into the search section.
+
+**On the format today:** the header, footer, wishlist, order, search and
+recommendations sections. **Not yet:** the home page's sections and the
+product, collection, cart, checkout and account pages, which predate it and
+still spell their words out. They move onto it before the port — the work is
+mechanical, the design does not change.
+
+**What the platform still needs, which is not Loom's to decide:** the home page
+and custom pages are already section-built and edited in the customizer; the
+product, collection, cart, search, account and order pages are fixed code, and
+the header and footer read fixed menu slots. Shopify makes every page type a
+template of sections and the header a section with a menu setting. Doing the
+same here is a schema change (templates per page type, menu items passed with
+their children), and it decides how every theme works, not only Loom.
+
+### Header, phone menu, wishlist, order, search
+
+**Header.** One section: the wordmark, the main menu, the strip's menu, the
+language and currency, the search hint, and a switch for the strip, the search
+and each icon. A top-level link with children opens a dropdown on hover, focus
+or tap — the chevron the kit draws beside every category is the promise of
+one: white, outlined `#e3e3e3`, radius 24, links in Body 6.
+
+**Phone menu** (not in the kit). A full-screen sheet whose top row is the phone
+header exactly, with the close glyph where the menu glyph was. Then the search
+pill at 50, the main menu in Heading 4 on the section rule — each parent
+opening its children in Body 4 — then wishlist, account and cart as words, then
+the strip's links and the language in the strip's small type. Escape closes it
+and focus starts on the close button.
+
+**Wishlist.** Every heart on every card saves (in the browser for the demo, in
+the customer's account when ported). The page is the kit's card four across
+with Add to cart in the quiet outline under each, and an empty state that
+offers the way back.
+
+**Order.** The state is the heading — "On its way" — with the order number as
+the eyebrow, four stages on the section rule (done in ink, now in the kit's
+Blue, later outlined; always a word and a date), Track and Buy again, then the
+blog split: what was ordered, the totals and two cards for address and
+payment, and the Service section's phone glyph offering help.
+
+**Search.** The header's pill grown to 654, holding the query; suggestions are
+a menu the merchant picks, drawn as Trending chips; results four across. Found
+nothing says so, says what to try, and shows the suggestions; "Trending now"
+follows so the page always has products.
+
 ### Still open
 
 - **One deliberate departure from the file:** on the phone hero the second
   copy of the photograph is laid over a five-times enlargement of the first,
   and where they meet the file draws a hard line across the green. Its top
   edge fades over 40px. Every number is still the file's.
-- **Still to design:** the wishlist, an order's own page, what the phone's
-  menu opens, and the search results.
 - **The kit's photographs are 1–10MB PNGs.** Fine for a reference page; the
   ported theme serves them through the platform's image pipeline.
 - Nothing here is wired to the theme yet. Porting means moving these numbers

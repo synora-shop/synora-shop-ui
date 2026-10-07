@@ -50,10 +50,10 @@ const PRODUCT: BuyBoxProduct = {
 };
 
 const RELATED: LoomProduct[] = [
-  { title: "Casual Shoe", price: "$225", w: 322, src: "/loom/5a88e5962507976b1988e6d9a08599fcba5247bd.png", loved: true },
-  { title: "Skateboard Shoe", price: "$125", w: 322, src: "/loom/0b42775b5c482fd10ff96fad137ae5ca5aa7a561.png" },
-  { title: "Basket Shoe", price: "$125", w: 322, src: "/loom/6202a986df950869c406241f2f48f416d0807241.png" },
-  { title: "Sportwear Shoe", price: "$159", w: 322, src: "/loom/f8ae4065476b2a224ae85cd40fd6b1c7d34bc9ae.png" },
+  { id: "casual", title: "Casual Shoe", price: "$225", w: 322, src: "/loom/5a88e5962507976b1988e6d9a08599fcba5247bd.png", loved: true },
+  { id: "skate-nb", title: "Skateboard Shoe", price: "$125", w: 322, src: "/loom/0b42775b5c482fd10ff96fad137ae5ca5aa7a561.png" },
+  { id: "basket", title: "Basket Shoe", price: "$125", w: 322, src: "/loom/6202a986df950869c406241f2f48f416d0807241.png" },
+  { id: "sport", title: "Sportwear Shoe", price: "$159", w: 322, src: "/loom/f8ae4065476b2a224ae85cd40fd6b1c7d34bc9ae.png" },
 ];
 
 export default function LoomProductPage() {

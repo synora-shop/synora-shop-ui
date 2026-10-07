@@ -1,6 +1,8 @@
-import { LoomNavbar } from "@/components/loom/navbar";
-import { LoomNavigation } from "@/components/loom/navigation";
-import { LoomFooter } from "@/components/loom/footer";
+import { LoomTemplateView } from "@/components/loom/template";
+import { FOOTER_GROUP, HEADER_GROUP } from "@/components/loom/templates";
+import { DEMO_MENUS } from "@/components/loom/demo-menus";
+import type { LoomContext } from "@/components/loom/contract";
+import { SHOES } from "@/components/loom/catalogue";
 import { cn } from "@/lib/utils";
 import { T } from "@/components/loom/type";
 
@@ -27,7 +29,16 @@ import { T } from "@/components/loom/type";
  * away from paying, so the checkout keeps only the wordmark and the way back
  * to the cart — the phone header's own height and gutter on both sizes' terms.
  */
-export function LoomShell({ children, checkout = false }: { children: React.ReactNode; checkout?: boolean }) {
+export function LoomShell({
+  children,
+  checkout = false,
+}: {
+  children: React.ReactNode;
+  checkout?: boolean;
+}) {
+  // The demo shop's data. Ported, this is the shop's own menus, read once per
+  // request and handed to every section — no section fetches.
+  const ctx: LoomContext = { menus: DEMO_MENUS, products: SHOES };
   return (
     <main className="mx-auto w-[calc(375*var(--u))] [--u:min(calc(100cqw/375),1.2px)] md:w-[calc(1440*var(--u))] md:[--u:min(calc(100cqw/1440),1px)]">
       {checkout ? (
@@ -40,13 +51,10 @@ export function LoomShell({ children, checkout = false }: { children: React.Reac
           </a>
         </div>
       ) : (
-        <>
-          <LoomNavbar />
-          <LoomNavigation />
-        </>
+        <LoomTemplateView template={HEADER_GROUP} ctx={ctx} />
       )}
       {children}
-      {!checkout && <LoomFooter />}
+      {!checkout && <LoomTemplateView template={FOOTER_GROUP} ctx={ctx} />}
     </main>
   );
 }

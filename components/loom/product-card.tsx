@@ -1,6 +1,9 @@
-import { LoomCard, LoomLove, LoomPhoto, px, type Placement } from "@/components/loom/primitives";
+import { LoomCard, LoomPhoto, px, type Placement } from "@/components/loom/primitives";
+import { LoomLove } from "@/components/loom/wishlist";
 
 export type LoomProduct = {
+  /** The catalogue id — what the heart saves to the wishlist. */
+  id?: string;
   title: string;
   price: string;
   /** Desktop card width. */
@@ -30,7 +33,7 @@ export type LoomProduct = {
  * radius is 24 on the half-width card and 21 on the wide one; the file really
  * does draw those differently.
  */
-export function LoomProductCard({ title, price, w, wideOnPhone, src, img, mImg, loved, href = "#" }: LoomProduct) {
+export function LoomProductCard({ id, title, price, w, wideOnPhone, src, img, mImg, loved, href = "#" }: LoomProduct) {
   return (
     <article
       className={`relative flex flex-col gap-[calc(8*var(--u))] md:w-[var(--w)] md:shrink-0 md:gap-0 ${wideOnPhone ? "col-span-2" : ""}`}
@@ -46,7 +49,7 @@ export function LoomProductCard({ title, price, w, wideOnPhone, src, img, mImg, 
           // eslint-disable-next-line @next/next/no-img-element
           <img src={src} alt={title} className="absolute inset-0 h-full w-full object-cover" />
         )}
-        <LoomLove active={loved} />
+        <LoomLove productId={id} active={loved} />
       </LoomCard>
       <div>
         <h3

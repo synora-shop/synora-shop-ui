@@ -152,14 +152,23 @@ breaking (`scripts/figma/sweep-loom.mjs`, twenty widths). Everything is in
 `docs/LOOM.md` §7.
 
 **Next, agreed:** the pages the kit does not contain, designed in the same
-language. **Done:** product, collection, cart, checkout and account (`/loom/…`), each
-checked at twenty widths and driven in a browser. **Left:** the wishlist, an
-order's own page, the phone menu, search results. **Then:** moving
+language. **Done:** product, collection, cart, checkout, account, wishlist, order,
+search and the phone menu (`/loom/…`), each checked at twenty widths and driven
+in a browser.
+
+**The customizer format is fixed** (LOOM.md §7, `check:loom`): sections with
+schemas, pages as templates, menus with children. **Next:** move the home page's
+sections and the five earlier pages onto it — mechanical, no design change.
+
+**A platform decision, not Loom's:** Shopify makes every page type (product,
+collection, cart, search, account) a template of sections, and the header a
+section with a menu setting. Here only the home page and custom pages are
+section-built; the rest are fixed code and the header reads fixed menu slots.
+Matching Shopify is a schema change that decides how every theme works. **Then:** moving
 these numbers into the storefront's real section renderers so the Loom a
 merchant adds is this one. That step also decides whether every shop's Inter
 gains its optical-size axis (LOOM.md §7), which changes live headings.
 
-**Undesigned in the kit:** what the phone's menu button opens.
 
 ---
 

@@ -1672,10 +1672,19 @@ export function defaultBlockData(schema: BlockSchema): Record<string, unknown> {
  * defaults-underneath approach as lib/site-text.ts and lib/global-edits.ts.
  */
 export function resolveSectionData(type: string, stored: unknown): Record<string, unknown> {
-  const raw = (stored ?? {}) as Record<string, unknown>;
   const schema = SECTION_SCHEMAS[type];
-  if (!schema) return raw;
+  if (!schema) return (stored ?? {}) as Record<string, unknown>;
+  return resolveSchemaData(schema, stored);
+}
 
+/**
+ * The same resolution for a schema held directly rather than looked up by
+ * type — a theme's own section, not yet in SECTION_SCHEMAS, fills its defaults
+ * by exactly the rules every registered section does, instead of by a copy of
+ * them that could drift.
+ */
+export function resolveSchemaData(schema: SectionSchema, stored: unknown): Record<string, unknown> {
+  const raw = (stored ?? {}) as Record<string, unknown>;
   const resolved: Record<string, unknown> = {};
   for (const field of schema.fields) {
     resolved[field.key] = raw[field.key] ?? field.default;

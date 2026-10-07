@@ -4,7 +4,8 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { LOOM_RULE, LoomButton, LoomCard } from "@/components/loom/primitives";
 import { LoomChevronDown } from "@/components/loom/icons";
-import { FREE_DELIVERY_FROM, LoomField, LoomPromises, LoomTotals, money } from "@/components/loom/commerce";
+import { LoomField, LoomPromises, LoomTotals } from "@/components/loom/commerce";
+import { FREE_DELIVERY_FROM, money } from "@/components/loom/money";
 import type { CartLine } from "@/components/loom/cart/cart";
 import { T } from "@/components/loom/type";
 

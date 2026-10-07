@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { LOOM_RULE, LoomButton, LoomCard } from "@/components/loom/primitives";
-import { FREE_DELIVERY_FROM, LoomPromises, LoomStepper, LoomTotals, money } from "@/components/loom/commerce";
+import { LoomPromises, LoomStepper, LoomTotals } from "@/components/loom/commerce";
+import { FREE_DELIVERY_FROM, money } from "@/components/loom/money";
 import { T } from "@/components/loom/type";
 
 export type CartLine = {

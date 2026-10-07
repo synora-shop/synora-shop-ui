@@ -53,6 +53,7 @@ and that going live is refused until a test payment has really been through.
 | `check:responsive` **29** | No screen scrolls sideways | — |
 | `check:cache` **25** | Every cached kind is dropped by whoever writes it | A merchant edited a screen that would not change. Twice. `lib/cache-tags.ts` claimed this script existed for months before it did |
 | `check:geo` **23** | Country blocking rides the one gate every page calls | A per-page check would eventually be forgotten on a new page |
+| `check:loom` **116** | Loom's sections can be driven by the live customizer: every text setting reaches the page (set to a marker, drawn in each state, the marker must appear), every show/hide switch changes the page, every menu setting's default exists, every template names registered sections | "Every word is a setting" is easy to claim and easy to break — one heading typed into a component looks identical and is invisible to the customizer. Negative-tested by typing a sentence into the search section |
 | `check:loops` **4** | A redirect chain cannot eat itself | — |
 
 ---

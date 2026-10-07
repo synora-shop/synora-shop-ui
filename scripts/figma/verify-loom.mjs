@@ -17,8 +17,8 @@ const only = process.argv[3];
 // label, CSS selector, expected { w,h } and optional { x,y } page-relative.
 const DESKTOP = [
   ["page",              "main",                                  { w: 1440, h: 4694 }],
-  ["navbar",            "main > div:nth-of-type(1)",             { w: 1440, h: 64,   y: 0 }],
-  ["navigation",        "main > div:nth-of-type(2)",             { w: 1440, h: 80,   y: 64 }],
+  ["navbar",            "main > header > div:nth-of-type(1)",             { w: 1440, h: 64,   y: 0 }],
+  ["navigation",        "main > header > div:nth-of-type(2)",             { w: 1440, h: 80,   y: 64 }],
   ["hero",              "main > section:nth-of-type(1)",         { w: 1440, h: 1192, y: 144 }],
   ["hero band 1",       "[data-m='hero-band-1']",                { w: 1440, h: 770,  y: 144 }],
   ["hero big card",     "[data-m='hero-card']",                  { w: 958,  h: 770,  x: 60, y: 144 }],
@@ -57,7 +57,10 @@ const DESKTOP = [
 const DESKTOP_TYPE = [
   ["navbar link",      "[data-m='navbar-links'] a",     { size: 13, line: 16, weight: 500, ls: 0 }],
   ["nav wordmark",     "[data-m='nav-wordmark']",       { size: 24, line: 30, weight: 800, ls: 0 }],
-  ["nav category",     "[data-m='nav-categories'] a",   { size: 14, line: 16, weight: 600, ls: 0 }],
+  // The top-level label, not "the first link": a category with children is a
+  // button that opens its dropdown, and the first <a> inside the nav is now a
+  // dropdown link in Body 6 — which is how this probe once failed a correct header.
+  ["nav category",     "[data-m='nav-categories'] > * > :is(a, button)", { size: 14, line: 16, weight: 600, ls: 0 }],
   ["hero headline",    "[data-m='hero-headline']",      { size: 90, line: 75, weight: 400, ls: -5 }],
   ["hero body",        "[data-m='hero-body']",          { size: 18, line: 26, weight: 400, ls: -0.3 }],
   ["hero cta",         "[data-m='hero-cta']",           { size: 14, line: 24, weight: 500, ls: 1 }],
@@ -82,7 +85,7 @@ const DESKTOP_TYPE = [
 // The 375 screen — the frame called "Responsive" on the page, 6322 tall.
 const PHONE = [
   ["page",              "main",                                  { w: 375, h: 6322 }],
-  ["navigation",        "main > div:nth-of-type(2)",             { w: 375, h: 94,   y: 0 }],
+  ["navigation",        "main > header > div:nth-of-type(2)",             { w: 375, h: 94,   y: 0 }],
   ["hero",              "main > section:nth-of-type(1)",         { w: 375, h: 1253, y: 94 }],
   ["hero band 1",       "[data-m='hero-band-1']",                { w: 375, h: 893,  y: 94 }],
   ["hero big card",     "[data-m='hero-card']",                  { w: 343, h: 656,  x: 16, y: 94 }],

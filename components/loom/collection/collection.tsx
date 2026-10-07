@@ -126,7 +126,7 @@ export function LoomCollection() {
               className="grid grid-cols-2 gap-x-[calc(8*var(--u))] gap-y-[calc(16*var(--u))] md:grid-cols-3 md:gap-x-[calc(10*var(--u))] md:gap-y-[calc(20*var(--u))]"
             >
               {shown.map((p) => (
-                <LoomProductCard key={p.id} title={p.title} price={`$${p.price}`} w={322.67} src={p.src} href={p.href} loved={p.loved} />
+                <LoomProductCard key={p.id} id={p.id} title={p.title} price={`$${p.price}`} w={322.67} src={p.src} href={p.href} loved={p.loved} />
               ))}
             </div>
           ) : (

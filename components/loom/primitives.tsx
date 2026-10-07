@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { LoomArrowShortRight, LoomHeartOutline } from "@/components/loom/icons";
+import { LoomArrowShortRight } from "@/components/loom/icons";
 
 /**
  * The kit draws two screens, 375 and 1440, and nothing between them. Every
@@ -174,33 +174,6 @@ export function LoomArrow({ className }: { className?: string }) {
   return <LoomArrowShortRight className={cn("h-[calc(50*var(--u))] w-[calc(50*var(--u))] shrink-0", className)} />;
 }
 
-/**
- * The favourite button on a product card: a 40px circle, inset 20 from the
- * card's top-right on desktop and 8 on the phone.
- *
- * It never draws smaller than 32px, which is still a tap target, and it sits
- * above the card's whole-card link (`z-[1]`) so pressing the heart favourites
- * the product instead of opening it.
- *
- * Inactive is `#121212` at twenty per cent — translucent ink over the
- * photograph, not a grey — and active is the kit's one accent, `#f15353`,
- * which appears nowhere else in the design.
- */
-export function LoomLove({ active = false }: { active?: boolean }) {
-  return (
-    <button
-      type="button"
-      aria-label={active ? "Remove from wishlist" : "Add to wishlist"}
-      aria-pressed={active}
-      className={cn(
-        "absolute right-[calc(8*var(--u))] top-[calc(8*var(--u))] z-[1] flex h-[max(calc(40*var(--u)),32px)] w-[max(calc(40*var(--u)),32px)] items-center justify-center rounded-full text-white md:right-[calc(20*var(--u))] md:top-[calc(20*var(--u))]",
-        active ? "bg-[#f15353]" : "bg-[#121212]/20"
-      )}
-    >
-      <LoomHeartOutline className="h-[max(calc(24*var(--u)),19px)] w-[max(calc(24*var(--u)),19px)]" />
-    </button>
-  );
-}
 
 /**
  * A row that scrolls sideways on the phone and is an ordinary row on desktop.

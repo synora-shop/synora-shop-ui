@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { LOOM_RULE, LoomButton, LoomCard, LoomSwipeRow } from "@/components/loom/primitives";
-import { LoomField, money } from "@/components/loom/commerce";
+import { LoomField } from "@/components/loom/commerce";
+import { money } from "@/components/loom/money";
 import { T } from "@/components/loom/type";
 
 /**
@@ -139,7 +140,7 @@ function Orders() {
               />
               {o.state}
             </p>
-            <LoomButton variant="outlineLight" className="min-w-[calc(100*var(--u))]">
+            <LoomButton variant="outlineLight" href={o.id === "LM-12476" ? "/loom/account/order" : "#"} className="min-w-[calc(100*var(--u))]">
               View
             </LoomButton>
           </div>
