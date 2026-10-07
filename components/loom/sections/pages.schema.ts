@@ -67,7 +67,7 @@ export const orderSchema: SectionSchema = {
     text("helpHeading", "Help heading", "The help block's title.", "Something not right?", { disabledWhen: { field: "showHelp", equals: false, message: "The help block is hidden." } }),
     { key: "helpText", kind: "textarea", label: "Help text", info: "A line under that title.", default: "We will always answer whatever your questions. Tell us the order number and we will take it from there.", disabledWhen: { field: "showHelp", equals: false, message: "The help block is hidden." } },
     text("helpButtonLabel", "Help button", "The words on the help button.", "Contact us", { disabledWhen: { field: "showHelp", equals: false, message: "The help block is hidden." } }),
-    { key: "helpButtonLink", kind: "url", label: "Help button link", info: "Where the help button goes.", default: "#", disabledWhen: { field: "showHelp", equals: false, message: "The help block is hidden." } },
+    { key: "helpButtonLink", kind: "url", label: "Help button link", info: "Where the help button goes.", default: "", disabledWhen: { field: "showHelp", equals: false, message: "The help block is hidden." } },
   ],
 };
 

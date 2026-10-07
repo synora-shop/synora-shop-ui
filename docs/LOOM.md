@@ -429,6 +429,35 @@ a menu the merchant picks, drawn as Trending chips; results four across. Found
 nothing says so, says what to try, and shows the suggestions; "Trending now"
 follows so the page always has products.
 
+### On the real storefront — Loom 2.0.0
+
+Loom is the first theme with a kit (THEMES.md §1). A shop whose copy is at
+2.0.0 draws Loom on its real storefront, from its own data:
+
+| Page | Address | Status |
+| --- | --- | --- |
+| Header, footer | every page | Loom, the shop's own menus |
+| Home | `/` | Loom — featured products, or the newest |
+| Collection | `/shop`, `/collections/<slug>` | Loom — first page of products |
+| Search | `/shop?q=` | Loom |
+| Product | `/product/<slug>` | Loom — its real colours, sizes, stock and photographs; Add to cart into the platform's cart. Enquiry-only products keep the platform's page |
+| Wishlist | `/wishlist` | Loom (only kit shops have this page) |
+| Cart, checkout, account, order | | **Stage 2** — the platform's pages, inside Loom's header and footer |
+
+Prices are in the shop's currency through the platform's formatter; links go
+through the shop's own addresses (a link setting may say `route:cart`); inside
+a theme demo every link carries the demo's prefix.
+
+**The live customizer edits it.** For a 2.0.0 copy the page switcher lists
+Loom's pages (header, home, collection, product, search, wishlist, footer),
+the panel is each section's own settings, sections can be added, hidden,
+reordered and removed — except a page's main section — and the preview redraws
+as you type, the header and footer included. Saving writes the copy's
+template and clears the storefront's cache; the storefront shows it at once.
+
+Verified on the local database only: the local shop moved to 2.0.0, a
+headline edited and saved in the customizer, the storefront showing it.
+
 ### Still open
 
 - **One deliberate departure from the file:** on the phone hero the second
@@ -437,8 +466,9 @@ follows so the page always has products.
   edge fades over 40px. Every number is still the file's.
 - **The kit's photographs are 1–10MB PNGs.** Fine for a reference page; the
   ported theme serves them through the platform's image pipeline.
-- Nothing here is wired to the theme yet. Porting means moving these numbers
-  into the storefront's real section renderers (§5), not shipping this route.
+- **Stage 2:** cart, checkout, account and order on the real storefront, on
+  the platform's real cart, checkout and sign-in.
+- **Release:** how a shop moves from Loom 1.0.0 to 2.0.0 is undecided.
 
 ---
 

@@ -25,10 +25,12 @@ import {
 } from "lucide-react";
 import {
   saveSections,
+  saveKitTemplate,
   createPageFromTemplate,
   duplicatePage,
   type DraftSection,
 } from "@/app/(fullscreen)/admin/customize/actions";
+import { isKitRoute } from "@/lib/themes/kit";
 import { PAGE_TEMPLATES } from "@/lib/page-templates";
 import { SectionSettings } from "./section-settings";
 import { type SaveState } from "@/components/ui/save-button";
@@ -42,7 +44,7 @@ import { validateUrl } from "@/lib/url-validation";
 import {
   SECTION_SCHEMAS,
   defaultSectionData,
-  sectionLabel,
+  resolveSchemaData,
   type SectionSchema,
 } from "@/lib/section-schema";
 import {
@@ -78,10 +80,23 @@ export function Customizer({
   page,
   initialSections,
   storeUrl,
+  schemas,
+  kit,
 }: {
   pages: CustomizerPage[];
   page: CustomizerPage;
   initialSections: RenderableSection[];
+  /**
+   * The sections this storefront can hold, when its theme brings its own
+   * (lib/themes/kits.ts). Absent, it is the platform's shared set.
+   */
+  schemas?: Record<string, SectionSchema>;
+  /**
+   * Editing one template of a theme copy rather than a page: saves go to the
+   * copy, and the section types listed in `required` — the page's main
+   * section — can be moved but not removed.
+   */
+  kit?: { copyId: string; template: string; required: string[] };
   /**
    * The shop's own address.
    *
@@ -130,6 +145,12 @@ export function Customizer({
   const router = useRouter();
 
   const sections = history.present;
+  // The platform's sections, or the theme's own. Every label, default and
+  // panel below reads through these, so the editor is the same editor for both.
+  const S = schemas ?? SECTION_SCHEMAS;
+  const sectionLabel = (type: string) => S[type]?.label ?? type;
+  const newSectionData = (type: string) =>
+    kit ? resolveSchemaData(S[type], {}) : defaultSectionData(type);
   const dirty = useMemo(() => JSON.stringify(sections) !== savedSnapshot, [sections, savedSnapshot]);
   const selected = sections.find((s) => s.id === selectedId) ?? null;
 
@@ -143,11 +164,14 @@ export function Customizer({
   const problems = useMemo<Problem[]>(() => {
     const found: Problem[] = [];
     for (const section of sections) {
-      const schema = SECTION_SCHEMAS[section.type];
+      const schema = S[section.type];
       if (!schema) continue;
       const data = (section.data ?? {}) as Record<string, unknown>;
 
       const checkUrl = (field: { key: string; label: string }, raw: unknown, where: string) => {
+        // One of the shop's own pages by name — "route:cart" — is a theme's
+        // way of saying "wherever this shop's cart is", and is always valid.
+        if (kit && isKitRoute(raw)) return;
         const check = validateUrl(String(raw ?? ""), { allowContactSchemes: true });
         if (!check.ok) {
           found.push({
@@ -174,6 +198,7 @@ export function Customizer({
       }
     }
     return found;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- S and kit are fixed for the life of the editor
   }, [sections]);
 
   /** Every mutation goes through here so undo/redo covers all of them. */
@@ -202,10 +227,10 @@ export function Customizer({
   const pushToPreview = useCallback(() => {
     if (!previewReady.current) return;
     iframeRef.current?.contentWindow?.postMessage(
-      { type: PREVIEW_MESSAGE, sections, selectedId, changed } satisfies PreviewMessage,
+      { type: PREVIEW_MESSAGE, sections, selectedId, changed, template: kit?.template } satisfies PreviewMessage,
       window.location.origin
     );
-  }, [sections, selectedId, changed]);
+  }, [sections, selectedId, changed, kit?.template]);
 
   // Debounced so typing streams smoothly rather than posting per keystroke.
   useEffect(() => {
@@ -313,7 +338,7 @@ export function Customizer({
     const created: RenderableSection = {
       id: nextTempId(),
       type: schema.type,
-      data: defaultSectionData(schema.type),
+      data: newSectionData(schema.type),
       isVisible: true,
     };
     commit([...sections, created]);
@@ -381,7 +406,7 @@ export function Customizer({
         data: s.data,
         isVisible: s.isVisible !== false,
       }));
-      const saved = await saveSections(page.id, payload);
+      const saved = kit ? await saveKitTemplate(kit.copyId, kit.template, payload) : await saveSections(page.id, payload);
       const normalised: RenderableSection[] = saved.map((s) => ({
         id: s.id,
         type: s.type,
@@ -457,12 +482,15 @@ export function Customizer({
 
   const grouped = useMemo(() => {
     const byCategory = new Map<string, SectionSchema[]>();
-    for (const schema of Object.values(SECTION_SCHEMAS)) {
+    for (const schema of Object.values(S)) {
+      // A section that may be on a page once, and already is, is not offered.
+      if (schema.singleton && sections.some((s) => s.type === schema.type)) continue;
       if (!byCategory.has(schema.category)) byCategory.set(schema.category, []);
       byCategory.get(schema.category)!.push(schema);
     }
     return [...byCategory.entries()];
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- S is fixed for the life of the editor
+  }, [sections]);
 
   const deviceWidth = DEVICES.find((d) => d.key === device)!.width;
 
@@ -549,6 +577,7 @@ export function Customizer({
           })}
         </nav>
 
+        {!kit && (<>
         <button
           type="button"
           onClick={() => setNewPageOpen(true)}
@@ -567,6 +596,7 @@ export function Customizer({
         >
           <Copy className="h-4 w-4" />
         </button>
+        </>)}
 
         <div className="flex items-center gap-0.5 rounded-full border border-border p-0.5">
           {DEVICES.map((d) => (
@@ -652,6 +682,7 @@ export function Customizer({
                 <span className="min-w-0 flex-1 truncate text-sm font-medium">
                   {sectionLabel(selected.type)}
                 </span>
+                {!S[selected.type]?.singleton && (
                 <button
                   type="button"
                   onClick={() => duplicateSection(selected.id)}
@@ -661,6 +692,8 @@ export function Customizer({
                 >
                   <Copy className="h-4 w-4" />
                 </button>
+                )}
+                {!kit?.required.includes(selected.type) && (
                 <button
                   type="button"
                   onClick={() => removeSection(selected.id, selected.type)}
@@ -669,9 +702,11 @@ export function Customizer({
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
+                )}
               </div>
               <div className="min-h-0 flex-1 overflow-y-auto">
                 <SectionSettings
+                  schema={S[selected.type]}
                   section={selected}
                   onChange={(data) => updateSection(selected.id, data)}
                   focusField={focusField}
@@ -759,8 +794,12 @@ export function Customizer({
                     <button
                       type="button"
                       onClick={() => toggleVisible(section.id)}
+                      // A page's main section — the product on the product
+                      // page — cannot be hidden: the page would be empty.
+                      disabled={!!kit?.required.includes(section.type)}
+                      title={kit?.required.includes(section.type) ? "This page's main section is always shown" : undefined}
                       aria-label={section.isVisible === false ? "Show section" : "Hide section"}
-                      className="rounded p-1 text-ink-soft transition-colors hover:bg-subtle hover:text-ink active:bg-brand-100"
+                      className="rounded p-1 text-ink-soft transition-colors hover:bg-subtle hover:text-ink active:bg-brand-100 disabled:opacity-30"
                     >
                       {section.isVisible === false ? (
                         <EyeOff className="h-3.5 w-3.5" />

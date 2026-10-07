@@ -18,6 +18,11 @@
  *      must be in the output. A word typed into the component fails here.
  *   4. Every show/hide switch hides something: drawn with it off, the output
  *      must differ from drawn with it on.
+ *   5. Every Site text key reaches the page, or is listed as appearing only
+ *      after an interaction.
+ *   6. The server's save rules hold: unknown sections, a doubled singleton, a
+ *      removed or hidden main section and undeclared settings are refused or
+ *      dropped, and a stored edit that no longer validates falls back.
  *
  * Dependency-free beyond React's own server renderer; exits non-zero on failure.
  */
@@ -28,6 +33,9 @@ import * as TEMPLATES from "../components/loom/templates";
 import { demoContext } from "../components/loom/demo";
 import { LOOM_TEXT, type LoomTextKey } from "../components/loom/text";
 import { resolve, type LoomContext, type LoomTemplate } from "../components/loom/contract";
+import { kitFor, versionAtLeast } from "../lib/themes/kits";
+import { checkTemplate, templateFor } from "../lib/themes/kit-templates";
+import { isKitRoute, TEMPLATE_NAMES } from "../lib/themes/kit";
 
 let pass = 0;
 let fail = 0;
@@ -178,6 +186,35 @@ const AFTER_INTERACTION = new Set<string>([
     check(`site text ${k}: reaches the page`, reached.includes(k), "set in Site text, changes nothing");
   }
   console.log(`site text: ${reached.length} of ${Object.keys(LOOM_TEXT).length} keys reached by a server render; ${AFTER_INTERACTION.size} appear only after an interaction`);
+}
+
+// 6. The server's save rules (lib/themes/kit-templates.ts) — what stands
+//    between a merchant's edit and a broken page.
+{
+  const kit = kitFor("loom", "2.0.0")!;
+  check("kits: Loom 2.0.0 has a kit", !!kit);
+  check("kits: Loom 1.0.0 has none — no live shop changes", kitFor("loom", "1.0.0") === null);
+  check("kits: versions compare by number", versionAtLeast("2.10.0", "2.9.0") && !versionAtLeast("1.10.0", "2.0.0"));
+  const product = kit.templates.product;
+  const ok = (sections: unknown) => checkTemplate(kit, "product", { sections });
+  check("save: the default product page passes", ok(product.sections).ok);
+  check("save: an unknown section type is refused", !ok([...product.sections, { id: "x1", type: "NOT_A_SECTION" }]).ok);
+  check("save: a singleton twice is refused", !ok([...product.sections, { ...product.sections[0], id: "dup" }]).ok);
+  check("save: removing the main section is refused", !ok(product.sections.filter((x) => x.type !== "LOOM_PRODUCT")).ok);
+  check("save: hiding the main section is refused", !ok(product.sections.map((x) => (x.type === "LOOM_PRODUCT" ? { ...x, visible: false } : x))).ok);
+  check("save: a bad id is refused", !ok([{ ...product.sections[0], id: "has spaces" }]).ok);
+  const withJunk = ok(product.sections.map((x) => ({ ...x, data: { ...(x.data ?? {}), notASetting: "<script>" } })));
+  check(
+    "save: settings a section does not declare are dropped",
+    withJunk.ok && withJunk.template.sections.every((x) => !("notASetting" in (x.data ?? {})))
+  );
+  check(
+    "templates: a stored edit that no longer validates falls back to the default",
+    templateFor(kit, { product: { sections: [{ id: "a", type: "GONE" }] } }, "product") === kit.templates.product
+  );
+  check("templates: a valid stored edit is used", templateFor(kit, { index: { sections: [{ id: "h", type: "LOOM_HERO" }] } }, "index").sections.length === 1);
+  check("routes: a route token is recognised", isKitRoute("route:cart") && !isKitRoute("route:nowhere") && !isKitRoute("/cart"));
+  for (const name of TEMPLATE_NAMES) check(`templates: Loom has "${name}"`, !!kit.templates[name]);
 }
 
 // Templates name only registered sections.

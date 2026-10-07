@@ -14,7 +14,10 @@ import type { SectionSchema, SettingField } from "@/lib/section-schema";
 const t = (key: string, label: string, info: string, def: string, extra: Partial<SettingField> = {}): SettingField => ({ key, kind: "text", label, info, default: def, ...extra });
 const ta = (key: string, label: string, info: string, def: string): SettingField => ({ key, kind: "textarea", label, info, default: def });
 const img = (key: string, label: string, info: string, def: string): SettingField => ({ key, kind: "image", label, info, default: def });
-const url = (key: string, label: string, info: string, def = "#"): SettingField => ({ key, kind: "url", label, info, default: def });
+// Empty, not "#": the platform's link check refuses a link to nowhere, and an
+// empty link is what "this goes nowhere yet" means. The section draws it as
+// "#" until a merchant points it somewhere.
+const url = (key: string, label: string, info: string, def = ""): SettingField => ({ key, kind: "url", label, info, default: def });
 const flag = (key: string, label: string, info: string, def = true): SettingField => ({ key, kind: "checkbox", label, info, default: def });
 
 export const KIT = {

@@ -39,6 +39,12 @@ export type PreviewDraftMessage = {
    * comparison would miss.
    */
   changed?: { sectionId: string; seq: number } | null;
+  /**
+   * Which of a theme copy's templates the draft is — "index", "header" — when
+   * the theme brings its own sections. Each part of the preview redraws only
+   * from the template it is: the header from "header", the page from its own.
+   */
+  template?: string;
 };
 
 export type PreviewReadyMessage = { type: typeof PREVIEW_READY };

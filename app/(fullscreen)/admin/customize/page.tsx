@@ -1,5 +1,10 @@
 import { redirect } from "next/navigation";
-import { canonicalUrl, currentShopId, db } from "@/lib/data/shop";
+import { canonicalUrl, currentShop, currentShopId, db } from "@/lib/data/shop";
+import { liveCopyOf } from "@/lib/themes/live";
+import { kitFor } from "@/lib/themes/kits";
+import { requiredTypes, templateFor } from "@/lib/themes/kit-templates";
+import type { TemplateName } from "@/lib/themes/kit";
+import { resolveSchemaData, type SectionSchema } from "@/lib/section-schema";
 import { getOrCreateHomePage } from "@/lib/data/pages";
 import { Customizer, type CustomizerPage } from "@/components/customizer/customizer";
 import {
@@ -20,9 +25,30 @@ function previewPathFor(slug: string): string {
   return dedicated[slug] ?? `/p/${slug}`;
 }
 
+/**
+ * The pages of a theme that brings its own sections, in the order a merchant
+ * thinks about a shop, and where each is previewed. Only the ones the
+ * storefront already draws from the kit are listed: a template the shop
+ * cannot see yet would be edited blind.
+ */
+const KIT_PAGES: { name: TemplateName; title: string; path: (productSlug: string | null) => string }[] = [
+  { name: "header", title: "Header", path: () => "/" },
+  { name: "index", title: "Home page", path: () => "/" },
+  { name: "collection", title: "Collection", path: () => "/shop" },
+  { name: "product", title: "Product", path: (slug) => (slug ? `/product/${slug}` : "/shop") },
+  { name: "search", title: "Search results", path: () => "/shop?q=a" },
+  { name: "wishlist", title: "Wishlist", path: () => "/wishlist" },
+  { name: "footer", title: "Footer", path: () => "/" },
+];
+
 export default async function CustomizePageRoute(props: PageProps<"/admin/customize">) {
   const sp = await props.searchParams;
   const requestedId = typeof sp.page === "string" ? sp.page : undefined;
+
+  // A theme copy with its own sections is edited template by template — see
+  // lib/themes/kits.ts. Which copy: the one named by ?copy=, else the live one.
+  const kitEditor = await loadKitEditor(typeof sp.copy === "string" ? sp.copy : undefined, requestedId);
+  if (kitEditor) return kitEditor;
 
   // Section-rendered pages only: a collection page has no sections to lay out,
   // it's driven by its category (see the Page model comment in schema.prisma).
@@ -119,6 +145,98 @@ export default async function CustomizePageRoute(props: PageProps<"/admin/custom
         page={page}
         initialSections={sections}
         storeUrl={await canonicalUrl(await currentShopId())}
+      />
+    </PickerOptionsProvider>
+  );
+}
+
+/**
+ * The customizer for a theme copy that brings its own sections, or null when
+ * the copy being edited draws the platform's own storefront.
+ */
+async function loadKitEditor(copyId: string | undefined, requested: string | undefined) {
+  const client = await db();
+  const shop = await currentShop();
+  if (!shop) return null;
+  const [settings, installed] = await Promise.all([
+    client.themeSettings.findFirst({
+      where: { businessType: shop.businessType },
+      select: { themeKey: true, installedThemeId: true },
+    }),
+    client.installedTheme.findMany({
+      orderBy: { installedAt: "asc" },
+      select: { id: true, themeKey: true, version: true, templates: true },
+    }),
+  ]);
+  const copy = (copyId && installed.find((c) => c.id === copyId)) || liveCopyOf(installed, settings);
+  if (!copy) return null;
+  const kit = kitFor(copy.themeKey, copy.version);
+  if (!kit) return null;
+
+  const [firstProduct, menus, pickCollections, pickProducts] = await Promise.all([
+    client.product.findFirst({
+      where: { isActive: true, status: "PUBLISHED", deletedAt: null },
+      orderBy: { createdAt: "desc" },
+      select: { slug: true },
+    }),
+    client.menu.findMany({ orderBy: { name: "asc" }, take: 200, select: { id: true, name: true, handle: true } }),
+    client.category.findMany({ orderBy: { name: "asc" }, take: 200, select: { id: true, name: true } }),
+    client.product.findMany({ where: { deletedAt: null }, orderBy: { title: "asc" }, take: 200, select: { id: true, title: true } }),
+  ]);
+
+  const pages: CustomizerPage[] = KIT_PAGES.map((p) => ({
+    id: p.name,
+    slug: p.name,
+    title: p.title,
+    previewPath: p.path(firstProduct?.slug ?? null),
+  }));
+  const page = pages.find((p) => p.id === requested) ?? pages.find((p) => p.id === "index")!;
+  const name = page.id as TemplateName;
+
+  // A kit's defaults name menus by handle ("main-menu"), which is the same in
+  // every shop; the menu picker lists them by id. Translated here, so the
+  // picker shows the menu the page is really drawing.
+  const byHandle = new Map(menus.map((m) => [m.handle, m.id]));
+  const schemas = Object.fromEntries(Object.entries(kit.sections).map(([type, def]) => [type, def.schema]));
+  const toIds = (schema: SectionSchema | undefined, data: Record<string, unknown>) => {
+    if (!schema) return data;
+    const out = { ...data };
+    for (const f of schema.fields) if (f.kind === "menu" && typeof out[f.key] === "string") out[f.key] = byHandle.get(out[f.key] as string) ?? out[f.key];
+    if (schema.blocks && Array.isArray(out[schema.blocks.key])) {
+      out[schema.blocks.key] = (out[schema.blocks.key] as Record<string, unknown>[]).map((b) => {
+        const nb = { ...b };
+        for (const f of schema.blocks!.fields) if (f.kind === "menu" && typeof nb[f.key] === "string") nb[f.key] = byHandle.get(nb[f.key] as string) ?? nb[f.key];
+        return nb;
+      });
+    }
+    return out;
+  };
+
+  const sections = templateFor(kit, copy.templates, name).sections.map((s) => ({
+    id: s.id,
+    type: s.type,
+    data: toIds(schemas[s.type], resolveSchemaData(schemas[s.type], s.data)),
+    isVisible: s.visible !== false,
+  }));
+
+  const pickers: PickerOptions = {
+    collection: pickCollections.map((c) => ({ value: c.id, label: c.name })),
+    product: pickProducts.map((p) => ({ value: p.id, label: p.title })),
+    menu: menus.map((m) => ({ value: m.id, label: m.name })),
+  };
+
+  // Keyed on the copy and the template, for the reason the page-keyed one
+  // below explains: every piece of editor state is per template.
+  return (
+    <PickerOptionsProvider options={pickers}>
+      <Customizer
+        key={`${copy.id}:${name}`}
+        pages={pages}
+        page={page}
+        initialSections={sections}
+        storeUrl={await canonicalUrl(await currentShopId())}
+        schemas={schemas}
+        kit={{ copyId: copy.id, template: name, required: requiredTypes(kit, name) }}
       />
     </PickerOptionsProvider>
   );

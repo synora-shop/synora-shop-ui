@@ -8,6 +8,7 @@ import { getProducts, getFilterOptions, countByKind, type ProductFilters as Filt
 import { getKitForRequest } from "@/lib/data/theme";
 import { kitBaseContext, toKitProducts } from "@/lib/data/kit-context";
 import { KitPage } from "@/components/storefront/kit-page";
+import { isPreview } from "@/lib/preview-mode";
 import { KindFilter } from "@/components/storefront/kind-filter";
 import { getStoreSettings } from "@/lib/data/settings";
 import { getSiteText, text } from "@/lib/site-text";
@@ -66,7 +67,7 @@ export default async function ShopPage(props: PageProps<"/shop">) {
       query: q || undefined,
       collection: { title: text(siteText, "shop.heading"), description: "" },
     };
-    return <KitPage kit={live.kit} templates={live.templates} name={q ? "search" : "collection"} ctx={ctx} />;
+    return <KitPage kit={live.kit} templates={live.templates} name={q ? "search" : "collection"} ctx={ctx} preview={isPreview(sp)} />;
   }
 
   return (

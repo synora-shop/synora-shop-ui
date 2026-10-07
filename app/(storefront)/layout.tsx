@@ -1,4 +1,7 @@
 import { kitBaseContext } from "@/lib/data/kit-context";
+import { KIT_FRAMES } from "@/lib/themes/kit-frames";
+import { Fragment } from "react";
+import { PREVIEW_PARAM } from "@/lib/preview-mode";
 import { KitPage } from "@/components/storefront/kit-page";
 import { SiteHeader } from "@/components/storefront/site-header";
 import { SiteFooter } from "@/components/storefront/site-footer";
@@ -207,15 +210,18 @@ export default async function StorefrontLayout({ children }: LayoutProps<"/">) {
   const live = await getKitForRequest();
   if (live) {
     const ctx = await kitBaseContext();
-    const Frame = live.kit.Frame;
+    // The proxy hands the layout the path with its query; `?__preview=1` is the
+    // customizer's frame, where the header and footer redraw from its drafts.
+    const preview = ((await headers()).get(SHOP_PATH_HEADER) ?? "").includes(`${PREVIEW_PARAM}=`);
+    const Frame = KIT_FRAMES[live.kit.themeKey] ?? Fragment;
     return (
       <CurrencyProvider currency={resolveStoreDefaults(settings).currency}>
         {demo && <ThemeDemoBar themeName={themeFor(demo.themeKey).name} slug={demo.slug} />}
         <StoreBaseProvider base={await storeBase()}>
           <Frame>
-            <KitPage kit={live.kit} templates={live.templates} name="header" ctx={ctx} />
+            <KitPage kit={live.kit} templates={live.templates} name="header" ctx={ctx} preview={preview} />
             {children}
-            <KitPage kit={live.kit} templates={live.templates} name="footer" ctx={ctx} />
+            <KitPage kit={live.kit} templates={live.templates} name="footer" ctx={ctx} preview={preview} />
           </Frame>
           {stickyButtons.length > 0 ? (
             <StickyButtons buttons={stickyButtons} />

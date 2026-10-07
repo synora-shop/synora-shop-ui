@@ -160,11 +160,25 @@ in a browser.
 `check:loom`): sections with schemas, pages as templates, menus with children,
 interface words in Site text.
 
-**A platform decision, not Loom's:** Shopify makes every page type (product,
-collection, cart, search, account) a template of sections, and the header a
-section with a menu setting. Here only the home page and custom pages are
-section-built; the rest are fixed code and the header reads fixed menu slots.
-Matching Shopify is a schema change that decides how every theme works. **Then:** moving
+**Decided 8 October: a theme may own its sections** (THEMES.md §1). The
+platform half is built — kits, templates per theme copy
+(`InstalledTheme.templates`, migration 20261104000000), the customizer editing
+them, the storefront drawing Loom 2.0.0 for header, home, collection, search,
+product and wishlist (LOOM.md §7).
+
+**Next — stage 2:** cart, checkout, account and order pages drawn by the kit on
+the platform's real cart, checkout and sign-in.
+
+**Undecided — the release:** every shop is on Loom 1.0.0 and renders as it did.
+How a shop moves to 2.0.0 (Update button, new shops only, or a separate theme
+in the store) is a decision to take before anything deploys. The migration is
+additive, but deploying it is what applies it to the live database.
+
+**Known small gaps:** a collection shows its first page of products (no paging
+yet); the customizer's page switch drops `?copy=` when editing a copy that is
+not live; Loom's default menus other than "main-menu" and "footer-menu" do not
+exist in a real shop, so those sections show nothing until a merchant builds
+or picks a menu. **Then:** moving
 these numbers into the storefront's real section renderers so the Loom a
 merchant adds is this one. That step also decides whether every shop's Inter
 gains its optical-size axis (LOOM.md §7), which changes live headings.

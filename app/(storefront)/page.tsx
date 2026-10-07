@@ -22,7 +22,7 @@ export default async function HomePage(props: PageProps<"/">) {
     const base = await kitBaseContext();
     const featured = await getFeaturedProducts();
     const rows = featured.length ? featured : (await getProducts({ sort: "newest" }, { perPage: 8 })).products;
-    return <KitPage kit={live.kit} templates={live.templates} name="index" ctx={{ ...base, products: toKitProducts(rows as never, base.base) }} />;
+    return <KitPage kit={live.kit} templates={live.templates} name="index" ctx={{ ...base, products: toKitProducts(rows as never, base.base) }} preview={isPreview(await props.searchParams)} />;
   }
 
   const page = await getOrCreateHomePage();

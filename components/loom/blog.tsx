@@ -1,5 +1,5 @@
 import { LoomButton, LoomCard, LoomCover, LoomPhoto } from "@/components/loom/primitives";
-import { str, type LoomContext } from "@/components/loom/contract";
+import { href, str, type LoomContext } from "@/components/loom/contract";
 import { KIT } from "@/components/loom/sections/home.schema";
 
 /**
@@ -14,7 +14,7 @@ import { KIT } from "@/components/loom/sections/home.schema";
  *
  * No top rule here — this is the one section of the six without one.
  */
-export function LoomBlog({ data }: { data: Record<string, unknown>; ctx: LoomContext }) {
+export function LoomBlog({ data, ctx }: { data: Record<string, unknown>; ctx: LoomContext }) {
   const photo = str(data, "image");
   return (
     <section className="px-[calc(16*var(--u))] py-[calc(40*var(--u))] md:px-[calc(60*var(--u))] md:pb-[calc(120*var(--u))] md:pt-0">
@@ -43,7 +43,7 @@ export function LoomBlog({ data }: { data: Record<string, unknown>; ctx: LoomCon
               </p>
             </div>
             {str(data, "buttonLabel") && (
-              <LoomButton variant="outline" href={str(data, "buttonLink")} className="min-w-[calc(170*var(--u))]">
+              <LoomButton variant="outline" href={href(data, "buttonLink", ctx)} className="min-w-[calc(170*var(--u))]">
                 {str(data, "buttonLabel")}
               </LoomButton>
             )}

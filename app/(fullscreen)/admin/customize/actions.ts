@@ -8,6 +8,10 @@ import { getSectionSchema } from "@/lib/section-schema";
 import { validateUrl } from "@/lib/url-validation";
 import { getPageTemplate } from "@/lib/page-templates";
 import type { Prisma, SectionType } from "@/lib/generated/prisma/client";
+import { kitFor } from "@/lib/themes/kits";
+import { checkTemplate, isTemplateName } from "@/lib/themes/kit-templates";
+import { isKitRoute } from "@/lib/themes/kit";
+import { invalidateShop } from "@/lib/data/cached";
 
 async function requireAdmin() {
   await requireRole("STAFF");
@@ -227,4 +231,85 @@ export async function duplicatePage(pageId: string): Promise<{ id?: string; erro
   } catch {
     return { error: "Couldn't duplicate that page. Please try again." };
   }
+}
+
+/**
+ * Saves one template of a theme copy that brings its own sections — the
+ * customizer's save for a kit theme (lib/themes/kits.ts).
+ *
+ * Every rule is enforced here, not in the browser: the copy must be this
+ * shop's (the scoped client finds nothing else), it must be on a version that
+ * has a kit, and the template must pass checkTemplate — known section types
+ * only, settings filled through each section's own schema so nothing
+ * undeclared is stored, a singleton once, a page's main section kept. Links
+ * are checked like every other section's, except a theme's own page names
+ * ("route:cart"), which are always valid.
+ *
+ * Sections added in the editor arrive with "new:" ids and leave with real
+ * ones. Only this template is written; the copy's other templates are kept.
+ */
+export async function saveKitTemplate(copyId: string, name: string, sections: DraftSection[]) {
+  await requireAdmin();
+  const client = await db();
+  const copy = await client.installedTheme.findUnique({
+    where: { id: copyId },
+    select: { id: true, themeKey: true, version: true, templates: true },
+  });
+  if (!copy) throw new Error("That theme is not in this shop.");
+  const kit = kitFor(copy.themeKey, copy.version);
+  if (!kit) throw new Error("This version of the theme does not have its own sections.");
+  if (!isTemplateName(name)) throw new Error("No such page in this theme.");
+
+  const withIds = sections.map((s) => ({
+    ...s,
+    id: s.id.startsWith("new:") ? `s${crypto.randomUUID().replace(/-/g, "").slice(0, 16)}` : s.id,
+  }));
+
+  // Links first, by the same rules as the platform's sections.
+  for (const s of withIds) {
+    const def = kit.sections[s.type];
+    if (!def) continue; // checkTemplate refuses it below, with its name
+    const data = (s.data ?? {}) as Record<string, unknown>;
+    const clean = (value: unknown, label: string) => {
+      if (isKitRoute(value)) return String(value).trim();
+      const check = validateUrl(String(value ?? ""), { allowContactSchemes: true });
+      if (!check.ok) throw new Error(`${def.schema.label}, ${label}: ${check.error}`);
+      return check.href;
+    };
+    for (const f of def.schema.fields) if (f.kind === "url") data[f.key] = clean(data[f.key], f.label);
+    if (def.schema.blocks && Array.isArray(data[def.schema.blocks.key])) {
+      data[def.schema.blocks.key] = (data[def.schema.blocks.key] as Record<string, unknown>[]).map((b, i) => {
+        const next = { ...b };
+        for (const f of def.schema.blocks!.fields) {
+          if (f.kind === "url") next[f.key] = clean(b[f.key], `${def.schema.blocks!.label} ${i + 1} · ${f.label}`);
+        }
+        return next;
+      });
+    }
+    s.data = data;
+  }
+
+  const checked = checkTemplate(kit, name, {
+    sections: withIds.map((s) => ({ id: s.id, type: s.type, visible: s.isVisible, data: s.data })),
+  });
+  if (!checked.ok) throw new Error(checked.error);
+
+  const templates = { ...((copy.templates ?? {}) as Record<string, unknown>), [name]: checked.template };
+  await client.installedTheme.update({
+    where: { id: copy.id },
+    data: { templates: templates as Prisma.InputJsonValue },
+  });
+
+  // The storefront reads copies through the per-shop theme cache; without
+  // this the saved page would not show for up to five minutes.
+  invalidateShop(await currentShopId(), "theme");
+  revalidatePath("/admin/customize");
+  revalidatePath("/", "layout");
+
+  return checked.template.sections.map((s) => ({
+    id: s.id,
+    type: s.type,
+    data: s.data,
+    isVisible: s.visible !== false,
+  }));
 }

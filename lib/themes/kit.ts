@@ -133,6 +133,14 @@ export type KitRoutes = {
 };
 export type KitRoute = keyof KitRoutes;
 
+const ROUTE_NAMES = ["home", "collection", "search", "cart", "checkout", "account", "signIn", "wishlist"] as const;
+
+/** Whether a link setting holds one of the shop's own pages by name — "route:cart". */
+export function isKitRoute(value: unknown): boolean {
+  const m = typeof value === "string" ? /^route:(\w+)$/.exec(value.trim()) : null;
+  return !!m && (ROUTE_NAMES as readonly string[]).includes(m[1]);
+}
+
 /**
  * A link setting's value, as a real address. A setting may hold
  * "route:cart" — Shopify's "shopify://…" — so a kit's defaults point at the

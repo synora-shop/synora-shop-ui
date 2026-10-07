@@ -14,6 +14,7 @@ import {
   getSectionSchema,
   isFieldDisabled,
   type BlockSchema,
+  type SectionSchema,
   type SettingField,
 } from "@/lib/section-schema";
 import type { RenderableSection } from "@/components/storefront/sections/render";
@@ -185,8 +186,14 @@ export function SectionSettings({
   section,
   onChange,
   focusField,
+  schema: schemaProp,
 }: {
   section: RenderableSection;
+  /**
+   * The section's schema, when it is not one of the platform's — a theme that
+   * brings its own sections hands its own (lib/themes/kits.ts).
+   */
+  schema?: SectionSchema;
   onChange: (data: Data) => void;
   /**
    * A setting to scroll to and focus, set when the customer right-clicked that
@@ -195,7 +202,7 @@ export function SectionSettings({
    */
   focusField?: { key: string; seq: number } | null;
 }) {
-  const schema = getSectionSchema(section.type);
+  const schema = schemaProp ?? getSectionSchema(section.type);
   const data = (section.data ?? {}) as Data;
   const toast = useToast();
 

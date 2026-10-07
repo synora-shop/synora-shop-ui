@@ -6,6 +6,7 @@ import { ProductGallery } from "@/components/storefront/product-gallery";
 import { getThemeLayout, getKitForRequest } from "@/lib/data/theme";
 import { kitBaseContext, toKitProductPage, toKitProducts } from "@/lib/data/kit-context";
 import { KitPage } from "@/components/storefront/kit-page";
+import { isPreview } from "@/lib/preview-mode";
 import { ProductPurchasePanel } from "@/components/storefront/product-purchase-panel";
 import { EnquiryPanel } from "@/components/storefront/enquiry-panel";
 import { isEnquiryOnly } from "@/lib/product-kind";
@@ -70,7 +71,7 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
       product: toKitProductPage(product as never, currency),
       products: toKitProducts(related as never, base.base),
     };
-    return <KitPage kit={live.kit} templates={live.templates} name="product" ctx={ctx} />;
+    return <KitPage kit={live.kit} templates={live.templates} name="product" ctx={ctx} preview={isPreview(await props.searchParams)} />;
   }
 
   return (

@@ -72,10 +72,15 @@ export function checkTemplate(
     sections.push({ id, type, visible: s.visible !== false, data });
   }
 
-  for (const required of kit.templates[name].sections) {
-    if (kit.sections[required.type]?.schema.singleton && !sections.some((s) => s.type === required.type)) {
-      return { ok: false, error: `${kit.sections[required.type].schema.label} cannot be removed from this page.` };
-    }
+  for (const type of requiredTypes(kit, name)) {
+    const present = sections.find((s) => s.type === type);
+    if (!present) return { ok: false, error: `${kit.sections[type].schema.label} cannot be removed from this page.` };
+    if (present.visible === false) return { ok: false, error: `${kit.sections[type].schema.label} cannot be hidden on this page.` };
   }
   return { ok: true, template: { name: kit.templates[name].name, sections } };
+}
+
+/** The section types a template must keep, shown: the singletons its default carries — its main section. */
+export function requiredTypes(kit: ThemeKit, name: TemplateName): string[] {
+  return kit.templates[name].sections.map((s) => s.type).filter((t) => kit.sections[t]?.schema.singleton);
 }

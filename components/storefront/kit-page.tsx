@@ -2,6 +2,7 @@ import type { KitContext, TemplateName } from "@/lib/themes/kit";
 import { resolveKitSection } from "@/lib/themes/kit";
 import type { ThemeKit } from "@/lib/themes/kits";
 import { templateFor } from "@/lib/themes/kit-templates";
+import { KitLive } from "@/components/storefront/kit-live";
 
 /**
  * One page of a storefront whose theme brings its own sections: the shop's
@@ -17,14 +18,17 @@ export function KitPage({
   templates,
   name,
   ctx,
+  preview = false,
 }: {
   kit: ThemeKit;
   templates: unknown;
   name: TemplateName;
   ctx: KitContext;
+  /** Drawn inside the customizer: live to its drafts. See KitLive. */
+  preview?: boolean;
 }) {
   const template = templateFor(kit, templates, name);
-  return (
+  const drawn = (
     <>
       {template.sections
         .filter((s) => s.visible !== false)
@@ -39,5 +43,12 @@ export function KitPage({
           );
         })}
     </>
+  );
+  return preview ? (
+    <KitLive kitKey={kit.themeKey} name={name} ctx={ctx}>
+      {drawn}
+    </KitLive>
+  ) : (
+    drawn
   );
 }

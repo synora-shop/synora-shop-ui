@@ -6,6 +6,7 @@ import { GRID_CLASSES } from "@/lib/theme-layout";
 import { getThemeLayout, getKitForRequest } from "@/lib/data/theme";
 import { kitBaseContext, toKitProducts } from "@/lib/data/kit-context";
 import { KitPage } from "@/components/storefront/kit-page";
+import { isPreview } from "@/lib/preview-mode";
 import { ProductCard } from "@/components/storefront/product-card";
 import { ProductFilters } from "@/components/storefront/product-filters";
 import { getProducts, getFilterOptions, getCategories, type ProductFilters as Filters } from "@/lib/data/products";
@@ -84,7 +85,7 @@ export default async function CollectionPage(props: PageProps<"/collections/[slu
       products: toKitProducts(products as never, base.base),
       collection: { title: category.name, description: category.description ?? "" },
     };
-    return <KitPage kit={live.kit} templates={live.templates} name="collection" ctx={ctx} />;
+    return <KitPage kit={live.kit} templates={live.templates} name="collection" ctx={ctx} preview={isPreview(sp)} />;
   }
 
   return (

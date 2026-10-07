@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { LOOM_RULE, px } from "@/components/loom/primitives";
-import { str, type LoomContext } from "@/components/loom/contract";
+import { href, str, type LoomContext } from "@/components/loom/contract";
 
 /**
  * Explore by Colors — the title beside a wrapping row of swatch chips, on the
@@ -45,7 +45,7 @@ const WIDTHS: Record<string, { w: number; mw: number }> = {
   "Dark Green": { w: 188, mw: 175 },
 };
 
-export function LoomExploreColors({ data }: { data: Record<string, unknown>; ctx: LoomContext }) {
+export function LoomExploreColors({ data, ctx }: { data: Record<string, unknown>; ctx: LoomContext }) {
   const swatches = (Array.isArray(data.swatches) ? data.swatches : []) as Record<string, unknown>[];
   return (
     <section className="px-[calc(16*var(--u))] md:px-[calc(60*var(--u))]">
@@ -69,7 +69,7 @@ export function LoomExploreColors({ data }: { data: Record<string, unknown>; ctx
             return (
               <a
                 key={`${label}-${n}`}
-                href={str(sw, "link") || "#"}
+                href={href(sw, "link", ctx)}
                 style={w ? px(w) : undefined}
                 className={`flex h-[max(calc(48*var(--u)),40px)] shrink-0 items-center gap-[calc(12*var(--u))] rounded-[200px] border border-[#121212] pl-[calc(12*var(--u))] pr-[calc(12*var(--u))] md:h-[max(calc(57*var(--u)),40px)] ${w ? "min-w-[var(--mw)] md:min-w-[var(--w)]" : "pr-[calc(20*var(--u))]"}`}
               >

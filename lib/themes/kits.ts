@@ -2,7 +2,6 @@ import type { KitSectionDef, KitTemplate, TemplateName } from "@/lib/themes/kit"
 import { LOOM_SECTIONS } from "@/components/loom/sections";
 import * as LOOM from "@/components/loom/templates";
 import { LOOM_TEXT } from "@/components/loom/text";
-import { LoomFrame } from "@/components/loom/frame";
 
 /**
  * The themes that bring their own sections, and from which version.
@@ -26,8 +25,6 @@ export type ThemeKit = {
   templates: Record<TemplateName, KitTemplate>;
   /** The kit's interface words, keyed like Site text. The shop's own Site text wins. */
   text: Record<string, string>;
-  /** Everything a page of this kit sits inside — its fonts, its unit, its `<main>`. */
-  Frame: (props: { children: React.ReactNode }) => React.ReactNode;
 };
 
 export const KITS: ThemeKit[] = [
@@ -50,7 +47,6 @@ export const KITS: ThemeKit[] = [
       footer: LOOM.FOOTER_GROUP,
     },
     text: LOOM_TEXT,
-    Frame: LoomFrame,
   },
 ];
 

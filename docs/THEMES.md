@@ -28,9 +28,49 @@ typography, colour, spacing and arrangement — not in their component trees.
 Duplicating eight components per theme would mean fixing every bug eight times,
 and each new theme would make the next bug worse.
 
-If a theme ever genuinely needs a part nothing else has, that is a new section
-in `lib/section-schema.ts` plus its renderer — and then **every** theme can
-offer it. A theme never owns a component.
+~~If a theme ever genuinely needs a part nothing else has, that is a new
+section in `lib/section-schema.ts` plus its renderer — and then **every** theme
+can offer it. A theme never owns a component.~~
+
+### Reversed 8 October 2026: a theme may own its sections
+
+Decided by Abdul, choosing Shopify's model: **a theme may bring its own
+sections.** The rule above could not make Loom look like the Figma kit, and it
+cannot make any two themes truly different — a palette and three layout
+variants over one shared set of sections is one storefront in several colours.
+
+So a theme may now ship a **kit** (`lib/themes/kits.ts`):
+
+| Piece | What it is |
+| --- | --- |
+| Sections | Its own section types, each a `SectionSchema` the customizer builds its panel from, and a renderer |
+| Templates | What every page is made of by default — home, product, collection, search, cart, checkout, account, sign-in, order, wishlist — and the header and footer groups. Shopify's JSON templates |
+| Text | Its own wording for the interface (Site text keys); the shop's own Site text edits win |
+| Frame | What every page sits in — its fonts, its unit |
+
+What the platform promises every kit is fixed in `lib/themes/kit.ts`: the
+shop's data, already fetched, in set shapes (menus with their dropdowns,
+products, the product, the collection, the cart, the customer, the order, the
+shop's page addresses, its currency). A kit's sections draw only from that and
+their settings — they never fetch — so the same render function serves the
+storefront and the customizer's live preview, and a kit cannot reach anything
+a theme should not. Kits are code Synora ships; there is still no upload.
+
+**A kit starts at a version.** A shop's copy draws from the kit only at that
+version or later; every copy made before records an older version and renders
+exactly as it always has. Loom 1.x is the platform's own storefront in Loom's
+colours; **Loom 2.0.0 is the kit**, and how a shop moves to it is not yet
+decided — the registry still ships 1.0.0, so no live shop changes.
+
+**A merchant's edits live on their copy** — `InstalledTheme.templates`, only
+the templates they changed. A template they never touched is the kit's
+default, so a better default reaches them; one they did touch is theirs.
+Every save passes `checkTemplate` on the server: known section types only,
+settings filled through each section's schema so nothing undeclared is
+stored, a singleton once, a page's main section (the product on the product
+page) never removed or hidden.
+
+Themes without a kit — Kite today — work exactly as below.
 
 ---
 
