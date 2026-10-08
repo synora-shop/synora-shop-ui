@@ -30,6 +30,18 @@ export function LoomOrderView({ data, ctx }: { data: Record<string, unknown>; ct
   const o = ctx.order;
   if (!o) return null;
   const subtotal = o.lines.reduce((n, l) => n + l.price * l.qty, 0);
+  // Say when it comes only where somebody knows.
+  const aside = o.cancelled
+    ? undefined
+    : o.stage < 3
+      ? o.arriving
+        ? o.speed
+          ? tx(ctx, "order.arriving", { date: o.arriving, speed: o.speed.toLowerCase() })
+          : tx(ctx, "order.arrivingOn", { date: o.arriving })
+        : undefined
+      : o.dates[3]
+        ? tx(ctx, "order.deliveredOn", { date: o.dates[3] })
+        : undefined;
 
   return (
     <section className={PAGE_SECTION}>
@@ -39,11 +51,18 @@ export function LoomOrderView({ data, ctx }: { data: Record<string, unknown>; ct
       <LoomPageHeading
         m="order-title"
         eyebrow={tx(ctx, "order.eyebrow", { id: o.id, date: o.placed })}
-        title={tx(ctx, STAGES[o.stage])}
-        aside={o.stage < 3 ? tx(ctx, "order.arriving", { date: o.arriving, speed: o.speed.toLowerCase() }) : tx(ctx, "order.deliveredOn", { date: o.dates[3] })}
+        title={tx(ctx, o.cancelled ? "orderStatus.cancelled" : STAGES[o.stage])}
+        aside={aside}
       />
 
-      {on(data, "showProgress") && (
+      {o.cancelled && <p className={cn(T.body6, "pt-[calc(16*var(--u))] text-[#121212]/80")}>{tx(ctx, "order.cancelledText")}</p>}
+      {o.notice && (
+        <p data-m="order-notice" className={cn(T.body6, "mt-[calc(16*var(--u))] rounded-[calc(24*var(--u))] bg-[#121212]/5 px-[calc(20*var(--u))] py-[calc(16*var(--u))] text-[#121212]/80")}>
+          {o.notice}
+        </p>
+      )}
+
+      {on(data, "showProgress") && !o.cancelled && (
         <ol
           data-m="order-progress"
           className={cn("flex flex-col gap-[calc(16*var(--u))] pt-[calc(24*var(--u))] md:flex-row md:gap-[calc(10*var(--u))] md:pt-[calc(32*var(--u))]", LOOM_RULE)}
@@ -63,9 +82,11 @@ export function LoomOrderView({ data, ctx }: { data: Record<string, unknown>; ct
                 />
                 <span className="flex flex-col">
                   <span className={cn(T.single2, "uppercase", state === "later" ? "text-[#121212]/50" : "text-[#121212]")}>{tx(ctx, s)}</span>
-                  <span className={cn(T.body6, "text-[#121212]/80")}>
-                    {state === "later" ? tx(ctx, "order.expected", { date: o.dates[i] }) : o.dates[i]}
-                  </span>
+                  {o.dates[i] && (
+                    <span className={cn(T.body6, "text-[#121212]/80")}>
+                      {state === "later" ? tx(ctx, "order.expected", { date: o.dates[i] ?? "" }) : o.dates[i]}
+                    </span>
+                  )}
                 </span>
               </li>
             );
@@ -74,12 +95,12 @@ export function LoomOrderView({ data, ctx }: { data: Record<string, unknown>; ct
       )}
 
       <div className="flex flex-wrap gap-[calc(10*var(--u))] pt-[calc(32*var(--u))]">
-        {o.tracking && o.stage < 3 && (
-          <LoomButton href="#" className="min-w-[calc(220*var(--u))]">
+        {o.tracking && o.stage < 3 && !o.cancelled && (
+          <LoomButton href={o.tracking} className="min-w-[calc(220*var(--u))]">
             {str(data, "trackLabel")}
           </LoomButton>
         )}
-        {str(data, "buyAgainLabel") && (
+        {str(data, "buyAgainLabel") && !ctx.live && (
           <LoomButton variant="outline" href={route(ctx, "cart")} className="min-w-[calc(220*var(--u))]">
             {str(data, "buyAgainLabel")}
           </LoomButton>
@@ -98,9 +119,13 @@ export function LoomOrderView({ data, ctx }: { data: Record<string, unknown>; ct
                 </LoomCard>
                 <div className="flex min-w-0 flex-1 items-start justify-between gap-[calc(16*var(--u))]">
                   <div className="min-w-0">
-                    <a href={l.href} className={cn(T.body3, "block text-[#121212] md:text-[max(calc(24*var(--u)),19.2px)]")}>
-                      {l.title}
-                    </a>
+                    {l.href ? (
+                      <a href={l.href} className={cn(T.body3, "block text-[#121212] md:text-[max(calc(24*var(--u)),19.2px)]")}>
+                        {l.title}
+                      </a>
+                    ) : (
+                      <p className={cn(T.body3, "text-[#121212] md:text-[max(calc(24*var(--u)),19.2px)]")}>{l.title}</p>
+                    )}
                     <p className={cn(T.body6, "text-[#121212]/80")}>
                       {l.colour} · {l.size} · × {l.qty}
                     </p>
@@ -113,10 +138,10 @@ export function LoomOrderView({ data, ctx }: { data: Record<string, unknown>; ct
         </div>
 
         <div className="flex flex-col gap-[calc(24*var(--u))] md:w-[calc(606*var(--u))] md:shrink-0">
-          <LoomTotals ctx={ctx} subtotal={subtotal} delivery={o.delivery} />
+          <LoomTotals ctx={ctx} subtotal={subtotal} delivery={o.delivery} discount={o.discount} />
           <div className="grid grid-cols-1 gap-[calc(10*var(--u))] md:grid-cols-2">
-            <Card heading={str(data, "addressHeading")} lines={o.address} />
-            <Card heading={str(data, "paymentHeading")} lines={[o.payment, o.speed]} />
+            {o.address && <Card heading={str(data, "addressHeading")} lines={o.address} />}
+            <Card heading={str(data, "paymentHeading")} lines={o.speed ? [o.payment, o.speed] : [o.payment]} />
           </div>
         </div>
       </div>

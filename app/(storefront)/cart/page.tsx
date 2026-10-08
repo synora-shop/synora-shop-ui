@@ -2,7 +2,7 @@ import { CartPageClient } from "@/components/storefront/cart-page-client";
 import { getSiteText, text } from "@/lib/site-text";
 import { guardStorefront } from "@/lib/maintenance";
 import { getKitForRequest } from "@/lib/data/theme";
-import { kitBaseContext, kitCheckoutTerms } from "@/lib/data/kit-context";
+import { kitBaseContext, kitCheckoutTerms, showsSamples } from "@/lib/data/kit-context";
 import { KitPage } from "@/components/storefront/kit-page";
 import { isPreview } from "@/lib/preview-mode";
 
@@ -16,8 +16,10 @@ export default async function CartPage(props: PageProps<"/cart">) {
   // cart, with the shop's own shipping fee and free-delivery threshold.
   const live = await getKitForRequest();
   if (live) {
-    const ctx = { ...(await kitBaseContext()), checkout: await kitCheckoutTerms() };
-    return <KitPage kit={live.kit} templates={live.templates} name="cart" ctx={ctx} preview={isPreview(await props.searchParams)} />;
+    const preview = isPreview(await props.searchParams);
+    // In the customizer, sample lines stand in while the merchant's own cart is empty.
+    const ctx = { ...(await kitBaseContext()), checkout: await kitCheckoutTerms(), cart: (await showsSamples(preview)) ? live.kit.sample.cart : undefined };
+    return <KitPage kit={live.kit} templates={live.templates} name="cart" ctx={ctx} preview={preview} />;
   }
 
   const siteText = await getSiteText();

@@ -1,10 +1,12 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { signIn, signOut } from "next-auth/react";
+import { signOut } from "next-auth/react";
+import { kitCustomerSignIn } from "@/lib/themes/kit-auth";
 import { useCartStore } from "@/lib/cart-store";
 import { previewDiscount } from "@/app/(storefront)/checkout/actions";
-import { deleteAddress } from "@/app/(storefront)/account/addresses/actions";
+import { addAddress, deleteAddress } from "@/app/(storefront)/account/addresses/actions";
+import { CITIES } from "@/lib/cities";
 import type { KitCartLine, KitProductPage } from "@/lib/themes/kit";
 
 /**
@@ -136,8 +138,7 @@ export async function kitPlaceOrder(payload: {
 
 /** Sign a customer in. False when the email and password do not match. */
 export async function kitSignIn(email: string, password: string): Promise<boolean> {
-  const result = await signIn("credentials", { email, password, redirect: false });
-  return !result?.error;
+  return kitCustomerSignIn(email, password);
 }
 
 /** Create a customer account and sign it in. */
@@ -151,7 +152,9 @@ export async function kitRegister(name: string, email: string, password: string)
     const data = await res.json().catch(() => ({}));
     return { ok: false, error: data.error ?? "The account could not be created." };
   }
-  await signIn("credentials", { email, password, redirect: false });
+  // Created — and signed in, unless that somehow fails, when the customer is
+  // told to sign in rather than shown an account page that sends them there.
+  if (!(await kitCustomerSignIn(email, password))) return { ok: false, error: "Your account was created. Sign in to continue." };
   return { ok: true };
 }
 
@@ -165,4 +168,16 @@ export async function kitDeleteAddress(id: string) {
   const form = new FormData();
   form.set("id", id);
   await deleteAddress(form);
+}
+
+/** Save an address for the signed-in customer. The province follows from the city. */
+export async function kitAddAddress(a: { label: string; line1: string; city: string; postcode: string; phone: string }) {
+  const form = new FormData();
+  form.set("label", a.label || "Home");
+  form.set("line1", a.line1);
+  form.set("city", a.city);
+  form.set("province", CITIES.find((c) => c.name === a.city)?.province ?? "");
+  form.set("postalCode", a.postcode);
+  form.set("phone", a.phone);
+  await addAddress(form);
 }

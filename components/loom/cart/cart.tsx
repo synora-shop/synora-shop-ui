@@ -31,7 +31,8 @@ export function LoomCart({ data, ctx }: { data: Record<string, unknown>; ctx: Lo
   // reference build has no cart behind it, so it plays with its sample lines.
   const real = useKitCart();
   const [demoLines, setDemoLines] = useState<CartLine[]>(ctx.cart ?? []);
-  const live = !!ctx.live;
+  // A real cart, unless it is empty and the customizer handed in sample lines.
+  const live = !!ctx.live && !(real.ready && real.lines.length === 0 && !!ctx.cart?.length);
   const lines = live ? real.lines.map((l) => ({ ...l, href: (ctx.base ?? "") + l.href })) : demoLines;
   const ready = live ? real.ready : true;
   const setQty = (id: string, qty: number) =>
@@ -41,9 +42,9 @@ export function LoomCart({ data, ctx }: { data: Record<string, unknown>; ctx: Lo
   const subtotal = lines.reduce((n, l) => n + l.price * l.qty, 0);
   const count = lines.reduce((n, l) => n + l.qty, 0);
   // The shop's own terms where there is a shop; the kit's sample terms otherwise.
-  const threshold = live ? (ctx.checkout?.freeShippingFrom ?? null) : FREE_DELIVERY_FROM;
+  const threshold = ctx.checkout ? ctx.checkout.freeShippingFrom : FREE_DELIVERY_FROM;
   const short = threshold === null ? 0 : threshold - subtotal;
-  const delivery = live ? (short > 0 || threshold === null ? (ctx.checkout?.shippingFee ?? null) : 0) : short > 0 ? null : 0;
+  const delivery = ctx.checkout ? (short > 0 || threshold === null ? ctx.checkout.shippingFee : 0) : short > 0 ? null : 0;
 
   return (
     <section className="px-[calc(16*var(--u))] pb-[calc(40*var(--u))] md:px-[calc(60*var(--u))] md:pb-[calc(120*var(--u))]">

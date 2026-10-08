@@ -1,3 +1,4 @@
+import { kitAccountPage } from "@/components/storefront/kit-account";
 import { redirect } from "next/navigation";
 import { currentCustomer } from "@/lib/data/customer";
 import { db } from "@/lib/data/shop";
@@ -6,7 +7,10 @@ import { getSiteText, text } from "@/lib/site-text";
 import { AddressList } from "@/components/storefront/address-list";
 import { addAddress } from "./actions";
 
-export default async function AddressesPage() {
+export default async function AddressesPage(props: PageProps<"/account/addresses">) {
+  const kitted = await kitAccountPage("addresses", "/account/addresses", await props.searchParams);
+  if (kitted) return kitted;
+
   const me = await currentCustomer();
   if (!me) redirect("/account/login?callbackUrl=/account/addresses");
 

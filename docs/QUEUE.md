@@ -166,8 +166,20 @@ platform half is built — kits, templates per theme copy
 them, the storefront drawing Loom 2.0.0 for header, home, collection, search,
 product and wishlist (LOOM.md §7).
 
-**Next — stage 2:** cart, checkout, account and order pages drawn by the kit on
-the platform's real cart, checkout and sign-in.
+**Stage 2, built 8 October:** cart, checkout, sign-in, account and order pages
+drawn by Loom on the platform's real cart, order API and customer sign-in,
+with sample data in the customizer (LOOM.md §7).
+
+**Found, not fixed — needs a decision:**
+- **Shoppers cannot sign in on the platform's own storefront pages.**
+  `components/storefront/login-form.tsx` and `register-form.tsx` call the
+  `credentials` provider, which is the merchant's; a shopper's is `customer`
+  and needs the shop. Every shop on a theme without a kit is affected. Loom
+  uses the right one (lib/themes/kit-auth.ts).
+- **An order's page opens from its id alone.** Ids are 5 characters
+  (lib/order-id.ts), about 60 million; `/order-confirmation/<id>` has no
+  sign-in and no rate limit, and the platform's version shows the customer's
+  name, items and total. Loom's version keeps the address to the owner.
 
 **Release, decided 8 October:** there are no merchants, so every Loom copy is
 the new design (the kit starts at 1.0.0; the registry ships 2.0.0). Deploying

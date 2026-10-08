@@ -3,7 +3,10 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { LOOM_RULE, LoomButton, LoomCard, LoomSwipeRow } from "@/components/loom/primitives";
-import { LoomField } from "@/components/loom/commerce";
+import { LoomField, LoomSelectField } from "@/components/loom/commerce";
+import { useRouter } from "next/navigation";
+import { isValidPakistaniPhone } from "@/lib/validation";
+import { kitAddAddress, kitDeleteAddress, kitSignOut } from "@/lib/themes/kit-actions";
 import { money } from "@/components/loom/money";
 import { T } from "@/components/loom/type";
 import { fill, route, str, type LoomContext, type LoomCustomer } from "@/components/loom/contract";
@@ -32,7 +35,7 @@ const CHIP =
   "flex h-[max(calc(50*var(--u)),40px)] shrink-0 items-center whitespace-nowrap rounded-[200px] px-[calc(19*var(--u))] text-[max(calc(14*var(--u)),11.2px)] font-medium uppercase leading-[max(calc(24*var(--u)),19.2px)] tracking-[calc(1*var(--u))]";
 
 export function LoomAccount({ data, ctx }: { data: Record<string, unknown>; ctx: LoomContext }) {
-  const [tab, setTab] = useState<Tab>("orders");
+  const [tab, setTab] = useState<Tab>(ctx.accountTab ?? "orders");
   const me = ctx.customer;
   if (!me) return null;
 
@@ -59,9 +62,15 @@ export function LoomAccount({ data, ctx }: { data: Record<string, unknown>; ctx:
                 {tx(ctx, t.key)}
               </button>
             ))}
-            <a href={route(ctx, "signIn")} className={cn(CHIP, "text-[#121212]/80 underline underline-offset-4")}>
-              {tx(ctx, "account.signOut")}
-            </a>
+            {ctx.live ? (
+              <button type="button" onClick={() => void kitSignOut(route(ctx, "home"))} className={cn(CHIP, "text-[#121212]/80 underline underline-offset-4")}>
+                {tx(ctx, "account.signOut")}
+              </button>
+            ) : (
+              <a href={route(ctx, "signIn")} className={cn(CHIP, "text-[#121212]/80 underline underline-offset-4")}>
+                {tx(ctx, "account.signOut")}
+              </a>
+            )}
           </LoomSwipeRow>
         </nav>
 
@@ -75,7 +84,16 @@ export function LoomAccount({ data, ctx }: { data: Record<string, unknown>; ctx:
   );
 }
 
+const STATE_WORD = {
+  ordered: "orderStatus.ordered",
+  packed: "orderStatus.packed",
+  shipped: "orderStatus.shipped",
+  delivered: "orderStatus.delivered",
+  cancelled: "orderStatus.cancelled",
+} as const;
+
 function Orders({ me, ctx }: { me: LoomCustomer; ctx: LoomContext }) {
+  if (me.orders.length === 0) return <p className={cn(T.body3, "text-[#121212]/80")}>{tx(ctx, "account.noOrders")}</p>;
   return (
     <ul className="flex flex-col">
       {me.orders.map((o, i) => (
@@ -106,9 +124,12 @@ function Orders({ me, ctx }: { me: LoomCustomer; ctx: LoomContext }) {
             <p className={cn(T.body6, "flex items-center gap-[calc(8*var(--u))] text-[#121212]")}>
               <span
                 aria-hidden="true"
-                className={cn("h-[max(calc(8*var(--u)),7px)] w-[max(calc(8*var(--u)),7px)] rounded-full", o.state === "shipped" ? "bg-[#233c6b]" : "bg-[#121212]")}
+                className={cn(
+                  "h-[max(calc(8*var(--u)),7px)] w-[max(calc(8*var(--u)),7px)] rounded-full",
+                  o.state === "shipped" ? "bg-[#233c6b]" : o.state === "cancelled" ? "border border-[#121212]/40" : "bg-[#121212]"
+                )}
               />
-              {tx(ctx, o.state === "shipped" ? "orderStatus.shipped" : "orderStatus.delivered")}
+              {tx(ctx, STATE_WORD[o.state])}
             </p>
             <LoomButton variant="outlineLight" href={o.href} className="min-w-[calc(100*var(--u))]">
               {tx(ctx, "account.view")}
@@ -121,11 +142,19 @@ function Orders({ me, ctx }: { me: LoomCustomer; ctx: LoomContext }) {
 }
 
 function Addresses({ me, ctx }: { me: LoomCustomer; ctx: LoomContext }) {
+  const live = !!ctx.live;
+  const router = useRouter();
   const [list, setList] = useState(me.addresses);
+  const [adding, setAdding] = useState(false);
+  // A real shop's list comes back from the server after every change.
+  const shown = live ? me.addresses : list;
+  const remove = (id: string) =>
+    live ? void kitDeleteAddress(id).then(() => router.refresh()) : setList((l) => l.filter((x) => x.id !== id));
   return (
     <div className="flex flex-col gap-[calc(24*var(--u))]">
+      {shown.length === 0 && !adding && <p className={cn(T.body3, "text-[#121212]/80")}>{tx(ctx, "account.noAddresses")}</p>}
       <div className="grid grid-cols-1 gap-[calc(10*var(--u))] md:grid-cols-2">
-        {list.map((a) => (
+        {shown.map((a) => (
           <div key={a.id} className="flex flex-col gap-[calc(16*var(--u))] rounded-[calc(24*var(--u))] border border-[#e3e3e3] p-[calc(24*var(--u))]">
             <div className="flex items-center justify-between gap-[calc(16*var(--u))]">
               <p className={cn(T.body3, "text-[#121212]")}>{a.label}</p>
@@ -139,10 +168,18 @@ function Addresses({ me, ctx }: { me: LoomCustomer; ctx: LoomContext }) {
               ))}
             </address>
             <div className="flex gap-[calc(24*var(--u))]">
-              <button type="button" className={cn(T.single2, "uppercase text-[#121212] underline underline-offset-4")}>
-                {tx(ctx, "account.edit")}
-              </button>
-              {!a.main && (
+              {/* A real shop can add and remove an address; changing one is not offered yet. */}
+              {!live && (
+                <button type="button" className={cn(T.single2, "uppercase text-[#121212] underline underline-offset-4")}>
+                  {tx(ctx, "account.edit")}
+                </button>
+              )}
+              {live && (
+                <button type="button" onClick={() => remove(a.id)} className={cn(T.single2, "uppercase text-[#121212]/80 underline underline-offset-4")}>
+                  {tx(ctx, "account.removeAddressButton")}
+                </button>
+              )}
+              {!a.main && !live && (
                 <>
                   <button
                     type="button"
@@ -153,7 +190,7 @@ function Addresses({ me, ctx }: { me: LoomCustomer; ctx: LoomContext }) {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setList((l) => l.filter((x) => x.id !== a.id))}
+                    onClick={() => remove(a.id)}
                     className={cn(T.single2, "uppercase text-[#121212]/80 underline underline-offset-4")}
                   >
                     {tx(ctx, "account.removeAddressButton")}
@@ -164,13 +201,96 @@ function Addresses({ me, ctx }: { me: LoomCustomer; ctx: LoomContext }) {
           </div>
         ))}
       </div>
-      <LoomButton variant="outline">{tx(ctx, "account.addAddress")}</LoomButton>
+      {live && adding ? (
+        <NewAddress ctx={ctx} onDone={() => setAdding(false)} />
+      ) : (
+        <LoomButton variant="outline" onClick={() => setAdding(true)}>
+          {tx(ctx, "account.addAddress")}
+        </LoomButton>
+      )}
     </div>
+  );
+}
+
+/** A new address, on a real shop: the checkout's own fields and city list. */
+function NewAddress({ ctx, onDone }: { ctx: LoomContext; onDone: () => void }) {
+  const router = useRouter();
+  const [v, setV] = useState({ label: "", line1: "", city: "", postcode: "", phone: "" });
+  const [errors, setErrors] = useState<Partial<typeof v>>({});
+  const [busy, setBusy] = useState(false);
+  const bind = (k: keyof typeof v) => ({
+    value: v[k],
+    error: errors[k],
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+      setV((x) => ({ ...x, [k]: e.target.value }));
+      if (errors[k]) setErrors((x) => ({ ...x, [k]: undefined }));
+    },
+  });
+  return (
+    <form
+      noValidate
+      data-m="account-new-address"
+      onSubmit={(e) => {
+        e.preventDefault();
+        const next: Partial<typeof v> = {};
+        if (!v.line1.trim()) next.line1 = tx(ctx, "checkout.addressError");
+        if (!v.city) next.city = tx(ctx, "checkout.cityError");
+        if (!isValidPakistaniPhone(v.phone)) next.phone = tx(ctx, "checkout.phoneError");
+        setErrors(next);
+        if (Object.keys(next).length) return;
+        setBusy(true);
+        void kitAddAddress({ ...v, label: v.label.trim() || tx(ctx, "account.addressLabelHint") }).then(() => {
+          router.refresh();
+          onDone();
+        });
+      }}
+      className="grid grid-cols-1 gap-[calc(16*var(--u))] rounded-[calc(24*var(--u))] border border-[#e3e3e3] p-[calc(24*var(--u))] md:grid-cols-2 md:gap-[calc(20*var(--u))]"
+    >
+      <LoomField label={tx(ctx, "account.addressLabel")} placeholder={tx(ctx, "account.addressLabelHint")} className="md:col-span-2" {...bind("label")} />
+      <LoomField label={tx(ctx, "checkout.address")} autoComplete="street-address" className="md:col-span-2" {...bind("line1")} />
+      <LoomSelectField
+        label={tx(ctx, "checkout.city")}
+        autoComplete="address-level2"
+        options={ctx.checkout?.cities ?? []}
+        placeholder={tx(ctx, "checkout.cityPlaceholder")}
+        value={v.city}
+        error={errors.city}
+        onChange={(e) => {
+          setV((x) => ({ ...x, city: e.target.value }));
+          if (errors.city) setErrors((x) => ({ ...x, city: undefined }));
+        }}
+      />
+      <LoomField label={tx(ctx, "checkout.postcode")} autoComplete="postal-code" {...bind("postcode")} />
+      <LoomField label={tx(ctx, "checkout.phone")} type="tel" autoComplete="tel" inputMode="tel" className="md:col-span-2" {...bind("phone")} />
+      <div className="flex flex-wrap gap-[calc(10*var(--u))] md:col-span-2">
+        <LoomButton type="submit" disabled={busy}>
+          {tx(ctx, "account.saveAddress")}
+        </LoomButton>
+        <LoomButton type="button" variant="outline" onClick={onDone}>
+          {tx(ctx, "account.cancel")}
+        </LoomButton>
+      </div>
+    </form>
   );
 }
 
 function Details({ me, ctx }: { me: LoomCustomer; ctx: LoomContext }) {
   const [saved, setSaved] = useState(false);
+  // The platform has no way yet for a customer to change these, so a real
+  // shop shows them as they stand rather than a Save that saves nothing.
+  if (ctx.live) {
+    return (
+      <div className="flex flex-col gap-[calc(20*var(--u))] md:w-[calc(654*var(--u))]">
+        <div className="grid grid-cols-1 gap-[calc(16*var(--u))] md:grid-cols-2 md:gap-[calc(20*var(--u))]">
+          <LoomField label={tx(ctx, "checkout.firstName")} defaultValue={me.firstName} readOnly />
+          <LoomField label={tx(ctx, "checkout.lastName")} defaultValue={me.lastName} readOnly />
+          <LoomField label={tx(ctx, "checkout.email")} defaultValue={me.email} readOnly className="md:col-span-2" />
+          <LoomField label={tx(ctx, "checkout.phone")} defaultValue={me.phone} readOnly className="md:col-span-2" />
+        </div>
+        <p className={cn(T.body6, "text-[#121212]/80")}>{tx(ctx, "account.detailsNote")}</p>
+      </div>
+    );
+  }
   return (
     <form
       noValidate

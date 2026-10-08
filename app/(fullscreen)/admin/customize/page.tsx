@@ -38,6 +38,12 @@ const KIT_PAGES: { name: TemplateName; title: string; path: (productSlug: string
   { name: "product", title: "Product", path: (slug) => (slug ? `/product/${slug}` : "/shop") },
   { name: "search", title: "Search results", path: () => "/shop?q=a" },
   { name: "wishlist", title: "Wishlist", path: () => "/wishlist" },
+  { name: "cart", title: "Cart", path: () => "/cart" },
+  { name: "checkout", title: "Checkout", path: () => "/checkout" },
+  { name: "sign-in", title: "Sign in", path: () => "/account/login" },
+  { name: "account", title: "Account", path: () => "/account" },
+  // The kit's sample order: the merchant has none of their own to open.
+  { name: "order", title: "Order", path: () => "/order-confirmation/sample" },
   { name: "footer", title: "Footer", path: () => "/" },
 ];
 

@@ -12,10 +12,13 @@
  * customizer puts on its own iframe and the page reads straight off its own
  * searchParams — no header, no middleware, nothing to keep in sync.
  *
- * Nothing is gated on it. Preview renders the same sections from the same
- * database rows as the live page; the only difference is that it also listens
- * for edits that only the customizer sends. Someone who types the parameter
- * themselves sees their own storefront, slightly heavier.
+ * Nothing is gated on it alone. Preview renders the same sections from the
+ * same database rows as the live page; the only difference is that it also
+ * listens for edits that only the customizer sends. Someone who types the
+ * parameter themselves sees their own storefront, slightly heavier. The one
+ * thing preview adds — a theme kit's sample account, order and cart, where
+ * the merchant has none — also asks for the shop's own staff session
+ * (showsSamples in lib/data/kit-context.ts).
  */
 
 /** Query parameter the customizer's iframe carries. */

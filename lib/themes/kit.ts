@@ -87,14 +87,30 @@ export type KitOrder = {
   placed: string;
   /** Where it has got to, 0–3: ordered, packed, on its way, delivered. */
   stage: number;
-  /** When each stage happened, or is expected. */
-  dates: [string, string, string, string];
-  arriving: string;
+  /** Called off. The stages are then beside the point. */
+  cancelled?: boolean;
+  /**
+   * When each stage happened, or is expected — null where nobody knows. A
+   * real shop knows only when the order was placed; a kit draws what it has.
+   */
+  dates: [string, string | null, string | null, string | null];
+  /** When it should arrive, or null. */
+  arriving: string | null;
   lines: KitCartLine[];
   delivery: number;
-  speed: string;
-  address: string[];
+  /** Taken off by a discount code. */
+  discount?: { code: string; saving: number } | null;
+  /** How it is coming, when the shop offers a choice; null when it does not. */
+  speed: string | null;
+  /**
+   * Where it is going — null for anyone but the signed-in customer who
+   * placed it, who alone may see a delivery address.
+   */
+  address: string[] | null;
   payment: string;
+  /** What the shop has to say about the payment — waiting on the bank, and so on. */
+  notice?: string;
+  /** A courier's tracking address, or "" when there is none. */
   tracking: string;
 };
 
@@ -107,7 +123,8 @@ export type KitCustomer = {
   orders: {
     id: string;
     date: string;
-    state: "shipped" | "delivered";
+    /** Where it has got to — every state a real order can be in. */
+    state: "ordered" | "packed" | "shipped" | "delivered" | "cancelled";
     total: number;
     items: { title: string; src: string }[];
     href: string;

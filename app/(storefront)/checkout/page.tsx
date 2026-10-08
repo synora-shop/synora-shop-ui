@@ -15,7 +15,7 @@ import { resolveStoreDefaults } from "@/lib/store-defaults";
 import { shopSession } from "@/lib/auth-guard";
 import { currentShopId } from "@/lib/data/shop";
 import { getKitForRequest } from "@/lib/data/theme";
-import { kitBaseContext, kitCheckoutTerms } from "@/lib/data/kit-context";
+import { kitBaseContext, kitCheckoutTerms, showsSamples } from "@/lib/data/kit-context";
 import { KitPage } from "@/components/storefront/kit-page";
 import { isPreview } from "@/lib/preview-mode";
 
@@ -31,8 +31,10 @@ export default async function CheckoutPage(props: PageProps<"/checkout">) {
   const live = await getKitForRequest();
   if (live) {
     await releaseExpiredForShop(await currentShopId()).catch(() => {});
-    const ctx = { ...(await kitBaseContext()), checkout: await kitCheckoutTerms() };
-    return <KitPage kit={live.kit} templates={live.templates} name="checkout" ctx={ctx} preview={isPreview(await props.searchParams)} />;
+    const preview = isPreview(await props.searchParams);
+    // In the customizer, sample lines stand in while the merchant's own cart is empty.
+    const ctx = { ...(await kitBaseContext()), checkout: await kitCheckoutTerms(), cart: (await showsSamples(preview)) ? live.kit.sample.cart : undefined };
+    return <KitPage kit={live.kit} templates={live.templates} name="checkout" ctx={ctx} preview={preview} />;
   }
 
   const [settings, siteText] = await Promise.all([getStoreSettings(), getSiteText()]);

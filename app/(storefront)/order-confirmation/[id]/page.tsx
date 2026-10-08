@@ -10,6 +10,10 @@ import { isHolding } from "@/lib/payments/reservations";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { isGatewayProvider } from "@/lib/payments/providers";
 import { PaymentStatus, type PaymentState } from "@/components/storefront/payment-status";
+import { getKitForRequest } from "@/lib/data/theme";
+import { kitBaseContext, kitOrder, showsSamples } from "@/lib/data/kit-context";
+import { KitPage } from "@/components/storefront/kit-page";
+import { isPreview } from "@/lib/preview-mode";
 
 
 /**
@@ -51,6 +55,15 @@ export default async function OrderConfirmationPage(props: PageProps<"/order-con
   // the same function, with the same rules. It exists as a second path because
   // a notification can be late or lost, and a customer staring at a page should
   // not have to wait for somebody else's retry schedule.
+  // The customizer previews the order page on the kit's sample order.
+  if (id === "sample" && (await showsSamples(isPreview(sp)))) {
+    const kit = await getKitForRequest();
+    if (kit) {
+      const ctx = { ...(await kitBaseContext()), order: kit.kit.sample.order };
+      return <KitPage kit={kit.kit} templates={kit.templates} name="order" ctx={ctx} preview />;
+    }
+  }
+
   if (reference) {
     const ip = await clientIp();
     const limited = await rateLimit("paymentCheck", ip);
@@ -63,7 +76,10 @@ export default async function OrderConfirmationPage(props: PageProps<"/order-con
 
   // Read after the verification, so the page shows the state it just settled
   // rather than the one it arrived with.
-  const order = await (await db()).order.findFirst({ where: { id }, include: { items: true } });
+  const order = await (await db()).order.findFirst({
+    where: { id },
+    include: { items: { include: { product: { select: { slug: true, images: true } } } } },
+  });
   if (!order) notFound();
 
   const online = isGatewayProvider(order.paymentMethod);
@@ -91,6 +107,17 @@ export default async function OrderConfirmationPage(props: PageProps<"/order-con
         : state === "checking"
           ? "Your bank hasn't confirmed this payment. If money has left your account, contact the store with your Order ID and they can check it."
           : "This payment wasn't completed in time and the order was cancelled. Nothing has been charged.";
+
+  // A theme with its own sections draws the order — except a card payment
+  // still waiting on the bank, whose page checks again and offers another try;
+  // that stays the platform's until a kit can do the same.
+  const kit = state === "waiting" || state === "checking" ? null : await getKitForRequest();
+  if (kit) {
+    const base = await kitBaseContext();
+    const notice = state === "manual" ? undefined : statusMessage;
+    const ctx = { ...base, order: await kitOrder(order, notice, base.base) };
+    return <KitPage kit={kit.kit} templates={kit.templates} name="order" ctx={ctx} preview={isPreview(sp)} />;
+  }
 
   return (
     <Container className="py-16">

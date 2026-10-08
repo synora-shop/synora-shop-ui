@@ -1,4 +1,6 @@
-import type { KitSectionDef, KitTemplate, TemplateName } from "@/lib/themes/kit";
+import type { KitContext, KitSectionDef, KitTemplate, TemplateName } from "@/lib/themes/kit";
+import { DEMO_CUSTOMER, DEMO_ORDER } from "@/components/loom/demo";
+import { DEMO_LINES } from "@/components/loom/cart/lines";
 import { LOOM_SECTIONS } from "@/components/loom/sections";
 import * as LOOM from "@/components/loom/templates";
 import { LOOM_TEXT } from "@/components/loom/text";
@@ -25,6 +27,13 @@ export type ThemeKit = {
   templates: Record<TemplateName, KitTemplate>;
   /** The kit's interface words, keyed like Site text. The shop's own Site text wins. */
   text: Record<string, string>;
+  /**
+   * What the live customizer shows where the merchant has none of their own:
+   * they are not a shopper, so they have no account, no orders and no cart,
+   * and a page drawn from nothing has nothing to edit. Never shown to a
+   * customer — only in the customizer's preview.
+   */
+  sample: Required<Pick<KitContext, "customer" | "order" | "cart">>;
 };
 
 export const KITS: ThemeKit[] = [
@@ -36,6 +45,7 @@ export const KITS: ThemeKit[] = [
     // already wear it.
     since: "1.0.0",
     sections: LOOM_SECTIONS,
+    sample: { customer: DEMO_CUSTOMER, order: DEMO_ORDER, cart: DEMO_LINES },
     templates: {
       index: LOOM.HOME,
       product: LOOM.PRODUCT,

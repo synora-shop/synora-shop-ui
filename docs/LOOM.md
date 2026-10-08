@@ -443,21 +443,40 @@ real storefront, from its own data:
 | Search | `/shop?q=` | Loom |
 | Product | `/product/<slug>` | Loom — its real colours, sizes, stock and photographs; Add to cart into the platform's cart. Enquiry-only products keep the platform's page |
 | Wishlist | `/wishlist` | Loom (only kit shops have this page) |
-| Cart, checkout, account, order | | **Stage 2** — the platform's pages, inside Loom's header and footer |
+| Cart | `/cart` | Loom — the platform's cart; the shop's shipping fee and free-delivery threshold |
+| Checkout | `/checkout` | Loom — the platform's order API: the shop's delivery cities, payment methods (with their instructions), one delivery charge, discount codes priced by the server, the platform's phone rule, a signed-in customer's details filled in. A card method leaves for the provider's page |
+| Sign in, register | `/account/login`, `/account/register` | Loom — the platform's **customer** sign-in, run on the server so the shop is the one in the address |
+| Account | `/account`, `/account/orders`, `/account/addresses` | Loom — the latest 20 orders in all six states; addresses added and removed; details shown, not edited |
+| Order | `/order-confirmation/<id>` | Loom — except a card payment still waiting on the bank, which keeps the platform's page (it checks again and offers another try). The delivery address shows only to the signed-in customer who placed it |
 
 Prices are in the shop's currency through the platform's formatter; links go
 through the shop's own addresses (a link setting may say `route:cart`); inside
 a theme demo every link carries the demo's prefix.
 
 **The live customizer edits it.** For a Loom copy the page switcher lists
-Loom's pages (header, home, collection, product, search, wishlist, footer),
+Loom's pages (header, home, collection, product, search, wishlist, cart,
+checkout, sign in, account, order, footer),
 the panel is each section's own settings, sections can be added, hidden,
 reordered and removed — except a page's main section — and the preview redraws
 as you type, the header and footer included. Saving writes the copy's
 template and clears the storefront's cache; the storefront shows it at once.
 
+**Samples in the customizer.** The merchant is not a shopper — no account,
+no orders, no cart — so the kit carries a sample customer, order and cart
+lines (`ThemeKit.sample`), shown in the preview where the merchant has none.
+Only for this shop's own staff: the preview parameter alone is something
+anyone can type (`showsSamples`, lib/data/kit-context.ts). The sample checkout
+still shows the shop's real terms; placing it only pretends.
+
+**A real order knows less than the kit draws.** It records its state and when
+it was placed — no date per stage, no delivery speed, no tracking number — so
+the order format takes those as optional and Loom draws what it is given.
+
 Verified on the local database only: a headline edited and saved in the
-customizer, the storefront showing it.
+customizer, the storefront showing it; an account created, an address added
+and removed, a cash-on-delivery order placed signed in (form filled from the
+account) and as a guest, the order's page with and without the address,
+sign out, a wrong password, sign in; the five new pages swept at 20 widths.
 
 ### Still open
 
@@ -467,8 +486,11 @@ customizer, the storefront showing it.
   edge fades over 40px. Every number is still the file's.
 - **The kit's photographs are 1–10MB PNGs.** Fine for a reference page; the
   ported theme serves them through the platform's image pipeline.
-- **Stage 2:** cart, checkout, account and order on the real storefront, on
-  the platform's real cart, checkout and sign-in.
+- **On a real shop, not yet:** "Forgot password" (the platform has no reset),
+  changing an address or making one the main one, changing one's name or
+  phone, "Buy again" — each hidden rather than offered and doing nothing.
+- **The order page says "Ordered", not "Thank you"** right after checkout; the
+  platform's page thanks by name. A thank-you state is a small addition.
 
 ---
 

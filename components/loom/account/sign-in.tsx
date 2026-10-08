@@ -8,6 +8,7 @@ import { LoomField } from "@/components/loom/commerce";
 import { T } from "@/components/loom/type";
 import type { LoomContext } from "@/components/loom/contract";
 import { tx } from "@/components/loom/text";
+import { kitRegister, kitSignIn } from "@/lib/themes/kit-actions";
 
 /**
  * Sign in, and create an account — one page that turns between the two, so
@@ -20,7 +21,10 @@ import { tx } from "@/components/loom/text";
  */
 export function LoomSignIn({ ctx }: { data: Record<string, unknown>; ctx: LoomContext }) {
   const router = useRouter();
-  const [mode, setMode] = useState<"in" | "up">("in");
+  const live = !!ctx.live;
+  const [mode, setMode] = useState<"in" | "up">(ctx.authMode ?? "in");
+  const [busy, setBusy] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
   const [values, setValues] = useState({ name: "", email: "", password: "" });
   const [errors, setErrors] = useState<Partial<typeof values>>({});
 
@@ -47,7 +51,27 @@ export function LoomSignIn({ ctx }: { data: Record<string, unknown>; ctx: LoomCo
       return;
     }
     // A reference build: there is no account behind this, so arriving is the demo.
-    router.push(ctx.routes.account);
+    if (!live) {
+      router.push(ctx.routes.account);
+      return;
+    }
+    // A real shop: the platform's own sign-in and sign-up (lib/themes/kit-actions.ts).
+    setBusy(true);
+    setServerError(null);
+    const done = (ok: boolean, error?: string) => {
+      if (!ok) {
+        setServerError(error ?? tx(ctx, "account.signInFailed"));
+        setBusy(false);
+        return;
+      }
+      // A full load, so the header and every server-drawn page see the new session.
+      window.location.assign(ctx.afterSignIn || ctx.routes.account);
+    };
+    if (mode === "in") {
+      void kitSignIn(values.email.trim(), values.password).then((ok) => done(ok));
+    } else {
+      void kitRegister(values.name.trim(), values.email.trim(), values.password).then((r) => done(r.ok, r.ok ? undefined : r.error));
+    }
   };
 
   return (
@@ -71,12 +95,17 @@ export function LoomSignIn({ ctx }: { data: Record<string, unknown>; ctx: LoomCo
             autoComplete={mode === "in" ? "current-password" : "new-password"}
             {...bind("password")}
           />
-          {mode === "in" && (
+          {mode === "in" && !live && (
             <a href="#" className={cn(T.small, "self-start text-[#121212]/80 underline underline-offset-4")}>
               {tx(ctx, "account.forgotPassword")}
             </a>
           )}
-          <LoomButton type="submit" data-m="signin-submit" className="mt-[calc(8*var(--u))] w-full min-w-0">
+          {serverError && (
+            <p role="alert" data-m="signin-error" className={cn(T.body6, "text-[#cc3a3a]")}>
+              {serverError}
+            </p>
+          )}
+          <LoomButton type="submit" data-m="signin-submit" className="mt-[calc(8*var(--u))] w-full min-w-0" disabled={busy}>
             {tx(ctx, mode === "in" ? "account.signInButton" : "account.createAccountButton")}
           </LoomButton>
         </form>
@@ -89,6 +118,7 @@ export function LoomSignIn({ ctx }: { data: Record<string, unknown>; ctx: LoomCo
             onClick={() => {
               setMode((m) => (m === "in" ? "up" : "in"));
               setErrors({});
+              setServerError(null);
             }}
           >
             {tx(ctx, mode === "in" ? "account.createOneLink" : "account.signInLink")}

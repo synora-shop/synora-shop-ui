@@ -39,9 +39,13 @@ export function LoomCheckout({ data, ctx }: { data: Record<string, unknown>; ctx
   // On a real shop: the platform's cart, the shop's own terms and the order
   // API (lib/themes/kit-actions.ts), every rule they enforce enforced here
   // too. In the reference build: sample lines and a pretend order.
-  const live = !!ctx.live;
   const terms = ctx.checkout;
   const cart = useKitCart();
+  // In the customizer an empty cart shows sample lines, on the shop's own
+  // terms, and placing the order only pretends.
+  const sampled = !!ctx.live && cart.ready && cart.lines.length === 0 && !!ctx.cart?.length;
+  const live = !!ctx.live && !sampled;
+  const shopTerms = !!terms;
   const router = useRouter();
   const lines: CartLine[] = live ? cart.lines : (ctx.cart ?? []);
   const subtotal = lines.reduce((n, l) => n + l.price * l.qty, 0);
@@ -53,7 +57,7 @@ export function LoomCheckout({ data, ctx }: { data: Record<string, unknown>; ctx
   );
   const [errors, setErrors] = useState<Partial<Form>>({});
   const [speed, setSpeed] = useState<"standard" | "express">("standard");
-  const [pay, setPay] = useState<string>(live ? (terms?.methods[0]?.value ?? "") : "card");
+  const [pay, setPay] = useState<string>(terms ? (terms.methods[0]?.value ?? "") : "card");
   const [placed, setPlaced] = useState<string | null>(null);
   const [discount, setDiscount] = useState<{ code: string; saving: number } | null>(null);
   const [codeInput, setCodeInput] = useState("");
@@ -63,17 +67,17 @@ export function LoomCheckout({ data, ctx }: { data: Record<string, unknown>; ctx
 
   // The shop's one delivery charge, free over its threshold; the demo's
   // sample choice of two speeds.
-  const standard = live
+  const standard = shopTerms
     ? terms && terms.freeShippingFrom !== null && subtotal >= terms.freeShippingFrom
       ? 0
       : (terms?.shippingFee ?? 0)
     : subtotal >= FREE_DELIVERY_FROM
       ? 0
       : 10;
-  const delivery = !live && speed === "express" ? 15 : standard;
+  const delivery = !shopTerms && speed === "express" ? 15 : standard;
   const total = Math.max(0, subtotal + delivery - (discount?.saving ?? 0));
   const method = terms?.methods.find((m) => m.value === pay);
-  const leavesForProvider = live ? !!method?.redirects : pay === "card";
+  const leavesForProvider = shopTerms ? !!method?.redirects : pay === "card";
 
   async function applyCode() {
     const code = codeInput.trim();
@@ -111,11 +115,11 @@ export function LoomCheckout({ data, ctx }: { data: Record<string, unknown>; ctx
       ["phone", tx(ctx, "checkout.phoneError")],
     ] as const) {
       // The platform's order takes a postcode as optional; the demo asks for one.
-      if (live && k === "postcode") continue;
+      if (shopTerms && k === "postcode") continue;
       if (!form[k].trim()) next[k] = msg;
     }
     // The same phone rule the order API holds to — said here, before the trip.
-    if (live && form.phone.trim() && !isValidPakistaniPhone(form.phone)) next.phone = tx(ctx, "checkout.phoneError");
+    if (shopTerms && form.phone.trim() && !isValidPakistaniPhone(form.phone)) next.phone = tx(ctx, "checkout.phoneError");
     setErrors(next);
     if (Object.keys(next).length) {
       // Take the customer to the first thing to fix rather than leaving them
@@ -262,7 +266,7 @@ export function LoomCheckout({ data, ctx }: { data: Record<string, unknown>; ctx
               <LoomField label={tx(ctx, "checkout.firstName")} autoComplete="given-name" {...field("first")} />
               <LoomField label={tx(ctx, "checkout.lastName")} autoComplete="family-name" {...field("last")} />
               <LoomField label={tx(ctx, "checkout.address")} autoComplete="street-address" className="md:col-span-2" {...field("address")} />
-              {live && terms ? (
+              {shopTerms && terms ? (
                 <LoomSelectField
                   label={tx(ctx, "checkout.city")}
                   autoComplete="address-level2"
@@ -283,8 +287,8 @@ export function LoomCheckout({ data, ctx }: { data: Record<string, unknown>; ctx
             </div>
           </Step>
 
-          <Step n={3} title={tx(ctx, live ? "checkout.stepDelivery" : "checkout.stepSpeed")}>
-            {live ? (
+          <Step n={3} title={tx(ctx, shopTerms ? "checkout.stepDelivery" : "checkout.stepSpeed")}>
+            {shopTerms ? (
               // The shop has one delivery charge: a fact to read, not a choice to make.
               <div className="flex items-center gap-[calc(16*var(--u))] rounded-[calc(24*var(--u))] border border-[#e3e3e3] px-[calc(20*var(--u))] py-[calc(16*var(--u))]">
                 <span className="flex min-w-0 flex-1 flex-col">
@@ -314,7 +318,7 @@ export function LoomCheckout({ data, ctx }: { data: Record<string, unknown>; ctx
               value={pay}
               onChange={(v) => setPay(v)}
               options={
-                live && terms
+                shopTerms && terms
                   ? terms.methods.map((m) => ({ value: m.value, title: m.label, note: m.hint }))
                   : [
                       { value: "card", title: tx(ctx, "checkout.card"), note: tx(ctx, "checkout.cardNote") },
@@ -323,7 +327,7 @@ export function LoomCheckout({ data, ctx }: { data: Record<string, unknown>; ctx
               }
             />
             {/* What the shop tells a customer who picks this — its bank details and so on. */}
-            {live && method?.instructions && (
+            {shopTerms && method?.instructions && (
               <p className={cn(T.body6, "whitespace-pre-line rounded-[calc(24*var(--u))] bg-[#121212]/5 px-[calc(20*var(--u))] py-[calc(16*var(--u))] text-[#121212]/80")}>
                 {method.instructions}
               </p>

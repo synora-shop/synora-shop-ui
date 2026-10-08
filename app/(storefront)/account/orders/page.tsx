@@ -1,3 +1,4 @@
+import { kitAccountPage } from "@/components/storefront/kit-account";
 import { redirect } from "next/navigation";
 import { currentCustomer } from "@/lib/data/customer";
 import { StoreLink as Link } from "@/components/storefront/store-link";
@@ -31,6 +32,8 @@ const ORDERS_PER_PAGE = 20;
 
 export default async function OrderHistoryPage(props: PageProps<"/account/orders">) {
   const sp = await props.searchParams;
+  const kitted = await kitAccountPage("orders", "/account/orders", sp);
+  if (kitted) return kitted;
   const page = readPage(sp);
   // Prices in the store's own currency rather than in rupees, which every
   // screen printed regardless of what Settings said.

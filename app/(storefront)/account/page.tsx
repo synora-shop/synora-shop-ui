@@ -1,3 +1,4 @@
+import { kitAccountPage } from "@/components/storefront/kit-account";
 import { redirect } from "next/navigation";
 import { currentCustomer } from "@/lib/data/customer";
 import { StoreLink as Link } from "@/components/storefront/store-link";
@@ -5,7 +6,10 @@ import { auth, signOut } from "@/auth";
 import { Container } from "@/components/ui/container";
 import { getSiteText, text } from "@/lib/site-text";
 
-export default async function AccountPage() {
+export default async function AccountPage(props: PageProps<"/account">) {
+  const kitted = await kitAccountPage("orders", "/account", await props.searchParams);
+  if (kitted) return kitted;
+
   const me = await currentCustomer();
   if (!me) redirect("/account/login?callbackUrl=/account");
   const siteText = await getSiteText();

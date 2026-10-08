@@ -1,9 +1,13 @@
+import { kitSignInPage } from "@/components/storefront/kit-account";
 import { StoreLink as Link } from "@/components/storefront/store-link";
 import { Container } from "@/components/ui/container";
 import { getSiteText, text } from "@/lib/site-text";
 import { RegisterForm } from "@/components/storefront/register-form";
 
-export default async function RegisterPage() {
+export default async function RegisterPage(props: PageProps<"/account/register">) {
+  const kitted = await kitSignInPage("up", await props.searchParams);
+  if (kitted) return kitted;
+
   const siteText = await getSiteText();
 
   return (

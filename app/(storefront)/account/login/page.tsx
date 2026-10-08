@@ -1,10 +1,14 @@
+import { kitSignInPage } from "@/components/storefront/kit-account";
 import { Suspense } from "react";
 import { StoreLink as Link } from "@/components/storefront/store-link";
 import { Container } from "@/components/ui/container";
 import { getSiteText, text } from "@/lib/site-text";
 import { LoginForm } from "@/components/storefront/login-form";
 
-export default async function LoginPage() {
+export default async function LoginPage(props: PageProps<"/account/login">) {
+  const kitted = await kitSignInPage("in", await props.searchParams);
+  if (kitted) return kitted;
+
   const siteText = await getSiteText();
 
   return (

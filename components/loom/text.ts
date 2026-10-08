@@ -140,15 +140,25 @@ export const LOOM_TEXT = {
   "account.makeMain": "Make main",
   "account.removeAddressButton": "Remove",
   "account.addAddress": "Add an address",
+  "account.noOrders": "No orders yet. When you order, it will be here.",
+  "account.noAddresses": "No addresses saved yet.",
+  "account.addressLabel": "Call it",
+  "account.addressLabelHint": "Home",
+  "account.saveAddress": "Save address",
+  "account.cancel": "Cancel",
+  "account.detailsNote": "To change these, get in touch with us.",
   "account.saveDetails": "Save changes",
   "account.saved": "Saved.",
   "orderStatus.ordered": "Ordered",
   "orderStatus.packed": "Packed",
   "orderStatus.shipped": "On its way",
   "orderStatus.delivered": "Delivered",
+  "orderStatus.cancelled": "Cancelled",
   "order.eyebrow": "Order {id} · {date}",
   "order.arriving": "Arriving {date}, {speed}.",
+  "order.arrivingOn": "Arriving {date}.",
   "order.deliveredOn": "Delivered {date}.",
+  "order.cancelledText": "This order was cancelled. If you were charged, it will come back to you.",
   "order.expected": "Expected {date}",
 
   // Sign in
@@ -169,6 +179,7 @@ export const LOOM_TEXT = {
   "account.nameError": "What should we call you?",
   "account.emailError": "That does not look like an email address.",
   "account.passwordError": "Your password.",
+  "account.signInFailed": "That email and password do not match an account here.",
   "account.passwordShortError": "At least eight characters.",
 } as const;
 
