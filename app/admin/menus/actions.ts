@@ -206,6 +206,6 @@ export async function assignMenu(slot: MenuSlot, menuId: string | null): Promise
   });
 
   await revalidateMenus();
-  revalidatePath("/", "layout");
+  revalidatePath("/admin", "layout");
   return {};
 }

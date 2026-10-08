@@ -50,6 +50,6 @@ export async function switchBusinessType(value: string): Promise<{ ok: boolean; 
   // The sidebar, the accent colour, the words on every screen and which theme
   // is in use all follow the type, so the whole admin tree is stale.
   revalidatePath("/admin", "layout");
-  revalidatePath("/", "layout");
+  revalidatePath("/admin", "layout");
   return { ok: true };
 }

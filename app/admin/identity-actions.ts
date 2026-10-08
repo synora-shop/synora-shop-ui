@@ -157,7 +157,7 @@ export async function saveStoreIdentity(
   invalidateShop(shopId, "settings");
   invalidateShop(shopId, "theme");
   revalidatePath("/admin", "layout");
-  revalidatePath("/", "layout");
+  revalidatePath("/admin", "layout");
   return { ok: true, addressMoved };
 }
 

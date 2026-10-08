@@ -46,7 +46,7 @@ export async function upsertMetafield(input: {
   revalidatePath("/admin/metafields");
   // A theme reads these while rendering, so the storefront is stale until the
   // whole tree is revalidated — not just the screen the edit was made on.
-  revalidatePath("/", "layout");
+  revalidatePath("/admin", "layout");
   return { ok: true, message: "Saved." };
 }
 
@@ -66,6 +66,6 @@ export async function removeMetafield(id: string): Promise<Result> {
   });
 
   revalidatePath("/admin/metafields");
-  revalidatePath("/", "layout");
+  revalidatePath("/admin", "layout");
   return { ok: true, message: "Removed." };
 }

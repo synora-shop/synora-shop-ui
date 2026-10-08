@@ -29,6 +29,7 @@ import {
   createPageFromTemplate,
   duplicatePage,
   type DraftSection,
+  type SaveResult,
 } from "@/app/(fullscreen)/admin/customize/actions";
 import { isKitRoute } from "@/lib/themes/kit";
 import { PAGE_TEMPLATES } from "@/lib/page-templates";
@@ -79,6 +80,7 @@ export function Customizer({
   pages,
   page,
   initialSections,
+  revision,
   storeUrl,
   schemas,
   kit,
@@ -86,6 +88,12 @@ export function Customizer({
   pages: CustomizerPage[];
   page: CustomizerPage;
   initialSections: RenderableSection[];
+  /**
+   * The fingerprint of what was stored when the editor opened (lib/revision.ts).
+   * Sent with every save, which is refused if the page changed meanwhile, and
+   * replaced by the one each successful save returns.
+   */
+  revision: string;
   /**
    * The sections this storefront can hold, when its theme brings its own
    * (lib/themes/kits.ts). Absent, it is the platform's shared set.
@@ -109,6 +117,9 @@ export function Customizer({
   storeUrl: string;
 }) {
   const [history, setHistory] = useState<History>({ past: [], present: initialSections, future: [] });
+  const revisionRef = useRef(revision);
+  /** The last edit's section and time — typing in one field is one undo step, not one per letter. */
+  const lastEdit = useRef<{ key: string; at: number } | null>(null);
   const [savedSnapshot, setSavedSnapshot] = useState(() => JSON.stringify(initialSections));
   const [selectedId, setSelectedId] = useState<string | null>(null);
   /**
@@ -145,6 +156,14 @@ export function Customizer({
   const router = useRouter();
 
   const sections = history.present;
+  /**
+   * The editor's address for another page — on the same theme copy. Without
+   * `copy` the next page opened on the *live* copy, so a merchant editing an
+   * unpublished copy switched page and went on editing, and saving, the live
+   * shop.
+   */
+  const editorHref = (pageId: string) =>
+    `/admin/customize?page=${encodeURIComponent(pageId)}${kit ? `&copy=${encodeURIComponent(kit.copyId)}` : ""}`;
   // The platform's sections, or the theme's own. Every label, default and
   // panel below reads through these, so the editor is the same editor for both.
   const S = schemas ?? SECTION_SCHEMAS;
@@ -201,9 +220,21 @@ export function Customizer({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- S and kit are fixed for the life of the editor
   }, [sections]);
 
-  /** Every mutation goes through here so undo/redo covers all of them. */
-  const commit = useCallback((next: RenderableSection[]) => {
-    setHistory((h) => ({ past: [...h.past, h.present].slice(-50), present: next, future: [] }));
+  /**
+   * Every mutation goes through here so undo/redo covers all of them.
+   *
+   * `coalesce` names the thing being edited. Edits to the same thing less
+   * than a second and a half apart replace the present rather than stacking
+   * on it: typing a headline was one undo step per letter, and with fifty
+   * steps kept, undo reached back about one sentence.
+   */
+  const commit = useCallback((next: RenderableSection[], coalesce?: string) => {
+    const now = Date.now();
+    const merge = !!coalesce && lastEdit.current?.key === coalesce && now - lastEdit.current.at < 1500;
+    lastEdit.current = coalesce ? { key: coalesce, at: now } : null;
+    setHistory((h) =>
+      merge ? { ...h, present: next, future: [] } : { past: [...h.past, h.present].slice(-50), present: next, future: [] }
+    );
     setSaveState("idle");
   }, []);
 
@@ -286,7 +317,7 @@ export function Customizer({
 
   // ---- section operations ------------------------------------------------
   function updateSection(id: string, data: Record<string, unknown>) {
-    commit(sections.map((s) => (s.id === id ? { ...s, data } : s)));
+    commit(sections.map((s) => (s.id === id ? { ...s, data } : s)), `data:${id}`);
     setChanged({ sectionId: id, seq: ++seqRef.current });
   }
 
@@ -399,29 +430,56 @@ export function Customizer({
       return;
     }
     setSaveState("saving");
+    // What is sent. Editing goes on while it travels, so the answer is applied
+    // to this, not to whatever is on screen when it comes back.
+    const sent = sections;
+    const payload: DraftSection[] = sent.map((s) => ({
+      id: s.id,
+      type: s.type,
+      data: s.data,
+      isVisible: s.isVisible !== false,
+    }));
+    let result: SaveResult;
     try {
-      const payload: DraftSection[] = sections.map((s) => ({
-        id: s.id,
-        type: s.type,
-        data: s.data,
-        isVisible: s.isVisible !== false,
-      }));
-      const saved = kit ? await saveKitTemplate(kit.copyId, kit.template, payload) : await saveSections(page.id, payload);
-      const normalised: RenderableSection[] = saved.map((s) => ({
-        id: s.id,
-        type: s.type,
-        data: s.data,
-        isVisible: s.isVisible,
-      }));
-      // Replace temp "new:" ids with the real ones, without a reload.
-      setHistory({ past: [], present: normalised, future: [] });
-      setSavedSnapshot(JSON.stringify(normalised));
-      setSaveState("saved");
-      toast.success(`${page.title} saved.`);
-    } catch (error) {
-      setSaveState("error");
-      toast.error(error instanceof Error ? error.message : "Couldn't save. Please try again.");
+      result = kit
+        ? await saveKitTemplate(kit.copyId, kit.template, payload, revisionRef.current)
+        : await saveSections(page.id, payload, revisionRef.current);
+    } catch {
+      // The request itself failed — offline, or the server fell over.
+      result = { ok: false, error: "Couldn't reach the server. Your changes are still here — try again." };
     }
+    if (!result.ok) {
+      setSaveState("error");
+      toast.error(result.error, { blocking: !!result.stale });
+      return;
+    }
+    const saved: RenderableSection[] = result.sections.map((s) => ({
+      id: s.id,
+      type: s.type,
+      data: s.data as RenderableSection["data"],
+      isVisible: s.isVisible,
+    }));
+    revisionRef.current = result.revision;
+    // New sections leave as "new:…" and come back with real ids, in order.
+    const ids = new Map<string, string>();
+    sent.forEach((s, i) => {
+      if (s.id.startsWith("new:") && saved[i]) ids.set(s.id, saved[i].id);
+    });
+    const remap = (list: RenderableSection[]) => list.map((s) => (ids.has(s.id) ? { ...s, id: ids.get(s.id)! } : s));
+    // Matching by position holds only while nothing was dropped on the way
+    // (a section whose type no longer exists is not stored).
+    const aligned = saved.length === sent.length;
+    setHistory((h) =>
+      // Nothing typed meanwhile: show what the server stored (links tidied,
+      // settings filled). Something typed: keep it, with the real ids.
+      h.present === sent || !aligned
+        ? { past: [], present: saved, future: [] }
+        : { past: h.past.map(remap), present: remap(h.present), future: h.future.map(remap) }
+    );
+    setSelectedId((id) => (id && ids.has(id) ? ids.get(id)! : id));
+    setSavedSnapshot(JSON.stringify(saved));
+    setSaveState("saved");
+    toast.success(`${page.title} saved.`);
   }
 
   /** Shared by every route out of the editor: the back button, a link, a page switch. */
@@ -440,7 +498,10 @@ export function Customizer({
   useUnsavedChanges(dirty, confirmLeave);
 
   const { recovered, dismiss: dismissRecovered } = useDraftRecovery<RenderableSection[]>({
-    key: `customizer:${page.id}`,
+    // Per copy as well as per page: a theme's pages have the same names in
+    // every copy, and a draft from one copy restored into another would
+    // overwrite it with a different copy's work.
+    key: `customizer:${kit ? `${kit.copyId}:` : ""}${page.id}`,
     value: sections,
     dirty,
   });
@@ -463,7 +524,7 @@ export function Customizer({
       if (!(await confirmLeave())) return;
     }
     startNavProgress();
-    router.push(`/admin/customize?page=${target.id}`);
+    router.push(editorHref(target.id));
   }
 
   async function handleDiscard() {

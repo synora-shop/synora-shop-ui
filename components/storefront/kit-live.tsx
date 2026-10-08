@@ -6,6 +6,7 @@ import { resolveKitSection } from "@/lib/themes/kit";
 import { PREVIEW_MESSAGE, PREVIEW_READY, PREVIEW_SELECT, type PreviewMessage } from "@/lib/customizer-protocol";
 import type { RenderableSection } from "@/components/storefront/sections/render";
 import { PreviewGuard } from "@/components/storefront/preview-guard";
+import { SectionBoundary } from "@/components/storefront/section-boundary";
 
 /**
  * One template of a kit page, live in the customizer's preview: the server's
@@ -37,16 +38,16 @@ export function KitLive({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [flashId, setFlashId] = useState<string | null>(null);
   const lastSeq = useRef(-1);
+  const loading = useRef<Promise<Record<string, KitSectionDef>> | null>(null);
 
   useEffect(() => {
     async function onMessage(event: MessageEvent) {
       if (event.origin !== window.location.origin) return;
       const msg = event.data as PreviewMessage | undefined;
       if (!msg || typeof msg !== "object" || msg.type !== PREVIEW_MESSAGE || msg.template !== name) return;
-      if (!sections) {
-        const { CLIENT_KITS } = await import("@/lib/themes/kits.client");
-        setSections(CLIENT_KITS[kitKey] ?? {});
-      }
+      // Loaded once, however many drafts arrive while it loads.
+      loading.current ??= import("@/lib/themes/kits.client").then(({ CLIENT_KITS }) => CLIENT_KITS[kitKey] ?? {});
+      setSections(await loading.current);
       setDraft(msg.sections);
       setSelectedId(msg.selectedId ?? null);
       const changed = msg.changed;
@@ -65,7 +66,10 @@ export function KitLive({
     window.addEventListener("message", onMessage);
     window.parent?.postMessage({ type: PREVIEW_READY }, window.location.origin);
     return () => window.removeEventListener("message", onMessage);
-  }, [kitKey, name, sections]);
+    // Mounted once per template: re-subscribing whenever the kit finished
+    // loading also re-announced READY, and the editor answered each one with
+    // a full redraw.
+  }, [kitKey, name]);
 
   // A click on a section selects it in the editor, as on Shopify.
   function onClickCapture(e: React.MouseEvent) {
@@ -103,7 +107,9 @@ export function KitLive({
                 .filter(Boolean)
                 .join(" ") || undefined}
             >
-              <Render data={resolveKitSection(def, s.data as Record<string, unknown>)} ctx={ctx} />
+              <SectionBoundary name={s.type}>
+                <Render data={resolveKitSection(def, s.data as Record<string, unknown>)} ctx={ctx} />
+              </SectionBoundary>
             </div>
           );
         })}

@@ -3,6 +3,8 @@ import { resolveKitSection } from "@/lib/themes/kit";
 import type { ThemeKit } from "@/lib/themes/kits";
 import { templateFor } from "@/lib/themes/kit-templates";
 import { KitLive } from "@/components/storefront/kit-live";
+import { Suspense } from "react";
+import { SectionBoundary } from "@/components/storefront/section-boundary";
 
 /**
  * One page of a storefront whose theme brings its own sections: the shop's
@@ -38,7 +40,11 @@ export function KitPage({
           const Render = def.Render;
           return (
             <div key={s.id} data-kit-section={s.id} className="contents">
-              <Render data={resolveKitSection(def, s.data)} ctx={ctx} />
+              <Suspense fallback={null}>
+                <SectionBoundary name={s.type}>
+                  <Render data={resolveKitSection(def, s.data)} ctx={ctx} />
+                </SectionBoundary>
+              </Suspense>
             </div>
           );
         })}

@@ -110,7 +110,7 @@ export async function updateGlobalEdits(formData: FormData) {
 
   invalidateShop(await currentShopId(), "settings");
   revalidatePath("/admin/settings");
-  revalidatePath("/", "layout");
+  revalidatePath("/admin", "layout");
 }
 
 /**
@@ -143,7 +143,7 @@ export async function saveStoreDefaults(input: StoreDefaults): Promise<{ error?:
   invalidateShop(await currentShopId(), "settings");
   revalidatePath("/admin/store-defaults");
   revalidatePath("/admin", "layout");
-  revalidatePath("/", "layout");
+  revalidatePath("/admin", "layout");
   return {};
 }
 
@@ -181,6 +181,6 @@ export async function savePaymentMethods(input: {
   invalidateShop(sid, "settings");
   revalidatePath("/admin/payments");
   // The checkout and the footer both read this, so the whole public tree goes.
-  revalidatePath("/", "layout");
+  revalidatePath("/admin", "layout");
   return {};
 }

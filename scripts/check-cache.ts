@@ -160,5 +160,24 @@ check(
   "the theme's own values with nothing on top, which is what every shop looked like before the library existed"
 );
 
+// Cache entries are tagged by the route file that rendered them, and every
+// shop shares the route files — so revalidatePath("/", "layout") marked every
+// shop's cached reads stale whenever any merchant saved anything (decided
+// 8 October to remove all 22). A save clears its own shop by tag and, for its
+// own admin screens, "/admin".
+{
+  const offenders: string[] = [];
+  const walk = (dir: string) => {
+    for (const entry of readdirSync(dir)) {
+      const full = join(dir, entry);
+      if (entry === "node_modules" || entry === "generated" || entry.startsWith(".")) continue;
+      if (statSync(full).isDirectory()) walk(full);
+      else if (/\.(ts|tsx)$/.test(entry) && /revalidatePath\(\s*["']\/["']\s*,\s*["']layout["']\s*\)/.test(readFileSync(full, "utf8"))) offenders.push(relative(ROOT, full));
+    }
+  };
+  for (const d of ["app", "lib", "components"]) walk(join(ROOT, d));
+  check("no save marks every shop's cache stale", offenders.length === 0, offenders.join(", "));
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);

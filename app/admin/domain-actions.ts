@@ -206,7 +206,7 @@ export async function revertToAddress(domainId: string): Promise<Result> {
   invalidateShop(me.shop.id, "settings");
   revalidatePath("/admin/domains");
   revalidatePath("/admin", "layout");
-  revalidatePath("/", "layout");
+  revalidatePath("/admin", "layout");
 
   return { ok: true, message: `Your store is back at ${move.to}.` };
 }

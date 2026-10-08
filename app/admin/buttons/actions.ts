@@ -19,7 +19,7 @@ async function requireAdmin() {
 async function revalidateButtons() {
   invalidateShop(await currentShopId(), "buttons");
   revalidatePath("/admin/buttons");
-  revalidatePath("/", "layout");
+  revalidatePath("/admin", "layout");
 }
 
 export type StickyButtonInput = {

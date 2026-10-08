@@ -58,7 +58,7 @@ export async function saveHoldingPage(input: HoldingPage): Promise<Result> {
   revalidatePath("/admin/maintenance");
   // The storefront reads these on every closed request, and the page itself is
   // force-dynamic, but the layout above it is not.
-  revalidatePath("/", "layout");
+  revalidatePath("/admin", "layout");
   return { ok: true, message: "Saved." };
 }
 
@@ -93,7 +93,7 @@ export async function setMaintenanceMode(on: boolean): Promise<Result> {
   invalidateShop(shopId, "settings");
   revalidatePath("/admin/maintenance");
   revalidatePath("/admin/preferences");
-  revalidatePath("/", "layout");
+  revalidatePath("/admin", "layout");
 
   // Turning this off does not necessarily open the store. A paused shop shows
   // the same page for a different reason, and "your store is visible again"

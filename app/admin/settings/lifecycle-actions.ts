@@ -56,7 +56,7 @@ export async function pauseStore(): Promise<Result> {
   });
 
   revalidatePath("/admin/settings");
-  revalidatePath("/", "layout");
+  revalidatePath("/admin", "layout");
   return { ok: true, message: "Your store is paused. Visitors see a notice; you can still work." };
 }
 
@@ -84,7 +84,7 @@ export async function resumeStore(): Promise<Result> {
   });
 
   revalidatePath("/admin/settings");
-  revalidatePath("/", "layout");
+  revalidatePath("/admin", "layout");
   return { ok: true, message: "Your store is open again." };
 }
 
@@ -134,7 +134,7 @@ export async function closeStore(password: string, confirmation: string): Promis
   });
 
   revalidatePath("/admin/settings");
-  revalidatePath("/", "layout");
+  revalidatePath("/admin", "layout");
   return {
     ok: true,
     message: `Your store is closed. Everything is kept for ${RETENTION_DAYS} days if you change your mind.`,

@@ -18,7 +18,7 @@ async function revalidateFonts() {
   invalidateShop(await currentShopId(), "fonts");
   revalidatePath("/admin/fonts");
   revalidatePath("/admin/theme");
-  revalidatePath("/", "layout");
+  revalidatePath("/admin", "layout");
 }
 
 /**

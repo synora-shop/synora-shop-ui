@@ -210,6 +210,6 @@ export async function chooseTheme(copyId: string): Promise<ThemeResult> {
 
   invalidateShop(shop.id, "theme");
   revalidatePath("/admin/theme");
-  revalidatePath("/", "layout");
+  revalidatePath("/admin", "layout");
   return { ok: true, message: `${THEMES[copy.themeKey].name} is now live.` };
 }

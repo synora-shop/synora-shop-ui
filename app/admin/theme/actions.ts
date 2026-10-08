@@ -81,7 +81,7 @@ export async function saveThemeTokens(
 
   invalidateShop(await currentShopId(), "theme");
   revalidatePath("/admin/theme");
-  revalidatePath("/", "layout");
+  revalidatePath("/admin", "layout");
 
   // Both halves back, so the panel's state after a save is exactly what the
   // storefront will render — including any value the validators corrected.
@@ -220,7 +220,7 @@ export async function resetThemeTokens(copyId?: string) {
 
   invalidateShop(await currentShopId(), "theme");
   revalidatePath("/admin/theme");
-  revalidatePath("/", "layout");
+  revalidatePath("/admin", "layout");
 
   // The theme's starting point, not the platform's — which is what the screen
   // said it would be, and what a merchant who picked Atlas expects to see.

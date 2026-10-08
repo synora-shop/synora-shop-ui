@@ -201,6 +201,35 @@ applied on 3 October the same way, with the visits merge before its fix
 repeat views for that visitor fell to 1. Ids are time-ordered cuids, so rare;
 the data then was the demo shops'.
 
+**Customizer and foundations audit, started 8 October** (asked for in five
+turns: function, cost, scale, error handling). Turn 1, fixed:
+- **Every save marked every shop's cache stale.** `revalidatePath("/", "layout")`
+  (22 calls, 14 files) invalidates entries by route file, and every shop
+  shares the route files. Now `/admin` only; each save already clears its own
+  shop by tag. `check:cache` refuses the old call.
+- **Save errors never reached merchants in production.** The customizer's
+  saves threw, and Next hides thrown server-action messages in production.
+  They now return `{ ok, error }`.
+- **Two editors, last save silently won.** Saves carry a fingerprint of what
+  was opened (lib/revision.ts) and are refused, with an explanation, when the
+  page changed meanwhile.
+- **A Loom save could erase another page's save** (the copy's templates were
+  rewritten whole from what was read). Now one `jsonb_set` of that template,
+  guarded in the same statement.
+- **Typing during a save was thrown away**; now kept, with real ids mapped in.
+- **Switching page on a non-live copy jumped to the live copy**, and draft
+  recovery was shared between copies; both now carry the copy.
+- **Undo** stepped per keystroke (fifty kept); a burst of typing is one step.
+- **Platform-page saves** wrote every section; now only the changed ones.
+- **One broken section blanked the page** (storefront and preview); each is
+  now isolated (components/storefront/section-boundary.tsx).
+- **The editor loaded every copy's templates** and re-rendered itself after
+  each save; now only the edited copy, and no re-render.
+
+Still to do: a browser test of a platform (non-kit) page save; the other admin
+actions that still throw; per-request query counts on the storefront; preview
+message size; size limits on what a save accepts; a concurrency load test.
+
 **Theme store, compared 8 October with how he described it** (Shopify's
 model, themes on Synora's servers, users install into their panel):
 - Matches: themes are code on our servers, never in a user's storage; Add in

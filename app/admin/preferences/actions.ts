@@ -42,6 +42,6 @@ export async function saveVisibility(input: Visibility): Promise<{ error?: strin
   revalidatePath("/admin/preferences");
   // The storefront reads all four on every request, and robots.txt reads one of
   // them, so the whole public tree has to be let go of — not just this screen.
-  revalidatePath("/", "layout");
+  revalidatePath("/admin", "layout");
   return {};
 }

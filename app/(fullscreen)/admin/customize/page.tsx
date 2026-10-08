@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { canonicalUrl, currentShop, currentShopId, db } from "@/lib/data/shop";
+import { revisionOf } from "@/lib/revision";
 import { liveCopyOf } from "@/lib/themes/live";
 import { kitFor } from "@/lib/themes/kits";
 import { requiredTypes, templateFor } from "@/lib/themes/kit-templates";
@@ -126,11 +127,17 @@ export default async function CustomizePageRoute(props: PageProps<"/admin/custom
     menu: pickMenus.map((m) => ({ value: m.id, label: m.name })),
   };
 
-  const sections = await (await db()).section.findMany({
-    where: { pageId: page.id },
-    orderBy: { order: "asc" },
-    select: { id: true, type: true, data: true, isVisible: true },
-  });
+  const [sections, storeUrl] = await Promise.all([
+    client.section.findMany({
+      where: { pageId: page.id },
+      orderBy: { order: "asc" },
+      select: { id: true, type: true, data: true, isVisible: true },
+    }),
+    currentShopId().then(canonicalUrl),
+  ]);
+  // What a save checks it is still replacing — see lib/revision.ts. The same
+  // shape saveSections fingerprints.
+  const revision = revisionOf(sections.map((r) => ({ id: r.id, type: r.type, data: r.data, isVisible: r.isVisible })));
 
   // Keyed on the page, and it is not cosmetic. Every piece of state in the
   // customizer is per page: the section list, the undo stack, the saved
@@ -150,7 +157,8 @@ export default async function CustomizePageRoute(props: PageProps<"/admin/custom
         pages={pages}
         page={page}
         initialSections={sections}
-        storeUrl={await canonicalUrl(await currentShopId())}
+        revision={revision}
+        storeUrl={storeUrl}
       />
     </PickerOptionsProvider>
   );
@@ -169,17 +177,21 @@ async function loadKitEditor(copyId: string | undefined, requested: string | und
       where: { businessType: shop.businessType },
       select: { themeKey: true, installedThemeId: true },
     }),
+    // Every copy's identity, but not its templates: those are the largest
+    // column in the table and only the one being edited is needed.
     client.installedTheme.findMany({
       orderBy: { installedAt: "asc" },
-      select: { id: true, themeKey: true, version: true, templates: true },
+      select: { id: true, themeKey: true, version: true },
     }),
   ]);
-  const copy = (copyId && installed.find((c) => c.id === copyId)) || liveCopyOf(installed, settings);
-  if (!copy) return null;
-  const kit = kitFor(copy.themeKey, copy.version);
+  const chosen = (copyId && installed.find((c) => c.id === copyId)) || liveCopyOf(installed, settings);
+  if (!chosen) return null;
+  const kit = kitFor(chosen.themeKey, chosen.version);
   if (!kit) return null;
 
-  const [firstProduct, menus, pickCollections, pickProducts] = await Promise.all([
+  const [stored, storeUrl, firstProduct, menus, pickCollections, pickProducts] = await Promise.all([
+    client.installedTheme.findUnique({ where: { id: chosen.id }, select: { templates: true } }),
+    canonicalUrl(shop.id),
     client.product.findFirst({
       where: { isActive: true, status: "PUBLISHED", deletedAt: null },
       orderBy: { createdAt: "desc" },
@@ -218,6 +230,7 @@ async function loadKitEditor(copyId: string | undefined, requested: string | und
     return out;
   };
 
+  const copy = { ...chosen, templates: stored?.templates ?? {} };
   const sections = templateFor(kit, copy.templates, name).sections.map((s) => ({
     id: s.id,
     type: s.type,
@@ -240,7 +253,8 @@ async function loadKitEditor(copyId: string | undefined, requested: string | und
         pages={pages}
         page={page}
         initialSections={sections}
-        storeUrl={await canonicalUrl(await currentShopId())}
+        revision={revisionOf(((copy.templates ?? {}) as Record<string, unknown>)[name] ?? null)}
+        storeUrl={storeUrl}
         schemas={schemas}
         kit={{ copyId: copy.id, template: name, required: requiredTypes(kit, name) }}
       />
