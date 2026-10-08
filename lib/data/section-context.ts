@@ -1,7 +1,6 @@
 import { cache } from "react";
 import { db, requireShop } from "@/lib/data/shop";
 import { cachedForShop } from "@/lib/data/cached";
-import { getFeaturedProducts } from "@/lib/data/products";
 import { getStoreSettings } from "@/lib/data/settings";
 import { getThemeLayout } from "@/lib/data/theme";
 import { getSiteText, text } from "@/lib/site-text";
@@ -52,27 +51,7 @@ export const getSectionContext = cache(async (): Promise<SectionContext> => {
     //
     // Dropped by whoever writes a product or a category; check:cache asserts
     // the pairing, the same as for the other six kinds.
-    cachedForShop(shop.id, "catalog", async (t) => ({
-      categories: await t.category.findMany({
-        orderBy: { name: "asc" },
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          image: true,
-          // For the sections that offer to show it. One join, on a list that is
-          // already being fetched — cheaper than a setting that does nothing,
-          // which is what "show how many products" would otherwise have been.
-          _count: { select: { products: true } },
-        },
-      }),
-      featured: await t.product.findMany({
-        where: { isActive: true, isFeatured: true, status: "PUBLISHED", deletedAt: null },
-        include: { variants: true, categories: true },
-        omit: { costPrice: true },
-        take: 8,
-      }),
-    })),
+    storefrontCatalog(shop.id),
     getSiteText(),
     getStoreSettings(),
 
@@ -206,3 +185,47 @@ export const getSectionContext = cache(async (): Promise<SectionContext> => {
     })),
   };
 });
+
+/**
+ * The catalogue rows every visitor sees identically — the category list, the
+ * featured products, the newest — cached per shop for five minutes and dropped
+ * by every product or category save (the "catalog" tag).
+ *
+ * One function for every caller, because cachedForShop keys on the shop and
+ * the kind alone: two different callbacks under "catalog" would be the same
+ * entry, and whichever ran first would hand the other the wrong shape. The
+ * platform's sections and a kit's home page both read it here.
+ *
+ * Stock in these rows can be up to five minutes old (an order does not drop
+ * the tag). Fine for a list; a product page reads its own variants live.
+ */
+export function storefrontCatalog(shopId: string) {
+  return cachedForShop(shopId, "catalog", async (t) => ({
+    categories: await t.category.findMany({
+      orderBy: { name: "asc" },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        image: true,
+        // For the sections that offer to show it. One join, on a list that is
+        // already being fetched — cheaper than a setting that does nothing,
+        // which is what "show how many products" would otherwise have been.
+        _count: { select: { products: true } },
+      },
+    }),
+    featured: await t.product.findMany({
+      where: { isActive: true, isFeatured: true, status: "PUBLISHED", deletedAt: null },
+      include: { variants: true, categories: true },
+      omit: { costPrice: true },
+      take: 8,
+    }),
+    newest: await t.product.findMany({
+      where: { isActive: true, status: "PUBLISHED", deletedAt: null },
+      orderBy: { createdAt: "desc" },
+      include: { variants: true, categories: true },
+      omit: { costPrice: true },
+      take: 8,
+    }),
+  }));
+}

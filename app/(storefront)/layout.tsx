@@ -186,26 +186,6 @@ export default async function StorefrontLayout({ children }: LayoutProps<"/">) {
   // every storefront that had never uploaded one.
   const storeDisplayName = resolveStoreDefaults(settings).storeName;
 
-  // What the footer lists as ways to pay.
-  //
-  // The same rule the checkout uses, so the two cannot disagree: a gateway
-  // still in test mode is named only for the shop's own staff, never for a
-  // customer who could not use it.
-  const shop = await currentShop();
-  const staff = shop ? await shopSession() : null;
-  const footerGateways = shop
-    ? await offerableGateways(
-        shop.id,
-        resolveStoreDefaults(settings).currency,
-        !!staff && staff.shop.id === shop.id
-      )
-    : [];
-  const footerMethods = checkoutMethods(
-    settings.enabledPaymentMethods,
-    settings,
-    footerGateways
-  ).map((m) => m.label);
-
   // A theme that brings its own sections draws its own frame, header and
   // footer — see lib/themes/kits.ts. Everything around them that is the
   // platform's rather than the theme's stays: the currency, the demo's bar,
@@ -241,6 +221,28 @@ export default async function StorefrontLayout({ children }: LayoutProps<"/">) {
   const footerMenu = menuForSlot(menus, settings.footerMenuId, "footer");
   const announcementText = edits.announcementText;
   const announcementBgColor = edits.announcementBgColor;
+
+  // What the footer lists as ways to pay. Read only for the platform's own
+  // footer, below the kit branch: a theme with its own sections draws its own
+  // footer, and every one of its page views paid for this read regardless.
+  //
+  // The same rule the checkout uses, so the two cannot disagree: a gateway
+  // still in test mode is named only for the shop's own staff, never for a
+  // customer who could not use it.
+  const shop = await currentShop();
+  const staff = shop ? await shopSession() : null;
+  const footerGateways = shop
+    ? await offerableGateways(
+        shop.id,
+        resolveStoreDefaults(settings).currency,
+        !!staff && staff.shop.id === shop.id
+      )
+    : [];
+  const footerMethods = checkoutMethods(
+    settings.enabledPaymentMethods,
+    settings,
+    footerGateways
+  ).map((m) => m.label);
 
   return (
     // Prices on the storefront read in the shop's own currency, which is the

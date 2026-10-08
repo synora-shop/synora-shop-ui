@@ -1,3 +1,4 @@
+import { cache } from "react";
 import type { Prisma } from "@/lib/generated/prisma/client";
 import { db, currentShopId } from "@/lib/data/shop";
 import { cachedForShop } from "@/lib/data/cached";
@@ -176,13 +177,17 @@ export async function getProducts(
   return { products, total };
 }
 
-export async function getProductBySlug(slug: string) {
+/**
+ * One product, for its page. Wrapped in cache(): the page's metadata and the
+ * page itself both ask for it, and each asking was its own three queries.
+ */
+export const getProductBySlug = cache(async (slug: string) => {
   return (await db()).product.findFirst({
     where: { slug, isActive: true, status: "PUBLISHED", deletedAt: null },
     include: { variants: true, categories: true },
     omit: { costPrice: true }, // storefront-facing — never leak cost price to the client
   });
-}
+});
 
 export async function getRelatedProducts(categoryIds: string[], excludeProductId: string) {
   return (await db()).product.findMany({

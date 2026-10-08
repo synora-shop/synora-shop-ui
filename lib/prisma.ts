@@ -63,6 +63,14 @@ function createPrismaClient() {
     // that says the database is unreachable beats a page that hangs.
     connectionTimeoutMillis: 10_000,
   });
+  // PRISMA_LOG_QUERIES=1 prints every query with its time — how a page's
+  // database cost is measured (docs/QUEUE.md, the 8 October audit). Off
+  // unless asked for: logging every query costs more than most queries.
+  if (process.env.PRISMA_LOG_QUERIES === "1") {
+    const client = new PrismaClient({ adapter, log: [{ emit: "event", level: "query" }] });
+    client.$on("query", (e) => console.log(`[q] ${e.duration}ms ${e.query.replace(/\s+/g, " ").slice(0, 160)}`));
+    return client;
+  }
   return new PrismaClient({ adapter });
 }
 

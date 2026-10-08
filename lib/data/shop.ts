@@ -260,15 +260,23 @@ export const canonicalHost = cache(async (shopId: string): Promise<string> => {
   // parallel it costs one round trip of waiting either way; the second query
   // is a primary-key lookup on a row this request has almost certainly cached
   // already.
-  const [primary, shop] = await Promise.all([
+  //
+  // The subdomain comes from the shop this request already resolved when it
+  // is the same shop — which on a storefront it always is — so the second
+  // query runs only for some other shop. It ran on every page view, for a
+  // value already in hand.
+  const here = await currentShop();
+  const [primary, subdomain] = await Promise.all([
     prisma.domain.findFirst({
       where: { shopId, isPrimary: true, status: { in: ["VERIFIED", "ACTIVE"] } },
       select: { hostname: true },
     }),
-    prisma.shop.findUnique({ where: { id: shopId }, select: { subdomain: true } }),
+    here?.id === shopId
+      ? here.subdomain
+      : prisma.shop.findUnique({ where: { id: shopId }, select: { subdomain: true } }).then((r) => r?.subdomain),
   ]);
 
-  return primary ? primary.hostname : `${shop?.subdomain ?? "store"}.${PLATFORM_DOMAIN}`;
+  return primary ? primary.hostname : `${subdomain ?? "store"}.${PLATFORM_DOMAIN}`;
 });
 
 /** The canonical base URL for the current shop, for metadata and sitemaps. */

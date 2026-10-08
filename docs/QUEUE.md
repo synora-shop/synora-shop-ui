@@ -237,8 +237,35 @@ Turn 2, fixed:
   (`app/admin/error.tsx` does not cover the `(fullscreen)` group). Added a
   plain storefront one, the customizer's, and `global-error.tsx`.
 
-Still to do: per-request query counts on the storefront; preview message
-size; size limits on what a save accepts; a concurrency load test.
+Turn 3, measured with `PRISMA_LOG_QUERIES=1` (lib/prisma.ts) — warm page,
+queries per view, before → after:
+
+| Page | Before | After |
+| --- | --- | --- |
+| Home | 7 | 2 |
+| Product | 13 | 8 |
+| Shop / search | 8 | 6 |
+| Checkout | 6 | 4 |
+| Cart | 5 | 3 |
+| Wishlist, sign in | 4 | 2 |
+
+- Loom's home read featured products, their variants and categories on every
+  view; now the shop's cached catalogue (`storefrontCatalog`, one function for
+  every caller — the cache keys on shop and kind alone), with `newest` added.
+- Every storefront page read the payment gateways for the platform footer,
+  before branching to Loom's, which shows none; now only the platform footer.
+- The shop's address read the shop row again; now the request's own.
+- A product was read twice per view (title and page); now once (`cache()`).
+- **`/api/auth/session` on every page load and tab focus**, for every visitor
+  (17 calls opening the editor): a next-auth SessionProvider nothing read.
+  Removed; signIn/signOut work without it.
+
+Left as is, deliberately: the shop and domain reads (2 per view) stay live —
+a shop's status and domains must take effect at once, and the domain table
+has twenty writers to keep in step. Prisma's single-query joins would cut the
+remaining product reads by two thirds but are a preview feature.
+
+Still to do: size limits on what a save accepts; a concurrency load test.
 
 **Theme store, compared 8 October with how he described it** (Shopify's
 model, themes on Synora's servers, users install into their panel):

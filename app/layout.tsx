@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { DM_Sans, DM_Mono, Inter, Cormorant_Garamond } from "next/font/google";
-import { AuthSessionProvider } from "@/components/providers/session-provider";
 import { NavProgress } from "@/components/ui/nav-progress";
 import { ToastProvider } from "@/components/ui/toast";
 import { appUrl } from "@/lib/shop-context";
@@ -170,9 +169,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Suspense fallback={null}>
           <NavProgress />
         </Suspense>
-        <ToastProvider>
-          <AuthSessionProvider>{children}</AuthSessionProvider>
-        </ToastProvider>
+        {/* No next-auth SessionProvider. Nothing calls useSession — every
+            session is read on the server — and the provider fetched
+            /api/auth/session on every page load and every tab focus, for
+            every customer on every shop (and again inside each customizer
+            preview). signIn and signOut work without it. Removed 8 October. */}
+        <ToastProvider>{children}</ToastProvider>
       </body>
     </html>
   );
