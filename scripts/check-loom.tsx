@@ -27,6 +27,7 @@
  * Dependency-free beyond React's own server renderer; exits non-zero on failure.
  */
 import { LimitError, limitPage, limitSectionData } from "../lib/section-limits";
+import { newestRanks } from "../lib/themes/kit-age";
 import type { SectionSchema } from "../lib/section-schema";
 import { renderToStaticMarkup } from "react-dom/server";
 import { AppRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
@@ -278,6 +279,19 @@ for (const t of Object.values(TEMPLATES) as LoomTemplate[]) {
   check("limits: a missing setting stays missing (its default fills it when drawn)", !("size" in limitSectionData(schema, {})));
   check("limits: blocks stop at the section's maximum", refuses(() => limitSectionData(schema, { items: [{}, {}, {}] }), /up to 2 items/));
   check("limits: a page over 512 KB is refused", refuses(() => limitPage([{ t: "x".repeat(600 * 1024) }]), /too large to save/));
+}
+
+// 9. Products read through the shop's cache arrive with string dates; the
+//    home page's ordering must take them (it threw on 8 October, live).
+{
+  const rows = [{ id: "old", createdAt: "2026-01-01T00:00:00.000Z" }, { id: "new", createdAt: "2026-06-01T00:00:00.000Z" as string | Date }];
+  let ok = true;
+  try {
+    ok = newestRanks(rows).get(rows[1]) === 0 && newestRanks(rows).get(rows[0]) === 1;
+  } catch {
+    ok = false;
+  }
+  check("cached products (dates as strings) are ordered, not thrown on", ok);
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);

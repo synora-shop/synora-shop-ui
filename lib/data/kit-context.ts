@@ -7,6 +7,7 @@ import { formatMoney } from "@/lib/money";
 import { getCurrency } from "@/lib/data/settings";
 import { productHtmlToText } from "@/lib/product-html";
 import { storeBase } from "@/lib/theme-store";
+import { newestRanks } from "@/lib/themes/kit-age";
 import type { KitCheckout, KitCustomer, KitLink, KitOrder, KitRoutes } from "@/lib/themes/kit";
 import { paymentMethodMeta } from "@/lib/payment-methods";
 import { checkoutLabel, isGatewayProvider } from "@/lib/payments/providers";
@@ -49,7 +50,8 @@ type ProductRow = {
   images: string[];
   basePrice: number;
   salePrice: number | null;
-  createdAt: Date;
+  /** A Date from the database; a string when the rows came through the cache, which stores JSON. */
+  createdAt: Date | string;
   variants: {
     id?: string;
     size: string;
@@ -84,8 +86,8 @@ export function toKitProduct(p: ProductRow, rank: number, base = ""): KitProduct
 
 /** A list of products, newest ranked first. */
 export function toKitProducts(rows: ProductRow[], base = ""): KitProduct[] {
-  const byAge = [...rows].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-  return rows.map((p) => toKitProduct(p, byAge.indexOf(p), base));
+  const ranks = newestRanks(rows);
+  return rows.map((p) => toKitProduct(p, ranks.get(p) ?? 0, base));
 }
 
 /** A product as its own page shows it. */
