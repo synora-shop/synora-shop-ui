@@ -24,6 +24,9 @@ const opt = (name, fallback) => {
 const y = Number(opt("y", 0));
 const hArg = opt("h", null);
 const wait = Number(opt("wait", 3000));
+// Where in the reference to start — to compare a section drawn below a
+// header in the file with the same section further down the built page.
+const refY = Number(opt("refy", 0));
 const [url, widthArg, refPath, out] = argv;
 if (!url || !widthArg || !refPath || !out) {
   console.error("usage: node scripts/figma/diff.mjs <url> <width> <reference.png> <out-prefix> [--y 0] [--h H] [--wait ms]");
@@ -32,7 +35,7 @@ if (!url || !widthArg || !refPath || !out) {
 const W = Number(widthArg);
 const ref = readFileSync(refPath);
 const refH = ref.readUInt32BE(20);
-const H = hArg ? Number(hArg) : refH;
+const H = hArg ? Number(hArg) : refH - refY;
 
 const tab = await (await fetch("http://127.0.0.1:9222/json/new?about:blank", { method: "PUT" })).json();
 const ws = new WebSocket(tab.webSocketDebuggerUrl);
@@ -47,7 +50,9 @@ const send = (method, params = {}) => new Promise((res) => { const i = ++id; pen
 const evaluate = async (expression) => (await send("Runtime.evaluate", { expression, returnByValue: true, awaitPromise: true })).result?.result?.value;
 
 try {
-  await send("Emulation.setDeviceMetricsOverride", { width: W, height: Math.min(H + y, 4000), deviceScaleFactor: 1, mobile: W < 768 });
+  // Never mobile emulation: past the first screen it zooms the page, and a
+  // plain window W wide is exactly where the design's unit is 1px.
+  await send("Emulation.setDeviceMetricsOverride", { width: W, height: 1000, deviceScaleFactor: 1, mobile: false });
   await send("Page.enable");
   await send("Page.navigate", { url });
   await new Promise((r) => setTimeout(r, wait));
@@ -65,8 +70,8 @@ try {
     const load = (src) => new Promise((ok) => { const i = new Image(); i.onload = () => ok(i); i.src = src; });
     const [a, b] = await Promise.all([load("data:image/png;base64,${ref.toString("base64")}"), load("data:image/png;base64,${build.toString("base64")}")]);
     const w = ${W}, h = ${H};
-    const c = (img) => { const k = document.createElement("canvas"); k.width = w; k.height = h; const x = k.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0,0,w,h); x.drawImage(img, 0, ${-y < 0 ? 0 : 0}); return x.getImageData(0, 0, w, h); };
-    const A = c(a), B = c(b);
+    const c = (img, dy) => { const k = document.createElement("canvas"); k.width = w; k.height = h; const x = k.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0,0,w,h); x.drawImage(img, 0, -dy); return x.getImageData(0, 0, w, h); };
+    const A = c(a, ${refY}), B = c(b, 0);
     const diff = document.createElement("canvas"); diff.width = w; diff.height = h; const dx = diff.getContext("2d"); const D = dx.createImageData(w, h);
     let bad = 0, sum = 0;
     for (let i = 0; i < A.data.length; i += 4) {
@@ -78,7 +83,7 @@ try {
     }
     dx.putImageData(D, 0, 0);
     const pair = document.createElement("canvas"); pair.width = w * 2 + 16; pair.height = h; const px = pair.getContext("2d");
-    px.fillStyle = "#e11"; px.fillRect(0,0,pair.width,h); px.drawImage(a, 0, 0); px.drawImage(b, w + 16, 0);
+    px.fillStyle = "#e11"; px.fillRect(0,0,pair.width,h); px.drawImage(a, 0, -${refY}); px.drawImage(b, w + 16, 0);
     return { bad: bad / (w * h), mean: sum / (w * h), diff: diff.toDataURL("image/png").split(",")[1], pair: pair.toDataURL("image/png").split(",")[1] };
   })()`);
   writeFileSync(`${out}-diff.png`, Buffer.from(result.diff, "base64"));

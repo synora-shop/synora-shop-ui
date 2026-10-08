@@ -1,5 +1,5 @@
 import type { KiteTemplate } from "@/components/kite/contract";
-import { KITE_CITIES_DEFAULT } from "@/components/kite/sections/home.schema";
+import { KITE_CITIES_DEFAULT, KITE_NEWSLETTER_DEFAULT } from "@/components/kite/sections/home.schema";
 
 /** Kite's pages as section lists — what a shop starts from before editing (THEMES.md §1). */
 export const HEADER_GROUP: KiteTemplate = {
@@ -12,5 +12,8 @@ export const HOME: KiteTemplate = {
   sections: [
     { id: "cities", type: "KITE_CITIES", data: KITE_CITIES_DEFAULT },
     { id: "limited", type: "KITE_LIMITED", data: {} },
+    { id: "curated", type: "KITE_CURATED", data: {} },
+    { id: "newsletter", type: "KITE_NEWSLETTER", data: KITE_NEWSLETTER_DEFAULT },
+    { id: "about", type: "KITE_ABOUT", data: {} },
   ],
 };

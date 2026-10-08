@@ -30,7 +30,7 @@ const floor = (size: number) => (size <= 24 ? Math.max(11, size * 0.8) : 0);
  * Props for a text element: `<p {...kt("sans", 16, 20)}>`. The second size is
  * the desktop's; one size means both. Merge a className with `cn(kt(...).className, …)`.
  */
-export function kt(f: KiteFamily, phone: number, desktop: number = phone) {
+export function kt(f: KiteFamily, phone: number, desktop: number = phone, { exact = false }: { exact?: boolean } = {}) {
   return {
     className: `kt kt-${f}`,
     style: {
@@ -38,8 +38,10 @@ export function kt(f: KiteFamily, phone: number, desktop: number = phone) {
       "--sd": desktop,
       "--lm": lineHeight(f, phone),
       "--ld": lineHeight(f, desktop),
-      "--fm": `${floor(phone)}px`,
-      "--fd": `${floor(desktop)}px`,
+      // `exact`: no floor — for words the file prints small on purpose, as
+      // part of a photograph, where growing them would change the picture.
+      "--fm": `${exact ? 0 : floor(phone)}px`,
+      "--fd": `${exact ? 0 : floor(desktop)}px`,
     } as React.CSSProperties,
   };
 }

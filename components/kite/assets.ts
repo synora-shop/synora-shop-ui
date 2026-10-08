@@ -16,4 +16,20 @@ export const KITE_IMG = {
   losAngeles: at("ab8154c46ff6a3b9331b2ab8adc3c0310f25ff98"),
   pieceCloak: at("ae520783ab263b34170ec82dfc91d3cb82b750e5"),
   pieceWall: at("dce87de5cf3c53bcde4883753b09c9ea95288237"),
+  // The curated collage, in the file's order of placement.
+  curated1: at("9cd35c42312800bc5a600321ed0b512d64943f4a"),
+  curated2: at("14a79d61126ebd6ebf8c0bd1ebd637dd8b55ea85"),
+  curated3: at("be010254f53b9029ed43f472f1cce3b156de7aa9"),
+  curated4: at("29701f0c70efa399d3193ba0a6be94b2bb0dc8bd"),
+  curated5: at("dc8432a67c78f88e178ae068ab038b9176fc99b6"),
+  curated6: at("dd62b62bb1c092ac85ac52ad7a0defa15f682515"),
+  curated7: at("81da0ecf8494d0d6aa9d111d5830709228c68371"),
+  // The newsletter: the featured story's photograph, then the four stories'.
+  storyMain: at("e274be32adb831ba35c2dda6a8787561b7e400c3"),
+  story2: at("3defd6c656b089a25ca82f5050d1be8bc89d631f"),
+  story3: at("a7e3a8832b22d9b41b2bf54ed59ce8ff45194f71"),
+  story4: at("2654658034826ce17fc9f2d06f6e81722c45896a"),
+  story5: at("462e4828356bf43b2ed32fa75742f520af2f8582"),
+  aboutPortrait: at("bb01f38174f6b9e3fa6478daa642911e98b3f122"),
+  aboutHands: at("c4deaa8870b43dd31bd0d175c39229fd280469e4"),
 } as const;
