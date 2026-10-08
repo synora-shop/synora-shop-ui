@@ -93,6 +93,12 @@ export async function kitPreviewDiscount(code: string, items: { variantId: strin
  * platform's checkout uses, with every rule it enforces. A card payment comes
  * back as a provider's form, which is submitted here: the customer leaves for
  * the provider's own page and no card number is ever typed into the shop's.
+ *
+ * `base` is the storefront's ("/theme-store/loom" inside a theme's demo).
+ * Posted to a bare "/api/orders" from a demo, the request carried no shop, so
+ * the API could not give its own answer ("This is a demo store…"): live it
+ * found no shop and the visitor read "check your connection"; locally it
+ * found another shop and said a variant did not exist (found 8 October).
  */
 export async function kitPlaceOrder(payload: {
   customerName: string;
@@ -106,14 +112,14 @@ export async function kitPlaceOrder(payload: {
   notes?: string;
   discountCode?: string;
   items: { productId: string; variantId: string; quantity: number }[];
-}): Promise<{ ok: true; orderId: string; accessKey: string; leaving: boolean } | { ok: false; error: string }> {
+}, base = ""): Promise<{ ok: true; orderId: string; accessKey: string; leaving: boolean } | { ok: false; error: string }> {
   try {
-    const res = await fetch("/api/orders", {
+    const res = await fetch(`${base}/api/orders`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
     if (!res.ok) return { ok: false, error: data.error ?? "The order could not be placed." };
     if (data.redirect?.url && data.redirect.fields) {
       const form = document.createElement("form");

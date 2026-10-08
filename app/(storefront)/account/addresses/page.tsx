@@ -1,5 +1,5 @@
+import { storeRedirect } from "@/lib/theme-store";
 import { kitAccountPage } from "@/components/storefront/kit-account";
-import { redirect } from "next/navigation";
 import { currentCustomer } from "@/lib/data/customer";
 import { db } from "@/lib/data/shop";
 import { Container } from "@/components/ui/container";
@@ -12,7 +12,7 @@ export default async function AddressesPage(props: PageProps<"/account/addresses
   if (kitted) return kitted;
 
   const me = await currentCustomer();
-  if (!me) redirect("/account/login?callbackUrl=/account/addresses");
+  if (!me) return storeRedirect("/account/login", "/account/addresses");
 
   const [addresses, siteText] = await Promise.all([
     (await db()).address.findMany({

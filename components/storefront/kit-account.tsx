@@ -1,8 +1,8 @@
-import { redirect } from "next/navigation";
 import { getKitForRequest } from "@/lib/data/theme";
 import { kitBaseContext, kitCheckoutTerms, kitCustomer, showsSamples } from "@/lib/data/kit-context";
 import { KitPage } from "@/components/storefront/kit-page";
 import { isPreview } from "@/lib/preview-mode";
+import { storeRedirect } from "@/lib/theme-store";
 
 /**
  * The customer pages — sign in, register, the account and its tabs — drawn by
@@ -29,7 +29,7 @@ export async function kitAccountPage(tab: "orders" | "addresses" | "details", pa
   const preview = isPreview(search);
   // The customizer's merchant is not a shopper: they see the kit's sample.
   const customer = (await kitCustomer(base.base)) ?? ((await showsSamples(preview)) ? live.kit.sample.customer : null);
-  if (!customer) redirect(`/account/login?callbackUrl=${encodeURIComponent(path)}`);
+  if (!customer) return storeRedirect("/account/login", path);
   // The address form chooses from the cities the shop delivers to.
   const ctx = { ...base, customer, accountTab: tab, checkout: await kitCheckoutTerms() };
   return <KitPage kit={live.kit} templates={live.templates} name="account" ctx={ctx} preview={preview} />;

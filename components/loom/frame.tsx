@@ -1,3 +1,4 @@
+import { KitLinks } from "@/components/storefront/kit-links";
 import { Inter } from "next/font/google";
 
 /**
@@ -47,7 +48,7 @@ export function LoomFrame({ children }: { children: React.ReactNode }) {
       className={`${loomInter.variable} min-h-screen bg-white [container-type:inline-size] font-[family-name:var(--font-loom)] text-[#121212] [font-optical-sizing:auto]`}
     >
       <main className="mx-auto w-[calc(375*var(--u))] [--u:min(calc(100cqw/375),1.2px)] md:w-[calc(1440*var(--u))] md:[--u:min(calc(100cqw/1440),1px)]">
-        {children}
+        <KitLinks>{children}</KitLinks>
       </main>
     </div>
   );

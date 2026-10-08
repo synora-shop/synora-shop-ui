@@ -1,5 +1,5 @@
 import { kitAccountPage } from "@/components/storefront/kit-account";
-import { redirect } from "next/navigation";
+import { storeRedirect } from "@/lib/theme-store";
 import { currentCustomer } from "@/lib/data/customer";
 import { StoreLink as Link } from "@/components/storefront/store-link";
 import { auth, signOut } from "@/auth";
@@ -11,7 +11,7 @@ export default async function AccountPage(props: PageProps<"/account">) {
   if (kitted) return kitted;
 
   const me = await currentCustomer();
-  if (!me) redirect("/account/login?callbackUrl=/account");
+  if (!me) return storeRedirect("/account/login", "/account");
   const siteText = await getSiteText();
 
   return (

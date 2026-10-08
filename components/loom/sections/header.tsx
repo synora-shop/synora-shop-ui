@@ -44,10 +44,13 @@ export function LoomHeader({ data, ctx }: { data: Record<string, unknown>; ctx: 
       {on(data, "showUtility") && (
         <div className="hidden h-[calc(64*var(--u))] items-center justify-between border-b border-black/5 px-[calc(60*var(--u))] md:flex">
           <div className="flex items-center gap-[calc(36*var(--u))]">
+            {/* Words, not buttons: the shop has one language and one currency,
+                so there is nothing to choose — as buttons they did nothing when
+                pressed (found 8 October). */}
             {[str(data, "languageLabel"), (str(data, "currencyLabel") || ctx.currency || "Dollar")].filter(Boolean).map((t) => (
-              <button key={t} type="button" className={cn(T.small, "text-black/50")}>
+              <span key={t} className={cn(T.small, "text-black/50")}>
                 {t}
-              </button>
+              </span>
             ))}
           </div>
           <div data-m="navbar-links" className="flex items-center gap-[calc(40*var(--u))]">
@@ -234,7 +237,18 @@ function Drawer({
   }, [onClose]);
 
   return (
-    <div role="dialog" aria-modal="true" aria-label="Menu" data-m="drawer" className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-white lg:hidden">
+    // Following a link or searching closes the menu. Pages now change in
+    // place (KitLinks) instead of reloading, so without this the menu stayed
+    // open over the page it had just opened (found 8 October).
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Menu"
+      data-m="drawer"
+      onClick={(e) => (e.target as Element).closest?.("a[href]") && onClose()}
+      onSubmit={() => onClose()}
+      className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-white lg:hidden"
+    >
       <div className="mx-auto flex w-full flex-col md:w-[calc(1440*var(--u))]">
         <div className="flex h-[calc(94*var(--u))] shrink-0 items-center px-[calc(24*var(--u))] pb-[calc(24*var(--u))] pt-[calc(40*var(--u))] md:h-[calc(80*var(--u))] md:px-[calc(60*var(--u))] md:py-0">
           <a href={route(ctx, "home")} className="whitespace-nowrap text-[max(calc(24*var(--u)),19.2px)] font-extrabold leading-[max(calc(30*var(--u)),24px)] text-black">

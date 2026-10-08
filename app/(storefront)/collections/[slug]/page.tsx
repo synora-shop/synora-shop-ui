@@ -1,5 +1,6 @@
+import { storeRedirect } from "@/lib/theme-store";
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import Image from "next/image";
 import { Container } from "@/components/ui/container";
 import { GRID_CLASSES } from "@/lib/theme-layout";
@@ -60,7 +61,7 @@ export default async function CollectionPage(props: PageProps<"/collections/[slu
     // old bookmark or a search result — send those somewhere useful instead of
     // a dead end, if a redirect has been set up for it.
     const target = await findRedirect(`/collections/${slug}`);
-    if (target) redirect(target);
+    if (target) await storeRedirect(target);
     notFound();
   }
 

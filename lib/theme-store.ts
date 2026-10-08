@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { cache } from "react";
 import { headers } from "next/headers";
 import { DEMO_SHOP_HEADER } from "@/lib/shop-context";
@@ -75,4 +76,20 @@ export async function storeBase(): Promise<string> {
  */
 export function isDemoShop(subdomain: string | null | undefined): boolean {
   return !!subdomain && themeKeyForDemoSubdomain(subdomain) !== null;
+}
+
+/**
+ * A server redirect to one of the storefront's own pages, with the base in
+ * front — so a redirect inside a theme's demo stays inside it.
+ *
+ * A bare `redirect("/account/login")` from `/theme-store/loom/account` left
+ * the demo for the application host's `/account/login`, which is no shop and
+ * answered 404: the demo's Account link went to a broken page (found
+ * 8 October by clicking every link on the live demo). `next` (a return
+ * address, also a storefront path) is prefixed the same way.
+ */
+export async function storeRedirect(path: string, next?: string): Promise<never> {
+  const b = await storeBase();
+  const at = (p: string) => (b && p.startsWith("/") && !p.startsWith("//") ? b + p : p);
+  redirect(next ? `${at(path)}?callbackUrl=${encodeURIComponent(at(next))}` : at(path));
 }

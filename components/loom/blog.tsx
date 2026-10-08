@@ -43,7 +43,7 @@ export function LoomBlog({ data, ctx }: { data: Record<string, unknown>; ctx: Lo
               </p>
             </div>
             {str(data, "buttonLabel") && (
-              <LoomButton variant="outline" href={href(data, "buttonLink", ctx)} className="min-w-[calc(170*var(--u))]">
+              <LoomButton variant="outline" href={href(data, "buttonLink", ctx, "route:collection")} className="min-w-[calc(170*var(--u))]">
                 {str(data, "buttonLabel")}
               </LoomButton>
             )}

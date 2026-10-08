@@ -10,6 +10,7 @@ import { isValidEmail, isValidPakistaniPhone } from "@/lib/validation";
 import type { CheckoutMethod } from "@/lib/payment-methods";
 import { useMoney } from "@/components/ui/currency";
 import { FieldError } from "@/components/ui/primitives";
+import { useStoreBase } from "@/components/storefront/store-link";
 
 type Settings = {
   shippingFee: number;
@@ -142,6 +143,7 @@ export function CheckoutForm({
   /** Set while the browser is handing the customer over to a gateway. */
   const [leavingFor, setLeavingFor] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const storeBase = useStoreBase();
   const [error, setError] = useState<string | null>(null);
 
   // The applied discount, as the server priced it. Held rather than recomputed
@@ -224,7 +226,9 @@ export function CheckoutForm({
     };
 
     try {
-      const res = await fetch("/api/orders", {
+      // With the storefront's base, so inside a theme's demo the API knows the
+      // shop (and refuses the order as a demo's) — see kitPlaceOrder.
+      const res = await fetch(`${storeBase}/api/orders`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

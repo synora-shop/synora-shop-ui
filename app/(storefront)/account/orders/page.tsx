@@ -1,5 +1,5 @@
+import { storeRedirect } from "@/lib/theme-store";
 import { kitAccountPage } from "@/components/storefront/kit-account";
-import { redirect } from "next/navigation";
 import { currentCustomer } from "@/lib/data/customer";
 import { StoreLink as Link } from "@/components/storefront/store-link";
 import { db } from "@/lib/data/shop";
@@ -40,7 +40,7 @@ export default async function OrderHistoryPage(props: PageProps<"/account/orders
   const currency = await getCurrency();
   const money = (n: number) => formatMoney(n, currency);
   const me = await currentCustomer();
-  if (!me) redirect("/account/login?callbackUrl=/account/orders");
+  if (!me) return storeRedirect("/account/login", "/account/orders");
 
   const client = await db();
   const [orders, total, siteText] = await Promise.all([

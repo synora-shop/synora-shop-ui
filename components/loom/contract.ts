@@ -59,8 +59,12 @@ export const on = (d: Record<string, unknown>, k: string) => d[k] !== false;
 /** A setting's words with `{query}` and the like filled in — "Results for “{query}”". */
 export const fill = (text: string, vars: Record<string, string | number>) =>
   text.replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? String(vars[k]) : m));
-/** A link setting as a real address — `route:cart` becomes the shop's cart. */
-export const href = (d: Record<string, unknown>, k: string, ctx: LoomContext) => kitHref(ctx, str(d, k));
+/**
+ * A link setting as a real address — `route:cart` becomes the shop's cart —
+ * or undefined when it goes nowhere, so the element is drawn as no link
+ * rather than one to "#" (which only jumps to the top of the page).
+ */
+export const href = (d: Record<string, unknown>, k: string, ctx: LoomContext, fallback?: string) => kitHref(ctx, str(d, k), fallback) || undefined;
 /** One of the shop's own pages. */
 export const route = (ctx: LoomContext, name: keyof LoomContext["routes"]) => ctx.routes[name];
 export const menu = (d: Record<string, unknown>, k: string, ctx: LoomContext) => ctx.menus[str(d, k)]?.items ?? [];

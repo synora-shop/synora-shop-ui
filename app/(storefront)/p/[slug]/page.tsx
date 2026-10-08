@@ -1,5 +1,6 @@
+import { storeRedirect } from "@/lib/theme-store";
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { getPageBySlug } from "@/lib/data/pages";
 import { findRedirect } from "@/lib/data/redirects";
 import { PageSections } from "@/components/storefront/page-sections";
@@ -22,7 +23,7 @@ export default async function CustomPage(props: PageProps<"/p/[slug]">) {
   if (!page || !page.isPublished) {
     // A page whose slug changed keeps working through its redirect.
     const target = await findRedirect(`/p/${slug}`);
-    if (target) redirect(target);
+    if (target) await storeRedirect(target);
     notFound();
   }
 

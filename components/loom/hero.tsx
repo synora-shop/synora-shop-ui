@@ -101,7 +101,7 @@ export function LoomHero({ data, ctx }: { data: Record<string, unknown>; ctx: Lo
           data-m="hero-photos"
           className="gap-[calc(8*var(--u))] md:h-[calc(770*var(--u))] md:w-[calc(352*var(--u))] md:flex-col md:gap-[calc(10*var(--u))]"
         >
-          <a href={href(data, "card1Link", ctx)} className="contents">
+          <a href={href(data, "card1Link", ctx, "route:collection")} className="contents">
             <LoomCard className={CATEGORY_CARD}>
               {c1 === KIT.outdoor ? (
                 <LoomPhoto src={c1} w={644} h={405} x={-107} y={-24} m={{ w: 321, h: 224, x: -23, y: 0 }} />
@@ -113,7 +113,7 @@ export function LoomHero({ data, ctx }: { data: Record<string, unknown>; ctx: Lo
               </p>
             </LoomCard>
           </a>
-          <a href={href(data, "card2Link", ctx)} className="contents">
+          <a href={href(data, "card2Link", ctx, "route:collection")} className="contents">
             <LoomCard className={CATEGORY_CARD}>
               {c2 === KIT.casual ? (
                 <LoomPhoto src={c2} w={845} h={565} x={-192} y={-98} m={{ w: 329, h: 280, x: -19, y: -14 }} />
@@ -151,7 +151,7 @@ export function LoomHero({ data, ctx }: { data: Record<string, unknown>; ctx: Lo
             </p>
           </div>
           {str(data, "inspirationButtonLabel") && (
-            <LoomButton variant="outline" href={href(data, "inspirationButtonLink", ctx)}>
+            <LoomButton variant="outline" href={href(data, "inspirationButtonLink", ctx, "route:collection")}>
               {str(data, "inspirationButtonLabel")}
             </LoomButton>
           )}
@@ -165,13 +165,13 @@ export function LoomHero({ data, ctx }: { data: Record<string, unknown>; ctx: Lo
               at the rectangle's size they were squashed 12% and 33%. Drawn at
               the photo's own proportions, with the card clipping it, they are
               what the file shows. */}
-          <a href={href(data, "wide1Link", ctx)} className="contents">
+          <a href={href(data, "wide1Link", ctx, "route:collection")} className="contents">
             <LoomCard data-m="hero-wide-1" className="h-[calc(380*var(--u))] w-[calc(479*var(--u))]">
               {w1 === KIT.shirt ? <LoomPhoto src={w1} w={480} h={429.86} /> : <LoomCover src={w1} />}
               <HeroCardCaption text={str(data, "wide1Caption")} />
             </LoomCard>
           </a>
-          <a href={href(data, "wide2Link", ctx)} className="contents">
+          <a href={href(data, "wide2Link", ctx, "route:collection")} className="contents">
             <LoomCard data-m="hero-wide-2" className="h-[calc(380*var(--u))] w-[calc(480*var(--u))]">
               {w2 === KIT.funky ? <LoomPhoto src={w2} w={480} h={720} y={-104} /> : <LoomCover src={w2} />}
               <HeroCardCaption text={str(data, "wide2Caption")} />

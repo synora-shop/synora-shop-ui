@@ -44,21 +44,21 @@ export const heroSchema: SectionSchema = {
     flag("showCards", "Show the two category cards", "The pair beside the main photograph — a row to swipe on the phone."),
     img("card1Image", "First card: photograph", "The upper card.", KIT.outdoor),
     ta("card1Caption", "First card: caption", "Each new line is a new line.", "Outdoor\nActive"),
-    url("card1Link", "First card: link", "Where the card goes."),
+    url("card1Link", "First card: link", "Where the card goes. Empty: the shop."),
     img("card2Image", "Second card: photograph", "The lower card.", KIT.casual),
     ta("card2Caption", "Second card: caption", "Each new line is a new line.", "Casual\nComfort"),
-    url("card2Link", "Second card: link", "Where the card goes."),
+    url("card2Link", "Second card: link", "Where the card goes. Empty: the shop."),
     flag("showInspiration", "Show the second band", "The copy and two wide cards under the main photograph."),
     ta("inspirationHeading", "Second band: heading", "Each new line is a new line.", "Casual\nInspirations"),
     t("inspirationText", "Second band: line", "Under that heading.", "Our favorite combinations for casual outfit that can inspire you to apply on your daily activity."),
     t("inspirationButtonLabel", "Second band: button", "Leave empty to hide it.", "Browse Inpirations"),
-    url("inspirationButtonLink", "Second band: button link", "Where it goes."),
+    url("inspirationButtonLink", "Second band: button link", "Where it goes.", "route:collection"),
     img("wide1Image", "First wide card: photograph", "Desktop only.", KIT.shirt),
     ta("wide1Caption", "First wide card: caption", "Each new line is a new line.", "Say it\nwith Shirt"),
-    url("wide1Link", "First wide card: link", "Where the card goes."),
+    url("wide1Link", "First wide card: link", "Where the card goes. Empty: the shop."),
     img("wide2Image", "Second wide card: photograph", "Desktop only.", KIT.funky),
     ta("wide2Caption", "Second wide card: caption", "Each new line is a new line.", "Funky never\nget old"),
-    url("wide2Link", "Second wide card: link", "Where the card goes."),
+    url("wide2Link", "Second wide card: link", "Where the card goes. Empty: the shop."),
   ],
 };
 
@@ -89,7 +89,7 @@ export const exploreSchema: SectionSchema = {
     fields: [
       t("label", "Name", "The words on the chip.", "Colour"),
       { key: "color", kind: "color", label: "Colour", info: "The swatch's colour. White gets a hairline ring so it does not vanish.", default: "#121212" },
-      url("link", "Link", "Where the chip goes — usually the collection filtered to this colour."),
+      url("link", "Link", "Where the chip goes. Empty: the shop, showing this colour only."),
     ],
   },
 };
@@ -151,6 +151,6 @@ export const blogSchema: SectionSchema = {
     ta("headline", "Headline", "The story's title.", "How to combine your daily outfit to looks fresh and cool."),
     ta("text", "Text", "A line or two under it.", "Maybe you don’t need to buy new clothes to have nice, cool, fresh looking outfit everyday. Maybe what you need is to combine your clothes collections. Mix and match is the key."),
     t("buttonLabel", "Button", "Leave empty to hide it.", "Read More"),
-    url("buttonLink", "Button link", "Where it goes — usually the post."),
+    url("buttonLink", "Button link", "Where it goes — usually the post. Empty: the shop.", "route:collection"),
   ],
 };

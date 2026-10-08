@@ -144,7 +144,7 @@ export function LoomCheckout({ data, ctx }: { data: Record<string, unknown>; ctx
       paymentMethod: pay,
       discountCode: discount?.code,
       items: cart.orderItems(),
-    }).then((result) => {
+    }, ctx.base ?? "").then((result) => {
       if (!result.ok) {
         setServerError(result.error);
         setSubmitting(false);

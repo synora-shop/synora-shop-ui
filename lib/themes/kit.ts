@@ -166,14 +166,30 @@ export function isKitRoute(value: unknown): boolean {
 }
 
 /**
- * A link setting's value, as a real address. A setting may hold
- * "route:cart" — Shopify's "shopify://…" — so a kit's defaults point at the
- * shop's own cart wherever that is; anything else is an address already.
+ * A link setting's value, as a real address — or "" when it goes nowhere.
+ *
+ * A setting may hold "route:cart" — Shopify's "shopify://…" — so a kit's
+ * defaults point at the shop's own cart wherever that is, with anything after
+ * the name kept ("route:collection?color=Pink"). An address of the shop's own
+ * ("/shop") gets the storefront's base in front, so inside a theme's demo it
+ * stays inside the demo.
+ *
+ * Nothing set gives `fallback`, else "". It used to give "#", and a link to
+ * "#" only jumps to the top of the page — on the live demo seven of them
+ * looked like a reload that went nowhere (found 8 October). Callers draw ""
+ * as no link at all (see the kits' `href`).
  */
-export function kitHref(ctx: Pick<KitContext, "routes">, value: string): string {
-  const m = /^route:(\w+)$/.exec(value);
-  if (!m) return value || "#";
-  return ctx.routes[m[1] as KitRoute] ?? "#";
+export function kitHref(ctx: Pick<KitContext, "routes" | "base">, value: string, fallback = ""): string {
+  const v = (value ?? "").trim() || fallback;
+  const m = /^route:(\w+)(.*)$/.exec(v);
+  if (m) {
+    const to = ctx.routes[m[1] as KitRoute];
+    return to ? to + m[2] : "";
+  }
+  if (v === "#") return "";
+  const b = ctx.base ?? "";
+  if (b && v.startsWith("/") && !v.startsWith("//") && v !== b && !v.startsWith(`${b}/`) && !v.startsWith(`${b}?`)) return b + v;
+  return v;
 }
 
 /** What a checkout offers, as the shop has set it up. */

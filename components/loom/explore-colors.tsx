@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { LOOM_RULE, px } from "@/components/loom/primitives";
-import { href, str, type LoomContext } from "@/components/loom/contract";
+import { str, type LoomContext } from "@/components/loom/contract";
+import { kitHref } from "@/lib/themes/kit";
 
 /**
  * Explore by Colors — the title beside a wrapping row of swatch chips, on the
@@ -66,10 +67,16 @@ export function LoomExploreColors({ data, ctx }: { data: Record<string, unknown>
             const label = str(sw, "label");
             const color = str(sw, "color");
             const w = WIDTHS[label];
+            // A chip with no link of its own shows the shop in its colour.
+            // "/loom/search?q=…" was the shipped default until 8 October —
+            // the reference build's address, which on a real shop left the
+            // demo, and a search of product names, which finds no colours.
+            const own = str(sw, "link");
+            const link = own && !own.startsWith("/loom/search") ? own : `route:collection?color=${encodeURIComponent(label)}`;
             return (
               <a
                 key={`${label}-${n}`}
-                href={href(sw, "link", ctx)}
+                href={kitHref(ctx, link)}
                 style={w ? px(w) : undefined}
                 className={`flex h-[max(calc(48*var(--u)),40px)] shrink-0 items-center gap-[calc(12*var(--u))] rounded-[200px] border border-[#121212] pl-[calc(12*var(--u))] pr-[calc(12*var(--u))] md:h-[max(calc(57*var(--u)),40px)] ${w ? "min-w-[var(--mw)] md:min-w-[var(--w)]" : "pr-[calc(20*var(--u))]"}`}
               >
