@@ -171,24 +171,17 @@ export const LOOM_TEXT = {
 
   // Sign in
   "account.signInHeading": "Sign in",
-  "account.signInText": "Welcome back. Your orders, addresses and wishlist are waiting.",
-  "account.createAccountHeading": "Create an account",
-  "account.createAccountText": "Keep your orders in one place and check out faster next time.",
-  "account.name": "Name",
+  "account.signInText": "New here or back again, it is the same: we email you a code. No password to remember.",
   "account.email": "Email",
-  "account.password": "Password",
-  "account.forgotPassword": "Forgot your password?",
+  "account.sendCode": "Email me a code",
+  "account.codeSent": "We sent a 6-digit code to {email}. It works for 10 minutes.",
+  "account.code": "Code",
   "account.signInButton": "Sign in",
-  "account.createAccountButton": "Create account",
-  "account.noAccountPrompt": "New here?",
-  "account.createOneLink": "Create an account",
-  "account.haveAccountPrompt": "Already have an account?",
-  "account.signInLink": "Sign in instead",
-  "account.nameError": "What should we call you?",
+  "account.differentEmail": "Use a different email",
+  "account.sendAgain": "Send a new code",
+  "account.codeResent": "A code is on its way",
   "account.emailError": "That does not look like an email address.",
-  "account.passwordError": "Your password.",
-  "account.signInFailed": "That email and password do not match an account here.",
-  "account.passwordShortError": "At least eight characters.",
+  "account.codeError": "Enter the 6-digit code from the email.",
 } as const;
 
 export type LoomTextKey = keyof typeof LOOM_TEXT;

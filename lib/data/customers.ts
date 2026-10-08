@@ -44,7 +44,7 @@ export async function listCustomers(search?: string): Promise<CustomerSummary[]>
       name: true,
       email: true,
       phone: true,
-      passwordHash: true,
+      signedUpAt: true,
       createdAt: true,
       orders: {
         where: { deletedAt: null, orderStatus: { not: "CANCELLED" } },
@@ -59,7 +59,8 @@ export async function listCustomers(search?: string): Promise<CustomerSummary[]>
       name: c.name,
       email: c.email,
       phone: c.phone,
-      hasAccount: c.passwordHash !== null,
+      // Signed in at least once — the only way a customer makes an account.
+      hasAccount: c.signedUpAt !== null,
       orderCount: c.orders.length,
       totalSpent: c.orders.reduce((sum, o) => sum + o.total, 0),
       lastOrderAt: c.orders.reduce<Date | null>(
@@ -93,7 +94,7 @@ export async function getCustomer(id: string) {
       name: true,
       email: true,
       phone: true,
-      passwordHash: true,
+      signedUpAt: true,
       createdAt: true,
       addresses: true,
       orders: {
@@ -112,6 +113,6 @@ export async function getCustomer(id: string) {
   });
 
   if (!customer) return null;
-  const { passwordHash, ...rest } = customer;
-  return { ...rest, hasAccount: passwordHash !== null };
+  const { signedUpAt, ...rest } = customer;
+  return { ...rest, hasAccount: signedUpAt !== null };
 }

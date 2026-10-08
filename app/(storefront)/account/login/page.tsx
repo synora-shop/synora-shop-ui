@@ -1,12 +1,15 @@
 import { kitSignInPage } from "@/components/storefront/kit-account";
 import { Suspense } from "react";
-import { StoreLink as Link } from "@/components/storefront/store-link";
 import { Container } from "@/components/ui/container";
 import { getSiteText, text } from "@/lib/site-text";
-import { LoginForm } from "@/components/storefront/login-form";
+import { CodeSignInForm } from "@/components/storefront/code-sign-in-form";
 
+/**
+ * A customer's sign-in — also how an account is made: an email, then a code
+ * (decided 8 October; no passwords for customers).
+ */
 export default async function LoginPage(props: PageProps<"/account/login">) {
-  const kitted = await kitSignInPage("in", await props.searchParams);
+  const kitted = await kitSignInPage(await props.searchParams);
   if (kitted) return kitted;
 
   const siteText = await getSiteText();
@@ -14,22 +17,19 @@ export default async function LoginPage(props: PageProps<"/account/login">) {
   return (
     <Container className="py-16">
       <div className="mx-auto max-w-sm">
-        <h1 className="font-serif text-3xl font-semibold text-ink">
-          {text(siteText, "account.signInHeading")}
-        </h1>
+        <h1 className="font-serif text-3xl font-semibold text-ink">{text(siteText, "account.signInHeading")}</h1>
         <Suspense fallback={null}>
-          <LoginForm
-            submitLabel={text(siteText, "account.signInButton")}
-            submittingLabel={text(siteText, "account.signingIn")}
-            invalidCredentialsError={text(siteText, "account.invalidCredentials")}
+          <CodeSignInForm
+            labels={{
+              text: text(siteText, "account.signInText"),
+              sendCode: text(siteText, "account.sendCode"),
+              codeSent: text(siteText, "account.codeSent"),
+              code: text(siteText, "account.code"),
+              signIn: text(siteText, "account.signInButton"),
+              differentEmail: text(siteText, "account.differentEmail"),
+            }}
           />
         </Suspense>
-        <p className="mt-6 text-center text-sm text-ink-soft">
-          {text(siteText, "account.noAccountPrompt")}{" "}
-          <Link href="/account/register" className="text-brand-600 underline-scribble">
-            {text(siteText, "account.createOneLink")}
-          </Link>
-        </p>
       </div>
     </Container>
   );

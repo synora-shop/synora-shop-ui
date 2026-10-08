@@ -115,6 +115,27 @@ export async function sendAdminOtpEmail(to: string, code: string) {
 }
 
 /**
+ * A customer's sign-in code, from the shop they are signing in to.
+ *
+ * Throws on failure, like the admin code: the customer is waiting for it.
+ * Says the shop's name, not Synora's — the customer is the shop's, and may
+ * never have heard of us.
+ */
+export async function sendCustomerCodeEmail(to: string, code: string, shopName: string, minutes: number) {
+  if (!resend) {
+    // Local dev with no Resend key — log the code so sign-in still works.
+    console.log(`[email] Resend not configured, ${shopName} sign-in code for ${to}: ${code}`);
+    return;
+  }
+  await resend.emails.send({
+    from: SECURITY_FROM,
+    to,
+    subject: `${code} is your ${shopName} sign-in code`,
+    text: `Your code to sign in to ${shopName} is ${code}.\n\nIt expires in ${minutes} minutes and works once.\n\nIf you didn't ask for it, you can ignore this email — nobody can sign in without the code.`,
+  });
+}
+
+/**
  * The address links in these emails point back to — the *application* host
  * (sign-in / dashboard / `/merchant/*`), which is not the same as the marketing
  * host or any one shop's storefront.

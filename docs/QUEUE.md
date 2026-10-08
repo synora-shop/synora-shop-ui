@@ -171,13 +171,17 @@ drawn by Loom on the platform's real cart, order API and customer sign-in,
 with sample data in the customizer (LOOM.md §7).
 
 **Found, not fixed — needs a decision:**
-- **Customers cannot sign in on the platform's own storefront pages.** Being
-  replaced: customer sign-in becomes email + one-time code, no password
-  (decided 8 October).
-  `components/storefront/login-form.tsx` and `register-form.tsx` call the
-  `credentials` provider, which is the merchant's; a shopper's is `customer`
-  and needs the shop. Every shop on a theme without a kit is affected. Loom
-  uses the right one (lib/themes/kit-auth.ts).
+- ~~Customers cannot sign in on the platform's own storefront pages.~~
+  **Replaced 8 October, decided by him:** customers sign in with an emailed
+  6-digit code and no password, on every theme — the first sign-in makes the
+  account and joins the orders placed with that email as a guest
+  (`CustomerOtp`, `Customer.signedUpAt`, migration 20261106000000;
+  app/(storefront)/account/sign-in-actions.ts; the "customer" provider in
+  auth.ts). Codes are hashed, last 10 minutes, allow 5 tries and work once;
+  sending is limited per address and per email. The password sign-up page and
+  `/api/register` are gone; `/account/register` forwards to sign-in. The
+  merchant's "has an account" now means "has signed in". Not yet tried in a
+  browser on a theme without a kit (the local shop runs Loom).
 - ~~An order's page opens from its id alone.~~ **Fixed 8 October, Shopify's
   way, decided by him:** every order has a secret key (`Order.accessKey`,
   migration 20261105000000, filled by the database). The checkout, the card

@@ -3,75 +3,81 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LOOM_RULE, LoomButton } from "@/components/loom/primitives";
+import { LoomButton } from "@/components/loom/primitives";
 import { LoomField } from "@/components/loom/commerce";
 import { T } from "@/components/loom/type";
 import type { LoomContext } from "@/components/loom/contract";
 import { tx } from "@/components/loom/text";
-import { kitRegister, kitSignIn } from "@/lib/themes/kit-actions";
+import { kitRequestCode, kitSignInWithCode } from "@/lib/themes/kit-actions";
 
 /**
- * Sign in, and create an account — one page that turns between the two, so
- * somebody who arrives at the wrong one is a click from the right one.
+ * Sign in — which is also how an account is made. An email, then the code
+ * sent to it; no password anywhere (decided 8 October, as Shopify's new
+ * customer accounts). Somebody new and somebody returning do exactly the same
+ * thing, so there is no "create an account" to find.
  *
  * Not in the kit. One column 411 wide — the hero's copy column, the narrowest
- * block of words the kit sets — with a Heading 1 over the fields, the kit's
- * button, and the other way in under the section rule. The phone is the same
- * column in the 16px gutter.
+ * block of words the kit sets — with a Heading 1 over the field and the kit's
+ * button. The second step keeps the column and swaps the field: the code, the
+ * address it went to, and the ways out (another address, a new code). The
+ * phone is the same column in the 16px gutter.
  */
 export function LoomSignIn({ ctx }: { data: Record<string, unknown>; ctx: LoomContext }) {
   const router = useRouter();
   const live = !!ctx.live;
-  const [mode, setMode] = useState<"in" | "up">(ctx.authMode ?? "in");
+  const [step, setStep] = useState<"email" | "code">("email");
+  const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [serverError, setServerError] = useState<string | null>(null);
-  const [values, setValues] = useState({ name: "", email: "", password: "" });
-  const [errors, setErrors] = useState<Partial<typeof values>>({});
+  const [resent, setResent] = useState(false);
 
-  const bind = (k: keyof typeof values) => ({
-    value: values[k],
-    error: errors[k],
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
-      setValues((v) => ({ ...v, [k]: e.target.value }));
-      if (errors[k]) setErrors((x) => ({ ...x, [k]: undefined }));
-    },
-  });
-
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const next: Partial<typeof values> = {};
-    if (mode === "up" && !values.name.trim()) next.name = tx(ctx, "account.nameError");
-    if (!/^\S+@\S+\.\S+$/.test(values.email)) next.email = tx(ctx, "account.emailError");
-    if (values.password.length < (mode === "up" ? 8 : 1)) {
-      next.password = tx(ctx, mode === "up" ? "account.passwordShortError" : "account.passwordError");
+  const send = async () => {
+    setBusy(true);
+    setError(null);
+    // The reference build has nobody to email: it goes straight to the code.
+    const r = live ? await kitRequestCode(email) : { ok: true as const };
+    setBusy(false);
+    if (!r.ok) {
+      setError(r.error);
+      return false;
     }
-    setErrors(next);
-    if (Object.keys(next).length) {
-      requestAnimationFrame(() => (document.querySelector("[aria-invalid=true]") as HTMLElement | null)?.focus());
+    return true;
+  };
+
+  const submitEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) {
+      setError(tx(ctx, "account.emailError"));
       return;
     }
-    // A reference build: there is no account behind this, so arriving is the demo.
+    if (await send()) {
+      setStep("code");
+      setCode("");
+      setResent(false);
+    }
+  };
+
+  const submitCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!/^\d{6}$/.test(code.replace(/\s/g, ""))) {
+      setError(tx(ctx, "account.codeError"));
+      return;
+    }
     if (!live) {
       router.push(ctx.routes.account);
       return;
     }
-    // A real shop: the platform's own sign-in and sign-up (lib/themes/kit-actions.ts).
     setBusy(true);
-    setServerError(null);
-    const done = (ok: boolean, error?: string) => {
-      if (!ok) {
-        setServerError(error ?? tx(ctx, "account.signInFailed"));
-        setBusy(false);
-        return;
-      }
-      // A full load, so the header and every server-drawn page see the new session.
-      window.location.assign(ctx.afterSignIn || ctx.routes.account);
-    };
-    if (mode === "in") {
-      void kitSignIn(values.email.trim(), values.password).then((ok) => done(ok));
-    } else {
-      void kitRegister(values.name.trim(), values.email.trim(), values.password).then((r) => done(r.ok, r.ok ? undefined : r.error));
+    setError(null);
+    const r = await kitSignInWithCode(email, code);
+    if (!r.ok) {
+      setError(r.error);
+      setBusy(false);
+      return;
     }
+    // A full load, so the header and every server-drawn page see the new session.
+    window.location.assign(ctx.afterSignIn || ctx.routes.account);
   };
 
   return (
@@ -79,51 +85,72 @@ export function LoomSignIn({ ctx }: { data: Record<string, unknown>; ctx: LoomCo
       <div className="flex w-full flex-col gap-[calc(32*var(--u))] md:w-[calc(411*var(--u))]">
         <div className="flex flex-col gap-[calc(16*var(--u))]">
           <h1 data-m="signin-title" className={cn(T.h3, "text-[#121212] md:text-[calc(65*var(--u))] md:leading-[calc(65*var(--u))] md:tracking-[calc(-4*var(--u))]")}>
-            {tx(ctx, mode === "in" ? "account.signInHeading" : "account.createAccountHeading")}
+            {tx(ctx, "account.signInHeading")}
           </h1>
           <p className={cn(T.body6, "text-[#121212]/80 md:text-[max(calc(18*var(--u)),14.4px)]")}>
-            {tx(ctx, mode === "in" ? "account.signInText" : "account.createAccountText")}
+            {step === "email" ? tx(ctx, "account.signInText") : tx(ctx, "account.codeSent", { email: email.trim() })}
           </p>
         </div>
 
-        <form noValidate onSubmit={submit} className="flex flex-col gap-[calc(20*var(--u))]">
-          {mode === "up" && <LoomField label={tx(ctx, "account.name")} autoComplete="name" {...bind("name")} />}
-          <LoomField label={tx(ctx, "account.email")} type="email" autoComplete="email" inputMode="email" {...bind("email")} />
-          <LoomField
-            label={tx(ctx, "account.password")}
-            type="password"
-            autoComplete={mode === "in" ? "current-password" : "new-password"}
-            {...bind("password")}
-          />
-          {mode === "in" && !live && (
-            <a href="#" className={cn(T.small, "self-start text-[#121212]/80 underline underline-offset-4")}>
-              {tx(ctx, "account.forgotPassword")}
-            </a>
-          )}
-          {serverError && (
-            <p role="alert" data-m="signin-error" className={cn(T.body6, "text-[#cc3a3a]")}>
-              {serverError}
-            </p>
-          )}
-          <LoomButton type="submit" data-m="signin-submit" className="mt-[calc(8*var(--u))] w-full min-w-0" disabled={busy}>
-            {tx(ctx, mode === "in" ? "account.signInButton" : "account.createAccountButton")}
-          </LoomButton>
-        </form>
-
-        <div className={cn("flex flex-col gap-[calc(16*var(--u))] pt-[calc(32*var(--u))]", LOOM_RULE)}>
-          <p className={cn(T.body3, "text-[#121212]")}>{tx(ctx, mode === "in" ? "account.noAccountPrompt" : "account.haveAccountPrompt")}</p>
-          <LoomButton
-            variant="outline"
-            className="w-full min-w-0"
-            onClick={() => {
-              setMode((m) => (m === "in" ? "up" : "in"));
-              setErrors({});
-              setServerError(null);
-            }}
-          >
-            {tx(ctx, mode === "in" ? "account.createOneLink" : "account.signInLink")}
-          </LoomButton>
-        </div>
+        {step === "email" ? (
+          <form noValidate onSubmit={submitEmail} data-m="signin-email" className="flex flex-col gap-[calc(16*var(--u))]">
+            <LoomField
+              label={tx(ctx, "account.email")}
+              type="email"
+              autoComplete="email"
+              inputMode="email"
+              value={email}
+              error={error ?? undefined}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setError(null);
+              }}
+            />
+            <LoomButton type="submit" data-m="signin-submit" className="mt-[calc(8*var(--u))] w-full min-w-0" disabled={busy}>
+              {tx(ctx, "account.sendCode")}
+            </LoomButton>
+          </form>
+        ) : (
+          <form noValidate onSubmit={submitCode} data-m="signin-code" className="flex flex-col gap-[calc(16*var(--u))]">
+            <LoomField
+              label={tx(ctx, "account.code")}
+              autoComplete="one-time-code"
+              inputMode="numeric"
+              maxLength={7}
+              value={code}
+              error={error ?? undefined}
+              onChange={(e) => {
+                setCode(e.target.value);
+                setError(null);
+              }}
+            />
+            <LoomButton type="submit" data-m="signin-submit" className="mt-[calc(8*var(--u))] w-full min-w-0" disabled={busy}>
+              {tx(ctx, "account.signInButton")}
+            </LoomButton>
+            <div className="flex flex-wrap justify-between gap-[calc(16*var(--u))]">
+              <button
+                type="button"
+                onClick={() => {
+                  setStep("email");
+                  setError(null);
+                }}
+                className={cn(T.small, "text-[#121212]/80 underline underline-offset-4")}
+              >
+                {tx(ctx, "account.differentEmail")}
+              </button>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={async () => {
+                  if (await send()) setResent(true);
+                }}
+                className={cn(T.small, "text-[#121212]/80 underline underline-offset-4")}
+              >
+                {resent ? tx(ctx, "account.codeResent") : tx(ctx, "account.sendAgain")}
+              </button>
+            </div>
+          </form>
+        )}
       </div>
     </section>
   );

@@ -354,6 +354,7 @@ model Shop {
   discounts         Discount[]
   redemptions       DiscountRedemption[]
   customers         Customer[]
+  customerOtps      CustomerOtp[]
   categories        Category[]
   products          Product[]
   variants          ProductVariant[]
@@ -632,7 +633,11 @@ model Customer {
   email        String
   name         String
   phone        String?
+  /// No longer set: customers sign in with a code (CustomerOtp). Kept so
+  /// rows written before stay readable; nothing checks it.
   passwordHash String?
+  /// When they first signed in. Null for a guest who has only checked out.
+  signedUpAt   DateTime?
   addresses    Address[]
   orders       Order[]
   createdAt    DateTime  @default(now())
@@ -675,6 +680,26 @@ model AuditLog {
 // row is created each time a code is sent, and old unconsumed rows are left to
 // expire naturally. That's harmless: authorize() only trusts the most recent
 // unconsumed, unexpired row, and the attempt cap is enforced per row.
+/// A sign-in code emailed to a customer — a shop's own customers, never the
+/// merchant panel (that is AdminOtp). Keyed by email rather than by customer,
+/// because a first sign-in is also how an account is made: the customer row
+/// is found or created once the code proves they hold the address. Hashed at
+/// rest, short-lived, a few tries, used once.
+model CustomerOtp {
+  id         String    @id @default(cuid())
+  shop       Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId     String
+  email      String
+  codeHash   String
+  expiresAt  DateTime
+  attempts   Int       @default(0)
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([shopId, email, createdAt])
+  @@index([expiresAt])
+}
+
 model AdminOtp {
   id         String    @id @default(cuid())
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)

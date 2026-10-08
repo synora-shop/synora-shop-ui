@@ -47,6 +47,7 @@ export const PROFILE_MODELS: ReadonlySet<string> = new Set(["Page", "ThemeSettin
 
 export const TENANT_MODELS: ReadonlySet<string> = new Set([
   "Customer",
+  "CustomerOtp",
   "AuditLog",
   "Address",
   "Category",

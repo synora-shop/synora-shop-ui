@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import { signOut } from "next-auth/react";
-import { kitCustomerSignIn } from "@/lib/themes/kit-auth";
+import { requestCustomerCode, signInWithCode } from "@/app/(storefront)/account/sign-in-actions";
 import { useCartStore } from "@/lib/cart-store";
 import { previewDiscount } from "@/app/(storefront)/checkout/actions";
 import { addAddress, deleteAddress } from "@/app/(storefront)/account/addresses/actions";
@@ -137,26 +137,14 @@ export async function kitPlaceOrder(payload: {
   }
 }
 
-/** Sign a customer in. False when the email and password do not match. */
-export async function kitSignIn(email: string, password: string): Promise<boolean> {
-  return kitCustomerSignIn(email, password);
+/** Email a sign-in code — the only way a customer signs in, or makes an account. */
+export async function kitRequestCode(email: string) {
+  return requestCustomerCode(email);
 }
 
-/** Create a customer account and sign it in. */
-export async function kitRegister(name: string, email: string, password: string): Promise<{ ok: true } | { ok: false; error: string }> {
-  const res = await fetch("/api/register", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, email, password }),
-  });
-  if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
-    return { ok: false, error: data.error ?? "The account could not be created." };
-  }
-  // Created — and signed in, unless that somehow fails, when the customer is
-  // told to sign in rather than shown an account page that sends them there.
-  if (!(await kitCustomerSignIn(email, password))) return { ok: false, error: "Your account was created. Sign in to continue." };
-  return { ok: true };
+/** Sign in with the emailed code. */
+export async function kitSignInWithCode(email: string, code: string) {
+  return signInWithCode(email, code);
 }
 
 /** Sign the customer out and return to the shop's home page. */

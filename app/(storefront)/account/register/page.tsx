@@ -1,33 +1,10 @@
-import { kitSignInPage } from "@/components/storefront/kit-account";
-import { StoreLink as Link } from "@/components/storefront/store-link";
-import { Container } from "@/components/ui/container";
-import { getSiteText, text } from "@/lib/site-text";
-import { RegisterForm } from "@/components/storefront/register-form";
+import { redirect } from "next/navigation";
 
+/**
+ * There is no separate sign-up: a customer's first sign-in with an emailed
+ * code makes the account (decided 8 October). Old links land on sign-in.
+ */
 export default async function RegisterPage(props: PageProps<"/account/register">) {
-  const kitted = await kitSignInPage("up", await props.searchParams);
-  if (kitted) return kitted;
-
-  const siteText = await getSiteText();
-
-  return (
-    <Container className="py-16">
-      <div className="mx-auto max-w-sm">
-        <h1 className="font-serif text-3xl font-semibold text-ink">
-          {text(siteText, "account.createAccountHeading")}
-        </h1>
-        <RegisterForm
-          submitLabel={text(siteText, "account.createAccountButton")}
-          submittingLabel={text(siteText, "account.creatingAccount")}
-          genericError={text(siteText, "account.registerGenericError")}
-        />
-        <p className="mt-6 text-center text-sm text-ink-soft">
-          {text(siteText, "account.haveAccountPrompt")}{" "}
-          <Link href="/account/login" className="text-brand-600 underline-scribble">
-            {text(siteText, "account.signInLink")}
-          </Link>
-        </p>
-      </div>
-    </Container>
-  );
+  const next = (await props.searchParams).callbackUrl;
+  redirect(typeof next === "string" ? `/account/login?callbackUrl=${encodeURIComponent(next)}` : "/account/login");
 }

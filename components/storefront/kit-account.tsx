@@ -15,10 +15,10 @@ type Search = Record<string, string | string[] | undefined>;
 /** Only an address on this shop — never somewhere else a link chose. */
 const sameSite = (to: unknown) => (typeof to === "string" && to.startsWith("/") && !to.startsWith("//") ? to : undefined);
 
-export async function kitSignInPage(mode: "in" | "up", search: Search) {
+export async function kitSignInPage(search: Search) {
   const live = await getKitForRequest();
   if (!live) return null;
-  const ctx = { ...(await kitBaseContext()), authMode: mode, afterSignIn: sameSite(search.callbackUrl) };
+  const ctx = { ...(await kitBaseContext()), afterSignIn: sameSite(search.callbackUrl) };
   return <KitPage kit={live.kit} templates={live.templates} name="sign-in" ctx={ctx} preview={isPreview(search)} />;
 }
 

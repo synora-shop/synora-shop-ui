@@ -445,7 +445,7 @@ real storefront, from its own data:
 | Wishlist | `/wishlist` | Loom (only kit shops have this page) |
 | Cart | `/cart` | Loom — the platform's cart; the shop's shipping fee and free-delivery threshold |
 | Checkout | `/checkout` | Loom — the platform's order API: the shop's delivery cities, payment methods (with their instructions), one delivery charge, discount codes priced by the server, the platform's phone rule, a signed-in customer's details filled in. A card method leaves for the provider's page |
-| Sign in, register | `/account/login`, `/account/register` | Loom — the platform's **customer** sign-in, run on the server so the shop is the one in the address |
+| Sign in | `/account/login` (`/account/register` forwards here) | Loom — an email, then the 6-digit code sent to it; no password, and a first sign-in makes the account |
 | Account | `/account`, `/account/orders`, `/account/addresses` | Loom — the latest 20 orders in all six states; addresses added and removed; details shown, not edited |
 | Order | `/order-confirmation/<id>?key=` | Loom — "Thank you, {name}" straight after checkout. Opened from its link: read-only, the address cut to city and postcode; by the customer signed in: everything; without either: "Find your order" (number + email or phone). A card payment still waiting on the bank keeps the platform's page |
 
@@ -486,8 +486,7 @@ sign out, a wrong password, sign in; the five new pages swept at 20 widths.
   edge fades over 40px. Every number is still the file's.
 - **The kit's photographs are 1–10MB PNGs.** Fine for a reference page; the
   ported theme serves them through the platform's image pipeline.
-- **On a real shop, not yet:** "Forgot password" (the platform has no reset),
-  changing an address or making one the main one, changing one's name or
+- **On a real shop, not yet:** changing an address or making one the main one, changing one's name or
   phone, "Buy again" — each hidden rather than offered and doing nothing.
 
 ---

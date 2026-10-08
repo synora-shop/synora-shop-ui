@@ -175,15 +175,14 @@ const AFTER_INTERACTION = new Set<string>([
   "checkout.cityError", "checkout.postcodeError", "checkout.phoneError", "checkout.placeOrder",
   "checkout.nothingCharged", "checkout.orderNumber", "checkout.thanks", "checkout.thanksText",
   "checkout.whenStandard", "checkout.whenExpress",
-  "account.createAccountHeading", "account.createAccountText", "account.name", "account.createAccountButton",
-  "account.haveAccountPrompt", "account.signInLink", "account.nameError", "account.emailError",
-  "account.passwordError", "account.passwordShortError", "account.main", "account.edit", "account.makeMain",
+  "account.codeSent", "account.code", "account.signInButton", "account.differentEmail", "account.sendAgain", "account.codeResent",
+  "account.emailError", "account.codeError", "account.main", "account.edit", "account.makeMain",
   "account.removeAddressButton", "account.addAddress", "account.saveDetails", "account.saved",
   "cart.emptyHeading", "cart.continueShopping", "cart.itemCountOne",
   "collections.emptyState", "collections.countOne", "collections.showMore", "filters.clearFilters",
   "filters.clearAll", "filters.clear", "filters.close", "filters.showResults", "filters.showResultsOne",
   "product.removeFromWishlist", "product.addedToCart", "product.unavailable",
-  "account.addressLabel", "account.addressLabelHint", "account.saveAddress", "account.cancel", "account.signInFailed", "order.lookupError",
+  "account.addressLabel", "account.addressLabelHint", "account.saveAddress", "account.cancel", "order.lookupError",
 ]);
 // Words only a real shop draws, once the browser has read its cart — which a
 // server render never has (the cart lives in the browser's storage). The

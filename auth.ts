@@ -94,26 +94,49 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // as either merchant is concerned.
       id: "customer",
       name: "Customer",
+      // A code emailed to the customer (CustomerOtp), never a password —
+      // decided 8 October. Requested and submitted through
+      // app/(storefront)/account/sign-in-actions.ts, which also rate-limits.
       credentials: {
         email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
+        code: { label: "Code", type: "text" },
         shopId: { label: "Shop", type: "text" },
       },
       authorize: async (credentials) => {
         const email = typeof credentials?.email === "string" ? credentials.email.trim().toLowerCase() : "";
-        const password = typeof credentials?.password === "string" ? credentials.password : "";
+        const code = typeof credentials?.code === "string" ? credentials.code.trim() : "";
         const shopId = typeof credentials?.shopId === "string" ? credentials.shopId : "";
-        if (!email || !password || !shopId) return null;
+        if (!email || !code || !shopId) return null;
 
-        // Scoped by construction: the lookup is on (shopId, email), so a
-        // password that is valid at one shop cannot open an account at another.
-        const customer = await prisma.customer.findUnique({
-          where: { shopId_email: { shopId, email } },
+        const record = await prisma.customerOtp.findFirst({
+          where: { shopId, email, consumedAt: null, expiresAt: { gt: new Date() } },
+          orderBy: { createdAt: "desc" },
         });
-        if (!customer?.passwordHash) return null;
+        if (!record || record.attempts >= OTP_MAX_ATTEMPTS) return null;
 
-        const valid = await bcrypt.compare(password, customer.passwordHash);
-        if (!valid) return null;
+        if (!(await verifyOtpCode(code, record.codeHash))) {
+          await prisma.customerOtp.update({ where: { id: record.id }, data: { attempts: { increment: 1 } } });
+          return null;
+        }
+
+        // Used once: claimed in one statement, so two requests racing with
+        // the same code cannot both win.
+        const claimed = await prisma.customerOtp.updateMany({
+          where: { id: record.id, consumedAt: null },
+          data: { consumedAt: new Date() },
+        });
+        if (claimed.count !== 1) return null;
+
+        // The code proves they hold the address: their account, made now if
+        // this is the first time — joined to any orders they placed as a guest.
+        const customer = await prisma.customer.upsert({
+          where: { shopId_email: { shopId, email } },
+          update: {},
+          create: { shopId, email, name: "", signedUpAt: new Date() },
+        });
+        if (!customer.signedUpAt) {
+          await prisma.customer.update({ where: { id: customer.id }, data: { signedUpAt: new Date() } });
+        }
 
         return {
           id: customer.id,

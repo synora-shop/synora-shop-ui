@@ -198,8 +198,6 @@ export type KitContext = {
   live?: boolean;
   /** The checkout's terms, on the cart and checkout pages. */
   checkout?: KitCheckout;
-  /** Which half of the sign-in page to open on. */
-  authMode?: "in" | "up";
   /** Where to go once signed in. */
   afterSignIn?: string;
   /**

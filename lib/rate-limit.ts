@@ -76,6 +76,11 @@ export const LIMITS = {
   // Finding an order by its number and its email or phone. Public, and each
   // try is a guess at somebody's contact details: a customer who mistypes
   // needs a few goes, nobody needs dozens.
+  // Customer sign-in codes: sending one (per address and per email, so
+  // nobody's inbox is flooded) and trying one (per shop and email, on top of
+  // each code's own few tries).
+  customerCode: { max: 5, windowMs: 15 * 60 * 1000, blockMs: 15 * 60 * 1000 },
+  customerCodeTry: { max: 10, windowMs: 15 * 60 * 1000, blockMs: 15 * 60 * 1000 },
   orderLookup: { max: 6, windowMs: 15 * 60 * 1000, blockMs: 30 * 60 * 1000 },
 } as const satisfies Record<string, Limit>;
 
@@ -197,6 +202,8 @@ const MESSAGES: Record<LimitName, (seconds: number) => string> = {
   reopenSignup: (s) => `That's already been sent. Try again in ${humanise(s)}.`,
   paymentCallback: (s) => `Too many notifications. Try again in ${humanise(s)}.`,
   paymentCheck: (s) => `Checking too often. Try again in ${humanise(s)}.`,
+  customerCode: (s) => `Too many codes sent. Try again in ${humanise(s)}.`,
+  customerCodeTry: (s) => `Too many tries. Try again in ${humanise(s)}.`,
   orderLookup: (s) => `Too many tries. Try again in ${humanise(s)}.`,
 };
 

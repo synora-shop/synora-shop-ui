@@ -106,6 +106,12 @@ export async function pruneExpiredRows(): Promise<PruneReport> {
     })
   );
 
+  await step("customerOtp", () =>
+    prisma.customerOtp.deleteMany({
+      where: { expiresAt: { lt: ago(RETENTION.otpDays) } },
+    })
+  );
+
 
   await step("visit", () =>
     prisma.visit.deleteMany({ where: { createdAt: { lt: ago(RETENTION.visitDays) } } })
