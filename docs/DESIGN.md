@@ -424,3 +424,12 @@ preview of a theme and showed the one already in use.
 
 If a control cannot do what its label says, either make it do it or take the
 label away.
+
+**It holds on the storefront too** — the merchant's customers are the ones
+misled there. Found on the live Loom demo on 8 October by clicking everything,
+each fixed one of the two ways: fifteen links to `#` that only jumped to the
+top (given somewhere to go); language and currency drawn as buttons with
+nothing behind them (made words); an email sign-up that kept nothing (removed
+until there is a list); "Add to favourites" and the account's Edit, Change and
+Remove in Kite, which did nothing (made to work). A link setting left empty is
+drawn as no link at all, never as `#`.

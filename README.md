@@ -20,8 +20,16 @@ permanently to the same path on `app.synoradigitals.com`; see
 ## What's inside
 
 **Storefront** — `app/(storefront)`
-Catalogue, collections, product pages (`/p/[slug]`), cart, checkout, customer
-accounts and order confirmation.
+Home, shop and search (`/shop`), collections, product pages (`/product/[slug]`),
+the bag (`/cart`), checkout, saved items (`/wishlist`), customer sign-in by
+emailed code and the account, each order's own page
+(`/order-confirmation/[id]?key=…`), and the merchant's own pages (About, FAQ,
+Contact, `/p/[slug]`). On a shop whose theme is a kit — both themes today —
+the theme draws all of it from its own sections (*Themes*, below).
+
+**Theme store** — `app.synoradigitals.com/theme-store/<theme>`
+Each theme's demo storefront, on our servers, selling the goods its design was
+drawn around. See `docs/THEMES.md` §5b.
 
 **Admin panel** — `app/admin`
 Two levels of navigation and no more, both in the same column. Ten sidebar
@@ -50,8 +58,8 @@ the section already goes there.
 | | Discounts | *(one screen)* |
 | | Customers | *(one screen)* |
 | | Analytics | *(one screen)* |
-| **How it looks** | Your App | Pages · Drafts · Themes · Maintenance · Menus · Site text |
-| | Preferences | Visibility · Fonts · Sticky buttons · Links & redirects · Custom fields |
+| **How it looks** | Your App | Themes · Pages · Menus · Drafts · Site text |
+| | Preferences | Visibility · Maintenance · Fonts · Sticky buttons · Links & redirects · Custom fields |
 | **The account** | Settings | General · Payments · Domains |
 | | Account | *(one screen)* |
 
@@ -65,7 +73,9 @@ the store.
 
 **Live customizer** — `app/(fullscreen)/admin/customize`
 Split-screen visual editor with a postMessage protocol
-(`lib/customizer-protocol.ts`) and schema-driven controls.
+(`lib/customizer-protocol.ts`) and schema-driven controls. For a kit theme it
+edits the theme's own pages section by section, redrawing as the merchant
+types; sections drag to reorder.
 
 **Platform site** — `app/(platform)`, `app/merchant/*`
 The marketing page and merchant sign-up.
@@ -95,15 +105,28 @@ root, but it paints nothing.
 
 ## Themes
 
-Six, in `lib/themes/registry.ts`: aurora, meridian, quill, column, hearth,
-service. They are **data, not files** — a theme is a set of options the app
-already understands. Nothing is installed, imported, or made compatible with
-any other platform, and there is no upload path for one.
+Two, in `lib/themes/registry.ts`, each rebuilt exactly from a Figma file:
 
-The storefront resolves three layers, weakest first: the platform's defaults,
-then the chosen theme's tokens, then the merchant's own customizer edits, which
-win. `?__theme=<key>` renders one request in another theme without activating
-it, which is how the Themes screen previews one.
+| Theme | Look | Notes |
+| --- | --- | --- |
+| **Loom** | Light and roomy, large imagery | `docs/LOOM.md` · demo: the file's shoe shop |
+| **Kite** | Dark and editorial, serif voice | `docs/KITE.md` · demo: the file's fashion label, Trümung |
+
+Both are **kits** (decided 8 October, Shopify's model): a theme brings its own
+sections, its twelve page templates, its interface words and its frame
+(`lib/themes/kits.ts`), and draws from data the platform hands it — it never
+fetches. Kits are code Synora ships; nothing is uploaded or imported, and
+there is no compatibility with any other platform.
+
+A merchant's shop holds **copies** of themes: Add makes one, the customizer
+edits one, Activate makes one live, Update moves one to the theme's newest
+version. A copy stores only the pages the merchant changed. `?__theme=<copy>`
+renders one request in another copy without activating it, which is how the
+Themes screen previews — every picture on it is a live frame.
+
+What a kit does not draw (the merchant's own About, FAQ, Contact and custom
+pages) resolves three layers of tokens, weakest first: the platform's defaults,
+the theme's, the merchant's. `docs/THEMES.md` has the whole account.
 
 ---
 
@@ -232,6 +255,12 @@ npx neon@latest connection-string dev --project-id <project> --pooled
 Put the pooled string in `DATABASE_URL` and the direct one in
 `DATABASE_URL_UNPOOLED`.
 
+Two reference builds run without any shop: `/loom` and `/kite` draw each theme
+from its design file's own data, at the widths the file draws — they are what
+the pixel comparisons in `scripts/figma/` measure. A real shop in a theme is
+the storefront itself, or `/theme-store/<theme>` once the demos are seeded
+(`scripts/seed-theme-store.ts`).
+
 ---
 
 ## Checks
@@ -246,45 +275,50 @@ check:paging  check:responsive  check:search  check:accounts
 check:domains  check:platform  check:discounts  check:naming
 check:sorting  check:editor  check:analytics  check:cache
 check:design  check:motion  check:holding  check:spotlight
-check:brand  check:address  check:payments
+check:brand  check:address  check:payments  check:gateways
+check:themes  check:sections  check:lint  check:theme-store
+check:scale  check:loom  check:kite
 ```
 
-Twenty-seven scripts, **3,088 assertions** at the last count. Those are static: they read the
+Thirty-two scripts, **4,522 assertions** at the last count (9 October 2026). Those are static: they read the
 source. `scripts/sweep/` is the other half — a hundred probes against a running
 shop, for the faults reading the source cannot find. It found a CSV that could
 run a formula on the merchant's computer and twenty-two controls a screen
 reader could not name.
 
 `docs/CHECKS.md` lists what each guard holds up and the bug it exists because
-of. `scripts/sweep/README.md` covers the probes.
+of. `scripts/sweep/README.md` covers the probes. `scripts/figma/` checks that a
+theme looks like its design file: it renders an artboard from the `.fig`,
+compares a built page with it pixel by pixel, and sweeps twenty screen widths.
 
 ---
 
 ## Deploying
 
-**A push to GitHub does not deploy this project.** No build fires and there are
-no GitHub Actions; every production deployment is made with `vercel --prod`
-from a machine. **Deploying is what runs migrations** — `npm run build` begins
-with `node scripts/migrate-deploy.mjs` — so the thing to check before doing is
-the deploy, not the push.
+**Every push deploys, and every deploy migrates the live database.** The
+Vercel Git integration builds a *preview* for a pushed branch and *production*
+for `main`, within about a minute, with no `vercel` command. Preview and
+production share one `DATABASE_URL`, and `npm run build` begins with
+`node scripts/migrate-deploy.mjs` — so **a branch push applies its migrations
+to the live database**, whatever the live site is running. So:
 
-To ship a specific commit without carrying unfinished local work: clone to a
-scratch directory, check out that commit, copy `.vercel/` across, and deploy
-from there.
+- **Ask before any push.** It is a deploy, not a backup.
+- **Write migrations additively** — add columns with defaults, add tables,
+  backfill; never drop or rewrite. A rollback must still find its data.
+- To ship part of the work, put it on a branch cut from `origin/main`, check
+  it there (`npx tsc --noEmit`, `npm run check`, `npx next build`), and push
+  that to `main`. `vercel ls synora-shop` and `vercel inspect <url> --logs`
+  show what ran.
+- **The theme-store demos are data.** A deploy that changes a demo's
+  catalogue is followed by `npx tsx scripts/seed-theme-store.ts --theme <slug>`
+  against the live database — on the owner's say-so.
 
 The hosting plan allows **one cron run per day**; a `vercel.json` carrying
 anything finer is refused outright at deploy time.
 
-See `docs/ARCHITECTURE.md` §10.
-
-**One database for both Preview and Production.** Vercel is configured with a
-single `DATABASE_URL`, so a migration on a preview branch reaches the live
-database. **Write migrations additively** — add columns with defaults, add
-tables, backfill; do not drop or rewrite. A deployment that rolls back to the
-previous build must still find its data where it left it.
-
-*(This section used to say `main` deploys on push. It does not, and has not for
-as long as anyone checked — corrected 7 September 2026.)*
+See `docs/ARCHITECTURE.md` §10. *(Until 8 October 2026 this section said a push
+does not deploy; that stopped being true when the Git integration was
+connected.)*
 
 ---
 
@@ -293,20 +327,23 @@ as long as anyone checked — corrected 7 September 2026.)*
 This README says what exists. These say how it holds together and why.
 
 - `docs/ARCHITECTURE.md` — the five questions every request answers, tenancy,
-  caching, canonical hosts, the domain state machine, and the line between
-  identity and presentation.
-- `docs/FLOWS.md` — the journeys a merchant actually walks: connecting a
-  domain, changing what the store sells, closing the shop, setting its marks,
-  importing a catalogue.
+  caching, canonical hosts, the domain state machine, the line between
+  identity and presentation, customers and their orders, payments, theme kits
+  and deploying.
+- `docs/FLOWS.md` — the journeys people actually walk: connecting a domain,
+  changing what the store sells, closing the shop, setting its marks,
+  importing a catalogue, being paid, choosing and editing a theme, and a
+  customer buying and coming back.
 - `docs/PANEL.md` — the admin panel screen by screen, as designed, with the
   measurements each screen was drawn to and the decisions behind them.
 - `docs/THEMES.md` — what a theme decides, what the merchant decides, and what
-  happens to each when the other changes. Every global setting, group by group,
-  and the catalogue that is still to be designed.
+  happens to each when the other changes; kits, copies, the theme store demos.
+- `docs/LOOM.md`, `docs/KITE.md` — each theme, rebuilt from its Figma file:
+  how it was read, measured and checked, every adaptation, what is open.
 - `docs/DESIGN.md` — what a row, a field, a state and a colour mean here, and
   which checks hold each rule up.
-- `docs/CHECKS.md` — all twenty-two guards, and the bug each one exists
-  because of.
+- `docs/CHECKS.md` — all thirty-two guards, the bug each one exists because
+  of, and the design-fidelity tools.
 - `docs/QUEUE.md` — what is agreed and unbuilt, and the problems known about.
 - `scripts/sweep/README.md` — the hundred probes and what they caught.
 
@@ -320,4 +357,8 @@ diff:
 
 ## Related
 
-Backend API and data layer: [`synora-shop-api`](https://github.com/synora-shop/synora-shop-api)
+[`synora-shop-api`](https://github.com/synora-shop/synora-shop-api) is the
+snapshot of the backend taken at the 2 September split. **It is not deployed and
+nothing calls it**: this repository carries the whole running system — schema,
+migrations, API routes, sign-in. Its schema is 28 migrations behind the live
+database (9 October). The two are kept as separate repositories by decision.

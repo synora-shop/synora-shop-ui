@@ -145,7 +145,9 @@ Two things in it are behaviour rather than styling:
   vertical padding and a 24px gap below.
 - Product cards carry the favourite button top-right, inset 20px, 40px across.
 - The footer's newsletter field is a 250×45 pill outlined white at 52%, beside
-  a 105×45 solid white button with `#121212` label.
+  a 105×45 solid white button with `#121212` label. *(Not drawn since 9 October: the
+  platform keeps no subscriber list, so a field that keeps nothing is removed
+  until it does. The measurements stand for when it returns.)*
 - Footer column labels are 11px uppercase at full strength; the links under
   them are 13px at 52%.
 

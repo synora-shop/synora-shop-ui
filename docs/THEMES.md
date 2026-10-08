@@ -73,7 +73,35 @@ settings filled through each section's schema so nothing undeclared is
 stored, a singleton once, a page's main section (the product on the product
 page) never removed or hidden.
 
-Themes without a kit — Kite today — work exactly as below.
+**Kite's kit also starts at 1.0.0 — every Kite is the new Kite.** Decided
+9 October, for the same reason: the design rebuilt from its Figma file
+(`docs/KITE.md`) replaces the September Kite outright, and the registry ships
+Kite 2.0.0. Both themes are kits now.
+
+**What a kit does not draw still wears the theme's tokens.** A kit draws its
+header, footer and the twelve pages above. A shop's own pages — About, FAQ,
+Contact, a page the merchant wrote — are the platform's sections, coloured by
+the theme's `tokens` (§2): Kite's are its near-black ground and off-white ink,
+so those pages sit in the same room. A theme with no kit (none today) works
+exactly as below.
+
+**What every kit gets from the platform, and must not redo:**
+
+- *Links move in place.* `KitLinks` (in each kit's frame) follows a plain
+  `<a>` to one of the shop's pages — and a GET search form — as a client
+  navigation. Without it every click reloaded the whole page (found on the
+  live Loom demo, 8 October).
+- *A link setting is `kitHref`.* `route:cart`, `route:collection?color=Pink`,
+  a plain `/shop` (the demo prefix added), or a full URL. Empty gives the
+  section's fallback or no link — never `#`, which only jumps to the top.
+- *Redirects and orders keep the demo's prefix.* `storeRedirect` for every
+  storefront redirect, and `kitPlaceOrder(payload, base)`; a demo then gets the
+  order API's own answer ("This is a demo store…").
+- *Actions are `lib/themes/kit-actions.ts`* — the cart, discount codes, placing
+  an order, sign-in codes, addresses, order lookup — so a kit enforces every
+  rule the platform's own pages do.
+- *`check:loom` / `check:kite`* — every kit gets a check that each of its
+  settings reaches the page (`docs/CHECKS.md`).
 
 ---
 
@@ -218,8 +246,8 @@ Two themes, and that is a deliberate floor rather than a starting point.
 
 | Theme | What it is |
 | --- | --- |
-| **Loom** | The storefront this platform has always had. Every existing shop runs it, so making it a named theme had to be a no-op for them. Named Aurora until 22 September. |
-| **Kite** | The first theme that is more than a palette: its own header, card, grid density, footer, and the shopping behaviour to match. Named Atlas until 22 September. |
+| **Loom** | Light, roomy, large imagery — rebuilt exactly from the "LOOM E-commerce Website UI Kit" Figma file as its own sections (`docs/LOOM.md`). Named Aurora until 22 September; a kit since 8 October. |
+| **Kite** | Dark and editorial — near-black ground, serif voice, photography in a quiet grid — rebuilt exactly from "KITE - Trümung - Ecommerce Clothing Store" (`docs/KITE.md`). Named Atlas until 22 September; a palette-and-layout theme until it became a kit on 9 October. |
 
 Five others — Meridian, Quill, Column, Hearth and Service — were removed on
 10 September 2026. All five were palettes. Five recolours beside two real themes
@@ -229,11 +257,13 @@ made the picker look full while offering one genuine choice.
 empty state. A restaurant deserves a design built for restaurants rather than a
 shop's with the words changed.
 
-Theme pictures live in `public/themes` and are shot from the **shop** page, not
-the home page: the header, the card shape, the grid density and the colour are
-the four things that differ between themes and are all on it, while a home page
-in a shop without photography is mostly grey rectangles. A theme without a
-picture falls back to a live frame of the merchant's own storefront.
+**Every picture on the Themes screen is live** (since 8 October): the active
+theme is a frame of the shop itself, each library copy the shop wearing that
+copy (its edits included), each store card the theme's own demo. The shipped
+screenshots in `public/themes` — taken once in September of a storefront that
+no longer exists — and the registry's `preview` field are gone, so nothing can
+show a stale picture again. The frames load with `?__theme=`, which, like the
+customizer's `?__preview`, is not counted as a visit.
 
 ---
 
@@ -318,17 +348,22 @@ photography-led theme and a roomy, text-led one are not selling the same goods.
 
 | Theme | Demo shop | What it sells |
 | --- | --- | --- |
-| **Kite** | Kite Supply | Streetwear — heavyweight cotton, outerwear, footwear. Photography-led, which is what Kite is for. |
+| **Kite** | Trümung | The fashion label its Figma file draws (decided 9 October, as Loom's): the file's eleven "Piece Title" pieces at its $875 and the product page's Leather Shoes by Angel Vaccaro at $1,200 — in rupees at about 280 to the dollar — with the file's own photographs, its categories (Limited collection, Coats, Bags, Shoes) and its menus. The file gives the pieces no sizes or colours, so each is one size. |
 | **Loom** | Ecommerce | The shoe shop its Figma file draws — six pairs, the file's own photographs, its dollar prices in rupees, and its menus with their dropdowns (decided 8 October: a demo shows goods the theme was designed around, never scenery). |
 
 Seeded by `scripts/seed-theme-store.ts`, which is reversible (`--undo`) and
 marks everything it writes exactly the way `scripts/seed-demo.ts` does — `DEMO-`
 SKUs, `@demo.invalid` addresses, `picsum.photos/seed/` pictures.
 
-**Real photography is outstanding for Kite only.** Loom carries its design
-file's photographs (a catalogue may give each product `images`, `colours`,
-`sizes`, and the shop a `currency` and `menus`). Kite still uses deterministic
-`picsum.photos` placeholders — scenery, not streetwear — until it gets the same.
+**Both demos carry their design file's photographs** (a catalogue may give
+each product `images`, `colours` — an empty list meaning one colourless
+variant per size — `sizes` and a `vendor`, and the shop a `currency` and
+`menus`). `picsum.photos` remains only the fallback for a catalogue without
+its own.
+
+**Seeding writes to whichever database `DATABASE_URL` names** — the live one
+included. The live demos are reseeded on purpose, by the owner's say-so, after
+a deploy that changes a catalogue.
 
 A user's own shop — on its subdomain or its domain — always shows its own
 products: the demo's goods appear only at `/theme-store/<theme>`, and on the

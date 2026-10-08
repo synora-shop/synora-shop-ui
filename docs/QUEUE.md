@@ -143,6 +143,55 @@ that both write `businessType` is two rules waiting to disagree.
 
 ---
 
+## Kite rebuilt, connected; every link goes somewhere — 8–9 October
+
+**Live Loom demo, fixed 8 October** (clicking every link and button, each in a
+fresh private browser): every page now changes in place instead of reloading
+(`KitLinks`); fifteen "#" links on the home page — the hero cards, Browse
+Inspirations, Read More, the colour chips — go to the shop, a chip to the shop
+in its colour; Account opened a 404 outside the demo (`storeRedirect`); the
+demo checkout said "check your connection" instead of the API's "This is a demo
+store" (the order now posts with the demo's prefix); English and the currency
+were buttons that did nothing (now words); the phone menu stayed open over the
+page it opened. Deployed 8 October (1405d37).
+
+**Kite, 8–9 October:** rebuilt exactly from its Figma file (docs/KITE.md), its
+undrawn pages built in its own parts, and on 9 October connected as the Kite
+theme — a kit from 1.0.0, registry 2.0.0, its demo the file's Trümung pieces —
+with `check:kite`. A shop's own photographs are shown whole; the file's keep
+their crops.
+
+**Decided 9 October:**
+- The footer email sign-up is removed from both themes until the platform
+  keeps a subscriber list. **Remind Abdul.** Returning it means a subscriber
+  table per shop, the admin view and export, then the fields back in both
+  footers.
+- Kite's phone product page stays as drawn: no price or sizes there.
+
+**Open:**
+- **No privacy-policy page.** The platform has About, FAQ and Contact; Kite's
+  footer names a privacy policy it cannot link to.
+- **Previews share the live database** (ARCHITECTURE.md §10). Give them a Neon
+  branch of their own. **Remind Abdul from time to time.**
+- **Loom fills a box with a merchant's photograph by cropping it**; Kite now
+  shows a merchant's photograph whole. Offered for Loom, not decided.
+- **Both themes' design photographs are served as the files' PNGs** — 57 MB
+  for Kite, 55 MB for Loom, not through an image pipeline. A first visit to
+  either demo's home page is tens of megabytes. Convert them (and serve them
+  sized) before either carries real traffic.
+- **Both themes' header wordmark defaults to the design's name** ("ECOMMERCE",
+  "Trümung") until the merchant types theirs — it is not the shop's name.
+- **The local development database has diverged** from the migrations: it
+  carries `20260817000000_add_admin_otp`, which is not in the repository, and
+  lacks the nine since `20261029000000_theme_copies`. Its `kite-demo` shop was
+  removed on 9 October by mistake (generated data only); reseed it once the
+  database is brought level. Not migrated without Abdul's say-so.
+- **The live Kite demo** must be reseeded (`scripts/seed-theme-store.ts --theme
+  kite` against the live database) after the deploy that connects Kite, or it
+  shows the old streetwear catalogue in the new design.
+
+---
+
 ## Loom, rebuilt from the Figma file — 7 October
 
 `/loom` reproduces the Paperpillar LOOM kit's home page exactly at both sizes

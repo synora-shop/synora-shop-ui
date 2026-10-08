@@ -1,10 +1,22 @@
 # Kite — from "KITE - Trümung - Ecommerce Clothing Store.fig"
 
-The file in `~/Business/Figmaa`, rebuilt exactly at `/kite` (local only until
-approved), in Loom's format: sections with schemas the live customizer edits,
-pages as templates (`components/kite/templates.ts`), interface words as
-settings. Platform wiring — the kit registry, real data, the customizer's page
-list — comes after the design is approved.
+The file in `~/Business/Figmaa`, rebuilt exactly, in Loom's format: sections
+with schemas the live customizer edits, pages as templates
+(`components/kite/templates.ts`), interface words as Site text.
+
+**Approved and connected 9 October: Kite is this design.** It is a kit
+(`lib/themes/kits.ts`) from 1.0.0 — every Kite copy draws it — and the
+registry ships Kite 2.0.0 with the file's palette as its tokens. `/kite` and
+its pages remain the reference build: the file's own data, nothing behind it,
+what the diffs below are measured on. A shop wearing Kite draws the same
+sections from its own data; the theme store's demo, `kite-demo`, sells the
+file's pieces (`scripts/theme-store-catalogue.ts`, `docs/THEMES.md` §5b).
+
+What a real shop gives Kite that the reference build fakes: the product's
+maker (`Product.vendor`, "by Angel Vaccaro"), real sizes with sold-out ones
+dimmed, the shop's prices and currency, the bag, the checkout's terms, the
+signed-in customer's orders and addresses (their street, city and postcode),
+and saved items from the shopper's own ADD TO FAVORITES.
 
 ## The file
 
@@ -133,7 +145,10 @@ the shop.
   there, so none are shown. Worth a phone design before shops use it.
 - The footer's EMAIL / GET EXCLUSIVE DEALS is not shown (decided 9 October):
   the platform keeps no subscriber list. It returns with the list.
-- The 44 photographs are the file's PNGs (57 MB); the ported theme serves them
-  through the platform's image pipeline.
-- Wiring: register Kite's kit, map real data (vendor, saved groups, address
-  parts), add its pages to the customizer.
+- **The 44 photographs are the file's PNGs, 57 MB, served as they are** —
+  not through an image pipeline. The home page alone is tens of megabytes on a
+  first visit. Loom's are the same (55 MB). Worth converting before either carries traffic
+  (`docs/QUEUE.md`).
+- **The wordmark is the file's ("Trümung")** until a merchant types their own
+  in the header's settings — Loom does the same with "ECOMMERCE".
+- `check:kite` holds every setting to reaching the page (`docs/CHECKS.md`).

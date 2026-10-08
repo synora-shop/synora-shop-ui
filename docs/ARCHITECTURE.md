@@ -261,6 +261,39 @@ their heading.
 
 ---
 
+## 7b. Customers: a code to sign in, a key to an order
+
+Two separate sign-ins share `auth.ts` and nothing else. **Merchants** sign in
+on the application host only. **Customers** sign in on the shop they are
+shopping at, and only there — the shop is read from the address, never from
+anything the browser names.
+
+**No customer passwords** (decided 8 October, as Shopify's new customer
+accounts). `app/(storefront)/account/sign-in-actions.ts`: an email, a six-digit
+code sent to it (stored hashed, ten minutes, rate-limited per address and per
+email, the same "sent" answer whether or not the address has ever bought), then
+signed in. The first sign-in makes the account, so there is no separate sign-up:
+`/account/register` forwards to `/account/login`.
+
+**An order opens from its own link.** Every order carries a random
+`accessKey`; the confirmation email and the thank-you redirect link to
+`/order-confirmation/<id>?key=<accessKey>`. `orderAccess` (`lib/order-access.ts`)
+decides what a visitor sees:
+
+| Visitor | Sees |
+| --- | --- |
+| The signed-in customer who placed it | Everything |
+| Anyone holding the link (the key matches) | The order, the address cut to city and postcode |
+| Anyone else, or no such order | The same "Find your order" form — so counting through ids learns nothing |
+
+"Find your order" (`order-confirmation/lookup.ts`) takes the order number and
+the email or phone it was placed with (phones compared on their last ten
+digits), rate-limited, with one refusal for every kind of miss; a match is the
+order's link. Straight after checkout the link carries `&placed=1`, and the
+page says thank you before it says where the order has got to.
+
+---
+
 ## 8. Server actions
 
 Every mutation is a server action. The shape they all share:
@@ -394,6 +427,11 @@ whether to believe it.
 > through, every global setting group by group, the library and publishing, and
 > what is designed but not yet built. This section is the summary.
 
+> **Since 8–9 October both themes are kits** — each draws its own header,
+> footer and pages from its own sections (*Theme kits*, below). What follows
+> about slots and tokens now governs what a kit does not draw: a shop's own
+> About, FAQ, Contact and custom pages, which wear the theme's tokens.
+
 A theme is data, not a folder of components. It has always been three things —
 which sections it offers, the colours it starts at, and who it is for — and it
 is now four.
@@ -470,6 +508,13 @@ the routing.
   change this wide safe to make.
 - **A demo shop refuses checkout and records no visits.** Both are enforced on
   the shop, not on the route, so neither can be reached round the side.
+- **Everything a page sends back must carry the prefix too** — not only links.
+  A server redirect goes through `storeRedirect` (`lib/theme-store.ts`), and the
+  checkout posts to `${base}/api/orders`. Without it, Account in a demo
+  redirected to the application host's `/account/login` (a 404), and a demo
+  order reached the API with no shop to refuse it as a demo's — live it said
+  "check your connection". Both found by clicking every link of the live demo
+  on 8 October.
 
 ### Adding a theme, and publishing it
 
@@ -504,14 +549,14 @@ previously live one **into** the library rather than losing it.
 `ThemeSettings`, which is one row per shop per business type — so a merchant's
 colours applied to whichever theme was live, and there was no way to work on a
 second design without changing the first or the storefront. They now live on
-`InstalledTheme`, which is what makes an unpublished theme editable: Atlas can
-be worked on for a week while Aurora keeps serving customers, and switching
+`InstalledTheme`, which is what makes an unpublished theme editable: Kite can
+be worked on for a week while Loom keeps serving customers, and switching
 between them loses nothing either way. `?theme=<key>` on the customizer names
 which one, checked against the shop's own library — a key nobody added falls
 back to the live theme rather than quietly editing it.
 
-**Only two themes ship.** Aurora, which every shop already runs, and Atlas, the
-one that actually arranges the storefront differently. Meridian, Quill, Column,
+**Only two themes ship: Loom and Kite** (Aurora and Atlas until 22 September),
+both kits rebuilt from Figma files. Meridian, Quill, Column,
 Hearth and Service were removed on 10 September: all five were palettes, and
 five recolours beside two real themes made the picker look full while offering
 one genuine choice. The consequence, stated because it is not obvious — **there
@@ -527,11 +572,61 @@ was harmless while the tokens and the layout used identical callbacks, and threw
 different question. There is one callback now, it returns both halves, and a
 check counts the call sites.
 
-Theme pictures live in `public/themes` and are shot from the **shop** page, not
-the home page: the header, the card shape, the grid density and the colour are
-the four things that differ between themes and are all on it, while a home page
-in a shop without photography is mostly grey rectangles. A theme without a
-picture falls back to a live frame of the merchant's own storefront.
+**Every picture on the Themes screen is live** (since 8 October): the active
+theme is a frame of the shop itself, each library copy the shop wearing that
+copy (its edits included), each store card the theme's own demo. The shipped
+screenshots in `public/themes` — taken once in September of a storefront that
+no longer exists — and the registry's `preview` field are gone, so nothing can
+show a stale picture again. The frames load with `?__theme=`, which, like the
+customizer's `?__preview`, is not counted as a visit.
+
+---
+
+### Theme kits: a theme that draws its own pages
+
+Decided 8 October (Shopify's model; `docs/THEMES.md` §1 has the reasoning).
+A kit is code Synora ships, registered in four places that must agree:
+
+| File | Holds | Why separate |
+| --- | --- | --- |
+| `lib/themes/kits.ts` | Each kit: theme key, the first version that is the kit (`since`), its sections, its twelve templates, its Site text words, and the customizer's sample customer, order and bag | Read by plain scripts (`check:loom`, `check:kite`) as well as the app |
+| `lib/themes/kit-frames.ts` | Each kit's frame — fonts, the `--u` unit, `<main>`, `KitLinks` | `next/font` works only inside the app |
+| `lib/themes/kits.client.ts` | The sections again, for the browser | Loaded only by the customizer's live preview, so no shopper downloads them |
+| `components/<kit>/` | The sections, schemas, templates, demo data and words | — |
+
+**A request.** `getKitForRequest()` (`lib/data/theme.ts`) answers "does this
+shop's live theme copy draw from a kit?" — the theme key, and the copy's
+version at or past the kit's `since`. If so, the storefront layout wraps the
+page in the kit's frame and draws the header and footer templates; each route
+(`/`, `/shop`, `/product/…`, `/cart`, `/checkout`, `/account…`, `/wishlist`,
+`/order-confirmation/…`) builds a `KitContext` and draws its template through
+`KitPage`. The routes are theme-neutral: they hand every kit the same data.
+
+**The context is the boundary.** `lib/data/kit-context.ts` turns the shop's
+rows into `KitContext` (`lib/themes/kit.ts`): menus with the demo prefix
+applied, products, the product page (its maker, colours, sizes and stock), the
+collection, the signed-in customer (orders, addresses with their parts), the
+order, the checkout's terms. No cost price and no other customer ever reaches
+it. A section never fetches; it draws from the context and its settings, which
+is why one render function serves the storefront and the customizer's live
+preview alike.
+
+**What a kit may do** is `lib/themes/kit-actions.ts` — the cart store,
+discount preview, `kitPlaceOrder`, sign-in codes, addresses, order lookup —
+one door, so the platform's rules (stock, cities, payment methods, rate limits)
+hold for every kit.
+
+**Edits** are per copy (`InstalledTheme.templates`, only the templates a
+merchant changed), saved through `checkTemplate` (`lib/themes/kit-templates.ts`):
+known sections only, settings filled through each schema so nothing undeclared
+is stored, within `lib/section-limits.ts`, and a page's main section never
+removed. A stored edit that no longer validates falls back to the kit's
+default rather than breaking the page.
+
+**Photographs a merchant supplies are theirs.** Kite draws the design file's
+own photographs with the file's crops, and any other — a merchant's upload, a
+product photo — whole in the same box (`isFilePhoto`, `components/kite/assets.ts`),
+so replacing a picture never cuts it.
 
 ---
 

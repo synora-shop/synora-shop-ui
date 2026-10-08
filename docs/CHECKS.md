@@ -1,6 +1,6 @@
 # The guards
 
-Twenty-eight scripts, **3,304 assertions as of 24 September 2026**, all of them
+Thirty-two scripts, **4,522 assertions as of 9 October 2026**, all of them
 dependency-free, all exiting non-zero on failure. `npm run check` runs the lot.
 
 The per-script counts below are a snapshot and will drift as assertions are
@@ -24,36 +24,37 @@ and that going live is refused until a test payment has really been through.
 
 | Script | Asserts | Exists because |
 | --- | --- | --- |
-| `check:sections` **472** | A section a merchant can pick is one that stores, configures and draws; every setting is explained; an empty section takes up no room | Twenty-two sections were written and could not be added to a page at all — the schema and the renderer existed, the database enum did not |
+| `check:sections` **481** | A section a merchant can pick is one that stores, configures and draws; every setting is explained; an empty section takes up no room | Twenty-two sections were written and could not be added to a page at all — the schema and the renderer existed, the database enum did not |
 | `check:lint` **6** | The lint rules whose failures a merchant can *see* — a comment rendered as page text, an `<img>` past the image pipeline, a `<head>` fighting the metadata API, hooks called conditionally, a file it cannot parse, and a suppression that suppresses nothing. Everything else is counted, not failed | A `//` comment between a JSX tag and its first child is text, not a comment. Four paragraphs of reasoning rendered above the header on the live panel. ESLint had the rule on all along; nothing in this suite ever ran it |
-| `check:scale` **210** | What has to hold with a thousand people on one shop out of many: an index for every hot filter, nothing reading a whole table to render a page, work done once rather than per visitor, a page view that is not a write, a bounded connection pool, and a stock decrement that survives a race. Findings not yet fixed are printed as **open** and counted rather than failed; there are none left | Nobody had checked. The product listing read a shop's entire catalogue — with every variant — and sorted it in JavaScript on every request, and the nightly prune full-scanned the largest table in the database because both its indexes led with the wrong column |
-| `check:design` **552** | Colour, type, shape, one way to name a section, one gap between them | Four styles were naming the same thing, two of them a few hundred pixels apart on one screen |
-| `check:motion` **303** | Every animation is off under reduced motion and nothing is hidden by that; errors go through `FieldError`; the toast's two durations agree | Nineteen screens hand-wrote their error line and most carried no `role`, so a screen reader announced nothing |
-| `check:csv` **201** | Column names, formula defusal, the round trip | An exported product title could run a command on whoever opened the file |
-| `check:brand` **182** | Logo fallback order, favicon formats, one place that writes a mark | Logos were per business type, so switching type lost them — twice |
-| `check:naming` **151** | One brand name; no serif inside a screen; `.input` owns what a text box needs; sticky means sticky | Half-renaming shipped "Dishes" over a screen built around SKUs |
-| `check:accounts` **118** | Customer accounts, sessions, password rules | — |
-| `check:nav` **91** | Every address in the panel is reachable and named once | A tab could exist in the bar and nowhere else |
-| `check:domains` **78** | Hostname rules, DNS record shapes, the state machine | A hostname the form accepted and the server called "ours" |
-| `check:holding` **68** | Whose words are whose on a shut store; the gates on the public signup | Pausing and maintenance showed two different notices and neither screen said the other existed |
+| `check:scale` **213** | What has to hold with a thousand people on one shop out of many: an index for every hot filter, nothing reading a whole table to render a page, work done once rather than per visitor, a page view that is not a write, a bounded connection pool, and a stock decrement that survives a race. Findings not yet fixed are printed as **open** and counted rather than failed; there are none left | Nobody had checked. The product listing read a shop's entire catalogue — with every variant — and sorted it in JavaScript on every request, and the nightly prune full-scanned the largest table in the database because both its indexes led with the wrong column |
+| `check:design` **619** | Colour, type, shape, one way to name a section, one gap between them | Four styles were naming the same thing, two of them a few hundred pixels apart on one screen |
+| `check:motion` **462** | Every animation is off under reduced motion and nothing is hidden by that; errors go through `FieldError`; the toast's two durations agree | Nineteen screens hand-wrote their error line and most carried no `role`, so a screen reader announced nothing |
+| `check:csv` **229** | Column names, formula defusal, the round trip | An exported product title could run a command on whoever opened the file |
+| `check:brand` **215** | Logo fallback order, favicon formats, one place that writes a mark | Logos were per business type, so switching type lost them — twice |
+| `check:naming` **170** | One brand name; no serif inside a screen; `.input` owns what a text box needs; sticky means sticky | Half-renaming shipped "Dishes" over a screen built around SKUs |
+| `check:accounts` **134** | Who can get into a store: sign-in tokens and emailed codes are random and stored hashed, limits really refuse, no message says whether an address is registered, roles grant only downward | Somebody in an account that is not theirs is not a bug a merchant can work around |
+| `check:nav` **124** | Every address in the panel is reachable and named once | A tab could exist in the bar and nowhere else |
+| `check:domains` **90** | Hostname rules, DNS record shapes, the state machine | A hostname the form accepted and the server called "ours" |
+| `check:holding` **69** | Whose words are whose on a shut store; the gates on the public signup | Pausing and maintenance showed two different notices and neither screen said the other existed |
 | `check:discounts` **67** | Code rules, stacking, expiry | — |
-| `check:platform` **57** | Reserved subdomains, platform hosts, tenant isolation | A merchant could have claimed `admin` |
-| `check:search` **50** | The settings index finds the thing you typed | "upload logo" led to the one screen that no longer has it |
+| `check:platform` **69** | Reserved subdomains, platform hosts, tenant isolation | A merchant could have claimed `admin` |
+| `check:search` **58** | The settings index finds the thing you typed | "upload logo" led to the one screen that no longer has it |
 | `check:analytics` **39** | Figures agree with the range they claim | The screen opened on 30 days and compared against all time |
-| `check:actions` **38** | Every server action checks a role | A hidden control is not a rule |
+| `check:actions` **42** | Every server action checks a role | A hidden control is not a rule |
 | `check:sorting` **41** | Sort orders are stable and mean what they say | — |
 | `check:paging` **37** | Page counts, bounds, the last page | — |
-| `check:spotlight` **31** | The refusal points at the cure; `.attention` has exactly one user | "Pause it first" named a cure without saying where it was kept |
+| `check:spotlight` **36** | The refusal points at the cure; `.attention` has exactly one user | "Pause it first" named a cure without saying where it was kept |
 | `check:address` **48** | Renaming a shop moves its address without touching a custom domain, breaking shared links, or taking a name somebody holds | A store's public URL is derived from its name, so a rename is three dangerous things at once |
-| `check:themes` **113** | A theme arranges the storefront, not only paints it; every variant a theme names is drawn; an untouched shop is untouched | `ThemeDefinition` had tokens and nothing else, so Aurora and Meridian rendered byte-identical HTML and differed only in CSS variables |
+| `check:themes` **153** | A theme arranges the storefront, not only paints it; every variant a theme names is drawn; an untouched shop is untouched | `ThemeDefinition` had tokens and nothing else, so Aurora and Meridian rendered byte-identical HTML and differed only in CSS variables |
 | `check:theme-store` **51** | A theme's demo exists, is reachable at one address, and is not a shop — every theme has a slug, Preview means three different things in three places, Add brings no demo content, a demo takes no orders, and the proxy's own headers cannot be sent by a visitor | The Theme Store's Preview opened the *merchant's* shop wearing an unowned theme, so a shop with four products and no photographs judged a photography-led theme on four pictures and a lot of white |
 | `check:gateways` **118** | Sealed credentials really seal; only the verification path pays for an order, and only by asking the provider; test mode never reaches a customer; an unpaid order gives back everything it took | The most-used PayFast library marks an order paid on any POST carrying a transaction id, and the field PayFast calls SIGNATURE is random hex |
 | `check:payments` **32** | A merchant chooses how they get paid; a method with no details is not offered; the server refuses one the shop does not take | Which methods existed was a constant in source, while Settings offered account details for methods no customer could pick |
-| `check:editor` **29** | Discard and Save exist wherever there is unsaved work | — |
-| `check:responsive` **29** | No screen scrolls sideways | — |
-| `check:cache` **25** | Every cached kind is dropped by whoever writes it | A merchant edited a screen that would not change. Twice. `lib/cache-tags.ts` claimed this script existed for months before it did |
+| `check:editor` **62** | Discard and Save exist wherever there is unsaved work | — |
+| `check:responsive` **39** | No screen scrolls sideways | — |
+| `check:cache` **38** | Every cached kind is dropped by whoever writes it | A merchant edited a screen that would not change. Twice. `lib/cache-tags.ts` claimed this script existed for months before it did |
 | `check:geo` **23** | Country blocking rides the one gate every page calls | A per-page check would eventually be forgotten on a new page |
-| `check:loom` **358** | Loom's sections can be driven by the live customizer: every text setting reaches the page (set to a marker, drawn in each state, the marker must appear), every show/hide switch changes the page, every menu setting's default exists, every template names registered sections | "Every word is a setting" is easy to claim and easy to break — one heading typed into a component looks identical and is invisible to the customizer. Negative-tested by typing a sentence into the search section |
+| `check:loom` **373** | Loom's sections can be driven by the live customizer: every text setting reaches the page (set to a marker, drawn in each state, the marker must appear), every show/hide switch changes the page, every menu setting's default exists, every template names registered sections | "Every word is a setting" is easy to claim and easy to break — one heading typed into a component looks identical and is invisible to the customizer. Negative-tested by typing a sentence into the search section |
+| `check:kite` **380** | Kite's half of `check:loom`: every text setting of every Kite section reaches the page in some state, every switch changes the page, every Site text key Kite names is drawn (or listed as appearing only after a click, or only on a real shop), every page a kit needs has a template that passes the server's save rules, and every Kite copy draws the kit | Written with Kite's connection to the platform (9 October). On its first run it found twenty settings whose customizer help said nothing ("Label."), a heading drawn only after a click, and a collection page that crashed when drawn without an address bar to read |
 | `check:loops` **4** | A redirect chain cannot eat itself | — |
 
 ---
@@ -145,3 +146,25 @@ knowing before trusting a green run:
   for the city, making seven later probes false passes.
 
 See `scripts/sweep/README.md`.
+
+---
+
+## Drawn as designed: `scripts/figma/`
+
+The two theme kits are rebuilt from design files (`docs/LOOM.md`, `docs/KITE.md`),
+and "looks like the file" is checked, not eyeballed. Not part of
+`npm run check` — they need a running app and Chrome on port 9222:
+
+| Tool | Does |
+| --- | --- |
+| `read-fig.mjs`, `inspect.mjs` | Decode a `.fig` without Figma and print an artboard's tree (sizes, text, fills, hidden layers) |
+| `render-fig.mjs` | Draw an artboard straight from the decoded file — text where Figma laid it out, images with the file's crops — and photograph it: the reference, with no Figma quota |
+| `diff.mjs` | Photograph a built page at the design's width and compare it with the reference pixel by pixel: the share differing, a difference map, the pair side by side |
+| `sweep-loom.mjs` | Open a page at twenty widths, 320 to 2560, and fail on sideways scrolling, clipped text, and words under the reading floor (any kit page, despite the name) |
+| `verify-loom.mjs`, `compare.mjs` | Earlier, Loom-only measurement passes |
+
+**Its own trap, met three times on 8 October:** a sweep or click test that
+says "failed" may be the probe — tabs sharing one browser's storage (a
+language switch in one changed the words the next searched for), a page that
+never reaches "complete" because something keeps a connection open, a stalled
+browser tab. Check the probe before the page it accuses.

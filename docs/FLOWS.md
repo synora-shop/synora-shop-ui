@@ -1,7 +1,7 @@
 # The journeys
 
-What a merchant actually walks through, end to end, and where each step is
-enforced. Written because several of these cross three or four screens, and a
+What a merchant — and, since October, a merchant's customer — actually walks
+through, end to end, and where each step is enforced. Written because several of these cross three or four screens, and a
 step that reads fine in isolation can be a dead end in sequence.
 
 The test for every flow here is the same: **at no point may a screen state a
@@ -402,6 +402,78 @@ One bar, one pattern, every screen. `components/admin/use-editor.ts`.
   to be asked, by pointing at the thing standing in the way.
 - Errors arrive rather than appear, announce themselves to a screen reader, and
   open their own height so the form below slides rather than being shoved.
+
+---
+
+## 7. Choosing a theme, and making it the shop's
+
+Admin → Your App → **Themes** (`docs/PANEL.md` §2). Three zones, in the order
+a merchant thinks: what is live, what this shop owns, what exists.
+
+1. **Theme Store.** Each card is the theme's demo, drawn live. **Preview**
+   opens `app.synoradigitals.com/theme-store/<theme>` — a whole storefront of
+   ours, with the goods its design file was drawn around (Loom's shoes, Kite's
+   Trümung pieces), identical for every visitor. Nothing there is the
+   merchant's, and nothing of it is ever copied to them.
+2. **Add** makes a copy in the shop's library — one row, no products, no
+   photographs. The merchant's own catalogue renders in it at once.
+3. **All Themes → Preview** opens the merchant's own shop wearing that copy
+   (`?__theme=<copy>`); customers see none of it.
+4. **Edit Theme** opens the customizer on that copy (`?theme=<copy>`), never the
+   live one by accident. For a kit (Loom, Kite) the page switcher lists the
+   theme's own pages — header, home, collection, product, search, saved items,
+   bag, checkout, sign in, account, order, footer. Sections can be added,
+   hidden, reordered and removed, except a page's main section (the product on
+   the product page). Every setting redraws the preview as it is typed. The
+   bag, account and order pages, which a merchant has none of, show the kit's
+   sample customer, order and bag — only in the preview.
+5. **Save** checks the page on the server (known sections, declared settings,
+   within limits) and stores only the pages the merchant changed. A page never
+   changed keeps following the theme's own default.
+6. **Activate** makes the copy live; the one it replaces moves into the
+   library rather than being lost. **Update** appears on an older copy and moves
+   it to the theme's newest version, keeping the merchant's changes on top.
+
+Where it can go wrong, and what the screen says: a theme for another business
+type cannot be added; the live copy cannot be removed; a demo that has not been
+seeded falls back to the shop wearing the theme rather than a 404.
+
+---
+
+## 8. A customer buying, and coming back
+
+On a kit theme, every step below is the theme's own page drawing the
+platform's actions (`lib/themes/kit-actions.ts`), so the rules are the same in
+every theme.
+
+1. **Browsing.** Every link moves in place — no full reload (`KitLinks`).
+   Colour chips open the shop filtered to that colour; search matches product
+   names.
+2. **The bag.** Add needs a size where a product has sizes; a sold-out size
+   cannot be chosen. The bag lives in the browser; the count in the header
+   follows it.
+3. **Checkout.** Email, name, address, a city from the shop's delivery list,
+   phone (the platform's phone rule), the shop's one delivery charge (free over
+   its threshold), a discount code priced by the server, and the shop's ways to
+   pay with their instructions. Every missing field is named and the first one
+   focused. A card method leaves for the provider's own page — no card number
+   is typed on the shop. A theme-store demo refuses here, with its own words:
+   "This is a demo store, so it can't take orders."
+4. **The order.** The customer lands on the order's own link
+   (`/order-confirmation/<id>?key=…`), which says thank you first; the email
+   carries the same link.
+5. **Coming back.** Sign in is an email and a code — no password, no separate
+   sign-up. The account shows orders, addresses (added, changed and removed
+   there) and details; details are changed by asking the shop. An order opened
+   without its link asks for its number and the email or phone it was placed
+   with (`docs/ARCHITECTURE.md` §7b).
+6. **Saved items.** The heart (Loom) or ADD TO FAVORITES (Kite) keeps a piece
+   in this browser's saved list, shown on the Saved items page and Kite's
+   account tab.
+
+Not yet there: an email sign-up for news (removed 9 October until the
+platform keeps a subscriber list), and a privacy-policy page the footer can
+link to (`docs/QUEUE.md`).
 
 ---
 

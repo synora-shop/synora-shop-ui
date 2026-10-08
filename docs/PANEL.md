@@ -260,7 +260,7 @@ Built 22 September:
 | The version a shop has | `InstalledTheme.version` — a theme is out of date when the two differ |
 | `Update` | `updateTheme` moves the shop's row to the version that ships |
 | A Theme Store separate from the owned list | Three sections, as drawn |
-| A picture of the live storefront in section 1 | The shipped picture, falling back to a live frame of the merchant's own shop |
+| A picture of the live storefront in section 1 | A live frame of the shop — and, since 8 October, live frames for every copy and every store card too (`docs/THEMES.md` §5) |
 
 ### Add makes a copy
 
@@ -336,6 +336,26 @@ already has its own Drafts screen and keeps it. `/admin/pages/drafts` stops
 being a tab and becomes part of the Pages screen.
 
 **Your App is therefore three screens**: Themes, Pages, Menus.
+
+---
+
+## 4b. The customizer, since September
+
+`app/(fullscreen)/admin/customize`. What changed after this document was drawn:
+
+- **It edits a theme's own sections** (8 October). For a kit theme (Loom,
+  Kite) the page switcher lists the theme's twelve pages and the panel is each
+  section's own settings, built from its schema — nothing in the customizer is
+  written per section. The preview redraws as the merchant types, header and
+  footer included (`KitLive`). Pages a merchant has nothing of — bag, account,
+  order — show the kit's sample customer, order and bag, in the preview only.
+- **Sections drag to reorder** (3 October), with the row being carried faded
+  and the landing edge drawn; the chevrons stay, because dragging has no
+  keyboard equivalent.
+- **The page switcher hugs its tabs** instead of drawing an empty pill across
+  the top bar.
+- **A save that fails says why**, and stores only what a section declares,
+  within limits (the customizer audit, 8 October — `docs/QUEUE.md`).
 
 ---
 
