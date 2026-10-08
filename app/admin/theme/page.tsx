@@ -109,7 +109,6 @@ export default async function ThemePage() {
             id: r.id,
             themeKey: r.themeKey,
             name: themeFor(r.themeKey).name,
-            preview: themeFor(r.themeKey).preview,
             version: r.version,
             latest: themeFor(r.themeKey).version,
             addedAt: when.format(r.installedAt).replace(",", " at"),
@@ -135,7 +134,6 @@ export default async function ThemePage() {
             key: t.key,
             name: t.name,
             description: t.description,
-            preview: t.preview,
             latest: t.version,
             plate: t.plate,
             // No demo — unseeded, or a theme with no published slug — falls

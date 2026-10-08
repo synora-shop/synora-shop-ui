@@ -586,30 +586,20 @@ console.log("\nA FONT A THEME NAMES IS A FONT THAT LOADS");
 }
 
 /*
- * A theme's own picture.
- *
- * Shot from the shop page rather than the home page: the header, the card
- * shape, the grid density and the colour are the four things that differ
- * between themes and they are all on it, while a home page in a shop without
- * photography is mostly grey rectangles.
+ * Every picture on the Themes screen is live (decided 8 October). Shipped
+ * screenshots were taken once and went stale — they showed the platform's old
+ * storefront long after the themes had changed, and never the merchant's own
+ * shop. Each picture is a live frame: the shop for the active theme, the shop
+ * wearing that copy for each library row, the theme's demo for each store card.
  */
-for (const theme of Object.values(THEMES)) {
-  if (!theme.preview) continue;
-  check(
-    `${theme.key}'s picture is a file that exists`,
-    existsSync(join(ROOT, "public", theme.preview.replace(/^\//, ""))),
-    theme.preview
-  );
-}
+check("the Themes screen shows no shipped picture", !/<Image\b/.test(gallery), "next/image on the Themes screen");
+check("the active theme is the shop itself, live", /StorefrontStill url=\{liveId \? `\$\{storeUrl\}\?__theme=\$\{liveId\}` : storeUrl\}/.test(gallery));
+check("each library copy is the shop wearing it, live", /StorefrontStill url=\{copy\.previewUrl\}/.test(gallery));
+check("each store card is the theme's demo, live", /StorefrontStill url=\{theme\.previewUrl\}/.test(gallery));
 check(
-  "every ecommerce theme has one",
-  ecom.every((t) => !!t.preview),
-  ecom.filter((t) => !t.preview).map((t) => t.key).join(", ")
-);
-check(
-  "and a theme without one still shows something",
-  /StorefrontStill url=\{(?:theme|live)\.previewUrl\}/.test(gallery),
-  "a live frame of the merchant's own storefront, which is what every theme had before"
+  "and those frames are not counted as visits to the shop",
+  /previewing = \/\[\?&\]\(__theme\|__preview\)=\//.test(read("app/(storefront)/layout.tsx")) &&
+    /!demo && !previewing/.test(read("app/(storefront)/layout.tsx"))
 );
 
 // ---------------------------------------------------------------------------

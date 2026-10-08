@@ -224,7 +224,10 @@ check(
   const manager = stripComments(read("components/admin/theme-manager.tsx"));
   check(
     "and the live section never falls back to a store card's link",
-    /StorefrontStill url=\{storeUrl\}/.test(manager) && !/url=\{liveTheme\.previewUrl\}/.test(manager),
+    // The shop's own address — with the live copy's id, which draws the same
+    // page and keeps the frame out of the visit count.
+    /StorefrontStill url=\{liveId \? `\$\{storeUrl\}\?__theme=\$\{liveId\}` : storeUrl\}/.test(manager) &&
+      !/url=\{liveTheme\.previewUrl\}/.test(manager),
     "on a shop running a theme it holds no copy of, liveTheme falls back to the store card — whose preview is now somebody else's demo"
   );
 }
@@ -262,7 +265,7 @@ check(
   const layout = stripComments(read("app/(storefront)/layout.tsx"));
   check(
     "a demo records no visits",
-    /if \(visiting && !demo\)/.test(layout),
+    /if \(visiting && !demo && !previewing\)/.test(layout),
     "these pages are crawled on purpose; a row per crawl is analytics nobody reads"
   );
   check(

@@ -88,18 +88,6 @@ export type ThemeDefinition = {
    */
   plate: { from: string; to: string };
   /**
-   * A picture of this theme, in `public/themes`.
-   *
-   * A photograph of the shop page rather than the home page, deliberately: the
-   * four things that actually differ between themes — the header, the shape of
-   * a product card, the density of the grid and the colour — are all on it, and
-   * a home page in a shop without photography is mostly grey rectangles.
-   *
-   * Optional. A theme without one falls back to a live frame of the merchant's
-   * own storefront, which is what every theme did before these existed.
-   */
-  preview?: string;
-  /**
    * How this theme *arranges* the storefront, and what it switches on.
    *
    * The half that was missing. A theme with only tokens is a palette: Loom
@@ -132,7 +120,6 @@ const loom: ThemeDefinition = {
   // merchant sees changed throughout.
   version: "2.0.0",
   plate: { from: "#8ab4c5", to: "#dbe8ed" },
-  preview: "/themes/loom.jpg",
   name: "Loom",
   description: "Clean and roomy, with large imagery. A safe first choice.",
   businessTypes: ["ecommerce"],
@@ -218,7 +205,6 @@ const kite: ThemeDefinition = {
   key: "kite",
   version: "1.0.0",
   plate: { from: "#8fc9ae", to: "#b8efd6" },
-  preview: "/themes/kite.jpg",
   name: "Kite",
   description: "Photography-led, with a tight grid and quick buying. For a shop with a look.",
   businessTypes: ["ecommerce"],

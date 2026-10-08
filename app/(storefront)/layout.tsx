@@ -153,11 +153,15 @@ export default async function StorefrontLayout({ children }: LayoutProps<"/">) {
   // A theme demo is indexed on purpose, so it is crawled — and a crawl should
   // not write a row per request into analytics belonging to a shop nobody
   // reads. Nothing here is a visit to anybody's store.
-  if (visiting && !demo) {
+  // Nor is the merchant's own preview: the Themes screen's live pictures
+  // (`?__theme=`) and the customizer (`?__preview`) load the storefront every
+  // time the screen opens.
+  const raw = (await headers()).get(SHOP_PATH_HEADER) ?? "/";
+  const previewing = /[?&](__theme|__preview)=/.test(raw);
+  if (visiting && !demo && !previewing) {
     // The proxy already passes the path down for the canonical redirect. Its
     // query is dropped: a URL's parameters carry campaign tags and sometimes
     // worse, and none of it belongs in a table this size.
-    const raw = (await headers()).get(SHOP_PATH_HEADER) ?? "/";
     const path = raw.split("?")[0] || "/";
     await recordVisit(visiting.id, path);
   }

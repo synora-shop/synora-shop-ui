@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import Image from "next/image";
 import { Check, Loader2, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { AddIcon } from "@/components/admin/nav-icons";
 import { ExternalLinkIcon } from "@/components/ui/synora-marks";
@@ -22,7 +21,6 @@ export type ThemeCopy = {
   id: string;
   themeKey: string;
   name: string;
-  preview?: string;
   /** The version this copy is at. */
   version: string;
   /** What the platform ships. Ahead of `version` means an update is waiting. */
@@ -37,7 +35,6 @@ export type StoreTheme = {
   key: string;
   name: string;
   description: string;
-  preview?: string;
   latest: string;
   previewUrl: string;
   /** The coloured plate this theme sits on, as two gradient stops. */
@@ -128,21 +125,12 @@ export function ThemeManager({
         {liveTheme ? (
           <div className="flex flex-col items-center">
             <div className="w-full max-w-[calc(892.5*var(--u))] overflow-hidden rounded-[var(--radius-section)] border border-section-line bg-panel">
-              {liveTheme.preview ? (
-                <Image
-                  src={liveTheme.preview}
-                  alt={`${liveTheme.name} on your storefront`}
-                  width={1440}
-                  height={900}
-                  className="h-auto w-full"
-                  priority
-                />
-              ) : (
-                // No shipped picture, so the shop itself stands in — a live
-                // frame of the merchant's own storefront wearing this design.
-                // The only preview that answers "what would MY shop look like".
-                <StorefrontStill url={storeUrl} height={450} />
-              )}
+              {/* The shop itself, live — never a shipped picture. Those were
+                  screenshots taken once, of a storefront that has changed
+                  since, and showed neither this shop nor the design as it is
+                  now. `?__theme=` with the live copy draws the same page and
+                  keeps the frame out of the shop's visit count. */}
+              <StorefrontStill url={liveId ? `${storeUrl}?__theme=${liveId}` : storeUrl} height={450} />
             </div>
 
             {/* The shop's own address on the left, the design on the right.
@@ -195,15 +183,8 @@ export function ThemeManager({
                   className="flex h-[calc(144*var(--u))] items-center gap-[var(--gap-lg)]"
                 >
                   <div className="h-[calc(108*var(--u))] w-[calc(171*var(--u))] flex-shrink-0 overflow-hidden rounded-[var(--radius-thumb)] border border-section-line bg-panel">
-                    {copy.preview && (
-                      <Image
-                        src={copy.preview}
-                        alt=""
-                        width={342}
-                        height={216}
-                        className="h-full w-full object-cover object-top"
-                      />
-                    )}
+                    {/* This shop wearing this copy, its edits included, live. */}
+                    <StorefrontStill url={copy.previewUrl} height={108} />
                   </div>
 
                   {/* A separator above every row but the first — above the
@@ -377,17 +358,8 @@ export function ThemeManager({
                       already does exactly that — two controls for one job, one
                       of them unlabelled. */}
                   <div className="h-full overflow-hidden rounded-[var(--radius-card-inner)] bg-panel">
-                    {theme.preview ? (
-                      <Image
-                        src={theme.preview}
-                        alt={`${theme.name} storefront`}
-                        width={1420}
-                        height={896}
-                        className="h-full w-full object-cover object-top"
-                      />
-                    ) : (
-                      <StorefrontStill url={theme.previewUrl} height={448} />
-                    )}
+                    {/* The theme's own demo, live — what it looks like today. */}
+                    <StorefrontStill url={theme.previewUrl} height={448} />
                   </div>
                 </div>
 
