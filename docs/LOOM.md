@@ -450,8 +450,15 @@ real storefront, from its own data:
 | Order | `/order-confirmation/<id>?key=` | Loom — "Thank you, {name}" straight after checkout. Opened from its link: read-only, the address cut to city and postcode; by the customer signed in: everything; without either: "Find your order" (number + email or phone). A card payment still waiting on the bank keeps the platform's page |
 
 Prices are in the shop's currency through the platform's formatter; links go
-through the shop's own addresses (a link setting may say `route:cart`); inside
-a theme demo every link carries the demo's prefix.
+through the shop's own addresses (a link setting may say `route:cart`, or
+`route:collection?color=Pink`); inside a theme demo every link, redirect and
+order request carries the demo's prefix (`storeRedirect`, `kitPlaceOrder`'s
+base). An empty link falls back to the shop — never "#", which only jumps to
+the top and reads as a reload — and a colour chip with none shows the shop in
+its colour. Links move in place (`KitLinks` in the frame), as the platform's
+own pages do, rather than loading every page from nothing; the phone menu
+closes when one of its links is followed. Found 8 October by clicking every
+link and button on the live demo, each in a fresh private browser.
 
 **The live customizer edits it.** For a Loom copy the page switcher lists
 Loom's pages (header, home, collection, product, search, wishlist, cart,
