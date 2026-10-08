@@ -73,6 +73,7 @@ function corners(n) {
 
 function describe(n) {
   const bits = [];
+  if (n.visible === false) bits.push("HIDDEN");
   if (n.size) bits.push(`${round(n.size.x)}x${round(n.size.y)}`);
   // transform is the node's own matrix; m02/m12 are its offset in the parent.
   const t = n.transform;
@@ -110,6 +111,8 @@ function describe(n) {
     bits.push(`"${(n.textData?.characters ?? "").replace(/\n/g, "⏎").slice(0, 46)}"`);
     bits.push(`${f.family ?? "?"} ${f.style ?? ""} ${n.fontSize}/${round(n.lineHeight?.value)} ls:${round(n.letterSpacing?.value ?? 0)}`);
     if (n.textAlignHorizontal) bits.push(n.textAlignHorizontal);
+    if (n.textCase && n.textCase !== "ORIGINAL") bits.push(`case:${n.textCase}`);
+    if (n.textDecoration && n.textDecoration !== "NONE") bits.push(n.textDecoration);
   }
   return bits.join("  ");
 }

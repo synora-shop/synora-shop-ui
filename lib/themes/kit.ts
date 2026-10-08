@@ -40,6 +40,8 @@ export type KitProduct = {
   colours: string[];
   /** The shade the shop set for each colour, where it set one. */
   colourHex?: Record<string, string>;
+  /** A line or two about it, where a theme shows one under the photograph. */
+  blurb?: string;
   /** Size names, as the product's options spell them. */
   sizes: string[];
   /** Lower is newer — what "Newest" sorts by. */
