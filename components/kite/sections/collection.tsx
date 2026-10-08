@@ -1,7 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import { cn } from "@/lib/utils";
 import { fill, on, route, str, type KiteContext } from "@/components/kite/contract";
 import { kt } from "@/components/kite/type";
@@ -27,6 +26,7 @@ import { SORTS, offeredColours, offeredSizes, priceBands, type CatalogueItem } f
  */
 type Filters = { colours: string[]; sizes: string[]; price: number | null };
 const NONE: Filters = { colours: [], sizes: [], price: null };
+const noSubscribe = () => () => {};
 const toggle = <T,>(list: T[], v: T) => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
 
 function Grid({ items, ctx, addLabel }: { items: CatalogueItem[]; ctx: KiteContext; addLabel: string }) {
@@ -40,8 +40,15 @@ function Grid({ items, ctx, addLabel }: { items: CatalogueItem[]; ctx: KiteConte
 }
 
 export function KiteCollection({ data, ctx }: { data: Record<string, unknown>; ctx: KiteContext }) {
-  const params = useSearchParams();
-  const [filters, setFilters] = useState<Filters>(() => ({ ...NONE, colours: params?.getAll("color") ?? [] }));
+  // A colour picked on the way in (a colour chip's `?color=`) starts chosen,
+  // until the shopper changes the filters themselves. Read from the browser's
+  // address rather than with useSearchParams, which stops a page being built
+  // ahead of time unless wrapped in Suspense — the production build refused
+  // /kite/shop for it (9 October). On the server it reads as no colour.
+  const search = useSyncExternalStore(noSubscribe, () => window.location.search, () => "");
+  const picked = useMemo(() => new URLSearchParams(search).getAll("color"), [search]);
+  const [own, setFilters] = useState<Filters | null>(null);
+  const filters = own ?? { ...NONE, colours: picked };
   const [open, setOpen] = useState(false);
   const [sort, setSort] = useState(0);
   const bands = useMemo(() => priceBands(ctx.products, ctx.currency, kiteMoney), [ctx.products, ctx.currency]);
