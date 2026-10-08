@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { href, str, type KiteContext } from "@/components/kite/contract";
 import { kt } from "@/components/kite/type";
 import { KiteSectionHead } from "@/components/kite/section-head";
+import { WHOLE, isFilePhoto } from "@/components/kite/assets";
 
 /**
  * About — "MacBook Pro 16" - 8" and "Mobile | About" in the file.
@@ -36,7 +37,7 @@ export function KiteAbout({ data, ctx }: { data: Record<string, unknown>; ctx: K
         <p {...kt("sans", 14, 16)}>{str(data, "text")}</p>
         {str(data, "image") ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={str(data, "image")} alt="" className="hidden h-[calc(200*var(--u))] w-full object-cover md:block" />
+          <img src={str(data, "image")} alt="" className={cn("hidden h-[calc(200*var(--u))] w-full md:block", isFilePhoto(str(data, "image")) ? "object-cover" : WHOLE)} />
         ) : null}
         {str(data, "linkLabel") ? (
           <a href={href(data, "link", ctx, "route:collection")} {...kt("sans", 16)} className={cn(kt("sans", 16).className, "underline")}>
@@ -48,7 +49,7 @@ export function KiteAbout({ data, ctx }: { data: Record<string, unknown>; ctx: K
       {portrait ? (
         <div className="absolute left-[calc(16*var(--u))] top-[calc(333*var(--u))] h-[calc(500*var(--u))] w-[calc(408*var(--u))] overflow-hidden md:left-[calc(1017*var(--u))] md:top-[calc(138*var(--u))] md:h-[calc(947*var(--u))] md:w-[calc(679*var(--u))]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={portrait} alt="" className="absolute inset-0 h-full w-full object-cover" />
+          <img src={portrait} alt="" className={cn("absolute inset-0 h-full w-full", isFilePhoto(portrait) ? "object-cover" : WHOLE)} />
           {str(data, "portraitText") ? (
             <p
               data-exact

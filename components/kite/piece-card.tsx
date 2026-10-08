@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { kt } from "@/components/kite/type";
 import type { KitProduct } from "@/lib/themes/kit";
+import { WHOLE, isFilePhoto } from "@/components/kite/assets";
 
 /** The file's arrow after "Add to cart": three 1.5 strokes, 10 square — Vector 16. */
 export function KiteArrow({ className }: { className?: string }) {
@@ -42,7 +43,7 @@ export function KitePieceCard({
     <article style={style} className={cn("flex flex-col gap-[calc(24*var(--u))] pb-[calc(32*var(--u))] shadow-[inset_0_-1px_0_#f4f3f1]", className)}>
       <a href={product.href} className="relative block w-full overflow-hidden" style={{ height: `calc(${photoHeight}*var(--u))` }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={product.src} alt={product.title} className="absolute inset-0 h-full w-full object-cover" />
+        <img src={product.src} alt={product.title} className={cn("absolute inset-0 h-full w-full", isFilePhoto(product.src) ? "object-cover" : WHOLE)} />
       </a>
       <div className={cn("flex flex-col items-end", blurb === "full" && "gap-[calc(32*var(--u))]")}>
         {product.blurb ? (

@@ -9,6 +9,7 @@ import { ktx } from "@/components/kite/text";
 import { useKitCart } from "@/lib/themes/kit-actions";
 import { KITE_RULE, KiteButton, KiteHeading, KiteLine, KitePage, KiteTextLink, KiteTitle } from "@/components/kite/ui";
 import type { KitCartLine } from "@/lib/themes/kit";
+import { WHOLE, isFilePhoto } from "@/components/kite/assets";
 
 /**
  * The bag — not in the file; Kite's own parts (decided 8 October). The
@@ -61,7 +62,7 @@ export function KiteCart({ data, ctx }: { data: Record<string, unknown>; ctx: Ki
               <li key={l.id} className={cn("flex gap-[calc(16*var(--u))] py-[calc(24*var(--u))] md:gap-[calc(32*var(--u))]", KITE_RULE)}>
                 <a href={l.href} className="relative block h-[calc(150*var(--u))] w-[calc(120*var(--u))] shrink-0 overflow-hidden md:h-[calc(200*var(--u))] md:w-[calc(160*var(--u))]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={l.src} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                  <img src={l.src} alt="" className={cn("absolute inset-0 h-full w-full", isFilePhoto(l.src) ? "object-cover" : WHOLE)} />
                 </a>
                 <div className="flex min-w-0 flex-1 flex-col justify-between gap-[calc(16*var(--u))]">
                   <div className="flex items-start justify-between gap-[calc(16*var(--u))]">

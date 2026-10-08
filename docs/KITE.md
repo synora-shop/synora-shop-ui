@@ -59,6 +59,18 @@ two stand-in fonts; every box, photo, crop and rule is within a pixel):
 
 The sweep is clear at all twenty widths, 320 to 2560.
 
+## A shop's own photographs (decided 9 October)
+
+The file shows a slice of many photographs (the Paris strip, 525x200, shows
+the middle 30% of an upright portrait) — that is Figma's framing, and the
+file's own photographs keep it exactly. A photograph a shop puts in their
+place is shown **whole**, scaled to fit the same box on the ground colour
+(`isFilePhoto` and `WHOLE` in components/kite/assets.ts: the file's live
+under `/kite/`). The box — and so the page — stays where the design puts it.
+The same holds for product photographs everywhere (cards, the product page,
+the bag): the product page's crop belongs to the file's shoe, not to every
+product's first photograph.
+
 ## Things easy to read wrongly
 
 - **"100%" line height is Auto.** The boxes are each font's natural height

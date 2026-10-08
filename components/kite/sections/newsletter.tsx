@@ -3,6 +3,7 @@ import { href, str, type KiteContext } from "@/components/kite/contract";
 import { kitHref } from "@/lib/themes/kit";
 import { kt } from "@/components/kite/type";
 import { KiteSectionHead } from "@/components/kite/section-head";
+import { WHOLE, isFilePhoto } from "@/components/kite/assets";
 
 type Story = { image?: string; number?: string; left?: string; right?: string; text?: string; link?: string };
 
@@ -51,7 +52,7 @@ export function KiteNewsletter({ data, ctx }: { data: Record<string, unknown>; c
       </div>
       {image ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={image} alt="" className="absolute left-[calc(32*var(--u))] top-[calc(138*var(--u))] hidden h-[calc(947*var(--u))] w-[calc(679*var(--u))] object-cover md:block" />
+        <img src={image} alt="" className={cn("absolute left-[calc(32*var(--u))] top-[calc(138*var(--u))] hidden h-[calc(947*var(--u))] w-[calc(679*var(--u))] md:block", isFilePhoto(image) ? "object-cover" : WHOLE)} />
       ) : null}
 
       <div className="absolute left-[calc(16*var(--u))] top-0 flex w-[calc(408*var(--u))] flex-col gap-[calc(16*var(--u))] md:left-[calc(743*var(--u))] md:top-[calc(278*var(--u))] md:w-[calc(583*var(--u))] md:gap-[calc(32*var(--u))]">
@@ -86,7 +87,7 @@ export function KiteNewsletter({ data, ctx }: { data: Record<string, unknown>; c
                 {s.image ? (
                   <a href={to || undefined} className="relative block h-[calc(200*var(--u))] w-full overflow-hidden">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={s.image} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                    <img src={s.image} alt="" className={cn("absolute inset-0 h-full w-full", isFilePhoto(s.image) ? "object-cover" : WHOLE)} />
                   </a>
                 ) : null}
                 <p {...kt("sans", 12)}>{s.number}</p>

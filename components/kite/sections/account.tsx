@@ -10,6 +10,7 @@ import { fill, str, type KiteContext } from "@/components/kite/contract";
 import { kt } from "@/components/kite/type";
 import { kiteMoney } from "@/components/kite/money";
 import { KitePieceCard } from "@/components/kite/piece-card";
+import { WHOLE, isFilePhoto } from "@/components/kite/assets";
 
 type Tab = "contact" | "saved" | "orders";
 
@@ -109,7 +110,7 @@ export function KiteAccount({ data, ctx }: { data: Record<string, unknown>; ctx:
       <div className="relative px-[calc(16*var(--u))] md:absolute md:left-0 md:top-0 md:h-[calc(966*var(--u))] md:w-[calc(864*var(--u))] md:px-0">
         {portrait ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={portrait} alt="" className="absolute inset-0 hidden h-full w-full object-cover md:block" />
+          <img src={portrait} alt="" className={cn("absolute inset-0 hidden h-full w-full md:block", isFilePhoto(portrait) ? "object-cover" : WHOLE)} />
         ) : null}
         <div className="relative flex flex-col gap-[calc(32*var(--u))] md:absolute md:left-[calc(32*var(--u))] md:top-[calc(686*var(--u))] md:w-[calc(585*var(--u))]">
           <div className="md:w-[calc(425*var(--u))]">

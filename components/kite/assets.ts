@@ -58,3 +58,18 @@ export const KITE_IMG = {
   savedBag2: at("f82cd67ab29fbf0113fa9c229fd9d7413bc61550"),
   savedBag3: at("77d4ad7f61fcf3ebab3cabe979ada4e23fb75aad"),
 } as const;
+
+/**
+ * Whether a photograph is one of the file's own (they all live under /kite/),
+ * as opposed to one a shop has put in its place.
+ *
+ * The file's photographs are drawn with the file's crops — a slice of each,
+ * as Figma shows it. A shop's own is shown whole, scaled to fit the same box
+ * on the ground colour, never cut (decided 9 October: "when users replace the
+ * pictures, their pics don't appear cropped"). The box, and so the page, stays
+ * where the design puts it.
+ */
+export const isFilePhoto = (src?: string | null) => !!src && src.startsWith("/kite/");
+
+/** How a shop's own photograph fills a box: whole, centred, on the ground. */
+export const WHOLE = "object-contain bg-[#040404]";

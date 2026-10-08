@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { str } from "@/components/kite/contract";
 import { kt } from "@/components/kite/type";
+import { WHOLE, isFilePhoto } from "@/components/kite/assets";
 
 /**
  * Journey — "MacBook Pro 16" - 10" running into "- 11" in the file.
@@ -40,7 +41,7 @@ export function KiteJourney({ data }: { data: Record<string, unknown> }) {
       {image ? (
         <div className="absolute left-[calc(525*var(--u))] top-[calc(309*var(--u))] h-[calc(938*var(--u))] w-[calc(679*var(--u))] overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={image} alt="" className="absolute left-[calc(-39.3*var(--u))] top-0 h-[calc(947*var(--u))] w-[calc(757.6*var(--u))] max-w-none" />
+          <img src={image} alt="" className={isFilePhoto(image) ? "absolute left-[calc(-39.3*var(--u))] top-0 h-[calc(947*var(--u))] w-[calc(757.6*var(--u))] max-w-none" : cn("absolute inset-0 h-full w-full", WHOLE)} />
         </div>
       ) : null}
       <p {...kt("script", 32)} className={cn(kt("script", 32).className, "absolute left-[calc(559*var(--u))] top-[calc(226*var(--u))] whitespace-nowrap")}>

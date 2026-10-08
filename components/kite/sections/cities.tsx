@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { kitHref } from "@/lib/themes/kit";
 import type { KiteContext } from "@/components/kite/contract";
 import { kt } from "@/components/kite/type";
+import { WHOLE, isFilePhoto } from "@/components/kite/assets";
 
 type City = { image?: string; imagePosition?: string; eyebrow?: string; title?: string; link?: string; phoneShade?: number };
 
@@ -38,7 +39,7 @@ export function KiteCities({ data, ctx }: { data: Record<string, unknown>; ctx: 
           >
             {c.image ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={c.image} alt="" className={cn("absolute inset-0 h-full w-full object-cover", c.imagePosition === "top" ? "object-top" : "object-center")} />
+              <img src={c.image} alt="" className={cn("absolute inset-0 h-full w-full", isFilePhoto(c.image) ? cn("object-cover", c.imagePosition === "top" ? "object-top" : "object-center") : WHOLE)} />
             ) : null}
             {c.phoneShade ? <div aria-hidden className="absolute inset-0 bg-black md:hidden" style={{ opacity: c.phoneShade / 100 }} /> : null}
             <div className="absolute inset-0 flex flex-col items-center justify-center">

@@ -7,6 +7,7 @@ import { kt } from "@/components/kite/type";
 import { kiteMoney } from "@/components/kite/money";
 import { useKitCart } from "@/lib/themes/kit-actions";
 import { useWishlist } from "@/components/loom/wishlist";
+import { WHOLE, isFilePhoto } from "@/components/kite/assets";
 
 /** The file's plus: two 10.5 strokes in an 18 square. Open, the upright goes. */
 function Plus({ open }: { open: boolean }) {
@@ -150,7 +151,8 @@ export function KiteProduct({ data, ctx }: { data: Record<string, unknown>; ctx:
             <img
               src={photos[main].src}
               alt={photos[main].alt}
-              className={cn("absolute inset-x-0 w-full", main === 0 ? "top-0 h-full object-cover md:top-[calc(-349.8*var(--u))] md:h-[calc(1099*var(--u))]" : "top-0 h-full object-cover")}
+              // The file's crop belongs to the file's shoe; a shop's own photograph is shown whole.
+              className={cn("absolute inset-x-0 w-full", !isFilePhoto(photos[main].src) ? cn("top-0 h-full", WHOLE) : main === 0 ? "top-0 h-full object-cover md:top-[calc(-349.8*var(--u))] md:h-[calc(1099*var(--u))]" : "top-0 h-full object-cover")}
             />
           ) : null}
         </div>
@@ -166,7 +168,7 @@ export function KiteProduct({ data, ctx }: { data: Record<string, unknown>; ctx:
             className="relative h-[calc(80*var(--u))] w-[calc(125.33*var(--u))] overflow-hidden md:h-[calc(179*var(--u))] md:w-[calc(200*var(--u))]"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={v.src} alt="" className="absolute inset-0 h-full w-full object-cover" />
+            <img src={v.src} alt="" className={cn("absolute inset-0 h-full w-full", isFilePhoto(v.src) ? "object-cover" : WHOLE)} />
           </button>
         ))}
       </div>
@@ -226,7 +228,7 @@ export function KiteProduct({ data, ctx }: { data: Record<string, unknown>; ctx:
               <a key={x.id} href={x.href} className="relative block min-h-[calc(204.1*var(--u))] w-[calc(350*var(--u))]">
                 <span className="absolute inset-0 overflow-hidden">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={x.src} alt={x.title} className="h-full w-full object-cover" />
+                  <img src={x.src} alt={x.title} className={cn("h-full w-full", isFilePhoto(x.src) ? "object-cover" : WHOLE)} />
                 </span>
                 {/* The band at the foot: 16 + the line + 16 — 56 at the design's size,
                     growing with the reading floor rather than cutting its words. */}

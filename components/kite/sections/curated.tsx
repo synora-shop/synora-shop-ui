@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { href, str, type KiteContext } from "@/components/kite/contract";
 import { kt } from "@/components/kite/type";
+import { WHOLE, isFilePhoto } from "@/components/kite/assets";
 
 /**
  * Curated by — "MacBook Pro 16" - 6" in the file, 1728x1117.
@@ -45,8 +46,8 @@ export function KiteCurated({ data, ctx }: { data: Record<string, unknown>; ctx:
             <img
               src={src}
               alt=""
-              className={cn("absolute left-0 w-full", b.crop ? "" : "top-0 h-full object-cover")}
-              style={b.crop ? { height: `calc(${b.crop.h}*var(--u))`, top: `calc(${b.crop.top}*var(--u))` } : undefined}
+              className={cn("absolute left-0 w-full", !isFilePhoto(src) ? cn("top-0 h-full", WHOLE) : b.crop ? "" : "top-0 h-full object-cover")}
+              style={b.crop && isFilePhoto(src) ? { height: `calc(${b.crop.h}*var(--u))`, top: `calc(${b.crop.top}*var(--u))` } : undefined}
             />
           </div>
         );

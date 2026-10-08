@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { WHOLE, isFilePhoto } from "@/components/kite/assets";
 
 /** One placed photograph: the file's box, and for a crop window the drawn height and offset. */
 export type KitePlaced = { x: number; y: number; w: number; h: number; crop?: { h: number; top: number } };
@@ -22,8 +23,8 @@ export function KiteCollage({ boxes, srcs }: { boxes: KitePlaced[]; srcs: string
             <img
               src={srcs[i]}
               alt=""
-              className={cn("absolute left-0 w-full", b.crop ? "" : "top-0 h-full object-cover")}
-              style={b.crop ? { height: `calc(${b.crop.h}*var(--u))`, top: `calc(${b.crop.top}*var(--u))` } : undefined}
+              className={cn("absolute left-0 w-full", !isFilePhoto(srcs[i]) ? cn("top-0 h-full", WHOLE) : b.crop ? "" : "top-0 h-full object-cover")}
+              style={b.crop && isFilePhoto(srcs[i]) ? { height: `calc(${b.crop.h}*var(--u))`, top: `calc(${b.crop.top}*var(--u))` } : undefined}
             />
           </div>
         ) : null

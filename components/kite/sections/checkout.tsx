@@ -11,6 +11,7 @@ import { isValidPakistaniPhone } from "@/lib/validation";
 import { kitPlaceOrder, kitPreviewDiscount, useKitCart } from "@/lib/themes/kit-actions";
 import { KITE_RULE, KITE_RULE_TOP, KiteButton, KiteField, KiteHeading, KiteLine, KitePage, KiteSelect, KiteTextLink, KiteTitle } from "@/components/kite/ui";
 import type { KitCartLine } from "@/lib/themes/kit";
+import { WHOLE, isFilePhoto } from "@/components/kite/assets";
 
 /**
  * Checkout — not in the file; Kite's own parts (decided 8 October).
@@ -246,7 +247,7 @@ export function KiteCheckout({ ctx }: { data: Record<string, unknown>; ctx: Kite
               <li key={l.id} className="flex items-center gap-[calc(16*var(--u))]">
                 <span className="relative block h-[calc(100*var(--u))] w-[calc(80*var(--u))] shrink-0 overflow-hidden">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={l.src} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                  <img src={l.src} alt="" className={cn("absolute inset-0 h-full w-full", isFilePhoto(l.src) ? "object-cover" : WHOLE)} />
                 </span>
                 <span className="flex min-w-0 flex-1 flex-col">
                   <span {...v} className={cn(v.className, "uppercase")}>{l.title}</span>
