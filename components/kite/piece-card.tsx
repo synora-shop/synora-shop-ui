@@ -24,12 +24,19 @@ export function KitePieceCard({
   addLabel,
   className,
   style,
+  blurb = "right",
 }: {
   product: KitProduct & { priceText: string };
   photoHeight: number;
   addLabel: string;
   className?: string;
   style?: React.CSSProperties;
+  /**
+   * The file's two cards: on the home page the blurb is 325 wide at the
+   * right, the row straight under it; in the account it is the card's width
+   * at the left, 32 above the row.
+   */
+  blurb?: "right" | "full";
 }) {
   return (
     <article style={style} className={cn("flex flex-col gap-[calc(24*var(--u))] pb-[calc(32*var(--u))] shadow-[inset_0_-1px_0_#f4f3f1]", className)}>
@@ -37,9 +44,9 @@ export function KitePieceCard({
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={product.src} alt={product.title} className="absolute inset-0 h-full w-full object-cover" />
       </a>
-      <div className="flex flex-col items-end">
+      <div className={cn("flex flex-col items-end", blurb === "full" && "gap-[calc(32*var(--u))]")}>
         {product.blurb ? (
-          <p {...kt("sans", 16)} className={cn(kt("sans", 16).className, "w-[calc(325*var(--u))] text-right")}>
+          <p {...kt("sans", 16)} className={cn(kt("sans", 16).className, blurb === "full" ? "w-full" : "w-[calc(325*var(--u))] text-right")}>
             {product.blurb}
           </p>
         ) : null}

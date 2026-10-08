@@ -39,8 +39,16 @@ export function KiteNewsletter({ data, ctx }: { data: Record<string, unknown>; c
   const image = str(data, "image");
   const phoneText = str(data, "textPhone") || str(data, "text");
   return (
-    <section data-k="newsletter" className="relative h-[calc(849*var(--u))] overflow-hidden md:h-[calc(1117*var(--u))]">
-      <KiteSectionHead numeral={str(data, "numeral")} title={str(data, "title")} />
+    // The stories' row is in the flow, with the file's own space around it —
+    // 339 above and 30 below on the phone (849), 622 and 15 on the desktop
+    // (1117) — so where the reading floor lengthens their words the section
+    // grows instead of cutting them off. Everything else is placed. The
+    // bottom space is a pixel short on purpose (see limited.tsx): the minimum
+    // height holds the design's size exactly.
+    <section data-k="newsletter" className="relative min-h-[calc(849*var(--u))] overflow-hidden pb-[calc(30*var(--u)-1px)] pt-[calc(339*var(--u))] md:min-h-[calc(1117*var(--u))] md:pb-[calc(15*var(--u)-1px)] md:pt-[calc(622*var(--u))]">
+      <div className="absolute inset-x-0 top-0">
+        <KiteSectionHead numeral={str(data, "numeral")} title={str(data, "title")} />
+      </div>
       {image ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={image} alt="" className="absolute left-[calc(32*var(--u))] top-[calc(138*var(--u))] hidden h-[calc(947*var(--u))] w-[calc(679*var(--u))] object-cover md:block" />
@@ -68,7 +76,7 @@ export function KiteNewsletter({ data, ctx }: { data: Record<string, unknown>; c
         ) : null}
       </div>
 
-      <div className="absolute left-0 right-0 top-[calc(339*var(--u))] overflow-x-auto [scrollbar-width:none] md:top-[calc(622*var(--u))]">
+      <div className="relative overflow-x-auto [scrollbar-width:none]">
         <div className="flex w-max items-start gap-[calc(32*var(--u))] pl-[calc(16*var(--u))] pr-[calc(16*var(--u))] md:pl-[calc(743*var(--u))]">
           {stories.map((s, i) => {
             const to = s.link ? kitHref(ctx, s.link) : "";

@@ -1,5 +1,5 @@
 import type { KiteContext, KiteMenu } from "@/components/kite/contract";
-import type { KitProduct, KitProductPage } from "@/lib/themes/kit";
+import type { KitCustomer, KitProduct, KitProductPage } from "@/lib/themes/kit";
 import { KITE_IMG } from "@/components/kite/assets";
 
 const BLURB =
@@ -82,3 +82,21 @@ export const KITE_DEMO_ROUTES: KiteContext["routes"] = {
 export function kiteDemoContext(extra: Partial<KiteContext> = {}): KiteContext {
   return { menus: KITE_DEMO_MENUS, routes: KITE_DEMO_ROUTES, products: KITE_DEMO_PIECES, ...extra };
 }
+
+const SAVED_BLURB = "A placeholder text is a block of nonsensical or meaningless text that...";
+const saved = (id: string, src: string): KitProduct => ({ ...piece(id, src, 0), blurb: SAVED_BLURB });
+
+/** The file's customer: Sarah Johnson, her three orders and her saved coats and bags. */
+export const KITE_DEMO_CUSTOMER: KitCustomer = {
+  firstName: "Sarah",
+  lastName: "Johnson",
+  email: "sarah@gmail.com",
+  phone: "+1 (249) 942-8320",
+  orders: ["04/17/2025", "03/24/2025", "02/12/2025"].map((date) => ({ id: "923HS92", date, state: "delivered" as const, total: 875, items: [], href: "/kite/account" })),
+  addresses: [{ id: "home", label: "Home", lines: ["100 Main St", "New York City 10001"], main: true, parts: { line1: "100 Main St", city: "New York City", postcode: "10001" } }],
+};
+
+export const KITE_DEMO_SAVED: KiteContext["savedGroups"] = [
+  { title: "SAVED COATS", items: [saved("coat1", KITE_IMG.savedCoat1), saved("coat2", KITE_IMG.savedCoat2), saved("coat3", KITE_IMG.savedCoat3)] },
+  { title: "SAVED BAGS", items: [saved("bag1", KITE_IMG.savedBag1), saved("bag2", KITE_IMG.savedBag2), saved("bag3", KITE_IMG.savedBag3)] },
+];

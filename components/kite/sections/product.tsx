@@ -207,10 +207,14 @@ export function KiteProduct({ data, ctx }: { data: Record<string, unknown>; ctx:
           <h2 {...kt("khand", 32)}>{str(data, "styleHeading")}</h2>
           <div className="flex gap-[calc(32*var(--u))]">
             {pieces.map((x) => (
-              <a key={x.id} href={x.href} className="relative block h-[calc(204.1*var(--u))] w-[calc(350*var(--u))] overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={x.src} alt={x.title} className="absolute inset-0 h-full w-full object-cover" />
-                <span className="absolute inset-x-0 top-[calc(148*var(--u))] flex h-[calc(56*var(--u))] items-start justify-between bg-black px-[calc(16*var(--u))] pt-[calc(16*var(--u))]">
+              <a key={x.id} href={x.href} className="relative block min-h-[calc(204.1*var(--u))] w-[calc(350*var(--u))]">
+                <span className="absolute inset-0 overflow-hidden">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={x.src} alt={x.title} className="h-full w-full object-cover" />
+                </span>
+                {/* The band at the foot: 16 + the line + 16 — 56 at the design's size,
+                    growing with the reading floor rather than cutting its words. */}
+                <span className="absolute inset-x-0 bottom-0 flex items-start justify-between bg-black px-[calc(16*var(--u))] py-[calc(16*var(--u))]">
                   <span {...kt("sans", 20)} className={cn(kt("sans", 20).className, "uppercase")}>{x.title}</span>
                   <span {...kt("sans", 20)} className={cn(kt("sans", 20).className, "uppercase")}>{kiteMoney(x.price, ctx.currency)}</span>
                 </span>

@@ -6,6 +6,8 @@ import { KiteJourney } from "@/components/kite/sections/journey";
 import { kiteFooterSchema } from "@/components/kite/sections/footer.schema";
 import { kiteProductSchema } from "@/components/kite/sections/pages.schema";
 import { KiteProduct } from "@/components/kite/sections/product";
+import { kiteAccountSchema } from "@/components/kite/sections/account.schema";
+import { KiteAccount } from "@/components/kite/sections/account";
 import { KiteFooter } from "@/components/kite/sections/footer";
 import { KiteUpcoming } from "@/components/kite/sections/upcoming";
 import { KiteAbout } from "@/components/kite/sections/about";
@@ -26,4 +28,5 @@ export const KITE_SECTIONS: Record<string, KiteSectionDef> = {
   KITE_JOURNEY: { schema: kiteJourneySchema, Render: KiteJourney },
   KITE_FOOTER: { schema: kiteFooterSchema, Render: KiteFooter },
   KITE_PRODUCT: { schema: kiteProductSchema, Render: KiteProduct },
+  KITE_ACCOUNT: { schema: kiteAccountSchema, Render: KiteAccount },
 };

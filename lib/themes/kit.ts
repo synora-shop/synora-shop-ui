@@ -140,7 +140,14 @@ export type KitCustomer = {
     items: { title: string; src: string }[];
     href: string;
   }[];
-  addresses: { id: string; label: string; lines: string[]; main: boolean }[];
+  addresses: {
+    id: string;
+    label: string;
+    lines: string[];
+    main: boolean;
+    /** The same address in parts, for a theme that shows street, city and postcode apart. */
+    parts?: { line1: string; city: string; postcode: string };
+  }[];
 };
 
 /**
@@ -228,7 +235,7 @@ export type KitContext = {
    */
   orderLookup?: { id: string };
   /** Which tab of the account to open on. */
-  accountTab?: "orders" | "addresses" | "details";
+  accountTab?: "orders" | "addresses" | "details" | "saved";
   menus: Record<string, KitMenu>;
   routes: KitRoutes;
   /** The products the page is about — a collection's, a search's, the shop's featured. */
@@ -253,6 +260,8 @@ export type KitContext = {
   currency?: string;
   /** A wishlist to draw before the browser's own is read — the demo's; nothing on a real shop. */
   wishlist?: Pick<KitProduct, "id" | "title" | "price" | "src" | "href">[];
+  /** The customer's saved pieces, in named groups ("Saved coats"), where a theme draws them so. */
+  savedGroups?: { title: string; items: KitProduct[] }[];
 };
 
 /** A section's definition: what it can be set to, and how it draws. */

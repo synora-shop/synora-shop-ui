@@ -29,3 +29,8 @@ export const PRODUCT: KiteTemplate = {
   name: "Product",
   sections: [{ id: "main", type: "KITE_PRODUCT", data: {} }],
 };
+
+export const ACCOUNT: KiteTemplate = {
+  name: "Account",
+  sections: [{ id: "main", type: "KITE_ACCOUNT", data: {} }],
+};

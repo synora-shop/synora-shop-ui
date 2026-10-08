@@ -16,6 +16,7 @@ export function KiteBagCount({ ctx }: { ctx: KiteContext }) {
   if (!n) return null;
   return (
     <span
+      data-exact
       aria-label={`${n} in the bag`}
       className="absolute left-[calc(10*var(--u))] top-[calc(-8*var(--u))] hidden h-[calc(16*var(--u))] w-[calc(16*var(--u))] items-center justify-center rounded-full bg-[#9c240c] text-[calc(10*var(--u))] leading-none text-[#f4f3f1] md:flex"
     >

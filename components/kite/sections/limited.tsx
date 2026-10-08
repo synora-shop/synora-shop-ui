@@ -27,7 +27,11 @@ export function KiteLimited({ data, ctx }: { data: Record<string, unknown>; ctx:
     // 333 above, 177 below, 1117 in all at the design's size — so where the
     // reading floor makes its words wrap longer (a small laptop), the section
     // grows with it instead of cutting it off. Everything else is placed.
-    <section data-k="limited" className="relative hidden min-h-[calc(1117*var(--u))] overflow-hidden pb-[calc(177*var(--u))] pl-[calc(786*var(--u))] pt-[calc(333*var(--u))] md:block">
+    // The bottom space is a pixel short of the file's on purpose: text lines
+    // round up by fractions, and without it the section came out 0.35px over
+    // its 1117 and nudged every section after it; the minimum height holds
+    // the design's size exactly.
+    <section data-k="limited" className="relative hidden min-h-[calc(1117*var(--u))] overflow-hidden pb-[calc(177*var(--u)-1px)] pl-[calc(786*var(--u))] pt-[calc(333*var(--u))] md:block">
       {str(data, "backdrop") ? (
         // SVG text held to the file's box (1721 wide, baseline 452 of 600, as Figma laid it):
         // the stand-in serif is ~3% wider than Hiragino, and as HTML the word

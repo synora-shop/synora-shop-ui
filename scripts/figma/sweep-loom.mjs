@@ -74,7 +74,11 @@ const PROBE = `(() => {
       if (!clipsX && !clipsY && !boxed) continue;
       if (a === swipe) break;
       const b = a.getBoundingClientRect();
-      if (t.left < b.left - 1 || t.right > b.right + 1 || t.top < b.top - 1 || t.bottom > b.bottom + 1) {
+      // Only along the axes the box actually clips: overflow-x: clip leaves
+      // the vertical free, and text running past its foot is not cut.
+      const outX = (clipsX || boxed) && (t.left < b.left - 1 || t.right > b.right + 1);
+      const outY = (clipsY || boxed) && (t.top < b.top - 1 || t.bottom > b.bottom + 1);
+      if (outX || outY) {
         out.clipped.push(label + " outside its " + (boxed ? "button" : a.dataset.m || (a.getAttribute("class") || "").split(" ")[0]));
       }
       break;

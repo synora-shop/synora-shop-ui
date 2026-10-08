@@ -35,7 +35,8 @@ const CHIP =
   "flex h-[max(calc(50*var(--u)),40px)] shrink-0 items-center whitespace-nowrap rounded-[200px] px-[calc(19*var(--u))] text-[max(calc(14*var(--u)),11.2px)] font-medium uppercase leading-[max(calc(24*var(--u)),19.2px)] tracking-[calc(1*var(--u))]";
 
 export function LoomAccount({ data, ctx }: { data: Record<string, unknown>; ctx: LoomContext }) {
-  const [tab, setTab] = useState<Tab>(ctx.accountTab ?? "orders");
+  // Loom has no saved-pieces tab (Kite does); its wishlist is a page of its own.
+  const [tab, setTab] = useState<Tab>(ctx.accountTab === "saved" || !ctx.accountTab ? "orders" : ctx.accountTab);
   const me = ctx.customer;
   if (!me) return null;
 

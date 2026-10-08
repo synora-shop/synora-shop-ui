@@ -49,4 +49,12 @@ export const KITE_IMG = {
   styleTrousers: at("14a06c3205245ddb6eaf6b05e1df32c85e953cee"),
   styleShirt: at("c0f4fe1ab275fd0abeb507d3075a4f8f13311af0"),
   styleCoat: at("75d9d56acb3f97386aff47df406bcce831b31ed8"),
+  // The account: the portrait, then the saved coats and bags.
+  accountPortrait: at("0e57ccabc27f9d6ecd7047566cab754f3f530ca3"),
+  savedCoat1: at("cb7a6afb47928407f0f6226024e86f93e4bedcd7"),
+  savedCoat2: at("f8db06208f6028fbe106b1743683b11580105919"),
+  savedCoat3: at("7c0f70607818acbdb71e554bf56f6b8ef1634b0d"),
+  savedBag1: at("86f9c437a168af86d6349e9a3a13deebe9b0b4f0"),
+  savedBag2: at("f82cd67ab29fbf0113fa9c229fd9d7413bc61550"),
+  savedBag3: at("77d4ad7f61fcf3ebab3cabe979ada4e23fb75aad"),
 } as const;
