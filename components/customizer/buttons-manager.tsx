@@ -196,7 +196,12 @@ export function ButtonsManager({ initial }: { initial: StickyButtonInput[] }) {
     }
     setSaveState("saving");
     try {
-      await saveStickyButtons(payload);
+      const result = await saveStickyButtons(payload);
+      if (!result.ok) {
+        setSaveState("error");
+        toast.error(result.error);
+        return;
+      }
       setSavedSnapshot(JSON.stringify(payload));
       setSaveState("saved");
       toast.success("Sticky buttons saved.");

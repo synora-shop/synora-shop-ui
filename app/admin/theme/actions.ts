@@ -75,8 +75,9 @@ export async function saveThemeTokens(
 
   // Nothing to write to means the copy is not in this shop's library, which a
   // customizer pointed at one the merchant removed in another tab can be.
+  // Returned, not thrown: production hides a thrown message from the merchant.
   if (updated.count === 0) {
-    throw new Error("That theme is not in your library. Add it again to keep editing.");
+    return { error: "That theme is not in your library. Add it again to keep editing." };
   }
 
   invalidateShop(await currentShopId(), "theme");

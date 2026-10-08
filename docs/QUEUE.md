@@ -226,9 +226,19 @@ turns: function, cost, scale, error handling). Turn 1, fixed:
 - **The editor loaded every copy's templates** and re-rendered itself after
   each save; now only the edited copy, and no re-render.
 
-Still to do: a browser test of a platform (non-kit) page save; the other admin
-actions that still throw; per-request query counts on the storefront; preview
-message size; size limits on what a save accepts; a concurrency load test.
+Turn 2, fixed:
+- Platform-page saves tried in the browser on a Kite copy: edit, typing during
+  a save, add/move/remove, two tabs (the second refused). All held.
+- The last two admin saves that threw a message a merchant needs — a sticky
+  button's bad link, "that theme is not in your library" — now return it. The
+  button list saves in one statement instead of one per button.
+- **No error page outside the admin.** A failure on a storefront showed
+  customers Next's bare "Application error"; the customizer had none either
+  (`app/admin/error.tsx` does not cover the `(fullscreen)` group). Added a
+  plain storefront one, the customizer's, and `global-error.tsx`.
+
+Still to do: per-request query counts on the storefront; preview message
+size; size limits on what a save accepts; a concurrency load test.
 
 **Theme store, compared 8 October with how he described it** (Shopify's
 model, themes on Synora's servers, users install into their panel):

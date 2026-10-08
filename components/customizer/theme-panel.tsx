@@ -145,6 +145,11 @@ export function ThemePanel({
     setSaveState("saving");
     try {
       const result = await saveThemeTokens(tokens, copyId);
+      if ("error" in result) {
+        setSaveState("error");
+        toast.error(result.error as string);
+        return;
+      }
       setSaved(result);
       setTokens(result);
       setSaveState("saved");

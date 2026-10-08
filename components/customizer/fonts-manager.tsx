@@ -130,7 +130,12 @@ export function FontsManager({
   async function handleSaveSelection() {
     setSaveState("saving");
     try {
-      await saveThemeTokens({ ...tokens, headingFont, bodyFont });
+      const result = await saveThemeTokens({ ...tokens, headingFont, bodyFont });
+      if ("error" in result) {
+        setSaveState("error");
+        setError(result.error as string);
+        return;
+      }
       setSaveState("saved");
       router.refresh();
     } catch {

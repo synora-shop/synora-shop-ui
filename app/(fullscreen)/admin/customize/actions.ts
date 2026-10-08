@@ -249,7 +249,6 @@ export async function createPageFromTemplate(
 /** Copies a page, its sections and its settings, under a new name. */
 export async function duplicatePage(pageId: string): Promise<{ id?: string; error?: string }> {
   await requireAdmin();
-  await requirePage(pageId);
 
   const source = await (await db()).page.findUnique({
     where: { id: pageId },

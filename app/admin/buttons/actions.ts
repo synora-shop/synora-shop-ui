@@ -2,7 +2,7 @@
 
 import { put } from "@vercel/blob";
 import { requireRole } from "@/lib/auth-guard";
-import { db, currentShopId } from "@/lib/data/shop";
+import { currentShopId } from "@/lib/data/shop";
 import { invalidateShop } from "@/lib/data/cached";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
@@ -72,21 +72,28 @@ function clean(input: StickyButtonInput) {
 /**
  * Replaces the whole button list in one transaction.
  */
-export async function saveStickyButtons(buttons: StickyButtonInput[]) {
+export async function saveStickyButtons(buttons: StickyButtonInput[]): Promise<{ ok: true } | { ok: false; error: string }> {
   await requireAdmin();
 
+  // Checked before anything is deleted, and returned rather than thrown: a
+  // thrown message is replaced by a generic one in production, so "WhatsApp:
+  // that is not a valid link" reached nobody.
+  let cleaned: ReturnType<typeof clean>[];
+  try {
+    cleaned = buttons.map(clean);
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Couldn't save the buttons." };
+  }
+
   const sid = await currentShopId();
-  await prisma.$transaction(async (tx) => {
-    await tx.stickyButton.deleteMany({ where: { shopId: sid } });
-    for (const [order, button] of buttons.entries()) {
-      await tx.stickyButton.create({
-        data: { shopId: sid, order, ...clean(button) },
-      });
-    }
-  });
+  await prisma.$transaction([
+    prisma.stickyButton.deleteMany({ where: { shopId: sid } }),
+    // One statement for the list, not one per button.
+    prisma.stickyButton.createMany({ data: cleaned.map((c, order) => ({ shopId: sid, order, ...c })) }),
+  ]);
 
   await revalidateButtons();
-  return (await db()).stickyButton.findMany({ orderBy: { order: "asc" } });
+  return { ok: true };
 }
 
 /**
