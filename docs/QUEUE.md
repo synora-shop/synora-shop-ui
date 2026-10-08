@@ -192,6 +192,29 @@ with sample data in the customizer (LOOM.md §7).
   (lib/order-access.ts, order-confirmation/lookup.ts). A missing order and a
   locked one look the same, so counting through ids learns nothing.
 
+**Deployed 8 October** (commit da6afbf, `main` = `import-parity-and-theme-keys`):
+the Loom kit, stage 2, secret order links, code sign-in for customers.
+Migrations 20261104–20261106 applied by the branch's preview build — it shares
+the live database (ARCHITECTURE.md §10). 20261030–20261103 had already been
+applied on 3 October the same way, with the visits merge before its fix
+(da6afbf): where a group's smallest id was not its earliest row, that day's
+repeat views for that visitor fell to 1. Ids are time-ordered cuids, so rare;
+the data then was the demo shops'.
+
+**Theme store, compared 8 October with how he described it** (Shopify's
+model, themes on Synora's servers, users install into their panel):
+- Matches: themes are code on our servers, never in a user's storage; Add in
+  Themes makes a copy that is a row of settings and layouts (kilobytes), not
+  files; each theme has a live demo at `/theme-store/<theme>` with a bar and
+  "Use this theme"; copies update by version.
+- **Gap — no front page:** `app.synoradigitals.com/theme-store` is 404; the
+  list of themes exists only inside the admin panel.
+- **Gap — "Use this theme" forgets the theme:** it always goes to
+  `/merchant/signup`, without saying which theme, and a signed-in user is not
+  taken to their panel to add it.
+- **Not built — storage per user:** uploads record their size (MediaAsset.size)
+  but there is no limit per user yet.
+
 **Release, decided 8 October:** there are no merchants, so every Loom copy is
 the new design (the kit starts at 1.0.0; the registry ships 2.0.0). Deploying
 still applies migration 20261104000000 to the live database — additive, one

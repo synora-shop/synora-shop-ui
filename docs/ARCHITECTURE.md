@@ -630,19 +630,23 @@ The domain checker wants to be hourly. See `docs/QUEUE.md`.
 
 ## 10. Deploying
 
-**A push to GitHub does not deploy.** Verified 7 September 2026: no build
-fires, `synora-shop-git-main` stays where it was, and there are no GitHub
-Actions. Every production deployment has been made from a machine with
-`vercel --prod`.
+**Every push deploys, and every deploy migrates the live database.** Seen 8
+October 2026 (the 7 September note that a push does not deploy is out of
+date — the Vercel Git integration has been connected since): pushing a branch
+builds a *preview*, pushing `main` builds *production*. Preview and production
+share one `DATABASE_URL`, and `npm run build` begins with
+`node scripts/migrate-deploy.mjs` — so **a branch push applies its migrations
+to the live database**, whatever the live site is running.
 
-**Deploying is what runs migrations** — `npm run build` begins with
-`node scripts/migrate-deploy.mjs`. So the thing to ask about before doing is
-the deploy, not the push. Pushing a commit that carries a migration is still
-worth flagging, because it makes that migration run on whoever's deploy comes
-next.
+That is how migrations 20261030000000–20261103000000 reached the live
+database on 3 October from a branch push, five days before the code that
+reads them went live.
 
-To deploy without shipping unfinished local work: clone to a scratch directory,
-check out the approved commit, copy `.vercel/` across, and deploy from there.
+So: ask before any push, of any branch, that carries a migration. To ship,
+push `main` and let the integration build it; `vercel ls synora-shop` and
+`vercel inspect <url> --logs` show what ran. A manual `vercel --prod` after
+that only builds the same commit again. Giving previews a database of their
+own would end the hazard.
 
 ---
 
