@@ -6,6 +6,7 @@ import { kitCustomerSignIn } from "@/lib/themes/kit-auth";
 import { useCartStore } from "@/lib/cart-store";
 import { previewDiscount } from "@/app/(storefront)/checkout/actions";
 import { addAddress, deleteAddress } from "@/app/(storefront)/account/addresses/actions";
+import { lookUpOrder } from "@/app/(storefront)/order-confirmation/lookup";
 import { CITIES } from "@/lib/cities";
 import type { KitCartLine, KitProductPage } from "@/lib/themes/kit";
 
@@ -105,7 +106,7 @@ export async function kitPlaceOrder(payload: {
   notes?: string;
   discountCode?: string;
   items: { productId: string; variantId: string; quantity: number }[];
-}): Promise<{ ok: true; orderId: string; leaving: boolean } | { ok: false; error: string }> {
+}): Promise<{ ok: true; orderId: string; accessKey: string; leaving: boolean } | { ok: false; error: string }> {
   try {
     const res = await fetch("/api/orders", {
       method: "POST",
@@ -128,9 +129,9 @@ export async function kitPlaceOrder(payload: {
       }
       document.body.appendChild(form);
       form.submit();
-      return { ok: true, orderId: data.orderId, leaving: true };
+      return { ok: true, orderId: data.orderId, accessKey: data.accessKey, leaving: true };
     }
-    return { ok: true, orderId: data.orderId, leaving: false };
+    return { ok: true, orderId: data.orderId, accessKey: data.accessKey, leaving: false };
   } catch {
     return { ok: false, error: "The order could not be placed. Check your connection and try again." };
   }
@@ -180,4 +181,9 @@ export async function kitAddAddress(a: { label: string; line1: string; city: str
   form.set("postalCode", a.postcode);
   form.set("phone", a.phone);
   await addAddress(form);
+}
+
+/** Find an order by its number and its email or phone; a match is its link. */
+export async function kitLookUpOrder(orderId: string, contact: string) {
+  return lookUpOrder(orderId, contact);
 }

@@ -23,11 +23,11 @@ import { headers } from "next/headers";
  * in for one is **the payment reference**: 24 random bytes, minted when the
  * customer was sent to the provider and handed back to them in the return URL.
  *
- * Requiring it matters. Order ids are five characters, and the confirmation
- * page has always been reachable by anyone who guesses one. Without the
- * reference, this action would inherit that — a stranger walking order ids
- * could start payment attempts against other people's orders and learn each
- * one's state from the refusals. With it, guessing an order id is not enough,
+ * Requiring it matters. Order ids are five characters — the confirmation page
+ * now asks for the order's secret key as well (lib/order-access.ts), but this
+ * action is called on its own. Without the reference, a stranger walking
+ * order ids could start payment attempts against other people's orders and
+ * learn each one's state from the refusals. With it, guessing an order id is not enough,
  * and the reference is only ever known to the person who was sent to pay.
  *
  * Everything else is belt and braces: rate limited, only ever an order that is
@@ -76,6 +76,7 @@ export async function retryPayment(orderId: string, reference: string): Promise<
 
   const started = await startPayment({
     orderId: order.id,
+    accessKey: order.accessKey,
     shopId: sid,
     provider: order.paymentMethod,
     // From the order, never from the caller. This is the whole reason the
@@ -97,3 +98,4 @@ export async function retryPayment(orderId: string, reference: string): Promise<
   if (!started.ok) return { ok: false, error: started.error };
   return { ok: true, url: started.url, fields: started.fields };
 }
+

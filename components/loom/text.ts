@@ -159,6 +159,14 @@ export const LOOM_TEXT = {
   "order.arrivingOn": "Arriving {date}.",
   "order.deliveredOn": "Delivered {date}.",
   "order.cancelledText": "This order was cancelled. If you were charged, it will come back to you.",
+  "order.thanks": "Thank you, {name}!",
+  "order.thanksText": "Your order is in. We have sent the details to your email — keep it to come back to this page.",
+  "order.lookupHeading": "Find your order",
+  "order.lookupText": "To see order {id}, give the email or phone number it was placed with.",
+  "order.lookupNumber": "Order number",
+  "order.lookupContact": "Email or phone",
+  "order.lookupButton": "Show my order",
+  "order.lookupError": "No order matches that number and email or phone.",
   "order.expected": "Expected {date}",
 
   // Sign in

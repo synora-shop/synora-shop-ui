@@ -2,7 +2,8 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 import { sendOrderEmails } from "@/lib/email";
 import { sendOrderPushNotifications } from "@/lib/push";
-import { shopNotificationEmail } from "@/lib/data/shop";
+import { canonicalUrl, shopNotificationEmail } from "@/lib/data/shop";
+import { orderLink } from "@/lib/order-access";
 
 /**
  * Tell the merchant and the customer that a gateway order has been paid for.
@@ -34,6 +35,7 @@ export async function announcePaidOrder(orderId: string): Promise<void> {
     paymentMethod: order.paymentMethod,
     shopName: order.shop.name,
     notifyEmail: await shopNotificationEmail(order.shopId),
+    orderUrl: orderLink(await canonicalUrl(order.shopId), order.id, order.accessKey),
   });
 
   await sendOrderPushNotifications({

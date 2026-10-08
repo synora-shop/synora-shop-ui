@@ -914,6 +914,12 @@ model Order {
   /// discount is later renamed or deleted.
   discountCode        String?
   discountAmount      Int           @default(0)
+  /// The secret in an order's link, as Shopify's order status token: the
+  /// order's page opens read-only, with personal details cut short, to whoever
+  /// holds the link — the customer, from the checkout or the email. The short
+  /// id is for reading out over WhatsApp, and opens nothing by itself. Filled
+  /// by the database (migration 20261105000000), never by app code.
+  accessKey           String        @default(dbgenerated("replace((gen_random_uuid())::text, '-'::text, ''::text)"))
   paymentStatus       PaymentStatus @default(PENDING)
   orderStatus         OrderStatus   @default(PENDING)
   transactionProofUrl String?

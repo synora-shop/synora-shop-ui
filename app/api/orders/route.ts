@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { orderLink } from "@/lib/order-access";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { currentShopId, requireShop, shopNotificationEmail } from "@/lib/data/shop";
@@ -412,6 +413,7 @@ export async function POST(request: Request) {
 
       const started = await startPayment({
         orderId: order.id,
+        accessKey: order.accessKey,
         shopId: sid,
         provider: "PAYFAST",
         amount: order.total,
@@ -444,6 +446,7 @@ export async function POST(request: Request) {
       // token it bought travels.
       return NextResponse.json({
         orderId: order.id,
+        accessKey: order.accessKey,
         redirect: { url: started.url, fields: started.fields },
       });
     }
@@ -462,6 +465,7 @@ export async function POST(request: Request) {
       paymentMethod: order.paymentMethod,
       shopName: (await requireShop()).name,
       notifyEmail: await shopNotificationEmail(order.shopId),
+      orderUrl: orderLink(await canonicalUrl(sid), order.id, order.accessKey),
     });
 
     await sendOrderPushNotifications({
@@ -471,7 +475,9 @@ export async function POST(request: Request) {
       shopId: order.shopId,
     });
 
-    return NextResponse.json({ orderId: order.id });
+    // The key goes back to the browser that placed the order, which is on the
+    // order's page a moment later — the same thing the email will carry.
+    return NextResponse.json({ orderId: order.id, accessKey: order.accessKey });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Failed to place order";
     return NextResponse.json({ error: message }, { status: 400 });

@@ -1,4 +1,3 @@
-import { notFound } from "next/navigation";
 import { StoreLink as Link } from "@/components/storefront/store-link";
 import { CheckCircle2 } from "lucide-react";
 import { Container } from "@/components/ui/container";
@@ -11,6 +10,9 @@ import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { isGatewayProvider } from "@/lib/payments/providers";
 import { PaymentStatus, type PaymentState } from "@/components/storefront/payment-status";
 import { getKitForRequest } from "@/lib/data/theme";
+import { currentCustomer } from "@/lib/data/customer";
+import { orderAccess } from "@/lib/order-access";
+import { OrderLookupForm } from "@/components/storefront/order-lookup-form";
 import { kitBaseContext, kitOrder, showsSamples } from "@/lib/data/kit-context";
 import { KitPage } from "@/components/storefront/kit-page";
 import { isPreview } from "@/lib/preview-mode";
@@ -80,7 +82,28 @@ export default async function OrderConfirmationPage(props: PageProps<"/order-con
     where: { id },
     include: { items: { include: { product: { select: { slug: true, images: true } } } } },
   });
-  if (!order) notFound();
+
+  // Who is asking (lib/order-access.ts). A missing order and one this visitor
+  // may not open get the same page — the lookup — so the page does not tell
+  // somebody counting through ids which of them are real.
+  const me = await currentCustomer();
+  const access = order ? orderAccess(order, { key: sp.key, customerId: me?.id ?? null }) : "none";
+  if (!order || access === "none") {
+    const lookupKit = await getKitForRequest();
+    if (lookupKit) {
+      const ctx = { ...(await kitBaseContext()), orderLookup: { id } };
+      return <KitPage kit={lookupKit.kit} templates={lookupKit.templates} name="order" ctx={ctx} preview={isPreview(sp)} />;
+    }
+    return (
+      <Container className="py-16">
+        <div className="mx-auto max-w-sm">
+          <h1 className="font-serif text-3xl font-semibold text-ink">Find your order</h1>
+          <p className="mt-2 text-sm text-ink-soft">To see this order, give the email or phone number it was placed with.</p>
+          <OrderLookupForm id={id} />
+        </div>
+      </Container>
+    );
+  }
 
   const online = isGatewayProvider(order.paymentMethod);
   // Asked of the reservation code rather than compared to the clock here.
@@ -115,7 +138,7 @@ export default async function OrderConfirmationPage(props: PageProps<"/order-con
   if (kit) {
     const base = await kitBaseContext();
     const notice = state === "manual" ? undefined : statusMessage;
-    const ctx = { ...base, order: await kitOrder(order, notice, base.base) };
+    const ctx = { ...base, order: kitOrder(order, { notice, base: base.base, access, thanks: sp.placed === "1" }) };
     return <KitPage kit={kit.kit} templates={kit.templates} name="order" ctx={ctx} preview={isPreview(sp)} />;
   }
 

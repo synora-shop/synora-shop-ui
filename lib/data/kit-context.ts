@@ -273,13 +273,15 @@ type OrderRow = {
 };
 
 /**
- * One order as a kit's order page shows it. The delivery address goes only to
- * the signed-in customer who placed it: an order's page opens from its id,
- * and an id is not a password.
+ * One order as a kit's order page shows it, at the access the caller worked
+ * out (lib/order-access.ts) — never "none": that visitor is asked to look the
+ * order up instead.
  */
-export async function kitOrder(o: OrderRow, notice: string | undefined, base = ""): Promise<KitOrder> {
-  const me = await currentCustomer();
-  const owner = !!me && o.customerId === me.id;
+export function kitOrder(
+  o: OrderRow,
+  { notice, base = "", access, thanks = false }: { notice?: string; base?: string; access: "full" | "link"; thanks?: boolean }
+): KitOrder {
+  const place = [o.shippingCity, o.shippingPostalCode].filter(Boolean).join(" ");
   return {
     id: o.id,
     placed: day(o.createdAt),
@@ -300,14 +302,16 @@ export async function kitOrder(o: OrderRow, notice: string | undefined, base = "
     delivery: o.shippingFee,
     discount: o.discountAmount > 0 ? { code: o.discountCode ?? "", saving: o.discountAmount } : null,
     speed: null,
-    address: owner
-      ? [o.customerName, o.shippingLine1, o.shippingLine2, [o.shippingCity, o.shippingPostalCode].filter(Boolean).join(" "), o.customerPhone].filter(
-          (x): x is string => !!x
-        )
-      : null,
+    // Whole for the customer signed in; from a link, which gets forwarded,
+    // only the city and postcode — as Shopify's order status page does.
+    address:
+      access === "full"
+        ? [o.customerName, o.shippingLine1, o.shippingLine2, place, o.customerPhone].filter((x): x is string => !!x)
+        : [place],
     payment: isGatewayProvider(o.paymentMethod) ? checkoutLabel(o.paymentMethod) : (paymentMethodMeta(o.paymentMethod)?.label ?? o.paymentMethod),
     notice,
     tracking: "",
+    thanks: thanks ? nameParts(o.customerName).firstName : undefined,
   };
 }
 

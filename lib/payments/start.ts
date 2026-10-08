@@ -1,4 +1,5 @@
 import "server-only";
+import { orderLink } from "@/lib/order-access";
 import { randomBytes } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { adapterFor, gatewayRow, openCredentials } from "@/lib/payments/gateways";
@@ -24,6 +25,8 @@ export type StartPaymentResult =
 
 export type StartPaymentArgs = {
   orderId: string;
+  /** The order's secret key, so the customer comes back to a page that opens. */
+  accessKey: string;
   /**
    * The shopper's address, as this request saw it.
    *
@@ -124,7 +127,7 @@ export async function startPayment(args: StartPaymentArgs): Promise<StartPayment
     },
   });
 
-  const returnUrl = `${args.origin}/order-confirmation/${args.orderId}?ref=${encodeURIComponent(reference)}`;
+  const returnUrl = `${orderLink(args.origin, args.orderId, args.accessKey)}&ref=${encodeURIComponent(reference)}`;
 
   const started = await adapterFor(args.provider).start({
     credentials: openCredentials(gateway),

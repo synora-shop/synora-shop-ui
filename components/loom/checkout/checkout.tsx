@@ -152,7 +152,9 @@ export function LoomCheckout({ data, ctx }: { data: Record<string, unknown>; ctx
       }
       cart.clear();
       // A card payment has already left for the provider's page.
-      if (!result.leaving) router.push(`${ctx.base ?? ""}/order-confirmation/${result.orderId}`);
+      // The order's link, with its key — the same one the email carries — and
+      // `placed`, so the page says thank you this once.
+      if (!result.leaving) router.push(`${ctx.base ?? ""}/order-confirmation/${result.orderId}?key=${result.accessKey}&placed=1`);
     });
   };
 

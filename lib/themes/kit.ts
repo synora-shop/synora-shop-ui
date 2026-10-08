@@ -112,6 +112,11 @@ export type KitOrder = {
   notice?: string;
   /** A courier's tracking address, or "" when there is none. */
   tracking: string;
+  /**
+   * The customer's first name, on the visit straight after checkout — the
+   * page then says thank you before it says where the order has got to.
+   */
+  thanks?: string;
 };
 
 /** A signed-in customer: who they are, their orders, their addresses. */
@@ -197,6 +202,11 @@ export type KitContext = {
   authMode?: "in" | "up";
   /** Where to go once signed in. */
   afterSignIn?: string;
+  /**
+   * An order's page opened without its key by someone who did not place it:
+   * the kit asks for the order's email or phone instead (lookUpOrder).
+   */
+  orderLookup?: { id: string };
   /** Which tab of the account to open on. */
   accountTab?: "orders" | "addresses" | "details";
   menus: Record<string, KitMenu>;

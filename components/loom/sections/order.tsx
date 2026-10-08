@@ -7,6 +7,7 @@ import { href, route, str, on, type LoomContext } from "@/components/loom/contra
 import { T } from "@/components/loom/type";
 import { tx } from "@/components/loom/text";
 import { LoomPageHeading, PAGE_SECTION } from "@/components/loom/sections/page-heading";
+import { LoomOrderLookup } from "@/components/loom/sections/order-lookup";
 
 const STAGES = ["orderStatus.ordered", "orderStatus.packed", "orderStatus.shipped", "orderStatus.delivered"] as const;
 
@@ -28,7 +29,7 @@ const STAGES = ["orderStatus.ordered", "orderStatus.packed", "orderStatus.shippe
  */
 export function LoomOrderView({ data, ctx }: { data: Record<string, unknown>; ctx: LoomContext }) {
   const o = ctx.order;
-  if (!o) return null;
+  if (!o) return ctx.orderLookup ? <LoomOrderLookup ctx={ctx} id={ctx.orderLookup.id} /> : null;
   const subtotal = o.lines.reduce((n, l) => n + l.price * l.qty, 0);
   // Say when it comes only where somebody knows.
   const aside = o.cancelled
@@ -51,9 +52,15 @@ export function LoomOrderView({ data, ctx }: { data: Record<string, unknown>; ct
       <LoomPageHeading
         m="order-title"
         eyebrow={tx(ctx, "order.eyebrow", { id: o.id, date: o.placed })}
-        title={tx(ctx, o.cancelled ? "orderStatus.cancelled" : STAGES[o.stage])}
-        aside={aside}
+        title={o.thanks ? tx(ctx, "order.thanks", { name: o.thanks }) : tx(ctx, o.cancelled ? "orderStatus.cancelled" : STAGES[o.stage])}
+        aside={o.thanks ? undefined : aside}
       />
+      {/* Straight after checkout: thank you first, then where it has got to. */}
+      {o.thanks && (
+        <p data-m="order-thanks" className={cn(T.body6, "pb-[calc(16*var(--u))] text-[#121212]/80 md:w-[calc(654*var(--u))] md:text-[max(calc(18*var(--u)),14.4px)]")}>
+          {tx(ctx, "order.thanksText")}
+        </p>
+      )}
 
       {o.cancelled && <p className={cn(T.body6, "pt-[calc(16*var(--u))] text-[#121212]/80")}>{tx(ctx, "order.cancelledText")}</p>}
       {o.notice && (

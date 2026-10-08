@@ -60,6 +60,9 @@ const STATES: LoomContext[] = [
   // A real shop's order: cancelled; and one that knows a day but no speed.
   demoContext({ order: { ...demoContext().order!, cancelled: true } }),
   demoContext({ order: { ...demoContext().order!, speed: null } }),
+  // Straight after checkout, and an order opened without its key.
+  demoContext({ order: { ...demoContext().order!, thanks: "Sana" } }),
+  demoContext({ order: undefined, orderLookup: { id: "ab12c" } }),
   // A real shop's new customer — nothing ordered, nothing saved — on each tab.
   ...(["orders", "addresses", "details"] as const).map((accountTab) =>
     demoContext({ live: true, accountTab, customer: { ...demoContext().customer!, orders: [], addresses: [] } })
@@ -180,7 +183,7 @@ const AFTER_INTERACTION = new Set<string>([
   "collections.emptyState", "collections.countOne", "collections.showMore", "filters.clearFilters",
   "filters.clearAll", "filters.clear", "filters.close", "filters.showResults", "filters.showResultsOne",
   "product.removeFromWishlist", "product.addedToCart", "product.unavailable",
-  "account.addressLabel", "account.addressLabelHint", "account.saveAddress", "account.cancel", "account.signInFailed",
+  "account.addressLabel", "account.addressLabelHint", "account.saveAddress", "account.cancel", "account.signInFailed", "order.lookupError",
 ]);
 // Words only a real shop draws, once the browser has read its cart — which a
 // server render never has (the cart lives in the browser's storage). The

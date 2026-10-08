@@ -447,7 +447,7 @@ real storefront, from its own data:
 | Checkout | `/checkout` | Loom — the platform's order API: the shop's delivery cities, payment methods (with their instructions), one delivery charge, discount codes priced by the server, the platform's phone rule, a signed-in customer's details filled in. A card method leaves for the provider's page |
 | Sign in, register | `/account/login`, `/account/register` | Loom — the platform's **customer** sign-in, run on the server so the shop is the one in the address |
 | Account | `/account`, `/account/orders`, `/account/addresses` | Loom — the latest 20 orders in all six states; addresses added and removed; details shown, not edited |
-| Order | `/order-confirmation/<id>` | Loom — except a card payment still waiting on the bank, which keeps the platform's page (it checks again and offers another try). The delivery address shows only to the signed-in customer who placed it |
+| Order | `/order-confirmation/<id>?key=` | Loom — "Thank you, {name}" straight after checkout. Opened from its link: read-only, the address cut to city and postcode; by the customer signed in: everything; without either: "Find your order" (number + email or phone). A card payment still waiting on the bank keeps the platform's page |
 
 Prices are in the shop's currency through the platform's formatter; links go
 through the shop's own addresses (a link setting may say `route:cart`); inside
@@ -489,8 +489,6 @@ sign out, a wrong password, sign in; the five new pages swept at 20 widths.
 - **On a real shop, not yet:** "Forgot password" (the platform has no reset),
   changing an address or making one the main one, changing one's name or
   phone, "Buy again" — each hidden rather than offered and doing nothing.
-- **The order page says "Ordered", not "Thank you"** right after checkout; the
-  platform's page thanks by name. A thank-you state is a small addition.
 
 ---
 

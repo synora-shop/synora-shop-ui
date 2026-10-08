@@ -38,6 +38,12 @@ type OrderEmailData = {
    * merchant who made the sale was never told. Null simply sends no notice.
    */
   notifyEmail: string | null;
+  /**
+   * The order's page, with its secret key (lib/order-access.ts) — the
+   * customer's way back to it. Only in the customer's email: the merchant's
+   * notice goes to their own panel, which needs no key.
+   */
+  orderUrl?: string;
 };
 
 function itemsList(items: OrderEmailItem[], currency: string) {
@@ -68,7 +74,7 @@ export async function sendOrderEmails(order: OrderEmailData) {
       from: FROM,
       to: order.customerEmail,
       subject: `Your ${order.shopName} order #${order.id} is confirmed`,
-      text: `Hi ${order.customerName},\n\nThank you for your order from ${order.shopName}.\n\n${summary}\n\nWe'll be in touch once it ships.`,
+      text: `Hi ${order.customerName},\n\nThank you for your order from ${order.shopName}.\n\n${summary}\n\n${order.orderUrl ? `See your order at any time: ${order.orderUrl}\n\n` : ""}We'll be in touch once it ships.`,
     });
 
     if (order.notifyEmail) {

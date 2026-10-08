@@ -73,6 +73,10 @@ export const LIMITS = {
   // A customer refreshing the "did my payment go through" page. One shopper
   // pressing reload should not be able to loop a call to the provider.
   paymentCheck: { max: 20, windowMs: 5 * 60 * 1000, blockMs: 5 * 60 * 1000 },
+  // Finding an order by its number and its email or phone. Public, and each
+  // try is a guess at somebody's contact details: a customer who mistypes
+  // needs a few goes, nobody needs dozens.
+  orderLookup: { max: 6, windowMs: 15 * 60 * 1000, blockMs: 30 * 60 * 1000 },
 } as const satisfies Record<string, Limit>;
 
 export type LimitName = keyof typeof LIMITS;
@@ -193,6 +197,7 @@ const MESSAGES: Record<LimitName, (seconds: number) => string> = {
   reopenSignup: (s) => `That's already been sent. Try again in ${humanise(s)}.`,
   paymentCallback: (s) => `Too many notifications. Try again in ${humanise(s)}.`,
   paymentCheck: (s) => `Checking too often. Try again in ${humanise(s)}.`,
+  orderLookup: (s) => `Too many tries. Try again in ${humanise(s)}.`,
 };
 
 export function humanise(seconds: number): string {

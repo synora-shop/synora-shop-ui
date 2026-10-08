@@ -244,7 +244,7 @@ export function CheckoutForm({
         return;
       }
 
-      router.push(`/order-confirmation/${data.orderId}`);
+      router.push(`/order-confirmation/${data.orderId}?key=${data.accessKey}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : genericError);
       setSubmitting(false);
