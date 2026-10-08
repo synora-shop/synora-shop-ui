@@ -75,6 +75,7 @@ export function toKitProduct(p: ProductRow, rank: number, base = ""): KitProduct
     price: effectivePrice(p as never),
     src: p.images[0] ?? "",
     colours: unique(p.variants.map((v) => v.color)),
+    colourHex: Object.fromEntries(p.variants.filter((v) => v.color.trim() && v.colorHex).map((v) => [v.color.trim(), v.colorHex as string])),
     sizes: unique(p.variants.map((v) => v.size)),
     age: rank,
     href: withBase(base, `/product/${p.slug}`),

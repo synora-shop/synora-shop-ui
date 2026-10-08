@@ -36,11 +36,60 @@ export const SHOES: CatalogueItem[] = [
   { id: "sport", title: "Sportwear Shoe", price: 159, src: "/loom/f8ae4065476b2a224ae85cd40fd6b1c7d34bc9ae.png", colours: ["Red Pastel", "Clean White"], sizes: ["US 7", "US 8", "US 9", "US 10", "US 11", "US 12"], age: 5, href: "#" },
 ];
 
-export const PRICE_BANDS = [
+/**
+ * The design file's price bands, in its dollars — for the reference build,
+ * which has no shop and no currency behind it.
+ */
+const FIGMA_BANDS: PriceBand[] = [
   { label: "Under $130", test: (p: number) => p < 130 },
   { label: "$130 – $200", test: (p: number) => p >= 130 && p <= 200 },
   { label: "Over $200", test: (p: number) => p > 200 },
-] as const;
+];
+
+export type PriceBand = { label: string; test: (p: number) => boolean };
+
+/** A tidy number near n: two significant figures ("27,500", "130", "4,500"). */
+const tidy = (n: number) => {
+  const step = 10 ** Math.max(0, Math.floor(Math.log10(Math.max(n, 1))) - 1);
+  return Math.round(n / step) * step;
+};
+
+/**
+ * Price bands for the products on the page, in the shop's currency: the
+ * cheaper third, the middle, the dearer third, cut at tidy numbers. A real
+ * shop's prices are whatever it charges in whatever it trades in — dollar
+ * bands were wrong for every one of them. No bands at all where the prices do
+ * not spread enough to split.
+ */
+export function priceBands(items: { price: number }[], currency: string | undefined, fmt: (n: number, c?: string) => string): PriceBand[] {
+  if (!currency) return FIGMA_BANDS;
+  const prices = items.map((p) => p.price).sort((a, b) => a - b);
+  if (prices.length < 3) return [];
+  const low = tidy(prices[Math.floor(prices.length / 3)]);
+  const high = tidy(prices[Math.floor((prices.length * 2) / 3)]);
+  if (!(low < high) || low <= prices[0] || high > prices[prices.length - 1]) return [];
+  return [
+    { label: `Under ${fmt(low, currency)}`, test: (p) => p < low },
+    { label: `${fmt(low, currency)} – ${fmt(high, currency)}`, test: (p) => p >= low && p <= high },
+    { label: `Over ${fmt(high, currency)}`, test: (p) => p > high },
+  ];
+}
+
+/** The sizes some product on the page has: the design's order first, then the shop's own, as they come. */
+export function offeredSizes(items: { sizes: readonly string[] }[]): string[] {
+  const all = Array.from(new Set(items.flatMap((p) => p.sizes)));
+  const known = (SIZES as readonly string[]).filter((s) => all.includes(s));
+  return [...known, ...all.filter((s) => !known.includes(s))];
+}
+
+/** The colours some product on the page has, each with its shade — the design's, else the shop's own, else grey. */
+export function offeredColours(items: { colours: string[]; colourHex?: Record<string, string> }[]): { name: string; hex: string }[] {
+  const names = Array.from(new Set(items.flatMap((p) => p.colours)));
+  return names.map((name) => ({
+    name,
+    hex: (SWATCHES as Record<string, string>)[name] ?? items.find((p) => p.colourHex?.[name])?.colourHex?.[name] ?? "#d9d9d9",
+  }));
+}
 
 export const SORTS: { label: string; key: "sort.featured" | "sort.newest" | "sort.priceLow" | "sort.priceHigh"; by: (a: CatalogueItem, b: CatalogueItem) => number }[] = [
   // Featured is the order the collection arrives in; sort() keeps it for ties.

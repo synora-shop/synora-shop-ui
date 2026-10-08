@@ -170,14 +170,15 @@ const RED: [string, string] = ["Red Pastel", "#e25f5f"];
 /**
  * Loom: the shoe shop its design file draws (decided 8 October — the demo
  * sells what the theme was designed around, with the design's own
- * photographs, not placeholder scenery). Prices in dollars, as the file has
- * them. The home page's photographs and words are the theme's own section
+ * photographs, not placeholder scenery). Prices are the file's dollars in
+ * rupees, at about 280 to the dollar, rounded — the shop trades in PKR like
+ * every other. The home page's photographs and words are the theme's own section
  * defaults; this is the catalogue behind them.
  */
 const loom: DemoCatalogue = {
   storeName: "Ecommerce",
   tagline: "Ecommerce is a free UI Kit from Paperpillar that you can use for your personal or commercial project.",
-  announcement: { text: "Free shipping on every order over $200", background: "#121212" },
+  announcement: { text: "Free delivery on every order over Rs 50,000", background: "#121212" },
   hero: {
     eyebrow: "Summer",
     headline: "Color of Summer Outfit",
@@ -197,14 +198,13 @@ const loom: DemoCatalogue = {
   categoryImages: { shoes: SHOE.skateHigh, skateboard: SHOE.skateStripe, sneakers: SHOE.sport },
   options: { name: "Size", values: ["US 7", "US 8", "US 9", "US 10", "US 11", "US 12"] },
   option2: { name: "Colour", values: [NAVY, WHITE, GREEN, RED] },
-  currency: "USD",
   products: [
-    { title: "Casual Shoe", slug: "casual-shoe", price: 225, category: "sneakers", featured: true, images: [SHOE.casual], colours: [NAVY, WHITE], sizes: ["US 7", "US 8", "US 9", "US 10", "US 11"], blurb: "A clean leather upper on a cushioned sole — the pair that goes with everything." },
-    { title: "Skateboard Shoe", slug: "skateboard-shoe-low", price: 125, category: "skateboard", featured: true, images: [SHOE.skateLow], colours: [GREEN, WHITE], sizes: ["US 8", "US 9", "US 10", "US 11", "US 12"], blurb: "Low-cut suede with a vulcanised sole that grips the board and lasts the session." },
-    { title: "Skateboard Shoe High", slug: "skateboard-shoe-high", price: 125, category: "skateboard", featured: true, images: [SHOE.skateHigh], colours: [RED, WHITE], sizes: ["US 7", "US 8", "US 9", "US 10", "US 11"], blurb: "The high-top: a padded collar for the ankle, a toe cap for the ollie, and the wing on the side." },
-    { title: "Skateboard Shoe Stripe", slug: "skateboard-shoe-stripe", price: 125, sale: 99, category: "skateboard", images: [SHOE.skateStripe], colours: [GREEN, WHITE], sizes: ["US 7", "US 9", "US 10", "US 12"], blurb: "Canvas and suede with the side stripe, on the same board-gripping sole." },
-    { title: "Basket Shoe", slug: "basket-shoe", price: 125, category: "sneakers", images: [SHOE.basket], colours: [RED, WHITE], sizes: ["US 8", "US 9", "US 10"], blurb: "A court classic: a supportive mid-cut and a sole made for quick turns." },
-    { title: "Sportwear Shoe", slug: "sportwear-shoe", price: 159, category: "sneakers", featured: true, images: [SHOE.sport], colours: [RED, WHITE], sizes: ["US 7", "US 8", "US 9", "US 10", "US 11", "US 12"], blurb: "Light mesh and a springy midsole, for the run and the rest of the day." },
+    { title: "Casual Shoe", slug: "casual-shoe", price: 63000, category: "sneakers", featured: true, images: [SHOE.casual], colours: [NAVY, WHITE], sizes: ["US 7", "US 8", "US 9", "US 10", "US 11"], blurb: "A clean leather upper on a cushioned sole — the pair that goes with everything." },
+    { title: "Skateboard Shoe", slug: "skateboard-shoe-low", price: 35000, category: "skateboard", featured: true, images: [SHOE.skateLow], colours: [GREEN, WHITE], sizes: ["US 8", "US 9", "US 10", "US 11", "US 12"], blurb: "Low-cut suede with a vulcanised sole that grips the board and lasts the session." },
+    { title: "Skateboard Shoe High", slug: "skateboard-shoe-high", price: 35000, category: "skateboard", featured: true, images: [SHOE.skateHigh], colours: [RED, WHITE], sizes: ["US 7", "US 8", "US 9", "US 10", "US 11"], blurb: "The high-top: a padded collar for the ankle, a toe cap for the ollie, and the wing on the side." },
+    { title: "Skateboard Shoe Stripe", slug: "skateboard-shoe-stripe", price: 35000, sale: 27500, category: "skateboard", images: [SHOE.skateStripe], colours: [GREEN, WHITE], sizes: ["US 7", "US 9", "US 10", "US 12"], blurb: "Canvas and suede with the side stripe, on the same board-gripping sole." },
+    { title: "Basket Shoe", slug: "basket-shoe", price: 35000, category: "sneakers", images: [SHOE.basket], colours: [RED, WHITE], sizes: ["US 8", "US 9", "US 10"], blurb: "A court classic: a supportive mid-cut and a sole made for quick turns." },
+    { title: "Sportwear Shoe", slug: "sportwear-shoe", price: 44500, category: "sneakers", featured: true, images: [SHOE.sport], colours: [RED, WHITE], sizes: ["US 7", "US 8", "US 9", "US 10", "US 11", "US 12"], blurb: "Light mesh and a springy midsole, for the run and the rest of the day." },
   ],
   // The design file's menus: three categories with dropdowns in the header, the
   // help strip, the footer's three columns, the trending chips and the popular

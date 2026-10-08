@@ -319,7 +319,7 @@ photography-led theme and a roomy, text-led one are not selling the same goods.
 | Theme | Demo shop | What it sells |
 | --- | --- | --- |
 | **Kite** | Kite Supply | Streetwear — heavyweight cotton, outerwear, footwear. Photography-led, which is what Kite is for. |
-| **Loom** | Ecommerce | The shoe shop its Figma file draws — six pairs, the file's own photographs, dollars, and its menus with their dropdowns (decided 8 October: a demo shows goods the theme was designed around, never scenery). |
+| **Loom** | Ecommerce | The shoe shop its Figma file draws — six pairs, the file's own photographs, its dollar prices in rupees, and its menus with their dropdowns (decided 8 October: a demo shows goods the theme was designed around, never scenery). |
 
 Seeded by `scripts/seed-theme-store.ts`, which is reversible (`--undo`) and
 marks everything it writes exactly the way `scripts/seed-demo.ts` does — `DEMO-`

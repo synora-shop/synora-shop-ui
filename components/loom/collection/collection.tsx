@@ -9,7 +9,15 @@ import { LoomProductCard } from "@/components/loom/product-card";
 import { T } from "@/components/loom/type";
 import { menu, on, str, type LoomContext } from "@/components/loom/contract";
 import { tx } from "@/components/loom/text";
-import { PRICE_BANDS, SIZES, SORTS, SWATCHES, type CatalogueItem, type Swatch } from "@/components/loom/catalogue";
+import { SORTS, offeredColours, offeredSizes, priceBands, type CatalogueItem, type PriceBand } from "@/components/loom/catalogue";
+
+/** A shade light enough to vanish on white — it gets a hairline ring. */
+const isPale = (hex: string) => {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex);
+  if (!m) return false;
+  const n = parseInt(m[1], 16);
+  return 0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255) > 230;
+};
 
 /**
  * A collection: the products, filters that really filter, and a sort.
@@ -30,13 +38,10 @@ import { PRICE_BANDS, SIZES, SORTS, SWATCHES, type CatalogueItem, type Swatch } 
  * column — 9 of them would stand one per line), size is the Trending chip,
  * sort is a chip-outlined pill with the kit's chevron.
  */
-type Filters = { colours: Swatch[]; sizes: string[]; price: number | null };
+type Filters = { colours: string[]; sizes: string[]; price: number | null };
 const NONE: Filters = { colours: [], sizes: [], price: null };
 
 
-/** The colours some product actually has — an option that matches nothing is not offered. */
-const offeredColours = (products: CatalogueItem[]) =>
-  (Object.keys(SWATCHES) as Swatch[]).filter((c) => products.some((s) => s.colours.includes(c)));
 
 export function LoomCollection({ data, ctx }: { data: Record<string, unknown>; ctx: LoomContext }) {
   const categories = menu(data, "categoriesMenu", ctx);
@@ -45,7 +50,9 @@ export function LoomCollection({ data, ctx }: { data: Record<string, unknown>; c
   const [sort, setSort] = useState(0);
   const [sheet, setSheet] = useState(false);
 
-  const shown = useMemo(() => apply(ctx.products, filters).sort(SORTS[sort].by), [ctx.products, filters, sort]);
+  // The page's own prices, colours and sizes — an option that matches nothing is not offered.
+  const bands = useMemo(() => priceBands(ctx.products, ctx.currency, money), [ctx.products, ctx.currency]);
+  const shown = useMemo(() => apply(ctx.products, filters, bands).sort(SORTS[sort].by), [ctx.products, filters, sort, bands]);
   // Every matching product is on this one page; with real paging this is the
   // collection's full count and `shown` is the page.
   const total = shown.length;
@@ -177,12 +184,12 @@ export function LoomCollection({ data, ctx }: { data: Record<string, unknown>; c
 const CHIP =
   "flex h-[max(calc(50*var(--u)),40px)] shrink-0 items-center justify-center whitespace-nowrap rounded-[200px] px-[calc(19*var(--u))] text-[max(calc(14*var(--u)),11.2px)] font-medium uppercase leading-[max(calc(24*var(--u)),19.2px)] tracking-[calc(1*var(--u))]";
 
-function apply(items: CatalogueItem[], f: Filters) {
+function apply(items: CatalogueItem[], f: Filters, bands: PriceBand[]) {
   return items.filter(
     (p) =>
       (f.colours.length === 0 || f.colours.some((c) => p.colours.includes(c))) &&
       (f.sizes.length === 0 || f.sizes.some((s) => (p.sizes as readonly string[]).includes(s))) &&
-      (f.price === null || PRICE_BANDS[f.price].test(p.price))
+      (f.price === null || !bands[f.price] || bands[f.price].test(p.price))
   );
 }
 
@@ -212,7 +219,7 @@ function FilterGroups({
     <div className="flex flex-col">
       <Group label={tx(ctx, "filters.colorLabel")} first>
         <div className="flex flex-wrap gap-[calc(12*var(--u))]">
-          {offeredColours(ctx.products).map((c) => {
+          {offeredColours(ctx.products).map(({ name: c, hex }) => {
             const on = filters.colours.includes(c);
             return (
               <button
@@ -229,7 +236,7 @@ function FilterGroups({
               >
                 <span
                   className="h-[max(calc(33*var(--u)),28px)] w-[max(calc(33*var(--u)),28px)] rounded-full"
-                  style={{ backgroundColor: SWATCHES[c], boxShadow: c === "Clean White" ? "inset 0 0 0 1px #dedede" : undefined }}
+                  style={{ backgroundColor: hex, boxShadow: isPale(hex) ? "inset 0 0 0 1px #dedede" : undefined }}
                 />
               </button>
             );
@@ -239,7 +246,7 @@ function FilterGroups({
 
       <Group label={tx(ctx, "filters.sizeLabel")}>
         <div className="flex flex-wrap gap-[calc(8*var(--u))] md:gap-[calc(10*var(--u))]">
-          {SIZES.map((s) => {
+          {offeredSizes(ctx.products).map((s) => {
             const on = filters.sizes.includes(s);
             return (
               <LoomButton
@@ -256,9 +263,10 @@ function FilterGroups({
         </div>
       </Group>
 
+      {priceBands(ctx.products, ctx.currency, money).length > 0 && (
       <Group label={tx(ctx, "filters.priceLabel")}>
         <div className="flex flex-col" role="radiogroup" aria-label={tx(ctx, "filters.priceLabel")}>
-          {PRICE_BANDS.map((b, i) => {
+          {priceBands(ctx.products, ctx.currency, money).map((b, i) => {
             const on = filters.price === i;
             return (
               <button
@@ -278,6 +286,7 @@ function FilterGroups({
           })}
         </div>
       </Group>
+      )}
 
       {any ? (
         <button
