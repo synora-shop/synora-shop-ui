@@ -1,8 +1,8 @@
 /**
  * What each theme's demo shop sells.
  *
- * Two catalogues, not one shared one, and that is what the design file draws:
- * Loom demos a cosmetics brand and Kite demos streetwear. It is also the honest
+ * Two catalogues, not one shared one, and that is what the design files draw:
+ * Loom demos a shoe shop (its Figma file's) and Kite demos streetwear. It is also the honest
  * arrangement — a photography-led theme with a tight grid and a roomy, text-led
  * one are not selling the same goods, and demoing both through the same forty
  * t-shirts would hide exactly the difference a merchant is trying to see.
@@ -10,9 +10,10 @@
  * Data only, so `scripts/seed-theme-store.ts` stays readable and a third theme
  * is an entry here rather than a branch there.
  *
- * Photography is `picsum.photos` seeded by slug: deterministic, so the same
- * demo seeded twice is the same shop and a screenshot taken today still matches
- * next week. **Real photography is outstanding** — see docs/THEMES.md §5b.
+ * Loom's products carry the design file's own photographs. A catalogue
+ * without its own falls back to `picsum.photos` seeded by slug — deterministic,
+ * but scenery, not goods — which is Kite's state; real photography for Kite
+ * is outstanding (docs/THEMES.md §5b).
  */
 
 export type DemoProduct = {
@@ -25,6 +26,22 @@ export type DemoProduct = {
   category: string;
   featured?: boolean;
   blurb: string;
+  /**
+   * Its own photographs, as paths under /public or full URLs. Without them a
+   * product gets placeholder photography seeded by its slug.
+   */
+  images?: string[];
+  /** Its own colours, [name, hex]; without them one is picked from the catalogue's option2. */
+  colours?: [string, string][];
+  /** Its own sizes; without them every one of the catalogue's options. */
+  sizes?: string[];
+};
+
+/** A menu the demo shop holds, with dropdowns where an item has children. */
+export type DemoMenu = {
+  handle: string;
+  name: string;
+  items: { label: string; href: string; children?: { label: string; href: string }[] }[];
 };
 
 export type DemoCatalogue = {
@@ -58,6 +75,16 @@ export type DemoCatalogue = {
   /** The second axis, or null for a catalogue that has only one. */
   option2: { name: string; values: [string, string][] } | null;
   products: DemoProduct[];
+  /** The shop's currency. PKR when not given. */
+  currency?: string;
+  /** A photograph per category slug; placeholders otherwise. */
+  categoryImages?: Record<string, string>;
+  /**
+   * The menus the theme's sections read, by handle. Given, they replace the
+   * default main and footer menus — a theme drawn with dropdowns and footer
+   * columns shows them filled, not empty.
+   */
+  menus?: DemoMenu[];
 };
 
 /* ------------------------------------------------------------------ kite -- */
@@ -126,60 +153,135 @@ const kite: DemoCatalogue = {
 
 /* ------------------------------------------------------------------ loom -- */
 
+/** The six shoes in Loom's design file, photographed for it (public/loom). */
+const SHOE = {
+  casual: "/loom/5a88e5962507976b1988e6d9a08599fcba5247bd.png",
+  skateLow: "/loom/0b42775b5c482fd10ff96fad137ae5ca5aa7a561.png",
+  skateHigh: "/loom/7150a0e902536ab1a554d315fc11f4ef6f9c1302.png",
+  skateStripe: "/loom/c8c225ce10fd34a19ed897401decf4c2dd4806d5.png",
+  basket: "/loom/6202a986df950869c406241f2f48f416d0807241.png",
+  sport: "/loom/f8ae4065476b2a224ae85cd40fd6b1c7d34bc9ae.png",
+};
+const NAVY: [string, string] = ["Navy Blue", "#233c6b"];
+const WHITE: [string, string] = ["Clean White", "#ffffff"];
+const GREEN: [string, string] = ["Dark Green", "#12463c"];
+const RED: [string, string] = ["Red Pastel", "#e25f5f"];
+
 /**
- * Loom: skincare, because Loom is the roomy, text-led theme.
- *
- * Large imagery, generous spacing and more words per page — which suits goods
- * that have to be explained rather than photographed. A serum sells on what is
- * in it; a jacket sells on what it looks like.
+ * Loom: the shoe shop its design file draws (decided 8 October — the demo
+ * sells what the theme was designed around, with the design's own
+ * photographs, not placeholder scenery). Prices in dollars, as the file has
+ * them. The home page's photographs and words are the theme's own section
+ * defaults; this is the catalogue behind them.
  */
 const loom: DemoCatalogue = {
-  storeName: "Loom Beauty",
-  tagline: "Short ingredient lists, said plainly.",
-  announcement: { text: "Two samples with every order · Free delivery over Rs 4,000", background: "#2f2a3d" },
+  storeName: "Ecommerce",
+  tagline: "Ecommerce is a free UI Kit from Paperpillar that you can use for your personal or commercial project.",
+  announcement: { text: "Free shipping on every order over $200", background: "#121212" },
   hero: {
-    eyebrow: "The core range",
-    headline: "Fewer things, better made.",
-    subheading:
-      "Eleven products. Every ingredient on the front of the bottle, at the percentage it is actually used.",
-    cta: "Shop the range",
+    eyebrow: "Summer",
+    headline: "Color of Summer Outfit",
+    subheading: "100+ Collections for your outfit inspirations in this summer",
+    cta: "View collections",
   },
-  statement: "If it is on the label, it is in the bottle at a dose that does something.",
+  statement: "We will always answer whatever your questions.",
   story: {
-    heading: "Why the range is small",
-    body: "Most of what a shelf holds is the same four actives in different packaging. We make eleven products because that is how many we could formulate without repeating ourselves, and each one says what is in it and how much — on the front, not in six-point type around the back. Nothing is tested on animals, nothing is fragranced to cover a smell, and nothing is launched to fill a gap in a calendar.",
+    heading: "Shoes for every step",
+    body: "Skateboard, basket, casual and sportswear — six pairs, each made to be worn hard and look right doing it.",
   },
   categories: [
-    { name: "Cleansers", slug: "cleansers", description: "Two of them: one that foams and one that does not." },
-    { name: "Serums", slug: "serums", description: "The actives, at the dose they were studied at." },
-    { name: "Moisturisers", slug: "moisturisers", description: "Light, rich, and one for the eye area." },
-    { name: "Sun care", slug: "sun-care", description: "SPF 50, every day, no white cast." },
-    { name: "Lips", slug: "lips", description: "Balm and tint, in four colours between them." },
-    { name: "Tools", slug: "tools", description: "The three things worth owning." },
+    { name: "Shoes", slug: "shoes", description: "Every pair in the shop." },
+    { name: "Skateboard", slug: "skateboard", description: "Flat soles and padded collars, built for the board." },
+    { name: "Sneakers", slug: "sneakers", description: "Casual, basket and sportswear pairs for every day." },
   ],
-  options: { name: "Size", values: ["30 ml", "50 ml", "100 ml"] },
-  option2: {
-    name: "Shade",
-    values: [["Bare", "#e7c7b4"], ["Clay", "#c98b6f"], ["Plum", "#7d3f52"], ["Brick", "#a84b3a"]],
-  },
+  categoryImages: { shoes: SHOE.skateHigh, skateboard: SHOE.skateStripe, sneakers: SHOE.sport },
+  options: { name: "Size", values: ["US 7", "US 8", "US 9", "US 10", "US 11", "US 12"] },
+  option2: { name: "Colour", values: [NAVY, WHITE, GREEN, RED] },
+  currency: "USD",
   products: [
-    { title: "Gentle Milk Cleanser", slug: "gentle-milk-cleanser", price: 3400, category: "cleansers", featured: true, blurb: "Removes the day without stripping anything. No foam, on purpose." },
-    { title: "Clarifying Gel Wash", slug: "clarifying-gel-wash", price: 3100, sale: 2500, category: "cleansers", blurb: "A morning wash for skin that gets oily by noon." },
-    { title: "Oil Cleansing Balm", slug: "oil-cleansing-balm", price: 4200, category: "cleansers", blurb: "Melts on contact, rinses without a film. The first step, not the only one." },
-    { title: "Niacinamide 10% Serum", slug: "niacinamide-10-serum", price: 4800, category: "serums", featured: true, blurb: "Ten percent niacinamide with one percent zinc. For texture and oil." },
-    { title: "Vitamin C 15% Serum", slug: "vitamin-c-15-serum", price: 6400, category: "serums", featured: true, blurb: "L-ascorbic acid at fifteen percent, in an opaque bottle because light ruins it." },
-    { title: "Hyaluronic Layering Serum", slug: "hyaluronic-layering-serum", price: 4100, sale: 3300, category: "serums", blurb: "Three molecular weights, applied to damp skin or it does nothing." },
-    { title: "Retinal 0.1% Night Serum", slug: "retinal-night-serum", price: 7200, category: "serums", blurb: "Retinaldehyde, which works faster than retinol and stings less. Start twice a week." },
-    { title: "Everyday Light Moisturiser", slug: "everyday-light-moisturiser", price: 4600, category: "moisturisers", featured: true, blurb: "Gel-cream. Disappears under sunscreen instead of pilling under it." },
-    { title: "Barrier Repair Cream", slug: "barrier-repair-cream", price: 5900, category: "moisturisers", blurb: "Ceramides and cholesterol in the ratio skin actually uses." },
-    { title: "Eye Area Cream", slug: "eye-area-cream", price: 5200, sale: 4200, category: "moisturisers", blurb: "Thicker, fragrance-free, and safe to get in your lashes." },
-    { title: "Invisible Fluid SPF 50", slug: "invisible-fluid-spf-50", price: 5400, category: "sun-care", featured: true, blurb: "Filters that do not leave a cast on any skin tone. Reapply at lunch." },
-    { title: "Tinted Mineral SPF 30", slug: "tinted-mineral-spf-30", price: 4900, category: "sun-care", blurb: "Zinc with a hint of colour, for the days you wear nothing else." },
-    { title: "Repair Lip Balm", slug: "repair-lip-balm", price: 1600, category: "lips", blurb: "Lanolin and shea. Nothing that tingles." },
-    { title: "Sheer Lip Tint", slug: "sheer-lip-tint", price: 2400, sale: 1900, category: "lips", blurb: "Buildable colour that does not dry the lip out by three o'clock." },
-    { title: "Jade Gua Sha", slug: "jade-gua-sha", price: 2800, category: "tools", blurb: "For five minutes in the evening, with oil, not dry." },
-    { title: "Cotton Rounds, Washable", slug: "cotton-rounds-washable", price: 1800, category: "tools", blurb: "Twelve rounds and a wash bag. Replaces roughly a thousand disposables." },
-    { title: "Facial Cleansing Cloth", slug: "facial-cleansing-cloth", price: 2200, category: "tools", featured: true, blurb: "Muslin on one side, terry on the other. Boil it weekly." },
+    { title: "Casual Shoe", slug: "casual-shoe", price: 225, category: "sneakers", featured: true, images: [SHOE.casual], colours: [NAVY, WHITE], sizes: ["US 7", "US 8", "US 9", "US 10", "US 11"], blurb: "A clean leather upper on a cushioned sole — the pair that goes with everything." },
+    { title: "Skateboard Shoe", slug: "skateboard-shoe-low", price: 125, category: "skateboard", featured: true, images: [SHOE.skateLow], colours: [GREEN, WHITE], sizes: ["US 8", "US 9", "US 10", "US 11", "US 12"], blurb: "Low-cut suede with a vulcanised sole that grips the board and lasts the session." },
+    { title: "Skateboard Shoe High", slug: "skateboard-shoe-high", price: 125, category: "skateboard", featured: true, images: [SHOE.skateHigh], colours: [RED, WHITE], sizes: ["US 7", "US 8", "US 9", "US 10", "US 11"], blurb: "The high-top: a padded collar for the ankle, a toe cap for the ollie, and the wing on the side." },
+    { title: "Skateboard Shoe Stripe", slug: "skateboard-shoe-stripe", price: 125, sale: 99, category: "skateboard", images: [SHOE.skateStripe], colours: [GREEN, WHITE], sizes: ["US 7", "US 9", "US 10", "US 12"], blurb: "Canvas and suede with the side stripe, on the same board-gripping sole." },
+    { title: "Basket Shoe", slug: "basket-shoe", price: 125, category: "sneakers", images: [SHOE.basket], colours: [RED, WHITE], sizes: ["US 8", "US 9", "US 10"], blurb: "A court classic: a supportive mid-cut and a sole made for quick turns." },
+    { title: "Sportwear Shoe", slug: "sportwear-shoe", price: 159, category: "sneakers", featured: true, images: [SHOE.sport], colours: [RED, WHITE], sizes: ["US 7", "US 8", "US 9", "US 10", "US 11", "US 12"], blurb: "Light mesh and a springy midsole, for the run and the rest of the day." },
+  ],
+  // The design file's menus: three categories with dropdowns in the header, the
+  // help strip, the footer's three columns, the trending chips and the popular
+  // searches — each pointing somewhere real in this shop.
+  menus: [
+    {
+      handle: "main-menu",
+      name: "Main menu",
+      items: [
+        {
+          label: "All Category",
+          href: "/shop",
+          children: [
+            { label: "Shoes", href: "/collections/shoes" },
+            { label: "Skateboard", href: "/collections/skateboard" },
+            { label: "Sneakers", href: "/collections/sneakers" },
+          ],
+        },
+        { label: "Gift Cards", href: "/shop", children: [{ label: "Digital gift card", href: "/shop" }] },
+        {
+          label: "Special Event",
+          href: "/shop",
+          children: [
+            { label: "Summer Outfit", href: "/shop" },
+            { label: "New Arrivals", href: "/shop?sort=newest" },
+          ],
+        },
+      ],
+    },
+    { handle: "help", name: "Help", items: [{ label: "FAQ", href: "/faq" }, { label: "About Us", href: "/about" }, { label: "Contact Us", href: "/contact" }] },
+    {
+      handle: "popular",
+      name: "Popular",
+      items: [
+        { label: "Shoes", href: "/collections/shoes" },
+        { label: "Skateboard", href: "/collections/skateboard" },
+        { label: "Sneakers", href: "/collections/sneakers" },
+      ],
+    },
+    {
+      handle: "footer-menu",
+      name: "Footer menu",
+      items: [
+        { label: "All Category", href: "/shop" },
+        { label: "Wishlist", href: "/wishlist" },
+        { label: "Your account", href: "/account" },
+      ],
+    },
+    {
+      handle: "other",
+      name: "Other",
+      items: [
+        { label: "Tracking Package", href: "/account" },
+        { label: "FAQ", href: "/faq" },
+        { label: "About Us", href: "/about" },
+        { label: "Contact Us", href: "/contact" },
+      ],
+    },
+    {
+      handle: "trending-chips",
+      name: "Trending chips",
+      items: [
+        { label: "Shoes", href: "/collections/shoes" },
+        { label: "Skateboard", href: "/collections/skateboard" },
+        { label: "Sneakers", href: "/collections/sneakers" },
+      ],
+    },
+    {
+      handle: "popular-searches",
+      name: "Popular searches",
+      items: [
+        { label: "Skateboard", href: "/shop?q=skateboard" },
+        { label: "Red", href: "/shop?q=red" },
+        { label: "White", href: "/shop?q=white" },
+        { label: "Basket", href: "/shop?q=basket" },
+      ],
+    },
   ],
 };
 

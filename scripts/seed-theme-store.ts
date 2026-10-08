@@ -27,7 +27,7 @@
 import { randomBytes } from "crypto";
 import { PrismaClient } from "../lib/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { DEMO_CATALOGUES, type DemoCatalogue } from "./theme-store-catalogue";
+import { DEMO_CATALOGUES, type DemoCatalogue, type DemoMenu } from "./theme-store-catalogue";
 import { DEMO_SLUGS, THEME_STORE_SLUGS, demoSubdomain } from "../lib/themes/demo";
 import type { Prisma } from "../lib/generated/prisma/client";
 
@@ -84,7 +84,7 @@ async function seedOne(
   /* --- settings --------------------------------------------------------- */
   const settings = {
     storeName: cat.storeName,
-    currency: "PKR",
+    currency: cat.currency ?? "PKR",
     maintenanceMode: false,
     // Indexed on purpose: a theme demo exists to be found by somebody looking
     // for a shop design. The duplicate-content risk is handled by address, not
@@ -133,16 +133,22 @@ async function seedOne(
   for (const c of cat.categories) {
     await prisma.category.upsert({
       where: { shopId_slug: { shopId, slug: c.slug } },
-      update: { name: c.name, description: c.description, image: photo(`cat-${c.slug}`, 1200, 900) },
+      update: { name: c.name, description: c.description, image: cat.categoryImages?.[c.slug] ?? photo(`cat-${c.slug}`, 1200, 900) },
       create: {
         shopId,
         name: c.name,
         slug: c.slug,
         description: c.description,
-        image: photo(`cat-${c.slug}`, 1200, 900),
+        image: cat.categoryImages?.[c.slug] ?? photo(`cat-${c.slug}`, 1200, 900),
       },
     });
   }
+  // What a catalogue no longer sells goes, so a demo that changed what it sells
+  // (Loom: skincare, then the shoes its design file draws) shows only the new.
+  // These shops are ours — see the header — so this is a plain delete.
+  await prisma.category.deleteMany({ where: { shopId, slug: { notIn: cat.categories.map((c) => c.slug) } } });
+  await prisma.product.deleteMany({ where: { shopId, slug: { notIn: cat.products.map((p) => p.slug) } } });
+
   const categories = await prisma.category.findMany({
     where: { shopId },
     select: { id: true, slug: true },
@@ -154,7 +160,7 @@ async function seedOne(
   let made = 0;
   for (const [i, p] of cat.products.entries()) {
     const r = seeded(p.slug);
-    const images = [photo(p.slug), photo(`${p.slug}-2`), photo(`${p.slug}-3`)];
+    const images = p.images ?? [photo(p.slug), photo(`${p.slug}-2`), photo(`${p.slug}-3`)];
 
     const product = await prisma.product.upsert({
       where: { shopId_slug: { shopId, slug: p.slug } },
@@ -206,9 +212,16 @@ async function seedOne(
     // One variant per size, on a single colour or shade — enough for the size
     // picker, the swatch and the stock states to have something to render,
     // without forty rows per product for a shop nobody buys from.
-    const colour = cat.option2?.values[r % cat.option2.values.length] ?? null;
-    for (const [n, size] of cat.options.values.entries()) {
-      const sku = `${MARK}${p.slug.toUpperCase().slice(0, 12)}-${n + 1}`;
+    // Its own colours and sizes where it has them; otherwise one colour picked
+    // from the catalogue's and every size.
+    const picked = cat.option2?.values[r % cat.option2.values.length] ?? null;
+    const colours: ([string, string] | null)[] = p.colours ?? [picked];
+    const sizes = p.sizes ?? cat.options.values;
+    const combos = colours.flatMap((colour) => sizes.map((size) => ({ colour, size })));
+    await prisma.productVariant.deleteMany({ where: { shopId, productId: product.id } });
+    for (const [n, { colour, size }] of combos.entries()) {
+      // The whole slug: three "skateboard-shoe-…" share their first twelve letters.
+      const sku = `${MARK}${p.slug.toUpperCase()}-${n + 1}`;
       await prisma.productVariant.upsert({
         where: { shopId_sku: { shopId, sku } },
         update: {},
@@ -248,7 +261,7 @@ async function seedOne(
   });
 
   /* --- navigation ------------------------------------------------------- */
-  const menus: { handle: string; name: string; items: { label: string; href: string }[] }[] = [
+  const menus: DemoMenu[] = cat.menus ?? [
     {
       handle: "main-menu",
       name: "Main menu",
@@ -284,17 +297,27 @@ async function seedOne(
     // produce the navigation the catalogue currently describes, not that plus
     // whatever an older catalogue left behind.
     await prisma.menuItem.deleteMany({ where: { shopId, menuId: menu.id } });
-    await prisma.menuItem.createMany({
-      data: m.items.map((it, order) => ({
-        id: newId(),
-        shopId,
-        menuId: menu.id,
-        businessType: "ECOMMERCE" as const,
-        label: it.label,
-        href: it.href,
-        order,
-      })),
-    });
+    for (const [order, it] of m.items.entries()) {
+      const parent = await prisma.menuItem.create({
+        data: { id: newId(), shopId, menuId: menu.id, businessType: "ECOMMERCE", label: it.label, href: it.href, order },
+        select: { id: true },
+      });
+      // A dropdown: the children hang off the item, in order.
+      if (it.children?.length) {
+        await prisma.menuItem.createMany({
+          data: it.children.map((c, n) => ({
+            id: newId(),
+            shopId,
+            menuId: menu.id,
+            businessType: "ECOMMERCE" as const,
+            label: c.label,
+            href: c.href,
+            order: n,
+            parentId: parent.id,
+          })),
+        });
+      }
+    }
     assigned[m.handle] = menu.id;
   }
   await prisma.storeSettings.update({

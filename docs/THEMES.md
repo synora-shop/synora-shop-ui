@@ -319,16 +319,20 @@ photography-led theme and a roomy, text-led one are not selling the same goods.
 | Theme | Demo shop | What it sells |
 | --- | --- | --- |
 | **Kite** | Kite Supply | Streetwear — heavyweight cotton, outerwear, footwear. Photography-led, which is what Kite is for. |
-| **Loom** | Loom Beauty | Skincare and cosmetics. Roomier, lighter, more words per page. |
+| **Loom** | Ecommerce | The shoe shop its Figma file draws — six pairs, the file's own photographs, dollars, and its menus with their dropdowns (decided 8 October: a demo shows goods the theme was designed around, never scenery). |
 
 Seeded by `scripts/seed-theme-store.ts`, which is reversible (`--undo`) and
 marks everything it writes exactly the way `scripts/seed-demo.ts` does — `DEMO-`
 SKUs, `@demo.invalid` addresses, `picsum.photos/seed/` pictures.
 
-**Real photography is the one thing still outstanding.** The placeholders are
-deterministic, so a screenshot taken today still matches next week, but until
-real pictures arrive the demos are honest about their design and obviously
-placeholder about their imagery.
+**Real photography is outstanding for Kite only.** Loom carries its design
+file's photographs (a catalogue may give each product `images`, `colours`,
+`sizes`, and the shop a `currency` and `menus`). Kite still uses deterministic
+`picsum.photos` placeholders — scenery, not streetwear — until it gets the same.
+
+A user's own shop — on its subdomain or its domain — always shows its own
+products: the demo's goods appear only at `/theme-store/<theme>`, and on the
+Themes screen's store cards, which show that demo live.
 
 
 ---

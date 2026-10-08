@@ -41,7 +41,8 @@ export function symbolFor(currency: string): string {
 /**
  * A price, written out.
  *
- * Symbol then amount, grouped the way that currency's readers group it. No
+ * Symbol then amount, grouped the way that currency's readers group it — the
+ * symbol against the number when it is a single sign ($, £, €, ₹). No
  * decimals, because there are none stored — printing ".00" would imply a
  * precision the number does not carry.
  */
@@ -50,5 +51,8 @@ export function formatMoney(amount: number, currency: string): string {
   const grouped = Math.round(amount).toLocaleString(LOCALES[code] ?? "en", {
     maximumFractionDigits: 0,
   });
-  return `${symbolFor(code)} ${grouped}`;
+  // "$225", "£225", "₹225" — a one-character sign sits against the number, as
+  // those currencies are written; "Rs 5,500" and "CA$ 225" keep the space.
+  const symbol = symbolFor(code);
+  return [...symbol].length === 1 ? `${symbol}${grouped}` : `${symbol} ${grouped}`;
 }
