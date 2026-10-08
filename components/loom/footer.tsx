@@ -1,4 +1,4 @@
-import { menu, on, str, type LoomContext } from "@/components/loom/contract";
+import { menu, str, type LoomContext } from "@/components/loom/contract";
 
 /**
  * Footer — 1440x341 on `#121212`, the brand block at the left gutter and
@@ -38,23 +38,9 @@ export function LoomFooter({ data, ctx }: { data: Record<string, unknown>; ctx: 
             <p className="text-[max(calc(14*var(--u)),11.2px)] font-normal leading-[max(calc(22*var(--u)),17.6px)] text-white/[0.52]">{str(data, "blurb")}</p>
           )}
         </div>
-        {on(data, "showNewsletter") && (
-          <form className="flex flex-col gap-[calc(10*var(--u))] md:flex-row md:items-center">
-            <input
-              type="email"
-              name="email"
-              placeholder={str(data, "newsletterPlaceholder")}
-              aria-label={str(data, "newsletterPlaceholder")}
-              className="h-[max(calc(45*var(--u)),40px)] w-full rounded-[200px] border border-white/[0.52] bg-transparent px-[calc(16*var(--u))] md:w-[calc(250*var(--u))] md:px-[calc(24*var(--u))] text-[max(calc(13*var(--u)),11px)] leading-[max(calc(21*var(--u)),16.8px)] text-white outline-none placeholder:text-white/[0.52]"
-            />
-            <button
-              type="button"
-              className="h-[max(calc(45*var(--u)),40px)] min-w-[calc(105*var(--u))] self-start rounded-[200px] px-[calc(16*var(--u))] bg-white text-[max(calc(13*var(--u)),11px)] font-semibold leading-[max(calc(21*var(--u)),16.8px)] text-[#121212]"
-            >
-              {str(data, "newsletterButton")}
-            </button>
-          </form>
-        )}
+        {/* The email sign-up the file draws is not shown: the platform keeps
+            no subscriber list, and a field that keeps nothing is worse than
+            none (decided 9 October; it returns with the list). */}
       </div>
 
       <nav aria-label="Footer" className="flex flex-wrap gap-x-[calc(60*var(--u))] gap-y-[calc(40*var(--u))] px-[calc(16*var(--u))] py-[calc(40*var(--u))] md:flex-nowrap md:gap-[calc(100*var(--u))] md:p-0">
