@@ -83,7 +83,9 @@ DELETE FROM "Visit" v
    SELECT "id",
           row_number() OVER (
             PARTITION BY "shopId", "visitor", "path", "day", "referrer"
-            ORDER BY "createdAt"
+            -- The same row the UPDATE above summed onto (min("id")). Ordering
+            -- by createdAt here could keep a different row and delete the sums.
+            ORDER BY "id"
           ) AS rn
      FROM "Visit"
  ) d
