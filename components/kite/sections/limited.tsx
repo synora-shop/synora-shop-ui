@@ -23,7 +23,11 @@ export function KiteLimited({ data, ctx }: { data: Record<string, unknown>; ctx:
     { x: 1257, y: 177 },
   ];
   return (
-    <section data-k="limited" className="relative hidden h-[calc(1117*var(--u))] overflow-hidden md:block">
+    // The first piece is in the flow, with the file's own space around it —
+    // 333 above, 177 below, 1117 in all at the design's size — so where the
+    // reading floor makes its words wrap longer (a small laptop), the section
+    // grows with it instead of cutting it off. Everything else is placed.
+    <section data-k="limited" className="relative hidden min-h-[calc(1117*var(--u))] overflow-hidden pb-[calc(177*var(--u))] pl-[calc(786*var(--u))] pt-[calc(333*var(--u))] md:block">
       {str(data, "backdrop") ? (
         // SVG text held to the file's box (1721 wide, baseline 452 of 600, as Figma laid it):
         // the stand-in serif is ~3% wider than Hiragino, and as HTML the word
@@ -39,7 +43,10 @@ export function KiteLimited({ data, ctx }: { data: Record<string, unknown>; ctx:
           </text>
         </svg>
       ) : null}
-      <KiteSectionHead numeral={str(data, "numeral")} title={str(data, "title")} />
+      {/* Pinned: the first piece is in the flow, and the bar must not push it down. */}
+      <div className="absolute inset-x-0 top-0">
+        <KiteSectionHead numeral={str(data, "numeral")} title={str(data, "title")} />
+      </div>
       {str(data, "text") ? (
         <p {...kt("sans", 16)} className={cn(kt("sans", 16).className, "absolute left-[calc(32*var(--u))] top-[calc(333*var(--u))] w-[calc(366*var(--u))]")}>
           {str(data, "text")}
@@ -51,8 +58,8 @@ export function KiteLimited({ data, ctx }: { data: Record<string, unknown>; ctx:
           product={{ ...p, priceText: kiteMoney(p.price, ctx.currency) }}
           photoHeight={419}
           addLabel={str(data, "addLabel")}
-          className="absolute w-[calc(439*var(--u))]"
-          style={{ left: `calc(${at[i].x}*var(--u))`, top: `calc(${at[i].y}*var(--u))` }}
+          className={cn("w-[calc(439*var(--u))]", i === 0 ? "relative" : "absolute")}
+          style={i === 0 ? undefined : { left: `calc(${at[i].x}*var(--u))`, top: `calc(${at[i].y}*var(--u))` }}
         />
       ))}
     </section>

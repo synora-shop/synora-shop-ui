@@ -32,4 +32,12 @@ export const KITE_IMG = {
   story5: at("462e4828356bf43b2ed32fa75742f520af2f8582"),
   aboutPortrait: at("bb01f38174f6b9e3fa6478daa642911e98b3f122"),
   aboutHands: at("c4deaa8870b43dd31bd0d175c39229fd280469e4"),
+  // Upcoming, in the file's order of placement.
+  upcoming1: at("9fc2c23a0bb336177d40335262e683822bf83c97"),
+  upcoming2: at("f58f874b0d959254c7f91664e2d0d13db367c6ac"),
+  upcoming3: at("47099af78b6389c27816b4cb8709b47c3e7ff40b"),
+  upcoming4: at("619b592b81f04df58e8da03ccaefcc12c809e323"),
+  upcoming5: at("38d13c89516d5c2bfcda5de982d1515825f88a77"),
+  upcoming6: at("0f36ad0f7ef698defb408deda1d79c51da5df495"),
+  journey: at("7df3f54721ce6218ef43d80a57ea9782a24c6f60"),
 } as const;

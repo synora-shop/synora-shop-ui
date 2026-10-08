@@ -58,9 +58,14 @@ const PROBE = `(() => {
     if (!t.width) continue;
     const label = n.textContent.trim().slice(0, 28);
     const size = parseFloat(getComputedStyle(el).fontSize);
-    if (size < 11 - 0.01) out.tiny.push(label + " " + size.toFixed(1) + "px");
+    // [data-exact]: words a design prints small on purpose, as part of a
+    // photograph — held to the design's size, not to the reading floor.
+    if (size < 11 - 0.01 && !el.closest("[data-exact]")) out.tiny.push(label + " " + size.toFixed(1) + "px");
     // Text inside a horizontally scrolling row is meant to run off-screen.
     const swipe = el.closest(".overflow-x-auto");
+    // Decorative type hidden from screen readers (a word set huge and faint
+    // behind a section) is clipped by its section on purpose, as designed.
+    if (el.closest('[aria-hidden="true"]')) continue;
     if (!swipe && t.right > page.right + 1) out.clipped.push(label + " past the page edge");
     for (let a = el.parentElement; a && a !== document.body; a = a.parentElement) {
       const s = getComputedStyle(a);
@@ -70,7 +75,7 @@ const PROBE = `(() => {
       if (a === swipe) break;
       const b = a.getBoundingClientRect();
       if (t.left < b.left - 1 || t.right > b.right + 1 || t.top < b.top - 1 || t.bottom > b.bottom + 1) {
-        out.clipped.push(label + " outside its " + (boxed ? "button" : a.dataset.m || a.className.split(" ")[0]));
+        out.clipped.push(label + " outside its " + (boxed ? "button" : a.dataset.m || (a.getAttribute("class") || "").split(" ")[0]));
       }
       break;
     }
@@ -86,7 +91,12 @@ for (const width of WIDTHS) {
   await send("Page.navigate", { url });
   await new Promise((r) => setTimeout(r, 3500));
   await ev("document.fonts.ready.then(() => 1)");
-  const r = JSON.parse(await ev(PROBE));
+  // A probe that comes back empty (the page was still loading) is tried once
+  // more, then reported, rather than ending the sweep.
+  let raw = await ev(PROBE);
+  if (raw === undefined) { await new Promise((r) => setTimeout(r, 3000)); raw = await ev(PROBE); }
+  if (raw === undefined) { console.log(`FAIL  ${String(width).padStart(4)}\n        the page did not answer`); fails++; continue; }
+  const r = JSON.parse(raw);
   const bad = [];
   if (r.overflow > 0) bad.push(`scrolls sideways by ${r.overflow}px`);
   for (const c of r.clipped) bad.push(`clipped: ${c}`);

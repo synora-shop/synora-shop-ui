@@ -155,3 +155,41 @@ export const kiteAboutSchema: SectionSchema = {
     { key: "signature", kind: "text", label: "Signature", info: "In script at the portrait's foot, on the desktop.", default: "Martin Schleifer" },
   ],
 };
+
+export const kiteUpcomingSchema: SectionSchema = {
+  type: "KITE_UPCOMING",
+  label: "Upcoming",
+  description: "An event, centred among six photographs.",
+  category: "Content",
+  fields: [
+    ...head("XVIIII", "UPCOMING"),
+    { key: "eyebrow", kind: "text", label: "Above", info: "Small, over the event.", default: "SPECIALS" },
+    { key: "before", kind: "text", label: "Before the line", info: "In Khand.", default: "NEW YORK FASHION" },
+    { key: "after", kind: "text", label: "After the line", info: "", default: "WEEK" },
+    { key: "with", kind: "text", label: "With", info: "The script line.", default: "w/ Ralph Lauren" },
+    { key: "text", kind: "textarea", label: "Words", info: "Under the double rule.", default: "Placeholder text helps maintain the structure and appearance of the layout while the content is being developed. Here’s an extra line to create some length difference." },
+    { key: "linkLabel", kind: "text", label: "Link words", info: "Underlined, last.", default: "LEARN MORE" },
+    { key: "link", kind: "url", label: "Link", info: "Where they go.", default: "" },
+    ...[1, 2, 3, 4, 5, 6].map((i) => ({
+      key: `image${i}`,
+      kind: "image" as const,
+      label: `Photograph ${i}`,
+      info: "Its place is the design's; the photograph is yours.",
+      default: KITE_IMG[`upcoming${i}` as keyof typeof KITE_IMG],
+    })),
+  ],
+};
+
+export const kiteJourneySchema: SectionSchema = {
+  type: "KITE_JOURNEY",
+  label: "Journey",
+  description: "A tall photograph between two lines of type turned on their side.",
+  category: "Media",
+  fields: [
+    { key: "heading", kind: "text", label: "Over the photograph", info: "In script.", default: "Fashion Fades, Style is Eternal" },
+    { key: "image", kind: "image", label: "Photograph", info: "Tall; it runs on under the start of the footer.", default: KITE_IMG.journey },
+    { key: "left", kind: "text", label: "Left, turned", info: "Read upwards, at the photograph's left.", default: "A JOURNEY" },
+    { key: "right", kind: "text", label: "Right, turned", info: "Read upwards, at its right.", default: "THROUGH TIME" },
+    { key: "caption", kind: "textarea", label: "Caption", info: "Small, on the photograph near its foot.", default: "Temporarily used to fill a space where actual content will eventually appear. It serves as a visual placeholder to help designers and developers visualize." },
+  ],
+};

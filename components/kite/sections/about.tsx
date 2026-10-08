@@ -51,6 +51,7 @@ export function KiteAbout({ data, ctx }: { data: Record<string, unknown>; ctx: K
           <img src={portrait} alt="" className="absolute inset-0 h-full w-full object-cover" />
           {str(data, "portraitText") ? (
             <p
+              data-exact
               {...kt("sans", 8, 12, { exact: true })}
               className={cn(kt("sans", 8, 12, { exact: true }).className, "absolute left-[calc(20*var(--u))] top-[calc(20*var(--u))] w-[calc(116*var(--u))] text-black md:left-[calc(32*var(--u))] md:top-[calc(32*var(--u))] md:w-[calc(159*var(--u))]")}
             >

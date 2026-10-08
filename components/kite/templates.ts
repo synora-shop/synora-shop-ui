@@ -15,5 +15,12 @@ export const HOME: KiteTemplate = {
     { id: "curated", type: "KITE_CURATED", data: {} },
     { id: "newsletter", type: "KITE_NEWSLETTER", data: KITE_NEWSLETTER_DEFAULT },
     { id: "about", type: "KITE_ABOUT", data: {} },
+    { id: "upcoming", type: "KITE_UPCOMING", data: {} },
+    { id: "journey", type: "KITE_JOURNEY", data: {} },
   ],
+};
+
+export const FOOTER_GROUP: KiteTemplate = {
+  name: "Footer",
+  sections: [{ id: "footer", type: "KITE_FOOTER", data: {} }],
 };

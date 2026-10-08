@@ -29,6 +29,11 @@ export const KITE_DEMO_MENUS: Record<string, KiteMenu> = {
   ]),
 };
 
+KITE_DEMO_MENUS["footer-menu"] = m("footer-menu", "Footer menu", [
+  { id: "shipping", label: "SHIPPING & RETURNS", href: "/kite" },
+  { id: "privacy", label: "PRIVACY POLICY", href: "/kite" },
+]);
+
 export const KITE_DEMO_ROUTES: KiteContext["routes"] = {
   home: "/kite",
   collection: "/kite",
