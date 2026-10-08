@@ -3,6 +3,7 @@ import { menu, on, route, str, type KiteContext } from "@/components/kite/contra
 import { kt } from "@/components/kite/type";
 import { KITE_ICON } from "@/components/kite/assets";
 import { KiteMenuPanel } from "@/components/kite/menu-panel";
+import { KiteBagCount } from "@/components/kite/bag-count";
 
 /**
  * The header — "MacBook Pro 16" - 4" and "Mobile | Home" in the file.
@@ -23,7 +24,6 @@ import { KiteMenuPanel } from "@/components/kite/menu-panel";
 export function KiteHeader({ data, ctx }: { data: Record<string, unknown>; ctx: KiteContext }) {
   const items = menu(data, "menu", ctx);
   const name = str(data, "logoText");
-  const icon = "absolute h-[calc(20*var(--u))] w-[calc(20*var(--u))] object-contain";
   return (
     <header data-k="header" className="relative h-[calc(107*var(--u))] md:h-[calc(151*var(--u))]">
       {/* Menu — desktop only. */}
@@ -69,9 +69,10 @@ export function KiteHeader({ data, ctx }: { data: Record<string, unknown>; ctx: 
             <img src={KITE_ICON.user} alt="" className="h-[calc(20*var(--u))] w-[calc(20*var(--u))] object-contain" />
           </a>
         )}
-        <a href={route(ctx, "cart")} aria-label="Bag">
+        <a href={route(ctx, "cart")} aria-label="Bag" className="relative">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={KITE_ICON.bag} alt="" className="h-[calc(20*var(--u))] w-[calc(20*var(--u))] object-contain" />
+          <KiteBagCount ctx={ctx} />
         </a>
       </div>
 

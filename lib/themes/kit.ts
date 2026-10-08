@@ -57,6 +57,8 @@ export type KitProductPage = {
   id: string;
   /** The small line over the name — its category. */
   eyebrow: string;
+  /** Who made it, where a theme credits the maker ("by Angel Vaccaro"). */
+  vendor?: string;
   title: string;
   /** Formatted in the shop's currency. */
   price: string;

@@ -40,4 +40,13 @@ export const KITE_IMG = {
   upcoming5: at("38d13c89516d5c2bfcda5de982d1515825f88a77"),
   upcoming6: at("0f36ad0f7ef698defb408deda1d79c51da5df495"),
   journey: at("7df3f54721ce6218ef43d80a57ea9782a24c6f60"),
+  // The product page: the shoe from the front, then its three other views.
+  shoe: at("71cc03f852110d2ccf3863036a1a601233042e6d"),
+  shoeSide: at("f6b572b9164f20ab93b60fe0f891cbc6a1cc3e06"),
+  shoePair: at("141bd5c292d12deb2aa9f152d488e468b3b70f02"),
+  shoeWorn: at("0b4eaa605b7da70d1cfd25fb025cb138f6a9241e"),
+  // "Style with": three pieces.
+  styleTrousers: at("14a06c3205245ddb6eaf6b05e1df32c85e953cee"),
+  styleShirt: at("c0f4fe1ab275fd0abeb507d3075a4f8f13311af0"),
+  styleCoat: at("75d9d56acb3f97386aff47df406bcce831b31ed8"),
 } as const;

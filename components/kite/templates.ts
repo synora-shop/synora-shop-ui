@@ -24,3 +24,8 @@ export const FOOTER_GROUP: KiteTemplate = {
   name: "Footer",
   sections: [{ id: "footer", type: "KITE_FOOTER", data: {} }],
 };
+
+export const PRODUCT: KiteTemplate = {
+  name: "Product",
+  sections: [{ id: "main", type: "KITE_PRODUCT", data: {} }],
+};
