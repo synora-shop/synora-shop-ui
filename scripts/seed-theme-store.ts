@@ -172,6 +172,7 @@ async function seedOne(
         effectivePrice: p.price,
         salePrice: p.sale ?? null,
         isFeatured: !!p.featured,
+        vendor: p.vendor ?? cat.storeName,
       },
       create: {
         shopId,
@@ -188,7 +189,7 @@ async function seedOne(
         // filter on a storefront for anyone to notice it with.
         status: "PUBLISHED",
         isFeatured: !!p.featured,
-        vendor: cat.storeName,
+        vendor: p.vendor ?? cat.storeName,
         tags: ["demo"],
         option1Name: cat.options.name,
         option2Name: cat.option2?.name ?? null,
@@ -215,7 +216,9 @@ async function seedOne(
     // Its own colours and sizes where it has them; otherwise one colour picked
     // from the catalogue's and every size.
     const picked = cat.option2?.values[r % cat.option2.values.length] ?? null;
-    const colours: ([string, string] | null)[] = p.colours ?? [picked];
+    // An empty list means "no colour" (Kite's pieces): one colourless variant
+    // per size — not no variants, which would leave a product nobody can buy.
+    const colours: ([string, string] | null)[] = p.colours ? (p.colours.length ? p.colours : [null]) : [picked];
     const sizes = p.sizes ?? cat.options.values;
     const combos = colours.flatMap((colour) => sizes.map((size) => ({ colour, size })));
     await prisma.productVariant.deleteMany({ where: { shopId, productId: product.id } });

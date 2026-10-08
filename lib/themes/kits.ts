@@ -4,6 +4,10 @@ import { DEMO_LINES } from "@/components/loom/cart/lines";
 import { LOOM_SECTIONS } from "@/components/loom/sections";
 import * as LOOM from "@/components/loom/templates";
 import { LOOM_TEXT } from "@/components/loom/text";
+import { KITE_SECTIONS } from "@/components/kite/sections";
+import * as KITE from "@/components/kite/templates";
+import { KITE_TEXT } from "@/components/kite/text";
+import { KITE_DEMO_BAG, KITE_DEMO_CUSTOMER, KITE_DEMO_ORDER } from "@/components/kite/demo";
 
 /**
  * The themes that bring their own sections, and from which version.
@@ -61,6 +65,30 @@ export const KITS: ThemeKit[] = [
       footer: LOOM.FOOTER_GROUP,
     },
     text: LOOM_TEXT,
+  },
+  {
+    themeKey: "kite",
+    // Every copy of Kite. Decided 9 October: the new design (rebuilt from
+    // "KITE - Trümung", docs/KITE.md) replaces the old Kite outright — no
+    // merchant wears it yet, so there is no older storefront to protect.
+    since: "1.0.0",
+    sections: KITE_SECTIONS,
+    sample: { customer: { ...KITE_DEMO_CUSTOMER, orders: KITE_DEMO_CUSTOMER.orders.map((o) => ({ ...o, href: "#" })) }, order: KITE_DEMO_ORDER, cart: KITE_DEMO_BAG },
+    templates: {
+      index: KITE.HOME,
+      product: KITE.PRODUCT,
+      collection: KITE.COLLECTION,
+      search: KITE.SEARCH,
+      cart: KITE.CART,
+      checkout: KITE.CHECKOUT,
+      account: KITE.ACCOUNT,
+      "sign-in": KITE.SIGN_IN,
+      order: KITE.ORDER,
+      wishlist: KITE.WISHLIST,
+      header: KITE.HEADER_GROUP,
+      footer: KITE.FOOTER_GROUP,
+    },
+    text: KITE_TEXT,
   },
 ];
 

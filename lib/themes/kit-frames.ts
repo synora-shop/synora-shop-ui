@@ -1,4 +1,5 @@
 import { LoomFrame } from "@/components/loom/frame";
+import { KiteFrame } from "@/components/kite/frame";
 
 /**
  * What every page of each kit sits inside — its fonts, its unit, its `<main>`
@@ -10,4 +11,5 @@ import { LoomFrame } from "@/components/loom/frame";
  */
 export const KIT_FRAMES: Record<string, (props: { children: React.ReactNode }) => React.ReactNode> = {
   loom: LoomFrame,
+  kite: KiteFrame,
 };

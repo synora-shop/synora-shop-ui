@@ -1,5 +1,6 @@
 import type { KitSectionDef } from "@/lib/themes/kit";
 import { LOOM_SECTIONS } from "@/components/loom/sections";
+import { KITE_SECTIONS } from "@/components/kite/sections";
 
 /**
  * Every kit's sections, for drawing in the browser — which only the
@@ -8,4 +9,5 @@ import { LOOM_SECTIONS } from "@/components/loom/sections";
  */
 export const CLIENT_KITS: Record<string, Record<string, KitSectionDef>> = {
   loom: LOOM_SECTIONS,
+  kite: KITE_SECTIONS,
 };

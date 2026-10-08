@@ -2,7 +2,7 @@
  * What each theme's demo shop sells.
  *
  * Two catalogues, not one shared one, and that is what the design files draw:
- * Loom demos a shoe shop (its Figma file's) and Kite demos streetwear. It is also the honest
+ * Loom demos a shoe shop (its Figma file's) and Kite a fashion label (its file's). It is also the honest
  * arrangement — a photography-led theme with a tight grid and a roomy, text-led
  * one are not selling the same goods, and demoing both through the same forty
  * t-shirts would hide exactly the difference a merchant is trying to see.
@@ -12,8 +12,8 @@
  *
  * Loom's products carry the design file's own photographs. A catalogue
  * without its own falls back to `picsum.photos` seeded by slug — deterministic,
- * but scenery, not goods — which is Kite's state; real photography for Kite
- * is outstanding (docs/THEMES.md §5b).
+ * but scenery, not goods — which no catalogue here is any more:
+ * both demos sell their design file's own pieces.
  */
 
 export type DemoProduct = {
@@ -35,6 +35,8 @@ export type DemoProduct = {
   colours?: [string, string][];
   /** Its own sizes; without them every one of the catalogue's options. */
   sizes?: string[];
+  /** Who made it, when not the shop itself — Kite prints "by {vendor}". */
+  vendor?: string;
 };
 
 /** A menu the demo shop holds, with dropdowns where an item has children. */
@@ -89,65 +91,127 @@ export type DemoCatalogue = {
 
 /* ------------------------------------------------------------------ kite -- */
 
+/** The photographs of Kite's design file (public/kite) that show pieces for sale. */
+const K = (hash: string) => `/kite/${hash}.png`;
+const PIECE = {
+  cloak: K("ae520783ab263b34170ec82dfc91d3cb82b750e5"),
+  wall: K("dce87de5cf3c53bcde4883753b09c9ea95288237"),
+  coat1: K("cb7a6afb47928407f0f6226024e86f93e4bedcd7"),
+  coat2: K("f8db06208f6028fbe106b1743683b11580105919"),
+  coat3: K("7c0f70607818acbdb71e554bf56f6b8ef1634b0d"),
+  bag1: K("86f9c437a168af86d6349e9a3a13deebe9b0b4f0"),
+  bag2: K("f82cd67ab29fbf0113fa9c229fd9d7413bc61550"),
+  bag3: K("77d4ad7f61fcf3ebab3cabe979ada4e23fb75aad"),
+  trousers: K("14a06c3205245ddb6eaf6b05e1df32c85e953cee"),
+  shirt: K("c0f4fe1ab275fd0abeb507d3075a4f8f13311af0"),
+  coat: K("75d9d56acb3f97386aff47df406bcce831b31ed8"),
+};
+const SHOES = ["71cc03f852110d2ccf3863036a1a601233042e6d", "f6b572b9164f20ab93b60fe0f891cbc6a1cc3e06", "141bd5c292d12deb2aa9f152d488e468b3b70f02", "0b4eaa605b7da70d1cfd25fb025cb138f6a9241e"].map(K);
+/** The file's placeholder words for a piece, kept as the file has them. */
+const KITE_BLURB = "A placeholder text is a block of nonsensical or meaningless text that is temporarily used to fill a space where actual content will eventually appear.";
+const piece = (n: number, image: string, category: string, featured = false): DemoProduct => ({
+  title: "Piece Title",
+  slug: `piece-title-${n}`,
+  // The file's $875, in rupees at about 280 to the dollar, as Loom's are.
+  price: 245000,
+  category,
+  featured,
+  images: [image],
+  sizes: ["One size"],
+  colours: [],
+  blurb: KITE_BLURB,
+});
+
 /**
- * Kite: streetwear, because Kite is the photography-led theme.
- *
- * Its tight grid, tall editorial card and hover image swap are all built for a
- * shop whose pictures do the selling, so the demo sells something photographed.
+ * Kite: the fashion label its design file draws, "Trümung" (decided 9 October,
+ * as Loom's was — the demo sells what the theme was designed around, with the
+ * file's own photographs and words, not placeholder scenery). The pieces are
+ * the file's "Piece Title" at $875; the product page's Leather Shoes by Angel
+ * Vaccaro at $1,200, in black, in its seven sizes. The categories are the
+ * file's own groupings: the home page's Limited collection, the account's
+ * coats and bags, and the shoes. The file gives the pieces no sizes or
+ * colours, so each is one size and no colour.
  */
 const kite: DemoCatalogue = {
-  storeName: "Kite Supply",
-  tagline: "Heavyweight basics and outerwear, made in small runs.",
-  announcement: { text: "Free delivery on orders over Rs 5,000", background: "#12463c" },
+  storeName: "Trümung",
+  tagline: "Shop rare limited edition pieces in our LA & NYC locations.",
+  announcement: { text: "Shop rare limited edition pieces in our LA & NYC locations", background: "#040404" },
   hero: {
-    eyebrow: "Autumn / Winter",
-    headline: "Built heavy. Worn daily.",
-    subheading:
-      "Twelve-ounce cotton, boxed shoulders and a fit that holds its shape after the hundredth wash.",
-    cta: "Shop the collection",
+    eyebrow: "East Village",
+    headline: "New York",
+    subheading: "Shop rare limited edition pieces in our LA & NYC locations.",
+    cta: "Shop collection",
   },
-  statement: "Small runs. No restocks. Nothing made twice.",
+  statement: "This collection is limited to 350 pieces.",
   story: {
-    heading: "Made in small runs",
-    body: "We cut sixty of a thing, not six thousand. It means a piece sells out and does not come back, and it means every run is made by people we can call by name. The cotton is milled in Faisalabad, the cut-and-sew is forty minutes from where we sit, and the fit is argued about at length before anything is made.",
+    heading: "Crafted in Paris, France",
+    body: "Temporarily used to fill a space where actual content will eventually appear. It serves as a visual placeholder to help designers and developers visualize.",
   },
   categories: [
-    { name: "T-shirts", slug: "t-shirts", description: "Heavyweight cotton, boxed shoulders, cut to hold its shape." },
-    { name: "Hoodies", slug: "hoodies", description: "Brushed-back fleece with a hood that stands up on its own." },
-    { name: "Outerwear", slug: "outerwear", description: "Coach jackets, bombers and overshirts for the six cold weeks." },
-    { name: "Shirts", slug: "shirts", description: "Oxfords and overshirts, cut a little wider than they need to be." },
-    { name: "Trousers", slug: "trousers", description: "Carpenter fits, wide legs and one pleated trouser." },
-    { name: "Footwear", slug: "footwear", description: "Two silhouettes, made properly, resoleable." },
-    { name: "Accessories", slug: "accessories", description: "Caps, belts, socks and the small things." },
+    { name: "Limited collection", slug: "limited-collection", description: "This collection is limited to 350 pieces." },
+    { name: "Coats", slug: "coats", description: "Saved coats." },
+    { name: "Bags", slug: "bags", description: "Saved bags." },
+    { name: "Shoes", slug: "shoes", description: "Leather shoes." },
   ],
-  options: { name: "Size", values: ["S", "M", "L", "XL"] },
-  option2: {
-    name: "Colour",
-    values: [["Black", "#111111"], ["Bone", "#e8e1d5"], ["Navy", "#1c2a44"], ["Olive", "#4a5340"], ["Rust", "#9c4a2a"]],
-  },
+  categoryImages: { "limited-collection": PIECE.cloak, coats: PIECE.coat1, bags: PIECE.bag1, shoes: SHOES[0] },
+  options: { name: "Size", values: ["07", "7.5", "08", "8.5", "09", "9.5", "10"] },
+  option2: { name: "Colour", values: [["black", "#040404"]] },
   products: [
-    { title: "Heavyweight Box Tee", slug: "heavyweight-box-tee", price: 4200, category: "t-shirts", featured: true, blurb: "Twelve-ounce cotton with a boxed shoulder and a hem that sits at the hip." },
-    { title: "Everyday Pocket Tee", slug: "everyday-pocket-tee", price: 3600, sale: 2900, category: "t-shirts", blurb: "The lighter one, for the nine months a year it is too warm for anything else." },
-    { title: "Long Sleeve Rib Tee", slug: "long-sleeve-rib-tee", price: 4800, category: "t-shirts", blurb: "Ribbed cuffs that stay where you push them." },
-    { title: "Washed Crew Tee", slug: "washed-crew-tee", price: 4400, category: "t-shirts", featured: true, blurb: "Garment-dyed, so it arrives looking like you have had it a year." },
-    { title: "Brushed Back Hoodie", slug: "brushed-back-hoodie", price: 11500, category: "hoodies", featured: true, blurb: "Four hundred grams, brushed inside, with a hood that stands up on its own." },
-    { title: "Zip Through Hoodie", slug: "zip-through-hoodie", price: 12800, category: "hoodies", blurb: "A tooth-by-tooth metal zip and a collar high enough to matter." },
-    { title: "Cropped Crewneck", slug: "cropped-crewneck", price: 9600, sale: 7700, category: "hoodies", blurb: "Shorter in the body, wider through the chest." },
-    { title: "Coach Jacket", slug: "coach-jacket", price: 16400, category: "outerwear", featured: true, blurb: "Snap front, flannel lined, cut to go over a hoodie without a fight." },
-    { title: "Quilted Bomber", slug: "quilted-bomber", price: 21900, category: "outerwear", blurb: "Diamond quilting, ribbed hem, warm out of proportion to its weight." },
-    { title: "Waxed Overshirt", slug: "waxed-overshirt", price: 18600, category: "outerwear", featured: true, blurb: "Waxed cotton that sheds a shower and takes a patina." },
-    { title: "Wide Oxford Shirt", slug: "wide-oxford-shirt", price: 8900, category: "shirts", blurb: "Woven in a heavier yarn than an oxford usually is, and better for it." },
-    { title: "Camp Collar Shirt", slug: "camp-collar-shirt", price: 7800, sale: 6200, category: "shirts", blurb: "An open collar and a straight hem — untucked is the only way it is worn." },
-    { title: "Flannel Overshirt", slug: "flannel-overshirt", price: 10400, category: "shirts", blurb: "Brushed twice, so it is soft on the first wear rather than the tenth." },
-    { title: "Carpenter Trouser", slug: "carpenter-trouser", price: 11200, category: "trousers", featured: true, blurb: "A hammer loop nobody uses and a leg wide enough to sit down in." },
-    { title: "Pleated Wide Trouser", slug: "pleated-wide-trouser", price: 12600, category: "trousers", blurb: "Two forward pleats and a break at the shoe." },
-    { title: "Tapered Cargo", slug: "tapered-cargo", price: 10800, sale: 8600, category: "trousers", blurb: "Pockets placed where they do not add width." },
-    { title: "Court Sneaker", slug: "court-sneaker", price: 17500, category: "footwear", featured: true, blurb: "Leather over a vulcanised sole. Resoleable, which is the whole point." },
-    { title: "Suede Runner", slug: "suede-runner", price: 19200, category: "footwear", blurb: "A low, plain runner in one colour of suede." },
-    { title: "Six Panel Cap", slug: "six-panel-cap", price: 3200, category: "accessories", blurb: "Unstructured, cotton twill, a brass buckle at the back." },
-    { title: "Ribbed Crew Socks", slug: "ribbed-crew-socks", price: 1400, category: "accessories", blurb: "Sold in threes because nobody buys one pair of socks." },
-    { title: "Webbing Belt", slug: "webbing-belt", price: 2600, category: "accessories", blurb: "A belt that does not need holes." },
-    { title: "Canvas Tote", slug: "canvas-tote", price: 3800, sale: 2900, category: "accessories", blurb: "Sixteen-ounce canvas with a flat bottom, so it stands up on its own." },
+    {
+      title: "Leather Shoes",
+      slug: "leather-shoes",
+      vendor: "Angel Vaccaro",
+      price: 336000,
+      category: "shoes",
+      featured: true,
+      images: SHOES,
+      colours: [["black", "#040404"]],
+      sizes: ["07", "7.5", "08", "8.5", "09", "9.5", "10"],
+      blurb: KITE_BLURB,
+    },
+    piece(1, PIECE.cloak, "limited-collection", true),
+    piece(2, PIECE.wall, "limited-collection", true),
+    piece(3, PIECE.trousers, "limited-collection"),
+    piece(4, PIECE.shirt, "limited-collection"),
+    piece(5, PIECE.coat1, "coats"),
+    piece(6, PIECE.coat2, "coats"),
+    piece(7, PIECE.coat3, "coats"),
+    piece(8, PIECE.coat, "coats"),
+    piece(9, PIECE.bag1, "bags"),
+    piece(10, PIECE.bag2, "bags"),
+    piece(11, PIECE.bag3, "bags"),
+  ],
+  // The file's header and footer links. Shop opens onto the categories;
+  // Lookbook and About (named by the file, never drawn as pages) go to the
+  // home page's Journey and About; Shipping & returns to the shop's FAQ. The
+  // platform has no privacy-policy page yet, so that one is words, not a link.
+  menus: [
+    {
+      handle: "main-menu",
+      name: "Main menu",
+      items: [
+        {
+          label: "Shop",
+          href: "/shop",
+          children: [
+            { label: "Limited collection", href: "/collections/limited-collection" },
+            { label: "Coats", href: "/collections/coats" },
+            { label: "Bags", href: "/collections/bags" },
+            { label: "Shoes", href: "/collections/shoes" },
+          ],
+        },
+        { label: "Lookbook", href: "/#journey" },
+        { label: "About", href: "/#about" },
+      ],
+    },
+    {
+      handle: "footer-menu",
+      name: "Footer menu",
+      items: [
+        { label: "SHIPPING & RETURNS", href: "/faq" },
+        { label: "PRIVACY POLICY", href: "" },
+      ],
+    },
   ],
 };
 

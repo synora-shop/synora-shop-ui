@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useWishlist } from "@/components/loom/wishlist";
 import { kitAddAddress, kitDeleteAddress } from "@/lib/themes/kit-actions";
 import { ktx } from "@/components/kite/text";
 import { KiteButton, KiteField, KiteSelect } from "@/components/kite/ui";
@@ -67,6 +68,10 @@ export function KiteAccount({ data, ctx }: { data: Record<string, unknown>; ctx:
   const [busy, setBusy] = useState(false);
   const [draft, setDraft] = useState({ line1: "", city: "", postcode: "" });
   const [local, setLocal] = useState<NonNullable<KiteContext["customer"]>["addresses"] | null>(null);
+  // Saved items: the groups a page was handed (the reference build's coats
+  // and bags), else what this shopper saved with ADD TO FAVORITES — the same
+  // list as the Saved items page — as one group.
+  const wish = useWishlist();
   const me = ctx.customer;
   if (!me) return null;
   const addresses = local ?? me.addresses;
@@ -102,7 +107,11 @@ export function KiteAccount({ data, ctx }: { data: Record<string, unknown>; ctx:
     { id: "orders", label: str(data, "ordersTab"), phoneOrder: "order-3" },
   ];
   const portrait = str(data, "portrait");
-  const groups = ctx.savedGroups ?? [];
+  const groups =
+    ctx.savedGroups ??
+    (wish.items.length
+      ? [{ title: str(data, "savedTab"), items: wish.items.map((w) => ({ ...w, colours: [], sizes: [], age: 0 })) }]
+      : []);
 
   return (
     <section data-k="account" className="relative min-h-[calc(849*var(--u))] md:min-h-[calc(966*var(--u))]">
@@ -187,6 +196,12 @@ export function KiteAccount({ data, ctx }: { data: Record<string, unknown>; ctx:
 
         {tab === "saved" ? (
           <div className="flex flex-col gap-[calc(32*var(--u))]">
+            {groups.length === 0 ? (
+              <div className="flex flex-col items-start gap-[calc(16*var(--u))]">
+                <p {...kt("sans", 16, 20)}>{str(data, "savedEmpty")}</p>
+                <Dim href={ctx.routes.collection}>{str(data, "savedEmptyLink")}</Dim>
+              </div>
+            ) : null}
             {groups.map((g) => (
               <div key={g.title} className="flex flex-col gap-[calc(16*var(--u))] md:gap-[calc(32*var(--u))]">
                 <h2 {...kt("khand", 32)}>{g.title}</h2>

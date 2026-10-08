@@ -41,7 +41,7 @@ function Grid({ items, ctx, addLabel }: { items: CatalogueItem[]; ctx: KiteConte
 
 export function KiteCollection({ data, ctx }: { data: Record<string, unknown>; ctx: KiteContext }) {
   const params = useSearchParams();
-  const [filters, setFilters] = useState<Filters>(() => ({ ...NONE, colours: params.getAll("color") }));
+  const [filters, setFilters] = useState<Filters>(() => ({ ...NONE, colours: params?.getAll("color") ?? [] }));
   const [open, setOpen] = useState(false);
   const [sort, setSort] = useState(0);
   const bands = useMemo(() => priceBands(ctx.products, ctx.currency, kiteMoney), [ctx.products, ctx.currency]);

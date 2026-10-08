@@ -51,8 +51,9 @@ export function KitePieceCard({
             {product.blurb}
           </p>
         ) : null}
-        <div className="flex w-full items-end justify-between">
-          <div className="flex flex-col gap-[calc(8*var(--u))]">
+        {/* A long name wraps; "Add to cart" never does (real names are longer than the file's). */}
+        <div className="flex w-full items-end justify-between gap-[calc(16*var(--u))]">
+          <div className="flex min-w-0 flex-col gap-[calc(8*var(--u))]">
             <a href={product.href} {...kt("sans", 20)} className={cn(kt("sans", 20).className, "uppercase")}>
               {product.title}
             </a>
@@ -60,7 +61,7 @@ export function KitePieceCard({
               {product.priceText}
             </p>
           </div>
-          <a href={product.href} className="flex items-center gap-[calc(8*var(--u))]">
+          <a href={product.href} className="flex shrink-0 items-center gap-[calc(8*var(--u))] whitespace-nowrap">
             <span {...kt("sans", 20)} className={cn(kt("sans", 20).className, "uppercase")}>
               {addLabel}
             </span>

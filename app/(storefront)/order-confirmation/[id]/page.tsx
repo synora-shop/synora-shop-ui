@@ -21,20 +21,16 @@ import { isPreview } from "@/lib/preview-mode";
 /**
  * The page a customer lands on straight after checking out.
  *
- * It shows their name, full delivery address, phone number, email and what
- * they bought, and it is reachable by anyone who knows the order id — there is
- * no session here, because checkout is a guest flow.
+ * Who sees what is lib/order-access.ts (since 8 October): the signed-in
+ * customer who placed it sees everything; anyone holding the order's link —
+ * `?key=` its random access key, as the email and the thank-you redirect carry
+ * — sees it with the address cut to city and postcode; anyone else, and any id
+ * that is not an order, gets the same "Find your order" form, so walking
+ * through the five-character ids (lib/order-id.ts) learns nothing.
  *
  * Scoped to the shop being browsed. It used to read the order by id alone, so
  * an id typed into one store's URL rendered an order belonging to any other
  * store on the platform.
- *
- * Worth being plain about what this does not fix: order ids are five
- * characters (lib/order-id.ts), which is around sixty million combinations —
- * small enough to walk through if somebody wants to badly enough. Scoping
- * confines that to one shop's orders rather than every shop's, but the real
- * answer is a per-order token in the URL, which is a change to checkout rather
- * than to this page.
  */
 // Never cached: this page asks a payment provider what happened and renders the
 // answer. A cached copy would show one customer another's payment state.

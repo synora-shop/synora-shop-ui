@@ -180,66 +180,56 @@ const loom: ThemeDefinition = {
 };
 
 /**
- * Kite — the first theme that is more than a palette.
+ * Kite — rebuilt from "KITE - Trümung - Ecommerce Clothing Store.fig" as its
+ * own sections (lib/themes/kits.ts, docs/KITE.md), replacing the palette-only
+ * Kite of September outright on 9 October.
  *
  * Named Atlas until 22 September, rekeyed 3 October, for the reason above.
  *
- * Loom and the retired Meridian differed in colour, type and corner radius and
- * in nothing else: the same header, the same card, the same grid, the same
- * footer. Kite is the theme that proves the other half of the registry works,
- * so it changes
- * every one of those and switches on the behaviour a shop actually sells with.
- *
- * The choices hang together rather than being picked for variety. A centred
- * header and a tall, centred card make a shop that leads with photography; a
- * tight grid earns back the room that costs; a band footer keeps the bottom of
- * a phone page short. Hover swap and quick-add belong to a grid that expects to
- * be browsed rather than searched, and a sticky buy bar belongs to a long
- * product page on a phone, which is where most of these shops are read.
- *
- * Colour is deliberately neither of the other two: a deep pine against a warm
- * off-white, with amber for the second voice — not Loom's maroon, and not
- * Meridian's absence of colour.
+ * Its pages are the kit's; these tokens colour what the platform still draws
+ * for a Kite shop (its own pages — FAQ, About, Contact, a policy page) so they
+ * sit in the same room: the file's near-black ground, its warm off-white ink,
+ * square corners, Inter for words. The file's serif (Hiragino Mincho, set as
+ * Shippori Mincho in the kit) is not one the token system may load, so a
+ * platform heading uses the built-in serif nearest it.
  */
 const kite: ThemeDefinition = {
   key: "kite",
-  version: "1.0.0",
-  plate: { from: "#8fc9ae", to: "#b8efd6" },
+  // 2.0.0: Kite became its own sections — every page changed.
+  version: "2.0.0",
+  plate: { from: "#2a2a28", to: "#040404" },
   name: "Kite",
-  description: "Photography-led, with a tight grid and quick buying. For a shop with a look.",
+  description: "Dark and editorial: large photography, a serif voice and a quiet grid. For a fashion label.",
   businessTypes: ["ecommerce"],
   sections: [...SECTION_TYPES],
   tokens: {
-    accent: "#12463c",
-    secondary: "#c8763f",
-    accentContrast: "#ffffff",
-    pageBackground: "#fbfbf9",
-    surface: "#ffffff",
-    textPrimary: "#12181a",
-    textMuted: "#5a6663",
-    border: "#e3e5e0",
-    headerBackground: "#ffffff",
-    footerBackground: "#12181a",
-    headingFont: "inter",
+    accent: "#f4f3f1",
+    secondary: "#9c240c",
+    accentContrast: "#040404",
+    pageBackground: "#040404",
+    surface: "#0e0e0d",
+    textPrimary: "#f4f3f1",
+    textMuted: "#b5b3ae",
+    border: "#3a3936",
+    headerBackground: "#040404",
+    footerBackground: "#040404",
+    headingFont: "cormorant",
     bodyFont: "inter",
     baseFontSize: 16,
-    headingWeight: 700,
-    headingLetterSpacing: -1,
-    // Softened rather than square: Meridian already owns the hard corner, and
-    // an unrounded photograph beside a rounded button looks like an accident.
-    cornerRadius: 6,
-    buttonRadius: 6,
-    containerWidth: 1360,
+    headingWeight: 400,
+    headingLetterSpacing: 0,
+    // The file never rounds a corner.
+    cornerRadius: 0,
+    buttonRadius: 0,
+    containerWidth: 1728,
+    // As Loom: the panel keeps its own colours.
+    adminSkin: false,
   },
   layout: {
     header: "centred",
     productCard: "editorial",
-    grid: "tight",
-    footer: "band",
-    hoverSwapImage: true,
-    quickAdd: true,
-    stickyBuyBar: true,
-    swatchesOnCard: true,
+    grid: "roomy",
+    footer: "masthead",
   },
 };
 

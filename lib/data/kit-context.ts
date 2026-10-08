@@ -96,6 +96,7 @@ export function toKitProductPage(
     description: string | null;
     descriptionHtml?: string | null;
     categories: { name: string }[];
+    vendor?: string | null;
   },
   currency: string
 ): KitProductPage {
@@ -111,6 +112,8 @@ export function toKitProductPage(
   return {
     id: p.id,
     eyebrow: p.categories.map((c) => c.name).join(" · "),
+    // Who made it — Kite prints "by {vendor}" over the name; empty, it prints nothing.
+    vendor: p.vendor?.trim() || undefined,
     title: p.title,
     price: formatMoney(effectivePrice(p as never), currency),
     description,
