@@ -119,8 +119,8 @@ the shop.
 
 - **The phone product page has no price or sizes** — the file draws none
   there, so none are shown. Worth a phone design before shops use it.
-- The footer sign-up has nothing behind it (as Loom's): the platform has no
-  subscriber list. A decision for the owner.
+- The footer's EMAIL / GET EXCLUSIVE DEALS is not shown (decided 9 October):
+  the platform keeps no subscriber list. It returns with the list.
 - The 44 photographs are the file's PNGs (57 MB); the ported theme serves them
   through the platform's image pipeline.
 - Wiring: register Kite's kit, map real data (vendor, saved groups, address

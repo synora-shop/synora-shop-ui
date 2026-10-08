@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { menu, on, str, type KiteContext } from "@/components/kite/contract";
+import { menu, str, type KiteContext } from "@/components/kite/contract";
 import { kt } from "@/components/kite/type";
 
 /**
@@ -59,18 +59,9 @@ export function KiteFooter({ data, ctx }: { data: Record<string, unknown>; ctx: 
         <p {...kt("sans", 16)}>{str(data, "text")}</p>
       </div>
 
-      {on(data, "showSignup") ? (
-        <form className="absolute left-[calc(937*var(--u))] top-[calc(428*var(--u))] flex w-[calc(300*var(--u))] flex-col items-end gap-[calc(32*var(--u))]">
-          <label className="relative block h-[calc(51*var(--u))] w-full">
-            <span {...kt("sans", 16)} className={cn(kt("sans", 16).className, "absolute left-0 top-0 opacity-80")}>{str(data, "signupLabel")}</span>
-            <input type="email" name="email" aria-label={str(data, "signupLabel")} className="absolute inset-x-0 bottom-0 h-[calc(30*var(--u))] w-full bg-transparent text-[#f4f3f1] outline-none" />
-            <span aria-hidden className="absolute inset-x-0 bottom-[calc(-0.5*var(--u))] h-px bg-[#f4f3f1]" />
-          </label>
-          <button type="button" {...kt("sans", 20)} className={cn(kt("sans", 20).className, "underline")}>
-            {str(data, "signupButton")}
-          </button>
-        </form>
-      ) : null}
+      {/* The file's EMAIL / GET EXCLUSIVE DEALS is not shown: the platform
+          keeps no subscriber list, and a field that keeps nothing is worse
+          than none (decided 9 October; it returns with the list). */}
 
       {links.length ? (
         // Anchored by its right edge (32 in — the file's 1529 + 167): on a small
