@@ -60,7 +60,7 @@ export function KiteCurated({ data, ctx }: { data: Record<string, unknown>; ctx:
         </div>
         <p {...kt("script", 96)} className={cn(kt("script", 96).className, "whitespace-nowrap")}>{str(data, "name")}</p>
         {str(data, "linkLabel") ? (
-          <a href={href(data, "link", ctx)} {...kt("sans", 20)} className={cn(kt("sans", 20).className, "whitespace-nowrap underline")}>
+          <a href={href(data, "link", ctx, "route:collection")} {...kt("sans", 20)} className={cn(kt("sans", 20).className, "whitespace-nowrap underline")}>
             {str(data, "linkLabel")}
           </a>
         ) : null}

@@ -70,7 +70,7 @@ export function KiteNewsletter({ data, ctx }: { data: Record<string, unknown>; c
           ))}
         </div>
         {str(data, "linkLabel") ? (
-          <a href={href(data, "link", ctx)} {...kt("sans", 15, 20)} className={cn(kt("sans", 15, 20).className, "self-start underline")}>
+          <a href={href(data, "link", ctx, "route:collection")} {...kt("sans", 15, 20)} className={cn(kt("sans", 15, 20).className, "self-start underline")}>
             {str(data, "linkLabel")}
           </a>
         ) : null}
@@ -79,7 +79,8 @@ export function KiteNewsletter({ data, ctx }: { data: Record<string, unknown>; c
       <div className="relative overflow-x-auto [scrollbar-width:none]">
         <div className="flex w-max items-start gap-[calc(32*var(--u))] pl-[calc(16*var(--u))] pr-[calc(16*var(--u))] md:pl-[calc(743*var(--u))]">
           {stories.map((s, i) => {
-            const to = s.link ? kitHref(ctx, s.link) : "";
+            // A story with no link of its own goes to the shop rather than nowhere.
+            const to = kitHref(ctx, s.link ?? "", "route:collection");
             return (
               <article key={i} className="flex w-[calc(264*var(--u))] shrink-0 flex-col gap-[calc(16*var(--u))]">
                 {s.image ? (

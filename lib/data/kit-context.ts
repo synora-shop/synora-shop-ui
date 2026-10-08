@@ -253,6 +253,7 @@ export async function kitCustomer(base = ""): Promise<KitCustomer | null> {
       label: a.label,
       lines: [a.line1, a.line2, [a.city, a.postalCode].filter(Boolean).join(" "), a.phone].filter((x): x is string => !!x),
       main: a.isDefault || i === 0,
+      parts: { line1: a.line1, city: a.city, postcode: a.postalCode ?? "" },
     })),
   };
 }

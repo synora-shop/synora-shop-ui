@@ -34,7 +34,7 @@ export function KiteFooter({ data, ctx }: { data: Record<string, unknown>; ctx: 
       {links.length ? (
         <nav aria-label="Footer" className="flex flex-col items-start gap-[calc(16*var(--u))]">
           {links.map((l) => (
-            <a key={l.id} href={l.href} {...kt("sans", 16)} className={cn(kt("sans", 16).className, "underline")}>
+            <a key={l.id} href={l.href || undefined} {...kt("sans", 16)} className={cn(kt("sans", 16).className, l.href && "underline")}>
               {l.label}
             </a>
           ))}
@@ -78,7 +78,7 @@ export function KiteFooter({ data, ctx }: { data: Record<string, unknown>; ctx: 
         // box, and anchored at the left they ran off the page.
         <nav aria-label="Footer" className="absolute right-[calc(32*var(--u))] top-[calc(444*var(--u))] flex min-w-[calc(167*var(--u))] flex-col items-start gap-[calc(32*var(--u))]">
           {links.map((l) => (
-            <a key={l.id} href={l.href} {...kt("sans", 16)} className={cn(kt("sans", 16).className, "whitespace-nowrap underline")}>
+            <a key={l.id} href={l.href || undefined} {...kt("sans", 16)} className={cn(kt("sans", 16).className, "whitespace-nowrap", l.href && "underline")}>
               {l.label}
             </a>
           ))}

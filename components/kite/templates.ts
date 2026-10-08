@@ -34,3 +34,13 @@ export const ACCOUNT: KiteTemplate = {
   name: "Account",
   sections: [{ id: "main", type: "KITE_ACCOUNT", data: {} }],
 };
+
+// The pages the file does not draw — Kite's own parts (decided 8 October).
+const one = (name: string, type: string): KiteTemplate => ({ name, sections: [{ id: "main", type, data: {} }] });
+export const COLLECTION = one("Collection", "KITE_COLLECTION");
+export const SEARCH = one("Search", "KITE_SEARCH");
+export const CART = one("Bag", "KITE_CART");
+export const CHECKOUT = one("Checkout", "KITE_CHECKOUT");
+export const SIGN_IN = one("Sign in", "KITE_SIGN_IN");
+export const ORDER = one("Order", "KITE_ORDER");
+export const WISHLIST = one("Saved items", "KITE_WISHLIST");

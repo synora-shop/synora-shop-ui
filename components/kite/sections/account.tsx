@@ -1,6 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { kitAddAddress, kitDeleteAddress } from "@/lib/themes/kit-actions";
+import { ktx } from "@/components/kite/text";
+import { KiteButton, KiteField, KiteSelect } from "@/components/kite/ui";
 import { cn } from "@/lib/utils";
 import { fill, str, type KiteContext } from "@/components/kite/contract";
 import { kt } from "@/components/kite/type";
@@ -21,9 +25,9 @@ function Field({ label, value, wide }: { label: string; value: string; wide?: bo
 }
 
 /** EDIT, CHANGE, REMOVE, VIEW, RATE: SF Pro Light 20, underlined, at half ink. */
-function Dim({ children, href }: { children: React.ReactNode; href?: string }) {
-  const props = { ...kt("sans", 20), className: cn(kt("sans", 20).className, "underline opacity-50") };
-  return href ? <a href={href} {...props}>{children}</a> : <button type="button" {...props}>{children}</button>;
+function Dim({ children, href, onClick, pressed }: { children: React.ReactNode; href?: string; onClick?: () => void; pressed?: boolean }) {
+  const props = { ...kt("sans", 20), className: cn(kt("sans", 20).className, "underline", pressed ? "opacity-100" : "opacity-50 hover:opacity-100") };
+  return href ? <a href={href} {...props}>{children}</a> : <button type="button" aria-expanded={pressed} onClick={onClick} {...props}>{children}</button>;
 }
 
 /**
@@ -51,9 +55,46 @@ function Dim({ children, href }: { children: React.ReactNode; href?: string }) {
  */
 export function KiteAccount({ data, ctx }: { data: Record<string, unknown>; ctx: KiteContext }) {
   const [tab, setTab] = useState<Tab>(ctx.accountTab === "orders" ? "orders" : ctx.accountTab === "saved" ? "saved" : "contact");
+  const router = useRouter();
+  // EDIT, CHANGE and REMOVE do what they say (they did nothing until
+  // 8 October). Details are changed by asking the shop — the platform's rule
+  // — so EDIT says so; CHANGE opens the address as a form and saves it as the
+  // main address; REMOVE deletes it. The reference build keeps its changes in
+  // the page.
+  const [editNote, setEditNote] = useState(false);
+  const [changing, setChanging] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [draft, setDraft] = useState({ line1: "", city: "", postcode: "" });
+  const [local, setLocal] = useState<NonNullable<KiteContext["customer"]>["addresses"] | null>(null);
   const me = ctx.customer;
   if (!me) return null;
-  const main = me.addresses.find((a) => a.main) ?? me.addresses[0];
+  const addresses = local ?? me.addresses;
+  const main = addresses.find((a) => a.main) ?? addresses[0];
+  const startChange = () => {
+    setDraft({ line1: main?.parts?.line1 ?? main?.lines[0] ?? "", city: main?.parts?.city ?? "", postcode: main?.parts?.postcode ?? "" });
+    setChanging((v) => !v);
+  };
+  const save = async () => {
+    if (!draft.line1.trim() || !draft.city.trim()) return;
+    if (!ctx.live) {
+      setLocal([{ id: "home", label: "Home", lines: [draft.line1, `${draft.city} ${draft.postcode}`.trim()], main: true, parts: draft }]);
+      return setChanging(false);
+    }
+    setBusy(true);
+    await kitAddAddress({ label: main?.label || "Home", line1: draft.line1, city: draft.city, postcode: draft.postcode, phone: me.phone });
+    if (main) await kitDeleteAddress(main.id);
+    setBusy(false);
+    setChanging(false);
+    router.refresh();
+  };
+  const remove = async () => {
+    if (!main) return;
+    if (!ctx.live) return setLocal(addresses.filter((a) => a.id !== main.id));
+    setBusy(true);
+    await kitDeleteAddress(main.id);
+    setBusy(false);
+    router.refresh();
+  };
   const tabs: { id: Tab; label: string; phoneOrder: string }[] = [
     { id: "contact", label: str(data, "contactTab"), phoneOrder: "order-2" },
     { id: "saved", label: str(data, "savedTab"), phoneOrder: "order-1" },
@@ -102,7 +143,8 @@ export function KiteAccount({ data, ctx }: { data: Record<string, unknown>; ctx:
                 <Field label={str(data, "nameLabel")} value={`${me.firstName} ${me.lastName}`.trim()} />
                 <Field label={str(data, "emailLabel")} value={me.email} />
               </div>
-              <Dim>{str(data, "editLabel")}</Dim>
+              <Dim onClick={() => setEditNote((v) => !v)} pressed={editNote}>{str(data, "editLabel")}</Dim>
+              {editNote ? <p role="status" {...kt("sans", 16)} className={cn(kt("sans", 16).className, "self-end opacity-80")}>{ktx(ctx, "account.detailsNote")}</p> : null}
             </div>
             <div className="mt-[calc(16*var(--u))] flex flex-col items-end gap-[calc(32*var(--u))]">
               <div className="flex w-full flex-col gap-[calc(32*var(--u))] md:flex-row md:items-start">
@@ -114,9 +156,30 @@ export function KiteAccount({ data, ctx }: { data: Record<string, unknown>; ctx:
                 </div>
               </div>
               <div className="flex gap-[calc(32*var(--u))]">
-                <Dim>{str(data, "changeLabel")}</Dim>
-                <Dim>{str(data, "removeLabel")}</Dim>
+                <Dim onClick={startChange} pressed={changing}>{str(data, "changeLabel")}</Dim>
+                {main ? <Dim onClick={remove}>{str(data, "removeLabel")}</Dim> : null}
               </div>
+              {changing ? (
+                <form
+                  className="flex w-full flex-col gap-[calc(32*var(--u))] md:w-[calc(384*var(--u))]"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    void save();
+                  }}
+                >
+                  {ctx.checkout ? (
+                    <KiteSelect label={str(data, "cityLabel")} options={ctx.checkout.cities} placeholder={ktx(ctx, "checkout.cityPlaceholder")} value={draft.city} onChange={(c) => setDraft((d) => ({ ...d, city: c }))} />
+                  ) : (
+                    <KiteField label={str(data, "cityLabel")} value={draft.city} onChange={(e) => setDraft((d) => ({ ...d, city: e.target.value }))} />
+                  )}
+                  <KiteField label={str(data, "addressLabel")} value={draft.line1} onChange={(e) => setDraft((d) => ({ ...d, line1: e.target.value }))} />
+                  <KiteField label={str(data, "postcodeLabel")} value={draft.postcode} onChange={(e) => setDraft((d) => ({ ...d, postcode: e.target.value }))} />
+                  <div className="flex gap-[calc(16*var(--u))]">
+                    <KiteButton type="submit" disabled={busy || !draft.line1.trim() || !draft.city.trim()} className="flex-1">{ktx(ctx, "account.saveAddress")}</KiteButton>
+                    <KiteButton variant="outline" onClick={() => setChanging(false)}>{ktx(ctx, "account.cancel")}</KiteButton>
+                  </div>
+                </form>
+              ) : null}
             </div>
           </>
         ) : null}

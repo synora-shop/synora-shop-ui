@@ -21,7 +21,7 @@ import { KiteSectionHead } from "@/components/kite/section-head";
 export function KiteAbout({ data, ctx }: { data: Record<string, unknown>; ctx: KiteContext }) {
   const portrait = str(data, "portrait");
   return (
-    <section data-k="about" className="relative h-[calc(849*var(--u))] overflow-hidden md:h-[calc(1117*var(--u))]">
+    <section id="about" data-k="about" className="relative h-[calc(849*var(--u))] overflow-hidden md:h-[calc(1117*var(--u))]">
       <KiteSectionHead numeral={str(data, "numeral")} title={str(data, "title")} />
 
       <div className="absolute left-[calc(16*var(--u))] top-[calc(39*var(--u))] flex w-[calc(408*var(--u))] flex-col items-center gap-[calc(16*var(--u))] text-center md:left-[calc(246*var(--u))] md:top-[calc(280*var(--u))] md:w-[calc(525*var(--u))] md:gap-[calc(32*var(--u))]">
@@ -39,7 +39,7 @@ export function KiteAbout({ data, ctx }: { data: Record<string, unknown>; ctx: K
           <img src={str(data, "image")} alt="" className="hidden h-[calc(200*var(--u))] w-full object-cover md:block" />
         ) : null}
         {str(data, "linkLabel") ? (
-          <a href={href(data, "link", ctx)} {...kt("sans", 16)} className={cn(kt("sans", 16).className, "underline")}>
+          <a href={href(data, "link", ctx, "route:collection")} {...kt("sans", 16)} className={cn(kt("sans", 16).className, "underline")}>
             {str(data, "linkLabel")}
           </a>
         ) : null}

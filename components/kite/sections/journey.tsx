@@ -36,7 +36,7 @@ export function KiteJourney({ data }: { data: Record<string, unknown> }) {
     // Clipped sideways only: on a small laptop the reading floor lengthens the
     // caption a few pixels past the section's foot, into the footer's empty
     // top, rather than cutting its last line. The photograph clips itself.
-    <section data-k="journey" className="relative hidden h-[calc(1247*var(--u))] overflow-x-clip md:block">
+    <section id="journey" data-k="journey" className="relative hidden h-[calc(1247*var(--u))] overflow-x-clip md:block">
       {image ? (
         <div className="absolute left-[calc(525*var(--u))] top-[calc(309*var(--u))] h-[calc(938*var(--u))] w-[calc(679*var(--u))] overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}

@@ -83,6 +83,24 @@ The sweep is clear at all twenty widths, 320 to 2560.
   file's own space around it and grow rather than cut — a pixel short at the
   bottom so the minimum height holds the design's size exactly.
 
+## Pages the file does not draw (asked for 8 October)
+
+Collection `/kite/shop`, search `/kite/search`, bag `/kite/cart`, checkout
+`/kite/checkout`, sign-in `/kite/sign-in`, order `/kite/order`, saved items
+`/kite/wishlist` — every page a kit needs (lib/themes/kits.ts), built only
+from parts the file draws (`components/kite/ui.tsx`): the account's serif
+title, Khand capitals for headings, the account's field (label at 80%, a rule
+under the value), the product page's bar button, half-ink rules, the home
+page's piece card and "Nº001" numbering. They do what Loom's do, through the
+same platform actions (lib/themes/kit-actions.ts) and the same Site text keys
+(`components/kite/text.ts`, Loom's words except "bag").
+
+Until 8 October every route of the reference build was `/kite`, so the bag,
+account, search and every piece went back to the top of the home page. Each
+now has its page; Lookbook and About (named by the file, never drawn) go to
+the home page's Journey and About; a home link the file leaves empty goes to
+the shop.
+
 ## Not drawn, built in Kite's own terms (decided 8 October, to replace when drawn)
 
 - The phone menu: the ground and the desktop menu's links, SF Pro Light 16.
@@ -91,12 +109,18 @@ The sweep is clear at all twenty widths, 320 to 2560.
 - A chosen size underlined; an open fold-out losing its plus's upright; a
   chosen view becoming the main photograph.
 - The bag's count is the cart's (the file's "2" is a drawn glyph), desktop only.
+- ADD TO BAG says "Choose a size." / "Added to your bag. View bag"; ADD TO
+  FAVORITES keeps the piece in Saved items (pressed again, lets go).
+- The account's EDIT says details are changed by asking the shop (the
+  platform's rule); CHANGE opens the address as a form and saves it; REMOVE
+  deletes it. RATE goes to the order — the platform has no reviews.
 
 ## Still open
 
 - **The phone product page has no price or sizes** — the file draws none
   there, so none are shown. Worth a phone design before shops use it.
-- The footer sign-up has nothing behind it (as Loom's).
+- The footer sign-up has nothing behind it (as Loom's): the platform has no
+  subscriber list. A decision for the owner.
 - The 44 photographs are the file's PNGs (57 MB); the ported theme serves them
   through the platform's image pipeline.
 - Wiring: register Kite's kit, map real data (vendor, saved groups, address

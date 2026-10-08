@@ -1,3 +1,4 @@
+import { KitLinks } from "@/components/storefront/kit-links";
 import { Acme, Inter, Khand, Meddon, Poppins, Shippori_Mincho } from "next/font/google";
 import { KITE_TYPE_CSS } from "@/components/kite/type";
 
@@ -34,7 +35,7 @@ export function KiteFrame({ children }: { children: React.ReactNode }) {
     <div className={`${KITE_FONTS} min-h-screen bg-[#040404] [container-type:inline-size] font-[family-name:var(--kite-sans)] font-light text-[#f4f3f1] antialiased`}>
       <style>{KITE_TYPE_CSS}</style>
       <main className="relative mx-auto w-[calc(440*var(--u))] [--u:min(calc(100cqw/440),1.2px)] md:w-[calc(1728*var(--u))] md:[--u:min(calc(100cqw/1728),1px)]">
-        {children}
+        <KitLinks>{children}</KitLinks>
       </main>
     </div>
   );

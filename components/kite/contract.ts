@@ -60,7 +60,7 @@ export const on = (d: Record<string, unknown>, k: string) => d[k] !== false;
 export const fill = (text: string, vars: Record<string, string | number>) =>
   text.replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? String(vars[k]) : m));
 /** A link setting as a real address — `route:cart` becomes the shop's cart. */
-export const href = (d: Record<string, unknown>, k: string, ctx: KiteContext) => kitHref(ctx, str(d, k));
+export const href = (d: Record<string, unknown>, k: string, ctx: KiteContext, fallback?: string) => kitHref(ctx, str(d, k), fallback) || undefined;
 /** One of the shop's own pages. */
 export const route = (ctx: KiteContext, name: keyof KiteContext["routes"]) => ctx.routes[name];
 export const menu = (d: Record<string, unknown>, k: string, ctx: KiteContext) => ctx.menus[str(d, k)]?.items ?? [];

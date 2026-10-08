@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { on, str, type KiteContext } from "@/components/kite/contract";
+import { route, on, str, type KiteContext } from "@/components/kite/contract";
 import { kt } from "@/components/kite/type";
 import { kiteMoney } from "@/components/kite/money";
 import { useKitCart } from "@/lib/themes/kit-actions";
+import { useWishlist } from "@/components/loom/wishlist";
 
 /** The file's plus: two 10.5 strokes in an 18 square. Open, the upright goes. */
 function Plus({ open }: { open: boolean }) {
@@ -56,17 +57,24 @@ export function KiteProduct({ data, ctx }: { data: Record<string, unknown>; ctx:
   const [size, setSize] = useState<string | null>(null);
   const [open, setOpen] = useState<"details" | "shipping" | null>(null);
   const [said, setSaid] = useState<string | null>(null);
+  const saved = useWishlist();
   if (!p) return null;
   const photos = p.photos;
   const views = photos.slice(1, 4);
   const colour = p.colours[0]?.label ?? "";
   const pieces = ctx.products.slice(0, 3);
 
+  // The reference build has no bag behind it: it says what a shop's would.
+  // (It used to do nothing at all when pressed — found 8 October.)
   const add = () => {
-    if (!ctx.live) return setSaid(null);
     if (p.sizes.length && !size) return setSaid("Choose a size.");
-    setSaid(cart.add(p, { colour, size: size ?? undefined }, 1) ? "Added to your bag." : "That one is not available.");
+    if (!ctx.live) return setSaid("added");
+    setSaid(cart.add(p, { colour, size: size ?? undefined }, 1) ? "added" : "That one is not available.");
   };
+  // "Add to favourites" keeps the piece in Saved items — the list every
+  // theme keeps (components/loom/wishlist.tsx). Pressed again, it lets go.
+  const own = { id: p.id, title: p.title, price: p.amount, src: photos[0]?.src ?? "", href: ctx.live ? `${ctx.base ?? ""}/product/${p.slug}` : route(ctx, "collection").replace(/\/shop$/, "/product") };
+  const isSaved = saved.has(p.id);
 
   const t16 = kt("sans", 16);
   const rows = (
@@ -75,7 +83,7 @@ export function KiteProduct({ data, ctx }: { data: Record<string, unknown>; ctx:
         { key: "details" as const, label: str(data, "detailsLabel"), body: p.details.map((d) => `${d.title}\n${d.body}`).join("\n\n") || p.description },
         { key: "shipping" as const, label: str(data, "shippingLabel"), body: str(data, "shippingText") },
       ].map((r, i) => (
-        <div key={r.key}>
+        <div key={r.key} id={r.key}>
           <button
             type="button"
             aria-expanded={open === r.key}
@@ -109,8 +117,16 @@ export function KiteProduct({ data, ctx }: { data: Record<string, unknown>; ctx:
       <button type="button" onClick={add} className="flex h-[calc(39*var(--u))] w-full items-center justify-center bg-[#f4f3f1] text-[#040404]">
         <span {...t16}>{str(data, "addLabel")}</span>
       </button>
-      <button type="button" {...t16} className={cn(t16.className, "underline")}>{str(data, "favouriteLabel")}</button>
-      {said ? <p role="status" {...kt("sans", 14)}>{said}</p> : null}
+      <button type="button" aria-pressed={isSaved} onClick={() => saved.toggle(own)} {...t16} className={cn(t16.className, "underline", isSaved && "font-normal")}>
+        {isSaved ? `✓ ${str(data, "favouriteLabel")}` : str(data, "favouriteLabel")}
+      </button>
+      {said === "added" ? (
+        <p role="status" {...kt("sans", 14)}>
+          Added to your bag. <a href={route(ctx, "cart")} className="underline">View bag</a>
+        </p>
+      ) : said ? (
+        <p role="status" {...kt("sans", 14)}>{said}</p>
+      ) : null}
     </div>
   );
 

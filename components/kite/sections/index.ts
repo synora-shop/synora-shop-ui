@@ -15,6 +15,13 @@ import { KiteNewsletter } from "@/components/kite/sections/newsletter";
 import { KiteCurated } from "@/components/kite/sections/curated";
 import { KiteLimited } from "@/components/kite/sections/limited";
 import { KiteCities } from "@/components/kite/sections/cities";
+import { kiteCartSchema, kiteCheckoutSchema, kiteCollectionSchema, kiteOrderSchema, kiteSearchSchema, kiteSignInSchema, kiteWishlistSchema } from "@/components/kite/sections/commerce.schema";
+import { KiteCollection, KiteSearch } from "@/components/kite/sections/collection";
+import { KiteCart } from "@/components/kite/sections/cart";
+import { KiteCheckout } from "@/components/kite/sections/checkout";
+import { KiteSignIn } from "@/components/kite/sections/sign-in";
+import { KiteOrderView } from "@/components/kite/sections/order";
+import { KiteWishlist } from "@/components/kite/sections/wishlist";
 
 /** Every section Kite brings, by type — what its templates and the customizer can use. */
 export const KITE_SECTIONS: Record<string, KiteSectionDef> = {
@@ -29,4 +36,12 @@ export const KITE_SECTIONS: Record<string, KiteSectionDef> = {
   KITE_FOOTER: { schema: kiteFooterSchema, Render: KiteFooter },
   KITE_PRODUCT: { schema: kiteProductSchema, Render: KiteProduct },
   KITE_ACCOUNT: { schema: kiteAccountSchema, Render: KiteAccount },
+  // Not in the file: Kite's own parts (decided 8 October).
+  KITE_COLLECTION: { schema: kiteCollectionSchema, Render: KiteCollection },
+  KITE_SEARCH: { schema: kiteSearchSchema, Render: KiteSearch },
+  KITE_CART: { schema: kiteCartSchema, Render: KiteCart },
+  KITE_CHECKOUT: { schema: kiteCheckoutSchema, Render: KiteCheckout },
+  KITE_SIGN_IN: { schema: kiteSignInSchema, Render: KiteSignIn },
+  KITE_ORDER: { schema: kiteOrderSchema, Render: KiteOrderView },
+  KITE_WISHLIST: { schema: kiteWishlistSchema, Render: KiteWishlist },
 };

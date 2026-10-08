@@ -46,7 +46,7 @@ export function KiteUpcoming({ data, ctx }: { data: Record<string, unknown>; ctx
         </div>
         <p {...kt("sans", 16)} className={cn(kt("sans", 16).className, "w-[calc(356*var(--u))]")}>{str(data, "text")}</p>
         {str(data, "linkLabel") ? (
-          <a href={href(data, "link", ctx)} {...kt("sans", 20)} className={cn(kt("sans", 20).className, "underline")}>
+          <a href={href(data, "link", ctx, "route:collection")} {...kt("sans", 20)} className={cn(kt("sans", 20).className, "underline")}>
             {str(data, "linkLabel")}
           </a>
         ) : null}

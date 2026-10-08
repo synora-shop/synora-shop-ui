@@ -23,7 +23,8 @@ export function KiteCities({ data, ctx }: { data: Record<string, unknown>; ctx: 
   return (
     <section data-k="cities" className="flex flex-col md:h-[calc(966*var(--u))] md:flex-row">
       {cities.map((c, i) => {
-        const href = c.link ? kitHref(ctx, c.link) : "";
+        // A city with no link of its own goes to the shop rather than nowhere.
+        const href = kitHref(ctx, c.link ?? "", "route:collection");
         const Box = href ? "a" : "div";
         return (
           <Box
