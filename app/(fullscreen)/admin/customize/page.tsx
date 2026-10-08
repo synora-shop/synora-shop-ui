@@ -184,6 +184,10 @@ async function loadKitEditor(copyId: string | undefined, requested: string | und
       select: { id: true, themeKey: true, version: true },
     }),
   ]);
+  // A copy that was asked for by id and is gone — removed in another tab, or
+  // by someone else — must not quietly become the live copy: the merchant
+  // thinks they are editing a draft and every save would land on the shop.
+  if (copyId && !installed.some((c) => c.id === copyId)) redirect("/admin/theme?missing=1");
   const chosen = (copyId && installed.find((c) => c.id === copyId)) || liveCopyOf(installed, settings);
   if (!chosen) return null;
   const kit = kitFor(chosen.themeKey, chosen.version);

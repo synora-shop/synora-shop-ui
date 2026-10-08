@@ -26,6 +26,8 @@
  *
  * Dependency-free beyond React's own server renderer; exits non-zero on failure.
  */
+import { LimitError, limitPage, limitSectionData } from "../lib/section-limits";
+import type { SectionSchema } from "../lib/section-schema";
 import { renderToStaticMarkup } from "react-dom/server";
 import { AppRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { LOOM_SECTIONS } from "../components/loom/sections";
@@ -240,6 +242,42 @@ const LIVE_ONLY = new Set<string>([
 for (const t of Object.values(TEMPLATES) as LoomTemplate[]) {
   for (const s of t.sections) check(`template ${t.name}: ${s.type} is registered`, s.type in LOOM_SECTIONS);
   check(`template ${t.name}: section ids are unique`, new Set(t.sections.map((s) => s.id)).size === t.sections.length);
+}
+
+// 8. What a save may store (lib/section-limits.ts): declared settings only,
+//    each within its kind's limits, blocks and pages capped.
+{
+  const schema: SectionSchema = {
+    type: "LIMITS_PROBE",
+    label: "Probe",
+    category: "Content",
+    fields: [
+      { key: "title", kind: "text", label: "Title", info: "", default: "" },
+      { key: "size", kind: "range", label: "Size", info: "", default: 10, min: 0, max: 100 },
+      { key: "on", kind: "checkbox", label: "On", info: "", default: false },
+      { key: "align", kind: "select", label: "Align", info: "", default: "left", options: [{ value: "left", label: "Left" }, { value: "right", label: "Right" }] },
+    ],
+    blocks: { key: "items", label: "Item", max: 2, fields: [{ key: "name", kind: "text", label: "Name", info: "", default: "" }] },
+  };
+  const refuses = (fn: () => unknown, pattern: RegExp) => {
+    try {
+      fn();
+      return false;
+    } catch (e) {
+      return e instanceof LimitError && pattern.test(e.message);
+    }
+  };
+  check("limits: 500 characters of text is kept", limitSectionData(schema, { title: "x".repeat(500) }).title === "x".repeat(500));
+  check("limits: 501 is refused, naming the setting", refuses(() => limitSectionData(schema, { title: "x".repeat(501) }), /Probe, Title: keep it under 500/));
+  const coerced = limitSectionData(schema, { size: 9999, on: "yes", align: "middle", title: { evil: 1 } });
+  check("limits: a number is held inside its range", coerced.size === 100);
+  check("limits: only true is true", coerced.on === false);
+  check("limits: an option that does not exist falls back", coerced.align === "left");
+  check("limits: a wrong type falls back to the default", coerced.title === "");
+  check("limits: undeclared settings are not stored", !("smuggled" in limitSectionData(schema, { smuggled: "x".repeat(10_000) })));
+  check("limits: a missing setting stays missing (its default fills it when drawn)", !("size" in limitSectionData(schema, {})));
+  check("limits: blocks stop at the section's maximum", refuses(() => limitSectionData(schema, { items: [{}, {}, {}] }), /up to 2 items/));
+  check("limits: a page over 512 KB is refused", refuses(() => limitPage([{ t: "x".repeat(600 * 1024) }]), /too large to save/));
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);

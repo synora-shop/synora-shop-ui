@@ -26,7 +26,8 @@ import { ThemeManager } from "@/components/admin/theme-manager";
  * "Opening and closing" used to sit at the bottom of this page and has moved to
  * Preferences → Maintenance with the rest of the closed-shop machinery.
  */
-export default async function ThemePage() {
+export default async function ThemePage(props: PageProps<"/admin/theme">) {
+  const missing = (await props.searchParams).missing === "1";
   const shop = await requireShop();
   const type = registryBusinessType(shop.businessType);
 
@@ -89,6 +90,12 @@ export default async function ThemePage() {
 
   return (
     <div className="flex flex-col gap-[var(--gap-lg)]">
+      {/* Sent here by the customizer when the copy it was asked to open is gone. */}
+      {missing && (
+        <p role="status" className="rounded-[var(--radius-control)] border border-amber bg-amber-bg px-4 py-3 text-sm text-ink">
+          That theme copy is no longer in your library, so there is nothing to edit. Pick another below.
+        </p>
+      )}
       <ThemeManager
         liveId={liveId}
         liveKey={liveKey}

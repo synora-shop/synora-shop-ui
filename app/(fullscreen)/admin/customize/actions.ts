@@ -13,6 +13,7 @@ import { checkTemplate, isTemplateName } from "@/lib/themes/kit-templates";
 import { isKitRoute } from "@/lib/themes/kit";
 import { invalidateShop } from "@/lib/data/cached";
 import { revisionOf, STALE_SAVE } from "@/lib/revision";
+import { limitPage, limitSectionData } from "@/lib/section-limits";
 import { MAX_SECTIONS as MAX_PAGE_SECTIONS } from "@/lib/themes/kit-templates";
 
 async function requireAdmin() {
@@ -131,8 +132,11 @@ export async function saveSections(pageId: string, sections: DraftSection[], bas
     const cleaned = known.map((s, order) => ({
       ...s,
       order,
-      data: sanitiseSectionLinks(s.type, s.data) as Prisma.InputJsonValue,
+      // Declared settings only, each within its kind's limits (lib/section-limits.ts),
+      // then every link re-checked.
+      data: sanitiseSectionLinks(s.type, limitSectionData(getSectionSchema(s.type)!, s.data)) as Prisma.InputJsonValue,
     }));
+    limitPage(cleaned.map((s) => s.data));
 
     const sid = await currentShopId();
     const outcome = await prisma.$transaction(async (tx) => {
@@ -325,11 +329,12 @@ export async function saveKitTemplate(copyId: string, name: string, sections: Dr
       id: s.id.startsWith("new:") ? `s${crypto.randomUUID().replace(/-/g, "").slice(0, 16)}` : s.id,
     }));
 
-    // Links first, by the same rules as the platform's sections.
+    // Limits first (lib/section-limits.ts), then links, by the same rules as
+    // the platform's sections.
     for (const s of withIds) {
       const def = kit.sections[s.type];
       if (!def) continue; // checkTemplate refuses it below, with its name
-      const data = { ...((s.data ?? {}) as Record<string, unknown>) };
+      const data = limitSectionData(def.schema, s.data);
       const clean = (value: unknown, label: string) => {
         if (isKitRoute(value)) return String(value).trim();
         const check = validateUrl(String(value ?? ""), { allowContactSchemes: true });
@@ -349,6 +354,7 @@ export async function saveKitTemplate(copyId: string, name: string, sections: Dr
       s.data = data;
     }
 
+    limitPage(withIds.map((s) => s.data));
     const checked = checkTemplate(kit, name, {
       sections: withIds.map((s) => ({ id: s.id, type: s.type, visible: s.isVisible, data: s.data })),
     });

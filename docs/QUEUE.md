@@ -265,7 +265,22 @@ a shop's status and domains must take effect at once, and the domain table
 has twenty writers to keep in step. Prisma's single-query joins would cut the
 remaining product reads by two thirds but are a preview feature.
 
-Still to do: size limits on what a save accepts; a concurrency load test.
+Turn 4, fixed:
+- **A save stored whatever it was sent** — a megabyte in a text setting, an
+  object in a colour, ten thousand slides, and on platform pages any key at
+  all. Now lib/section-limits.ts, on both saves: declared settings only (one
+  sent stays; one missing is still filled at draw time), each kind within
+  limits (text 500, long text 5,000, rich text 50,000, links and images
+  2,048), numbers inside their range, options that exist, blocks capped at
+  the section's maximum or 50, a page at 512 KB. Too long is refused with the
+  setting's name; a wrong type (only a tampered request) falls back quietly.
+  Checked first that no template, seed or stored section uses an undeclared
+  key, and that every Loom and platform default passes through unchanged.
+  `check:loom` holds ten cases.
+- **Opening the editor on a deleted copy edited the live one instead** — the
+  merchant believed they were on a draft. It now goes to Themes, saying why.
+
+Still to do: a concurrency load test.
 
 **Theme store, compared 8 October with how he described it** (Shopify's
 model, themes on Synora's servers, users install into their panel):
