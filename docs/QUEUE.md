@@ -280,7 +280,21 @@ Turn 4, fixed:
 - **Opening the editor on a deleted copy edited the live one instead** — the
   merchant believed they were on a draft. It now goes to Themes, saying why.
 
-Still to do: a concurrency load test.
+Turn 5, load and contention (production build, local database):
+- **Visitors:** 10, 50 and 100 at once for 20 s across seven pages — every
+  request answered (no errors), about 30 pages a second throughout. The cap
+  was the local test database (`prisma dev`, one core at 104%); the app
+  server sat at 20% CPU. Not a measure of Neon, which is a real Postgres.
+- **Saves at the same instant**, with the saves' own statements: twenty saves
+  of one Loom page opened on the same version — one saved, nineteen refused
+  as stale; twenty saves of twenty different pages on one copy — all twenty
+  kept. The platform-page lock (ten transactions waiting on one row) could not
+  be run: the local database is single-connection and stopped under it. It is
+  Postgres's ordinary `FOR UPDATE`; worth one run against a Neon branch.
+
+**Left for later, by choice:** Prisma's single-query joins (a preview feature);
+caching the shop and domain reads (they must take effect at once); a separate
+database for preview builds (ARCHITECTURE.md §10).
 
 **Theme store, compared 8 October with how he described it** (Shopify's
 model, themes on Synora's servers, users install into their panel):
