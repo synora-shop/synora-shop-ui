@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { menu, on, route, str, type KiteContext } from "@/components/kite/contract";
 import { kt } from "@/components/kite/type";
 import { KITE_ICON } from "@/components/kite/assets";
+import { KiteMenuPanel } from "@/components/kite/menu-panel";
 
 /**
  * The header — "MacBook Pro 16" - 4" and "Mobile | Home" in the file.
@@ -14,8 +15,8 @@ import { KITE_ICON } from "@/components/kite/assets";
  *
  * Phone (440): a 69-high bar — the menu glyph at 16,24.5, the name centred at
  * y 16 in Khand Light 24, the bag at the right less 16 — the rules at 69 and
- * 75, the page at 107. The file draws no menu panel; the glyph is drawn, and
- * what it opens is a decision still to be taken (docs/KITE.md).
+ * 75, the page at 107. The file draws the glyph, not what it opens: that is
+ * KiteMenuPanel, the plainest list in Kite's terms (decided 8 October).
  *
  * The icons are the file's own images (FIT into 20 square), not redrawn.
  */
@@ -51,11 +52,8 @@ export function KiteHeader({ data, ctx }: { data: Record<string, unknown>; ctx: 
         {name}
       </a>
 
-      {/* Phone: the menu glyph left, the bag right. */}
-      <button type="button" aria-label="Menu" className={cn(icon, "left-[calc(16*var(--u))] top-[calc(24.5*var(--u))] md:hidden")}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={KITE_ICON.menu} alt="" className="h-full w-full object-contain" />
-      </button>
+      {/* Phone: the menu glyph left (and the panel it opens), the bag right. */}
+      <KiteMenuPanel items={items} icon={KITE_ICON.menu} />
 
       {/* Search, account, bag. */}
       <div className="absolute right-[calc(16*var(--u))] top-[calc(24.5*var(--u))] flex items-center gap-[calc(32*var(--u))] md:right-[calc(32*var(--u))] md:top-[calc(46*var(--u))]">

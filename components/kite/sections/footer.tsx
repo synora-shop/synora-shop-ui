@@ -17,12 +17,34 @@ import { kt } from "@/components/kite/type";
  *   at 32,938 / right 32,938  the small print and the contact (14)
  *
  * The sign-up has nothing behind it yet — the same as Loom's (docs/KITE.md).
- * Desktop only, as the file draws it.
+ * The desktop's, as the file draws it; phones get the plain one first above.
  */
 export function KiteFooter({ data, ctx }: { data: Record<string, unknown>; ctx: KiteContext }) {
   const links = menu(data, "menu", ctx);
   const serif = kt("serif", 32);
   return (
+    <>
+    {/* Phones: the file draws no phone footer, so this is the plainest one in
+        Kite's own terms (decided 8 October) — the header's double rule, the
+        same links (SF Pro Light 16, underlined, 16 apart), the small print and
+        the contact (14), all in the phone's 16 margin. */}
+    <footer data-k="footer-phone" className="relative flex flex-col gap-[calc(32*var(--u))] px-[calc(16*var(--u))] pb-[calc(32*var(--u))] pt-[calc(38*var(--u))] md:hidden">
+      <div aria-hidden className="absolute inset-x-0 top-[calc(-0.5*var(--u))] h-px bg-[#f4f3f1]" />
+      <div aria-hidden className="absolute inset-x-0 top-[calc(5.5*var(--u))] h-px bg-[#f4f3f1]" />
+      {links.length ? (
+        <nav aria-label="Footer" className="flex flex-col items-start gap-[calc(16*var(--u))]">
+          {links.map((l) => (
+            <a key={l.id} href={l.href} {...kt("sans", 16)} className={cn(kt("sans", 16).className, "underline")}>
+              {l.label}
+            </a>
+          ))}
+        </nav>
+      ) : null}
+      <div className="flex flex-col gap-[calc(8*var(--u))]">
+        <p {...kt("sans", 14)}>{str(data, "smallPrint")}</p>
+        <p {...kt("sans", 14)}>{str(data, "contact")}</p>
+      </div>
+    </footer>
     <footer data-k="footer" className="relative hidden h-[calc(987*var(--u))] md:block">
       <div className="absolute left-[calc(32*var(--u))] top-[calc(338*var(--u))] flex w-[calc(613*var(--u))] flex-col gap-[calc(32*var(--u))]">
         <div className="uppercase">
@@ -66,5 +88,6 @@ export function KiteFooter({ data, ctx }: { data: Record<string, unknown>; ctx: 
       <p {...kt("sans", 14)} className={cn(kt("sans", 14).className, "absolute left-[calc(32*var(--u))] top-[calc(938*var(--u))]")}>{str(data, "smallPrint")}</p>
       <p {...kt("sans", 14)} className={cn(kt("sans", 14).className, "absolute right-[calc(32*var(--u))] top-[calc(938*var(--u))]")}>{str(data, "contact")}</p>
     </footer>
+    </>
   );
 }
