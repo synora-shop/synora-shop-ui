@@ -1,5 +1,9 @@
 // Applies pending migrations, retrying only when the advisory lock is busy.
 //
+// Only runs on production builds (VERCEL_ENV=production) or when
+// ALLOW_MIGRATE_ON_BUILD=1. Preview builds skip so they cannot migrate a
+// shared production DATABASE_URL ahead of the code that reads it.
+//
 // `prisma migrate deploy` takes a Postgres advisory lock so two deploys cannot
 // apply migrations at once. On this project that lock times out often enough to
 // be a real problem: two deploys starting close together will do it (pushing
@@ -15,6 +19,15 @@
 // error behind a misleading pause.
 
 import { spawnSync } from "node:child_process";
+import { shouldMigrateOnBuild } from "./migrate-on-build.mjs";
+
+const decision = shouldMigrateOnBuild(process.env);
+if (!decision.migrate) {
+  console.log(`[migrate] skipping: ${decision.reason}`);
+  process.exit(0);
+}
+
+console.log(`[migrate] running: ${decision.reason}`);
 
 /** Prisma's code for "reached the database, but timed out". */
 const LOCK_TIMEOUT = "P1002";

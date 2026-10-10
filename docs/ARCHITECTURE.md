@@ -725,23 +725,26 @@ The domain checker wants to be hourly. See `docs/QUEUE.md`.
 
 ## 10. Deploying
 
-**Every push deploys, and every deploy migrates the live database.** Seen 8
-October 2026 (the 7 September note that a push does not deploy is out of
-date — the Vercel Git integration has been connected since): pushing a branch
-builds a *preview*, pushing `main` builds *production*. Preview and production
-share one `DATABASE_URL`, and `npm run build` begins with
-`node scripts/migrate-deploy.mjs` — so **a branch push applies its migrations
-to the live database**, whatever the live site is running.
+Pushing a branch builds a *preview*; pushing `main` builds *production*.
+`npm run build` still starts with `node scripts/migrate-deploy.mjs`, but that
+script **only runs `prisma migrate deploy` when `VERCEL_ENV=production`** (or
+when `ALLOW_MIGRATE_ON_BUILD=1` for an intentional local/CI deploy). Preview
+and other environments log a skip and continue to `next build`.
 
-That is how migrations 20261030000000–20261103000000 reached the live
-database on 3 October from a branch push, five days before the code that
-reads them went live.
+This repo (`synora-shop-ui`) is the **sole schema owner**. `synora-shop-api`
+must not migrate the shared storefront database — its Prisma history lags and
+its build no longer invokes migrate.
 
-So: ask before any push, of any branch, that carries a migration. To ship,
-push `main` and let the integration build it; `vercel ls synora-shop` and
-`vercel inspect <url> --logs` show what ran. A manual `vercel --prod` after
-that only builds the same commit again. Giving previews a database of their
-own would end the hazard.
+**Why the gate exists.** Before it, preview and production shared one
+`DATABASE_URL`, and every build migrated. Migrations
+20261030000000–20261103000000 reached the live database on 3 October from a
+branch push, five days before the code that reads them went live. The
+production-only gate closes that hazard in code. Giving previews a database of
+their own remains a good later hardening step, but is not required for safety.
+
+To ship schema changes: merge to `main` so the production build migrates, then
+verify with `vercel ls synora-shop` / `vercel inspect <url> --logs`. For a
+deliberate migrate outside a production build: `npm run db:migrate:deploy`.
 
 ---
 
