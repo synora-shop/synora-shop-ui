@@ -889,8 +889,10 @@ for the city and passed for the wrong reason.
   sell switches a live store instantly. Queue item 2 says it must require the
   store to be paused first; that gate is not built yet, so the loophole is open
   in production today.
-- **`synora-shop-api`'s schema is ~99 lines behind this repo's.** Harmless
-  while nothing deploys from it; a real failure the day something does.
+- **`synora-shop-api`'s schema lags this repo's** (no `InstalledTheme`, older
+  `ThemeSettings`). Mitigated: API `npm run build` no longer runs migrate;
+  UI `migrate-deploy.mjs` only migrates when `VERCEL_ENV=production` (Critical
+  #1 / #2). Do not re-add migrate to the API build.
 - **Image upload does not work locally** — no `BLOB_READ_WRITE_TOKEN` in
   `.env`. Pasting a URL still works.
 - **A script that writes straight to the database does not clear the cache.**
