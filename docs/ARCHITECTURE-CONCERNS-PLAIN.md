@@ -249,3 +249,18 @@ UI `scripts/migrate-on-build.mjs` / `migrate-deploy.mjs`:
 | Local `npm run db:migrate:deploy` | Yes, only if you opt in |
 
 Optional later hardening: separate Neon/Vercel Preview `DATABASE_URL`. Not required for this gate.
+
+---
+
+## Status since this review (added 11 October, by the team — the review above is unchanged)
+
+Three findings describe the code as it stood before 9 October and have moved:
+
+| # | Then | Now |
+| --- | --- | --- |
+| **4** Docs outdated | README named the old themes (aurora…) | The README, ARCHITECTURE, FLOWS, THEMES, PANEL, CHECKS and QUEUE were brought level on 9 October; the deploy rules above were written into them on 11 October |
+| **5** Two storefront engines | Kite drew the shared storefront | **Kite is a kit too** since 9 October (rebuilt from its Figma file, `docs/KITE.md`), so both themes draw through the one kit engine. The shared storefront remains only for a shop's own pages (About, FAQ, Contact, custom pages) |
+| **13** Demos not seeded | Theme-store demos fell back to a merchant preview | Both demos are seeded on the live database (Loom 8 October, Kite 9 October). Reseeding after a catalogue change is still a manual step |
+
+Findings 1 and 2 stay as this review closed them, and the fixes are now the
+rule for every deploy (README "Deploying", ARCHITECTURE §10, `check:migrate-gate`).

@@ -171,8 +171,13 @@ their crops.
 **Open:**
 - **No privacy-policy page.** The platform has About, FAQ and Contact; Kite's
   footer names a privacy policy it cannot link to.
-- **Previews share the live database** (ARCHITECTURE.md §10). Give them a Neon
-  branch of their own. **Remind Abdul from time to time.**
+- ~~**Previews migrate the live database.**~~ **Fixed 10 October by Ansab
+  Rehman** (UI PR #1, API PR #1): only a production build migrates
+  (`check:migrate-gate`), and the API repository can no longer migrate at all.
+  What remains is smaller: previews still *use* the live database, so a
+  preview reads and writes live data. A Neon branch of their own would end
+  that — optional hardening now, in his words. **Remind Abdul from time to
+  time.**
 - **Loom fills a box with a merchant's photograph by cropping it**; Kite now
   shows a merchant's photograph whole. Offered for Loom, not decided.
 - **Both themes' design photographs are served as the files' PNGs** — 57 MB

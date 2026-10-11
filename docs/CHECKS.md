@@ -1,6 +1,6 @@
 # The guards
 
-Thirty-two scripts, **4,522 assertions as of 9 October 2026**, all of them
+Thirty-three scripts, **4,529 assertions as of 11 October 2026**, all of them
 dependency-free, all exiting non-zero on failure. `npm run check` runs the lot.
 
 The per-script counts below are a snapshot and will drift as assertions are
@@ -24,6 +24,7 @@ and that going live is refused until a test payment has really been through.
 
 | Script | Asserts | Exists because |
 | --- | --- | --- |
+| `check:migrate-gate` **7** | Only a production build changes the live database: `migrate-deploy.mjs` migrates when `VERCEL_ENV=production` or `ALLOW_MIGRATE_ON_BUILD=1`, and skips for preview, development and an unset environment; the build still runs the gate. Runs first in `npm run check`. Added by Ansab Rehman, 10 October — **never loosen it** | Preview builds shared the production `DATABASE_URL` and every build migrated, so migrations 20261030–20261103 reached the live database on 3 October from a branch push, five days before the code that reads them. (`synora-shop-api` has the twin — its no-migrate-on-build check, in that repository: its build must never migrate.) |
 | `check:sections` **481** | A section a merchant can pick is one that stores, configures and draws; every setting is explained; an empty section takes up no room | Twenty-two sections were written and could not be added to a page at all — the schema and the renderer existed, the database enum did not |
 | `check:lint` **6** | The lint rules whose failures a merchant can *see* — a comment rendered as page text, an `<img>` past the image pipeline, a `<head>` fighting the metadata API, hooks called conditionally, a file it cannot parse, and a suppression that suppresses nothing. Everything else is counted, not failed | A `//` comment between a JSX tag and its first child is text, not a comment. Four paragraphs of reasoning rendered above the header on the live panel. ESLint had the rule on all along; nothing in this suite ever ran it |
 | `check:scale` **213** | What has to hold with a thousand people on one shop out of many: an index for every hot filter, nothing reading a whole table to render a page, work done once rather than per visitor, a page view that is not a write, a bounded connection pool, and a stock decrement that survives a race. Findings not yet fixed are printed as **open** and counted rather than failed; there are none left | Nobody had checked. The product listing read a shop's entire catalogue — with every variant — and sorted it in JavaScript on every request, and the nightly prune full-scanned the largest table in the database because both its indexes led with the wrong column |

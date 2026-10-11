@@ -277,10 +277,10 @@ check:sorting  check:editor  check:analytics  check:cache
 check:design  check:motion  check:holding  check:spotlight
 check:brand  check:address  check:payments  check:gateways
 check:themes  check:sections  check:lint  check:theme-store
-check:scale  check:loom  check:kite
+check:scale  check:loom  check:kite  check:migrate-gate
 ```
 
-Thirty-two scripts, **4,522 assertions** at the last count (9 October 2026). Those are static: they read the
+Thirty-three scripts, **4,529 assertions** at the last count (9 October 2026). Those are static: they read the
 source. `scripts/sweep/` is the other half — a hundred probes against a running
 shop, for the faults reading the source cannot find. It found a CSV that could
 run a formula on the merchant's computer and twenty-two controls a screen
@@ -295,20 +295,34 @@ compares a built page with it pixel by pixel, and sweeps twenty screen widths.
 
 ## Deploying
 
-**Every push deploys, and every deploy migrates the live database.** The
-Vercel Git integration builds a *preview* for a pushed branch and *production*
-for `main`, within about a minute, with no `vercel` command. Preview and
-production share one `DATABASE_URL`, and `npm run build` begins with
-`node scripts/migrate-deploy.mjs` — so **a branch push applies its migrations
-to the live database**, whatever the live site is running. So:
+**Every push deploys; only a production build changes the live database.**
+The Vercel Git integration builds a *preview* for a pushed branch and
+*production* for `main`, within about a minute, with no `vercel` command.
+`npm run build` begins with `node scripts/migrate-deploy.mjs`, which since
+10 October (Ansab Rehman, PR #1) **runs `prisma migrate deploy` only when
+`VERCEL_ENV=production`** — or when `ALLOW_MIGRATE_ON_BUILD=1` is set on
+purpose. A preview build logs `[migrate] skipping` and goes straight to
+`next build`. `check:migrate-gate` holds the rule.
 
-- **Ask before any push.** It is a deploy, not a backup.
+The rules for every deploy, his and ours:
+
+- **This repository is the only one that changes the database's structure.**
+  `synora-shop-api` must never migrate it — its build no longer can, and its
+  `migrate-deploy.mjs` refuses unless `ALLOW_API_MIGRATE=1` (emergency only).
+- **Never re-add migrate to the API build, and never remove or loosen the
+  production-only gate here.** Both were the critical fixes of 10 October.
+- **A schema change reaches the live database by merging to `main`**, whose
+  production build migrates. A deliberate migration outside a build is
+  `npm run db:migrate:deploy`, and only on the owner's say-so.
+- **Ask before any push.** A push is still a deploy: `main` replaces the live
+  site; a branch builds a preview that *reads and writes live data* — previews
+  still use the production `DATABASE_URL`, so a preview is not a sandbox.
 - **Write migrations additively** — add columns with defaults, add tables,
   backfill; never drop or rewrite. A rollback must still find its data.
 - To ship part of the work, put it on a branch cut from `origin/main`, check
-  it there (`npx tsc --noEmit`, `npm run check`, `npx next build`), and push
-  that to `main`. `vercel ls synora-shop` and `vercel inspect <url> --logs`
-  show what ran.
+  it there (`npx tsc --noEmit`, `npm run check`, `npx next build`), and merge
+  it to `main`. `vercel ls synora-shop` and `vercel inspect <url> --logs` show
+  what ran — look for the `[migrate]` line.
 - **The theme-store demos are data.** A deploy that changes a demo's
   catalogue is followed by `npx tsx scripts/seed-theme-store.ts --theme <slug>`
   against the live database — on the owner's say-so.
@@ -316,9 +330,8 @@ to the live database**, whatever the live site is running. So:
 The hosting plan allows **one cron run per day**; a `vercel.json` carrying
 anything finer is refused outright at deploy time.
 
-See `docs/ARCHITECTURE.md` §10. *(Until 8 October 2026 this section said a push
-does not deploy; that stopped being true when the Git integration was
-connected.)*
+See `docs/ARCHITECTURE.md` §10 and `docs/ARCHITECTURE-CONCERNS-PLAIN.md` (the
+review behind the 10 October fixes).
 
 ---
 
@@ -345,6 +358,8 @@ This README says what exists. These say how it holds together and why.
 - `docs/CHECKS.md` — all thirty-two guards, the bug each one exists because
   of, and the design-fidelity tools.
 - `docs/QUEUE.md` — what is agreed and unbuilt, and the problems known about.
+- `docs/ARCHITECTURE-CONCERNS-PLAIN.md` — Ansab Rehman's architecture review
+  (10 October), in plain language, with what is critical and what was fixed.
 - `scripts/sweep/README.md` — the hundred probes and what they caught.
 
 **Day records** — kept because the reasons are the expensive part, not the
