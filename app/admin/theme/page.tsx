@@ -1,12 +1,13 @@
 import { canonicalUrl, db, requireShop } from "@/lib/data/shop";
 import { registryBusinessType } from "@/lib/themes/business-type";
-import { defaultThemeFor, themeFor, themesFor } from "@/lib/themes/registry";
+import { THEMES, defaultThemeFor, themeFor, themesFor } from "@/lib/themes/registry";
 import { appUrl, normaliseHost } from "@/lib/shop-context";
 import { DEMO_SLUGS, demoSubdomain, demoSubdomainForTheme, themeStorePath } from "@/lib/themes/demo";
 import { prisma } from "@/lib/prisma";
 import { liveCopyOf } from "@/lib/themes/live";
 import { LearnMore } from "@/components/admin/panel";
 import { ThemeManager } from "@/components/admin/theme-manager";
+import { ThemeStoreAdd } from "@/components/admin/theme-store-add";
 
 /**
  * Themes — what the store looks like, and which design it wears.
@@ -27,7 +28,10 @@ import { ThemeManager } from "@/components/admin/theme-manager";
  * Preferences → Maintenance with the rest of the closed-shop machinery.
  */
 export default async function ThemePage(props: PageProps<"/admin/theme">) {
-  const missing = (await props.searchParams).missing === "1";
+  const sp = await props.searchParams;
+  const missing = sp.missing === "1";
+  // From the Theme Store's "Add to my store" (/theme-store): ?add=<theme key>.
+  const adding = typeof sp.add === "string" && sp.add in THEMES ? THEMES[sp.add] : null;
   const shop = await requireShop();
   const type = registryBusinessType(shop.businessType);
 
@@ -96,6 +100,7 @@ export default async function ThemePage(props: PageProps<"/admin/theme">) {
           That theme copy is no longer in your library, so there is nothing to edit. Pick another below.
         </p>
       )}
+      {adding && <ThemeStoreAdd themeKey={adding.key} name={adding.name} already={rows.filter((r) => r.themeKey === adding.key).length} />}
       <ThemeManager
         liveId={liveId}
         liveKey={liveKey}

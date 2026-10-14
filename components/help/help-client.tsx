@@ -4,13 +4,13 @@ import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, BellRing, Bug, Check, ChevronRight, Lightbulb, Loader2, Send } from "lucide-react";
-import { replyToHelpRequest, setHelpNotify, submitHelpRequest } from "@/app/(platform)/help/actions";
+import { replyToHelpRequest, setHelpNotify, submitHelpRequest } from "@/app/(platform)/support/actions";
 import { LIMITS, TOPICS, STATUS_TONE, isClosed, ref, statusLabel, type HelpKindName, type HelpStatusName } from "@/lib/help";
 import { formatRelativeTime } from "@/lib/format-relative-time";
 import type { SearchItem } from "@/components/platform/help-search";
 
 /**
- * The interactive parts of /help (14 October): writing to the team, the list
+ * The interactive parts of /support (14 October): writing to the team, the list
  * of what you have sent, the "email me" switch and the reply box.
  */
 
@@ -108,7 +108,7 @@ export function HelpComposer({
           {sent.emailFailed && " (The confirmation email didn't go out, but your request is saved.)"}
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
-          <Link href={`/help/${sent.number}`} className="inline-flex h-11 items-center gap-2 rounded-full bg-[#6666ff] px-5 text-sm font-semibold text-white hover:bg-[#5a5af5]">
+          <Link href={`/support/${sent.number}`} className="inline-flex h-11 items-center gap-2 rounded-full bg-[#6666ff] px-5 text-sm font-semibold text-white hover:bg-[#5a5af5]">
             Open {ref(sent.number)} <ArrowRight className="h-4 w-4" />
           </Link>
           <button
@@ -346,7 +346,7 @@ export function HelpHistory({ rows }: { rows: HistoryRow[] }) {
         <ul className="mt-3 flex flex-col">
           {shown.map((r) => (
             <li key={r.number}>
-              <Link href={`/help/${r.number}`} className="group flex items-center gap-3 rounded-2xl px-2.5 py-3 transition-colors hover:bg-[#f5f5fb]">
+              <Link href={`/support/${r.number}`} className="group flex items-center gap-3 rounded-2xl px-2.5 py-3 transition-colors hover:bg-[#f5f5fb]">
                 <span className={`relative grid h-9 w-9 shrink-0 place-items-center rounded-xl ${r.kind === "TICKET" ? "bg-[#ecebff] text-[#6666ff]" : "bg-[#e4f7ee] text-[#1d7a52]"}`}>
                   {r.kind === "TICKET" ? <Bug className="h-4 w-4" /> : <Lightbulb className="h-4 w-4" />}
                   {r.unread && <span aria-label="New reply" className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full bg-[#ff5a5f] ring-2 ring-white" />}

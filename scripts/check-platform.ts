@@ -119,13 +119,13 @@ console.log("\nSIGNING IN LEADS SOMEWHERE USEFUL");
 const loginForm = sourceOf("components", "merchant", "login-form.tsx");
 // Since 14 October, by the owner's decision: signing in with nowhere asked
 // for brings a merchant back to the front page, signed in, with "Go to
-// dashboard" in the header; a Synora master admin goes to the console.
+// dashboard" in the header. Master admins too, with "Master dashboard".
 // app/merchant/continue/route.ts decides which.
 check("login goes through /merchant/continue by default",
   loginForm.includes('"/merchant/continue"'));
 const cont = sourceOf("app", "merchant", "continue", "route.ts");
-check("which sends a master admin to the console and a merchant to the front page",
-  cont.includes('"/synora"') && cont.includes('"/"') && cont.includes("isTeamEmail"));
+check("which sends everyone signed in back to the front page",
+  cont.includes('"/"') && !cont.includes('"/admin"'));
 check("and still honours a callbackUrl", loginForm.includes("callbackUrl"));
 // An open redirect on a sign-in page is how a phishing link borrows a real
 // login form and bounces the victim somewhere else afterwards.

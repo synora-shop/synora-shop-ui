@@ -3,7 +3,7 @@ import { RequestList } from "@/components/synora/request-list";
 
 export const metadata: Metadata = { title: "Tickets" };
 
-/** Tickets received from /help (14 October). */
+/** Tickets received from /support (14 October). */
 export default async function SynoraTicketsPage({ searchParams }: { searchParams: Promise<{ status?: string; q?: string }> }) {
   const { status, q } = await searchParams;
   return (

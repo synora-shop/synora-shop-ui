@@ -4,7 +4,7 @@ import { AccountAvatar } from "@/components/platform/account-avatar";
 
 /**
  * A request's conversation (14 October), drawn the same for the person who
- * sent it (/help/[number]) and for the Synora team (/synora/requests/[number]);
+ * sent it (/support/[number]) and for the Synora team (/synora/requests/[number]);
  * only who counts as "you" changes.
  */
 

@@ -27,9 +27,14 @@ emailed code and the account, each order's own page
 Contact, `/p/[slug]`). On a shop whose theme is a kit — both themes today —
 the theme draws all of it from its own sections (*Themes*, below).
 
-**Theme store** — `app.synoradigitals.com/theme-store/<theme>`
-Each theme's demo storefront, on our servers, selling the goods its design was
-drawn around. See `docs/THEMES.md` §5b.
+**Theme store** — `app.synoradigitals.com/theme-store` and `/theme-store/<theme>`
+The gallery (`app/(platform)/theme-store`) shows every theme on a laptop and a
+phone, from `public/platform/theme-*.jpg`, with "View the live demo" and "Add
+to my store" (`components/platform/theme-add.tsx`): signed in, it opens
+`/admin/theme?add=<key>` in a new tab, where one click adds a copy (not live);
+a visitor is offered sign-up. Each demo is the theme's storefront on our
+servers, under Synora's bar (`components/storefront/theme-demo-bar.tsx`). See
+`docs/THEMES.md` §5b.
 
 **Admin panel** — `app/admin`
 Two levels of navigation and no more, both in the same column. Ten sidebar
@@ -88,9 +93,9 @@ tab bar on phones), with ⌘K search across all of them:
 
 - `/docs` — how each part works (`lib/docs-content.ts`; `/documentation`
   forwards here).
-- `/help` — known issues, and for a signed-in merchant: report a problem
+- `/support` (was `/help`, which forwards) — known issues, and for a signed-in merchant: report a problem
   (ticket) or suggest an idea, their history, a reply thread per request
-  (`/help/[number]`) and a per-request "email me" switch.
+  (`/support/[number]`) and a per-request "email me" switch.
 - `/release-notes` — patch notes, read from the `ReleaseNote` table.
 
 **Synora console** — `app/synora/*`

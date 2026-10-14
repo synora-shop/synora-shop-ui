@@ -58,10 +58,10 @@ export default async function ReleaseNotesPage() {
             <p className="mt-1 text-[15px] text-white/60">Tell the team, and follow it from your help page.</p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Link href="/help?kind=suggestion#ask" className="inline-flex h-11 items-center rounded-full border border-white/20 px-5 text-sm font-semibold transition-colors hover:bg-white/10">
+            <Link href="/support?kind=suggestion#ask" className="inline-flex h-11 items-center rounded-full border border-white/20 px-5 text-sm font-semibold transition-colors hover:bg-white/10">
               Suggest an idea
             </Link>
-            <Link href="/help?kind=ticket#ask" className="inline-flex h-11 items-center gap-2 rounded-full bg-[#6666ff] px-5 text-sm font-semibold transition-colors hover:bg-[#5a5af5]">
+            <Link href="/support?kind=ticket#ask" className="inline-flex h-11 items-center gap-2 rounded-full bg-[#6666ff] px-5 text-sm font-semibold transition-colors hover:bg-[#5a5af5]">
               Report a problem <ArrowRight className="h-4 w-4" />
             </Link>
           </div>

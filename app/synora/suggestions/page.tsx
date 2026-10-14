@@ -3,7 +3,7 @@ import { RequestList } from "@/components/synora/request-list";
 
 export const metadata: Metadata = { title: "Suggestions" };
 
-/** Suggestions received from /help (14 October). */
+/** Suggestions received from /support (14 October). */
 export default async function SynoraSuggestionsPage({ searchParams }: { searchParams: Promise<{ status?: string; q?: string }> }) {
   const { status, q } = await searchParams;
   return (

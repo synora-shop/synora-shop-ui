@@ -7,6 +7,20 @@ purpose — this is the list Abdul works from, not a ticket tracker.
 
 ## Next up
 
+> **Header and footer as Abdul set them out (14 October, night).** Header:
+> Documentation · Support · Release notes, and Log in / Sign up free, or
+> Dashboard + avatar (menu: Dashboard, Log out). Footer: The product (Home,
+> Dashboard or Log in / Sign up free, Theme Store) and Help (Documentation,
+> Support, Release notes). Master admins: the same, plus a gold glass "Master
+> dashboard" (header and footer), and a working Dashboard of their own: the
+> console redirects were removed, and `/merchant/stores` now offers "Create
+> your store" to any signed-in account with none (`createMyStore`, which
+> refreshes the session with `unstable_update`). Everyone signing in lands on
+> the front page. Help is now Support at `/support`; `/help` forwards. New
+> Theme Store gallery at `/theme-store`. **Known gap, not new:** accepting a
+> staff invitation does not refresh the session's list of stores, so someone
+> with no store before the invite may be sent to sign in once.
+
 > **One site header, colour-coded help pages (14 October, later).** The
 > front page and the three help pages share `components/platform/site-header.tsx`:
 > Docs (iris), Help (mint), Release notes (sky) as links, ⌘K search, and

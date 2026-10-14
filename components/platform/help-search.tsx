@@ -158,7 +158,7 @@ export function HelpSearch({ items, suggested }: { items: SearchItem[]; suggeste
           {results.length === 0 && (
             <li className="px-4 py-10 text-center text-[15px] text-[#0d0d50]/60">
               Nothing matches &ldquo;{q}&rdquo;.{" "}
-              <button type="button" className="font-semibold text-[#4b4bea] underline-offset-4 hover:underline" onClick={() => go({ group: "Help", title: "", text: "", href: "/help#ask" })}>
+              <button type="button" className="font-semibold text-[#4b4bea] underline-offset-4 hover:underline" onClick={() => go({ group: "Help", title: "", text: "", href: "/support#ask" })}>
                 Ask the team
               </button>
             </li>
@@ -194,7 +194,7 @@ export function HelpSearch({ items, suggested }: { items: SearchItem[]; suggeste
 
         <div className="hidden items-center justify-between border-t border-[#0d0d50]/[0.08] px-5 py-3 text-[12px] text-[#0d0d50]/45 sm:flex">
           <span>↑ ↓ to move · Enter to open · Esc to close</span>
-          <Link href="/help#ask" className="inline-flex items-center gap-1 font-semibold text-[#4b4bea]" onClick={close}>
+          <Link href="/support#ask" className="inline-flex items-center gap-1 font-semibold text-[#4b4bea]" onClick={close}>
             Can&rsquo;t find it? Ask us <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>

@@ -19,7 +19,7 @@ const NOT_TEAM: Result = { ok: false, error: "Only the Synora team can do that."
 /**
  * Answer a request, change its status, or both.
  *
- * "thread": the reply shows in the sender's /help page, and they are emailed
+ * "thread": the reply shows in the sender's /support page, and they are emailed
  * about it if they asked to be. "email": the reply is sent to them as an
  * email whatever that switch says, because email is the channel the team
  * chose; it is kept in the thread too, marked as sent by email.
@@ -66,7 +66,7 @@ export async function answerHelpRequest(input: { number: number; body: string; v
 
   revalidatePath(`/synora/requests/${r.number}`);
   revalidatePath(r.kind === "TICKET" ? "/synora/tickets" : "/synora/suggestions");
-  revalidatePath(`/help/${r.number}`);
+  revalidatePath(`/support/${r.number}`);
   return { ok: true, emailFailed };
 }
 

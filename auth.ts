@@ -28,7 +28,7 @@ async function loadMemberships(userId: string): Promise<ShopMembership[]> {
   return rows.map((r) => ({ shopId: r.shopId, subdomain: r.shop.subdomain, role: r.role }));
 }
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
   trustHost: true,
   session: { strategy: "jwt" },
   pages: {

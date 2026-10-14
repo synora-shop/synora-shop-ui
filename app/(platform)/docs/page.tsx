@@ -24,7 +24,7 @@ export const metadata: Metadata = {
  * follows you down the left and each topic as its own card, its header
  * tinted in the topic's colour so one topic never runs into the next. Wide
  * screens add a rail on the right for when the docs are not enough. The
- * words live in lib/docs-content.ts, shared with the search and with /help.
+ * words live in lib/docs-content.ts, shared with the search and with /support.
  */
 export default function DocsPage() {
   const nav = [...DOC_TOPICS.map(({ id, title }) => ({ id, title })), { id: "answers", title: "Answers" }];
@@ -111,7 +111,7 @@ export default function DocsPage() {
         {/* For when the docs are not enough. */}
         <aside className="mt-6 grid gap-4 sm:grid-cols-2 lg:col-start-2 xl:col-start-auto xl:mt-0 xl:block">
           <div className="flex flex-col gap-4 xl:sticky xl:top-28">
-            <Link href="/help" className="group block rounded-[1.4rem] bg-[#e4f7ee] p-5 ring-1 ring-[#1f9d68]/15 transition-transform hover:-translate-y-0.5">
+            <Link href="/support" className="group block rounded-[1.4rem] bg-[#e4f7ee] p-5 ring-1 ring-[#1f9d68]/15 transition-transform hover:-translate-y-0.5">
               <span className="grid h-9 w-9 place-items-center rounded-xl bg-[#1f9d68] text-white">
                 <LifeBuoy className="h-4 w-4" />
               </span>

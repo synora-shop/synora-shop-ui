@@ -8,7 +8,7 @@ import { LIMITS, TOPICS, type HelpKindName } from "@/lib/help";
 import { sendHelpReceivedEmail, sendHelpTeamAlertEmail } from "@/lib/email";
 
 /**
- * What a merchant can do at /help (14 October). Every action reads the
+ * What a merchant can do at /support (14 October). Every action reads the
  * session itself and only ever touches the caller's own requests: a request
  * id from the browser is matched together with the user id, never alone.
  */
@@ -59,7 +59,7 @@ export async function submitHelpRequest(input: {
     console.error("[help] team alert failed", err);
   }
 
-  revalidatePath("/help");
+  revalidatePath("/support");
   return { ok: true, number: request.number, emailFailed };
 }
 
@@ -101,8 +101,8 @@ export async function replyToHelpRequest(number: number, text: string): Promise<
     console.error("[help] team alert (reply) failed", err);
   }
 
-  revalidatePath(`/help/${number}`);
-  revalidatePath("/help");
+  revalidatePath(`/support/${number}`);
+  revalidatePath("/support");
   return { ok: true };
 }
 
@@ -111,6 +111,6 @@ export async function setHelpNotify(number: number, notify: boolean): Promise<Re
   if (!me) return { ok: false, error: SIGNED_OUT };
   const done = await prisma.helpRequest.updateMany({ where: { number, userId: me.id }, data: { notify: !!notify } });
   if (done.count !== 1) return { ok: false, error: "That request isn't yours, or no longer exists." };
-  revalidatePath("/help");
+  revalidatePath("/support");
   return { ok: true };
 }

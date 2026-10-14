@@ -3,12 +3,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Store } from "lucide-react";
 import { auth } from "@/auth";
-import { isTeamEmail } from "@/lib/help-server";
 import { prisma } from "@/lib/prisma";
 import { PLATFORM_DOMAIN } from "@/lib/shop-context";
 import { roleLabel } from "@/lib/roles";
 import { openStore } from "./actions";
 import { FormHeading, FormMessage } from "@/components/merchant/form-shell";
+import { CreateStoreForm } from "@/components/merchant/create-store-form";
 
 export const dynamic = "force-dynamic";
 
@@ -29,9 +29,6 @@ export default async function StoresPage(props: PageProps<"/merchant/stores">) {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) redirect("/merchant/login?callbackUrl=/merchant/stores");
-  // Synora master admins sign in on the same page and land in the Synora
-  // console, never in a shop's panel (14 October).
-  if (isTeamEmail(session.user.email) && !session.user.customerId) redirect("/synora");
 
   const memberships = await prisma.membership.findMany({
     where: { userId },
@@ -39,19 +36,14 @@ export default async function StoresPage(props: PageProps<"/merchant/stores">) {
     orderBy: { invitedAt: "asc" },
   });
 
+  // No store: make one here. Sign-up cannot, because sign-up makes an account
+  // and this person has one (a Synora master admin testing the merchant side,
+  // or a merchant whose store was closed). Since 14 October.
   if (memberships.length === 0) {
     return (
       <>
-        <FormHeading
-          title="No stores yet"
-          description="You're signed in, but you don't have a store to work on. Create one, or ask someone to invite you to theirs."
-        />
-        <Link
-          href="/merchant/signup"
-          className="block w-full rounded-lg bg-brand-600 px-4 py-2.5 text-center text-sm font-medium text-white transition-colors hover:bg-brand-700"
-        >
-          Create a store
-        </Link>
+        <FormHeading title="Create your store" description="You're signed in, but you don't have a store yet. Name it and you'll be in your dashboard." />
+        <CreateStoreForm platformDomain={PLATFORM_DOMAIN} />
       </>
     );
   }

@@ -225,7 +225,7 @@
   .av-shine::after { animation: none; opacity: 0; }
 }
 
-/* The help desk's one text box (14 October): /help and the Synora console
+/* The help desk's one text box (14 October): /support and the Synora console
    (components/help, components/synora). Its own, because those pages are
    neither the panel (.input belongs to .admin-shell's look) nor a shop. Height
    and padding top/bottom are left to each field. */

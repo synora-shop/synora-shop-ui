@@ -200,7 +200,7 @@ export default async function StorefrontLayout({ children }: LayoutProps<"/">) {
     const Frame = KIT_FRAMES[live.kit.themeKey] ?? Fragment;
     return (
       <CurrencyProvider currency={resolveStoreDefaults(settings).currency}>
-        {demo && <ThemeDemoBar themeName={themeFor(demo.themeKey).name} slug={demo.slug} />}
+        {demo && <ThemeDemoBar themeName={themeFor(demo.themeKey).name} themeKey={demo.themeKey} slug={demo.slug} />}
         <StoreBaseProvider base={await storeBase()}>
           <Frame>
             <KitPage kit={live.kit} templates={live.templates} name="header" ctx={ctx} preview={preview} />
@@ -251,7 +251,7 @@ export default async function StorefrontLayout({ children }: LayoutProps<"/">) {
     {/* Synora's own bar, outside the provider below: its links belong to the
         platform — the other themes, the sign-up — and must not be prefixed
         into the demo the way a storefront link is. */}
-    {demo && <ThemeDemoBar themeName={themeFor(demo.themeKey).name} slug={demo.slug} />}
+    {demo && <ThemeDemoBar themeName={themeFor(demo.themeKey).name} themeKey={demo.themeKey} slug={demo.slug} />}
     {/* "" on every real shop, which is what makes this safe: a merchant's
         storefront renders exactly the links it always did. On a theme demo it
         is `/theme-store/kite`, and every link below carries it so browsing

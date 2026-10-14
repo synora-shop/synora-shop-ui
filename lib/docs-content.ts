@@ -4,7 +4,7 @@ import type { SearchItem } from "@/components/platform/help-search";
 
 /**
  * What the documentation says (14 October), in one place: /docs draws it,
- * /help shows the known issues beside its form, and the search reads all of
+ * /support shows the known issues beside its form, and the search reads all of
  * it. Short versions, written to be true today; every step and feature named
  * is one the panel has. The full guides replace them later.
  */
@@ -151,11 +151,11 @@ export function docsSearchItems(): SearchItem[] {
     for (const [term, def] of t.points ?? []) items.push({ group: "Docs", title: term, text: def, href: `/docs#${t.id}` });
   }
   for (const [q, a] of ANSWERS) items.push({ group: "Answers", title: q, text: a, href: "/docs#answers" });
-  for (const [t, d] of KNOWN_ISSUES) items.push({ group: "Known issues", title: t, text: d, href: "/help#known-issues" });
+  for (const [t, d] of KNOWN_ISSUES) items.push({ group: "Known issues", title: t, text: d, href: "/support#known-issues" });
   items.push(
-    { group: "Help", title: "Report a problem", text: "Open a ticket with the Synora team and follow it here.", href: "/help?kind=ticket#ask" },
-    { group: "Help", title: "Suggest an idea", text: "Tell us what would make your shop easier to run.", href: "/help?kind=suggestion#ask" },
-    { group: "Help", title: "Your tickets and suggestions", text: "Everything you have sent, and where each one is.", href: "/help#history" }
+    { group: "Help", title: "Report a problem", text: "Open a ticket with the Synora team and follow it here.", href: "/support?kind=ticket#ask" },
+    { group: "Help", title: "Suggest an idea", text: "Tell us what would make your shop easier to run.", href: "/support?kind=suggestion#ask" },
+    { group: "Help", title: "Your tickets and suggestions", text: "Everything you have sent, and where each one is.", href: "/support#history" }
   );
   return items;
 }

@@ -38,7 +38,7 @@ export const LIMITS = {
   login: { max: 8, windowMs: 15 * 60 * 1000, blockMs: 15 * 60 * 1000 },
   passwordReset: { max: 5, windowMs: 60 * 60 * 1000, blockMs: 60 * 60 * 1000 },
   signup: { max: 5, windowMs: 60 * 60 * 1000, blockMs: 60 * 60 * 1000 },
-  // The help desk (/help). Signed in, but each one emails the Synora team, so
+  // The help desk (/support). Signed in, but each one emails the Synora team, so
   // a loop must not be able to fill that inbox.
   helpRequest: { max: 6, windowMs: 60 * 60 * 1000, blockMs: 60 * 60 * 1000 },
   helpReply: { max: 20, windowMs: 60 * 60 * 1000, blockMs: 30 * 60 * 1000 },

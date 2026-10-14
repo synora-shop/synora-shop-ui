@@ -258,7 +258,7 @@ export async function sendStaffInviteEmail(
 
 // ---------------------------------------------------------------- help desk
 //
-// /help and the Synora console (14 October). Every one throws through
+// /support and the Synora console (14 October). Every one throws through
 // deliver() on a refused send; the callers decide what the person is told.
 
 type HelpMailRef = { number: number; kind: "TICKET" | "SUGGESTION"; subject: string };
@@ -266,7 +266,7 @@ const helpNoun = (k: HelpMailRef["kind"]) => (k === "TICKET" ? "ticket" : "sugge
 
 /** "We have it": to the person who sent it. */
 export async function sendHelpReceivedEmail(to: string, r: HelpMailRef) {
-  const link = `${platformUrl()}/help/${r.number}`;
+  const link = `${platformUrl()}/support/${r.number}`;
   if (!resend) {
     console.log(`[email] Resend not configured, help received #${r.number} for ${to}:\n${link}`);
     return;
@@ -290,7 +290,7 @@ export async function sendHelpUpdateEmail(
   to: string,
   r: HelpMailRef & { status?: string; reply?: string; from?: string }
 ) {
-  const link = `${platformUrl()}/help/${r.number}`;
+  const link = `${platformUrl()}/support/${r.number}`;
   if (!resend) {
     console.log(`[email] Resend not configured, help update #${r.number} for ${to} (${r.status ?? "reply"}):\n${link}`);
     return;

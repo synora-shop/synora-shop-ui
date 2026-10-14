@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import { isTeamEmail } from "@/lib/help-server";
 import { auth } from "@/auth";
 import { shopSession } from "@/lib/auth-guard";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
@@ -31,8 +30,6 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const [session, me, shop] = await Promise.all([auth(), shopSession(), currentShop()]);
 
   if (!session?.user?.id) redirect("/merchant/login?callbackUrl=/admin");
-  // A Synora master admin opens the Synora console, not a shop's panel.
-  if (isTeamEmail(session.user.email) && !session.user.customerId) redirect("/synora");
   if (!me) redirect("/merchant/stores");
 
   // A shop that has never been welcomed goes there first. The welcome flow has

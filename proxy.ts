@@ -11,7 +11,6 @@ import {
   legacyStoreHost,
 } from "@/lib/shop-context";
 import { parseThemeStorePath } from "@/lib/themes/demo";
-import { isTeamEmail } from "@/lib/team";
 
 // Formerly `middleware.ts` — Next.js 16 renamed the file convention to `proxy.ts`.
 //
@@ -144,10 +143,11 @@ export default auth((req) => {
     : shops.length > 0;
 
   const signIn = () => {
-    // A Synora master admin has no shop to administer; their place is the
-    // Synora console (lib/team.ts), not the sign-in page again.
-    if (req.auth?.user?.id && !req.auth.user.customerId && isTeamEmail(req.auth.user.email)) {
-      return NextResponse.redirect(new URL("/synora", req.nextUrl.origin));
+    // Signed in, just no store to administer here: the stores page, which
+    // lists theirs or offers to make one (since 14 October; master admins
+    // use the merchant side too). Signing in again would change nothing.
+    if (req.auth?.user?.id && !req.auth.user.customerId) {
+      return NextResponse.redirect(new URL("/merchant/stores", req.nextUrl.origin));
     }
     const url = new URL("/merchant/login", req.nextUrl.origin);
     url.searchParams.set("callbackUrl", pathname);

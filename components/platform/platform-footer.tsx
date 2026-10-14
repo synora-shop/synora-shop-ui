@@ -1,5 +1,6 @@
 import { appUrl } from "@/lib/shop-context";
 import { SynoraAppMark } from "@/components/ui/synora-marks";
+import { FooterAccountLinks } from "@/components/platform/footer-account";
 
 /**
  * The product site's footer — one layout, two colourings.
@@ -9,8 +10,8 @@ import { SynoraAppMark } from "@/components/ui/synora-marks";
  * Abdul approved and is the same in both: the mark, the line, the company
  * that makes it, two columns of links, the small print centred.
  *
- * Every destination is real. There are two pages on this host, so the rest
- * point at the application and at the company site that owns the name.
+ * Every destination is real. The links that depend on who is looking come
+ * from the browser, so every page that wears this footer stays cacheable.
  */
 const TONES = {
   dark: {
@@ -82,20 +83,21 @@ export function PlatformFooter({ tone = "dark", ...rest }: { tone?: keyof typeof
         </div>
 
         <div className="grid grid-cols-2 gap-x-14 gap-y-8 sm:gap-x-20">
+          {/* The two columns Abdul set out on 14 October. "Dashboard" or
+              "Log in / Sign up free", and the gold "Master dashboard", depend
+              on who is looking, so they are filled in by the browser
+              (components/platform/footer-account.tsx). */}
           <FooterGroup t={t} title="The product">
-            <FooterLink t={t} href="/#features">What it does</FooterLink>
-            <FooterLink t={t} href={appUrl("/merchant/signup")}>Create your shop</FooterLink>
-            <FooterLink t={t} href={appUrl("/merchant/login")}>Log in</FooterLink>
+            <FooterLink t={t} href="/">Home</FooterLink>
+            <FooterAccountLinks slot="account" linkClass={linkClass(t)} login={appUrl("/merchant/login")} signup={appUrl("/merchant/signup")} />
+            <FooterLink t={t} href="/theme-store">Theme Store</FooterLink>
+            <FooterAccountLinks slot="master" linkClass={linkClass(t)} login="" signup="" />
           </FooterGroup>
 
-          {/* The company's own pages left this column: they are one click
-              away through the mark above, and a merchant standing in a
-              footer looking for help is not looking for our About page. */}
           <FooterGroup t={t} title="Help">
-            <FooterLink t={t} href="/docs">Docs</FooterLink>
-            <FooterLink t={t} href="/help">Help</FooterLink>
+            <FooterLink t={t} href="/docs">Documentation</FooterLink>
+            <FooterLink t={t} href="/support">Support</FooterLink>
             <FooterLink t={t} href="/release-notes">Release notes</FooterLink>
-            <FooterLink t={t} href="/help#known-issues">Known issues</FooterLink>
           </FooterGroup>
         </div>
       </div>
@@ -122,6 +124,8 @@ function FooterGroup({ t, title, children }: { t: Tone; title: string; children:
   );
 }
 
+const linkClass = (t: Tone) => `text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-4 ${t.link}`;
+
 function FooterLink({ t, href, children }: { t: Tone; href: string; children: React.ReactNode }) {
   const external = href.startsWith("http");
   return (
@@ -129,7 +133,7 @@ function FooterLink({ t, href, children }: { t: Tone; href: string; children: Re
       <a
         href={href}
         {...(external ? { target: "_blank", rel: "noreferrer" } : {})}
-        className={`text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-4 ${t.link}`}
+        className={linkClass(t)}
       >
         {children}
       </a>

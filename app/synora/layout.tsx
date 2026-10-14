@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 
 /**
  * The Synora console (14 October): where the Synora team reads and answers
- * tickets and suggestions from /help and publishes the release notes.
+ * tickets and suggestions from /support and publishes the release notes.
  *
  * Not a merchant's panel and not styled like one: it is ours. Only the
  * addresses in SYNORA_TEAM_EMAILS get in (lib/help-server.ts); everyone else,
@@ -48,7 +48,7 @@ export default async function SynoraConsoleLayout({ children }: { children: Reac
             <Link href="/" className="inline-flex items-center gap-1.5 hover:text-[#0d0d50]">
               Synora App front page <ExternalLink className="h-3.5 w-3.5" />
             </Link>
-            <Link href="/help" className="inline-flex items-center gap-1.5 hover:text-[#0d0d50]">
+            <Link href="/support" className="inline-flex items-center gap-1.5 hover:text-[#0d0d50]">
               Merchants&rsquo; help page <ExternalLink className="h-3.5 w-3.5" />
             </Link>
             <Link href="/release-notes" className="inline-flex items-center gap-1.5 hover:text-[#0d0d50]">

@@ -34,7 +34,7 @@ export function LightPage({ children, section, search = [] }: { children: ReactN
  */
 const BAND: Record<HelpSection, { bg: string; chip: string; label: string }> = {
   docs: { bg: "bg-[linear-gradient(115deg,#ececff_0%,#f3f1ff_50%,#eef5ff_100%)]", chip: "bg-[#6666ff] text-white", label: "text-[#4b4bea]" },
-  help: { bg: "bg-[linear-gradient(115deg,#e2f7ec_0%,#eefaf4_50%,#eef6ff_100%)]", chip: "bg-[#1f9d68] text-white", label: "text-[#16704a]" },
+  support: { bg: "bg-[linear-gradient(115deg,#e2f7ec_0%,#eefaf4_50%,#eef6ff_100%)]", chip: "bg-[#1f9d68] text-white", label: "text-[#16704a]" },
   "release-notes": { bg: "bg-[linear-gradient(115deg,#e3f1ff_0%,#eef6ff_50%,#f2f0ff_100%)]", chip: "bg-[#2f86cf] text-white", label: "text-[#1b5d97]" },
 };
 
@@ -89,7 +89,7 @@ export function KnownIssuesStrip({ issues, full = false }: { issues: [string, st
   if (!full) {
     return (
       <div className="border-b border-[#f0b45c]/30 bg-[#fff7ea] px-5">
-        <Link href="/help#known-issues" className="mx-auto flex max-w-[78rem] items-center gap-3 py-3 text-[14.5px] text-[#6b3d00]">
+        <Link href="/support#known-issues" className="mx-auto flex max-w-[78rem] items-center gap-3 py-3 text-[14.5px] text-[#6b3d00]">
           <TriangleAlert className="h-4 w-4 shrink-0 text-[#d97706]" />
           <span className="font-bold">Known issue{issues.length > 1 ? `s (${issues.length})` : ""}:</span>
           <span className="min-w-0 flex-1 truncate">{issues[0][0]}</span>

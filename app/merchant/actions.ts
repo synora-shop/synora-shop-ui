@@ -8,7 +8,7 @@ import { clientIp, clearRateLimit, rateLimit } from "@/lib/rate-limit";
 import { createToken, expiryFor, hashToken } from "@/lib/tokens";
 import { sendVerificationEmail, sendPasswordResetEmail } from "@/lib/email";
 import { PLATFORM_DOMAIN, subdomainProblem, suggestSubdomain } from "@/lib/shop-context";
-import { auth } from "@/auth";
+import { auth, unstable_update } from "@/auth";
 
 // Merchant accounts: sign up, verify, reset, change password.
 //
@@ -495,4 +495,52 @@ export async function revokeAllSessions(): Promise<Result> {
   }
 
   return { ok: true, message: "Signed out on every device." };
+}
+
+// ---------------------------------------------------------------- a store for a signed-in account
+
+/**
+ * A store for someone already signed in who has none (14 October): a Synora
+ * master admin testing the merchant side, or a merchant whose only store was
+ * closed. Sign-up cannot do it, because sign-up makes an account and they have
+ * one. The same four rows as sign-up's transaction, minus the user, then the
+ * session is refreshed so it knows about the new store and the dashboard opens.
+ */
+export async function createMyStore(storeNameInput: string): Promise<Result> {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId || session.user.customerId) return { ok: false, error: "Sign in first." };
+
+  const limited = await rateLimit("signup", `store:${userId}`);
+  if (!limited.ok) return { ok: false, error: limited.message };
+
+  const storeName = (storeNameInput ?? "").trim().slice(0, 80);
+  if (storeName.length < 2) return { ok: false, error: "Give your store a name." };
+
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
+  if (!user) return { ok: false, error: "Sign in first." };
+  const subdomain = await uniqueSubdomain(suggestSubdomain(storeName) || suggestSubdomain(user.email.split("@")[0]) || "store");
+
+  const shop = await prisma.$transaction(async (tx) => {
+    const shop = await tx.shop.create({ data: { name: storeName, subdomain, status: "TRIAL" } });
+    await tx.membership.create({ data: { userId, shopId: shop.id, role: "OWNER", acceptedAt: new Date() } });
+    await tx.domain.create({
+      data: {
+        shopId: shop.id,
+        hostname: `${subdomain}.${PLATFORM_DOMAIN}`,
+        status: "ACTIVE",
+        isPlatform: true,
+        isPrimary: true,
+        verificationToken: "",
+        verifiedAt: new Date(),
+        activatedAt: new Date(),
+      },
+    });
+    return shop;
+  });
+
+  await audit({ shopId: shop.id, action: "shop.create", userId, actorEmail: user.email, entity: "Shop", entityId: shop.id, detail: { name: storeName, subdomain } });
+  // The session carries the list of stores (auth.ts); "update" re-reads it.
+  await unstable_update({});
+  return { ok: true, message: subdomain };
 }
