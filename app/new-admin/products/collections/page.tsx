@@ -1,7 +1,8 @@
 import Image from "next/image";
 import { Plus } from "lucide-react";
 import { Button, PageHeader } from "@/components/new-admin/ui";
-import { PRODUCTS } from "@/lib/new-admin/sample";
+import Link from "next/link";
+import { PRODUCTS, slugOf } from "@/lib/new-admin/sample";
 
 export const metadata = { title: "Collections" };
 
@@ -12,7 +13,7 @@ export default function CollectionsPage() {
       <PageHeader icon="products" tone="mint" title="Collections" sub="Groups of products your customers browse by." actions={<Button primary><Plus className="h-4 w-4" /> Create collection</Button>} />
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {groups.map((g) => (
-          <article key={g.name} className="overflow-hidden rounded-2xl bg-white ring-1 ring-[#0a0a0a]/[0.07]">
+          <Link key={g.name} href={`/new-admin/products/collections/${slugOf(g.name)}`} className="overflow-hidden rounded-2xl bg-white ring-1 ring-[#0a0a0a]/[0.07] transition-shadow hover:shadow-[0_12px_30px_-18px_rgba(0,0,0,0.4)]">
             <div className="grid aspect-[4/3] grid-cols-2 gap-0.5 bg-[#f0f0f0]">
               {g.items.slice(0, 2).map((p) => (
                 <Image key={p.slug} src={p.image} alt="" width={240} height={320} className="h-full w-full object-cover" />
@@ -22,7 +23,7 @@ export default function CollectionsPage() {
               <p className="text-[15px] font-semibold">{g.name}</p>
               <p className="text-[13px] text-[#0a0a0a]/55">{g.items.length} products</p>
             </div>
-          </article>
+          </Link>
         ))}
       </div>
     </>

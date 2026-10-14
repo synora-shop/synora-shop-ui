@@ -13,3 +13,13 @@ export function CopyPath({ path }: { path: string }) {
     </button>
   );
 }
+
+/** "Copy link" on a file: the address to paste into a page or a message. */
+export function CopyLink({ path }: { path: string }) {
+  const toast = useToast();
+  return (
+    <button type="button" onClick={() => { navigator.clipboard?.writeText(path).catch(() => {}); toast("Link copied"); }} className="inline-flex items-center gap-1 font-semibold text-[#4b4bea] hover:underline">
+      <Copy className="h-3 w-3" /> Copy link
+    </button>
+  );
+}

@@ -71,6 +71,12 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
               <div className="mt-1 flex justify-between border-t border-[#0a0a0a]/[0.08] pt-3 text-[15.5px] font-semibold"><dt>Total</dt><dd className="tabular-nums">{pkr(o.total)}</dd></div>
               <div className="flex justify-between text-[13.5px]"><dt className="text-[#0a0a0a]/60">Paid by</dt><dd>{o.payment}</dd></div>
             </dl>
+            {!o.paid && o.stage !== "Cancelled" && (
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[#fff6dc] px-4 py-3">
+                <span className="text-[13.5px]">{cod ? "When the courier hands you the cash:" : "If they paid you another way:"}</span>
+                <span className="rounded-[10px] bg-[#0a0a0a] px-3.5 py-2 text-[13px] font-semibold text-white">{cod ? "Mark cash received" : "Mark as paid"}</span>
+              </div>
+            )}
           </Card>
 
           <Card title="Timeline">

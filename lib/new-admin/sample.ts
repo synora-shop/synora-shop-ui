@@ -198,3 +198,6 @@ export const BIN = [
   { kind: "Order", name: "#1031, test order", deleted: "6 days ago", by: "Ayesha Khan" },
   { kind: "Page", name: "Summer sale 2025", deleted: "11 days ago", by: "Ayesha Khan" },
 ];
+
+/** A web-address-safe name, for pages about one customer or collection. */
+export const slugOf = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");

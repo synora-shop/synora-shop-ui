@@ -13,7 +13,7 @@ const POSTS = [
 export default function BlogPage() {
   return (
     <>
-      <PageHeader icon="content" tone="mint" title="Blog posts" sub="Write with pictures, videos and links, or your own HTML." actions={<Button primary><Plus className="h-4 w-4" /> Write a post</Button>} />
+      <PageHeader icon="content" tone="mint" title="Blog posts" sub="Write with pictures, videos and links, or your own HTML." actions={<Button primary href="/new-admin/content/blog/new"><Plus className="h-4 w-4" /> Write a post</Button>} />
       <DataTable
         cols={[
           { key: "title", label: "Title" },
@@ -25,7 +25,7 @@ export default function BlogPage() {
           id: p.title,
           by: { title: p.title, status: p.status, when: p.at, views: p.views },
           cells: {
-            title: <span className="font-medium">{p.title}</span>,
+            title: <a href="/new-admin/content/blog/new" className="font-medium underline-offset-4 hover:underline">{p.title}</a>,
             status: p.status === "Published" ? <Pill tone="good">Published</Pill> : <Pill tone="off">Draft</Pill>,
             when: <span className="text-[#0a0a0a]/60">{p.when}</span>,
             views: p.views.toLocaleString("en-PK"),

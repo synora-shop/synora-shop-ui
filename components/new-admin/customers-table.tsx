@@ -1,6 +1,7 @@
 import { ListBar, Pill, pkr } from "@/components/new-admin/ui";
 import { DataTable } from "@/components/new-admin/sort";
-import { CUSTOMERS } from "@/lib/new-admin/sample";
+import Link from "next/link";
+import { CUSTOMERS, slugOf } from "@/lib/new-admin/sample";
 
 export function CustomersTable({ accountsOnly = false }: { accountsOnly?: boolean }) {
   const rows = accountsOnly ? CUSTOMERS.filter((c) => c.account) : CUSTOMERS;
@@ -23,7 +24,7 @@ export function CustomersTable({ accountsOnly = false }: { accountsOnly?: boolea
           name: (
             <span className="flex items-center gap-3">
               <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#c8e7ff] text-[12px] font-semibold text-[#0a0a0a]">{c.name.split(" ").map((w) => w[0]).join("")}</span>
-              <span className="font-medium">{c.name}</span>
+              <Link href={`/new-admin/customers/${slugOf(c.name)}`} className="font-medium underline-offset-4 hover:underline">{c.name}</Link>
             </span>
           ),
           email: <span className="text-[#0a0a0a]/60">{c.email}</span>,

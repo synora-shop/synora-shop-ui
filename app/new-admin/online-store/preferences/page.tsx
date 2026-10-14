@@ -25,6 +25,10 @@ const SECTIONS: OpenSection[] = [
             <Field label="Message" area value="We are photographing the Winter collection. Leave your email and we will tell you the moment we open." />
             <Row label="Let people ask to be told" value="38 people are waiting" right={<Toggle on label="Waiting list" />} />
           </Box>
+          <Box title="Waiting to hear · 38">
+            {["maryam.h@gmail.com", "sadia.k@gmail.com", "0321 4455667"].map((w) => <Row key={w} label={w} value="Asked 3 days ago" right={<span className="text-[12.5px] text-[#0a0a0a]/45">Remove</span>} />)}
+            <Row label={<span className="font-semibold">Mark all as told</span>} value="Once you have opened and written to them" right={<span />} />
+          </Box>
           <Box title="As customers see it">
             <div className="flex min-h-[15rem] flex-col items-center justify-center gap-2 bg-[#0a0a0a] px-6 py-8 text-center text-white">
               <p className="text-[11px] font-bold tracking-[0.2em] text-white/50">ZOHRA LAWN</p>
@@ -54,6 +58,13 @@ const SECTIONS: OpenSection[] = [
     body: (
       <Box>
         <Row label="Let search engines list my store" value="Off while you are in private mode, whatever this says" right={<Toggle on label="Search engines" />} />
+        <div className="grid gap-4 p-5 sm:grid-cols-[14rem_minmax(0,1fr)]">
+          <div className="overflow-hidden rounded-xl ring-1 ring-[#0a0a0a]/10">
+            <div className="grid aspect-[1.91/1] place-items-center bg-[#0a0a0a] text-[13px] font-bold tracking-[0.2em] text-white">ZOHRA LAWN</div>
+            <div className="p-3"><p className="text-[11px] uppercase text-[#0a0a0a]/45">zohralawn.pk</p><p className="truncate text-[13px] font-semibold">Zohra Lawn · Embroidered lawn and pret</p></div>
+          </div>
+          <div className="text-[13px] text-[#0a0a0a]/60"><p className="font-semibold text-[#0a0a0a]">When a link is shared</p><p className="mt-1">This is how your store looks on WhatsApp, Facebook and Instagram. Upload a 1200 × 628 picture to change it.</p><p className="mt-2 font-semibold text-[#4b4bea]">Change picture</p></div>
+        </div>
         <Field label="Home page title" value="Zohra Lawn · Embroidered lawn and pret, made in Lahore" hint="52 of 70 characters" />
         <Field label="Description" area value="Three-piece lawn suits, chikankari kurtas and Eid formals. Cash on delivery across Pakistan." hint="103 of 320 characters" />
       </Box>
@@ -64,6 +75,7 @@ const SECTIONS: OpenSection[] = [
     body: (
       <Box>
         <Row label="Protect my public forms" value="Contact, enquiries and the waiting list" right={<Toggle on label="Protect forms" />} />
+        <Row label="Protect sign-in and sign-up" value="Customer sign-in, new accounts and code requests" right={<Toggle on label="Protect sign-in" />} />
         <Row label="Slow down repeated sign-in attempts" right={<Pill tone="off">Always on</Pill>} />
       </Box>
     ),

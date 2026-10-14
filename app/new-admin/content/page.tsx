@@ -1,5 +1,6 @@
 import Image from "next/image";
-import { FileText, Film, Type, Upload } from "lucide-react";
+import { FileText, Film, Link2, Type, Upload } from "lucide-react";
+import { CopyLink } from "@/components/new-admin/copy-path";
 import { Button, PageHeader } from "@/components/new-admin/ui";
 import { PRODUCTS } from "@/lib/new-admin/sample";
 
@@ -13,7 +14,7 @@ export default function FilesPage() {
   ];
   return (
     <>
-      <PageHeader icon="content" tone="mint" title="Files" sub="Pictures, fonts, videos and documents you use across the store." actions={<Button primary><Upload className="h-4 w-4" /> Upload files</Button>} />
+      <PageHeader icon="content" tone="mint" title="Files" sub="Pictures, fonts, videos and documents you use across the store." actions={<><Button><Link2 className="h-4 w-4" /> Upload from a link</Button><Button primary><Upload className="h-4 w-4" /> Upload files</Button></>} />
       <div className="flex flex-wrap items-center gap-2">
         <span className="flex rounded-[10px] bg-white p-0.5 text-[13px] font-semibold ring-1 ring-[#0a0a0a]/10">{["All", "Pictures", "Fonts", "Videos", "Not used anywhere"].map((t, i) => <span key={t} className={`rounded-lg px-3 py-1.5 ${i === 0 ? "bg-[#0a0a0a] text-white" : "text-[#0a0a0a]/55"}`}>{t}</span>)}</span>
         <span className="ml-auto text-[13px] text-[#0a0a0a]/50">412 MB of 5 GB used</span>
@@ -26,7 +27,13 @@ export default function FilesPage() {
         {PRODUCTS.slice(0, 7).map((p) => (
           <figure key={p.slug} className="overflow-hidden rounded-xl bg-white ring-1 ring-[#0a0a0a]/[0.07]">
             <Image src={p.image} alt="" width={240} height={240} className="aspect-square w-full bg-[#f0f0f0] object-cover" />
-            <figcaption className="truncate px-3 py-2 text-[12.5px] text-[#0a0a0a]/60">{p.slug}-front.png</figcaption>
+            <figcaption className="px-3 py-2">
+              <span className="block truncate text-[12.5px] text-[#0a0a0a]/60">{p.slug}-front.png</span>
+              <span className="mt-1 flex items-center justify-between gap-2 text-[11.5px]">
+                {p.slug.length % 3 === 0 ? <span className="font-semibold text-[#b45309]">No description</span> : <span className="text-[#0a0a0a]/45">Described</span>}
+                <CopyLink path={`https://zohralawn.pk/files/${p.slug}-front.png`} />
+              </span>
+            </figcaption>
           </figure>
         ))}
         {others.map(({ icon: Icon, name, meta }) => (

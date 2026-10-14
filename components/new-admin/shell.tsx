@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import {
-  Bell, ChevronsLeft, ChevronsRight, ChevronsUpDown, CornerDownLeft, ExternalLink, HelpCircle, Keyboard, LifeBuoy, Menu, MessageSquare,
+  Bell, ChevronsUpDown, PanelLeftClose, PanelLeftOpen, CornerDownLeft, ExternalLink, HelpCircle, Keyboard, LifeBuoy, Menu, MessageSquare,
   Package, Plus, Search, ShoppingBag, Sparkles, Trash2, TriangleAlert, X,
 } from "lucide-react";
 import { ALERTS, NAV, SETTINGS, SHOP } from "@/lib/new-admin/sample";
@@ -119,7 +119,10 @@ export function AdminShell({ children }: { children: ReactNode }) {
   };
 
   const here = (() => {
-    if (path.startsWith("/new-admin/settings")) return ["Settings"];
+    if (path.startsWith("/new-admin/settings")) {
+      const sec = SETTINGS.find((x) => path === `/new-admin/settings/${x.slug}`);
+      return sec ? ["Settings", sec.label] : ["Settings"];
+    }
     if (path.startsWith("/new-admin/bin")) return ["Bin"];
     for (const g of NAV) {
       const sub = g.items?.find((i) => path === i.href || path.startsWith(`${i.href}/`));
@@ -133,19 +136,31 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
   const rail = (narrow: boolean) => (
     <nav aria-label="Admin" onClick={(e) => (e.target as HTMLElement).closest("a") && closeAll()} className="flex h-full flex-col gap-3 px-3 py-4 text-white">
-      <div className={`flex items-center gap-3 rounded-xl ${narrow ? "justify-center" : "px-2 py-1.5"}`}>
-        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[#b8efd6] text-[13px] font-bold text-[#0a0a0a]">{SHOP.initials}</span>
-        {!narrow && (
-          <>
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-[14px] font-semibold">{SHOP.name}</span>
-              <span className="flex items-center gap-1.5 text-[11.5px] text-white/50">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#6fd6a8]" /> Open · trial, 23 days left
+      <div className={`flex items-center gap-2 rounded-xl ${narrow ? "flex-col" : "py-1.5 pl-2"}`}>
+        <button type="button" title="Switch store" className={`flex min-w-0 items-center gap-3 rounded-lg text-left ${narrow ? "" : "flex-1 hover:bg-white/[0.04]"}`}>
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[#b8efd6] text-[13px] font-bold text-[#0a0a0a]">{SHOP.initials}</span>
+          {!narrow && (
+            <>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[14px] font-semibold">{SHOP.name}</span>
+                <span className="flex items-start gap-1.5 text-[11.5px] leading-snug text-white/50">
+                  <span className="mt-[5px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#6fd6a8]" /> Open · trial, 23 days left
+                </span>
               </span>
-            </span>
-            <ChevronsUpDown className="h-4 w-4 text-white/35" />
-          </>
-        )}
+              <ChevronsUpDown className="h-4 w-4 shrink-0 text-white/35" />
+            </>
+          )}
+        </button>
+        {/* Fold sits by the store, where the eye starts, not at the foot. */}
+        <button
+          type="button"
+          onClick={fold}
+          aria-label={narrow ? "Open the menu out" : "Fold the menu"}
+          title={narrow ? "Open the menu out" : "Fold the menu"}
+          className="hidden h-8 w-8 shrink-0 place-items-center rounded-lg text-white/45 ring-1 ring-white/10 hover:bg-white/10 hover:text-white lg:grid"
+        >
+          {narrow ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+        </button>
       </div>
 
       <button
@@ -216,9 +231,6 @@ export function AdminShell({ children }: { children: ReactNode }) {
             <Icon className="h-[17px] w-[17px]" /> {!narrow && label}
           </Link>
         ))}
-        <button type="button" onClick={fold} className={`mt-1 hidden h-9 items-center gap-3 rounded-[10px] text-[13px] text-white/40 hover:text-white lg:flex ${narrow ? "justify-center" : "px-2.5"}`}>
-          {narrow ? <ChevronsRight className="h-4 w-4" /> : <><ChevronsLeft className="h-4 w-4" /> Fold the menu</>}
-        </button>
       </div>
     </nav>
   );
@@ -263,7 +275,8 @@ export function AdminShell({ children }: { children: ReactNode }) {
                     {([
                       ["Product", "/new-admin/products/zohra", Package],
                       ["Order by hand", "/new-admin/orders/drafts", ShoppingBag],
-                      ["Discount code", "/new-admin/discounts", ICONS.discounts],
+                      ["Discount code", "/new-admin/discounts/new", ICONS.discounts],
+                      ["Blog post", "/new-admin/content/blog/new", ICONS.content],
                       ["Collection", "/new-admin/products/collections", ICONS.boxes],
                       ["Page", "/new-admin/online-store/pages", ICONS.content],
                       ["Menu", "/new-admin/content/menus", ICONS.app],
