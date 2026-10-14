@@ -337,13 +337,20 @@
      that #5050ea can mean "selected", and a merchant whose brand is red would
      otherwise get a red Save button beside a red active tab with nothing to
      tell them apart. */
-  --color-brand-50: #f2f2ff;
-  --color-brand-100: #e2e2ff;
-  --color-brand-300: #a5a5ff;
-  --color-brand-500: #5050ea;
-  --color-brand-600: #4040d0;
-  --color-brand-700: #3232a8;
-  --color-brand-900: #24246b;
+  /* New admin, 15 October: black and white carry the panel. What was the
+     indigo (#5050ea) for "selected", "focused" and the main button is ink
+     now, and the brand's own colours (iris, lavender, sky, mint) mark the
+     sections instead: see lib/admin-nav.ts. The old values are kept in
+     "APP extra/Synora app old Design kit". */
+  --color-brand-50: #f4f4f6;
+  --color-brand-100: #ececef;
+  --color-brand-300: #b7b9ff;
+  --color-brand-500: #0a0a0a;
+  --color-brand-600: #0a0a0a;
+  --color-brand-700: #262626;
+  --color-brand-900: #000000;
+  /* The primary button's lift: a soft grey, not the indigo glow it had. */
+  --shadow-brand: 0 4px 14px -6px rgb(0 0 0 / 0.35);
 
   /* ONE DESIGN PIXEL.
    *
@@ -451,23 +458,23 @@
   --text-secondary: calc(18 * var(--u));
   --icon-box: calc(20 * var(--u));
 
-  --color-shell: #f5f5f5;
+  --color-shell: #f4f4f4;
   --color-panel: #ffffff;
   /* The header, and the only saturated surface in the panel.
      It is one flat colour. What makes it look like a gradient in the drawing
      is the page's own white glow falling across it — see --glow-page below.
      A painted gradient would look close and behave wrong: the light would not
      move when the content beneath it does. */
-  --color-header: #5050ea;
+  --color-header: #0a0a0a;
   /* The search field on the header, and the avatar. Both read off the
      artboard: #0c0c4a is Synora's night, and #aa4cc1 is the avatar's own. */
   --color-header-field: #0c0c4a;
-  --color-avatar: #aa4cc1;
+  --color-avatar: #0a0a0a;
   /* The mark on the bell when something is waiting. Green, and the drawing's
      own — it is a status, not a state of the glyph, which is why it is the one
      thing in an icon that does not take currentColor. Named here so it is
      still a single source rather than a hex inside a path. */
-  --color-unread: #39b54a;
+  --color-unread: #6666ff;
   /* A section inside the main container: the page's own tone, boxed. Same
      value as the shell deliberately — a section is not raised off the
      container, it is a region marked out on it. */
@@ -477,7 +484,7 @@
      --color-control-line, for the same reason. */
   --color-section-line: rgb(46 46 46 / 0.25);
   /* The plate behind anything active: a sidebar row, a navigation tab. */
-  --color-selected: #e9e9ff;
+  --color-selected: #f0f0f0;
   /* Words in a field nobody has typed into yet. Two, because the panel has two
      grounds it can happen on. */
   --color-placeholder: #babac5;
@@ -511,7 +518,7 @@
      behind it. With containers at white there is no lighter left, so depth is
      carried by shadow forward and by a faint grey backward: the page and the
      recessed things share #f5f5f5, and anything raised is white with a lift. */
-  --color-canvas: #f5f5f5;
+  --color-canvas: #f4f4f4;
   --color-surface: #ffffff;
   --color-subtle: #f0f0f0;
   /* The inactive outline: #86868b, held to a hairline by its alpha. Two

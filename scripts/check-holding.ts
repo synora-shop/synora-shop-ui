@@ -230,15 +230,18 @@ check("addresses are stored lowercase", normaliseEmail("  A.B@Example.COM ") ===
 // that question.
 const nav = read("lib/admin-nav.ts");
 check("Maintenance is a tab", /\/admin\/maintenance/.test(nav));
+// The new admin (15 October) keeps the pair together under Online Store:
+// Visibility is the screen called Preferences there, and the holding page
+// comes straight after it.
 check(
-  "it sits inside Preferences",
-  nav.indexOf("/admin/maintenance") > nav.indexOf('label: "Preferences"'),
+  "it sits beside Preferences (Visibility)",
+  nav.indexOf("/admin/maintenance") > nav.indexOf('href: "/admin/preferences"'),
   "whether the shop is open is how it behaves, not how it looks"
 );
 check(
-  "and directly after Visibility, which asks the same question",
-  nav.indexOf("/admin/maintenance") > nav.indexOf('label: "Visibility"') &&
-    nav.indexOf("/admin/maintenance") < nav.indexOf('label: "Fonts"')
+  "and directly after it, which asks the same question",
+  nav.indexOf("/admin/maintenance") > nav.indexOf('href: "/admin/preferences"') &&
+    nav.indexOf("/admin/maintenance") < nav.indexOf('href: "/admin/fonts"')
 );
 
 console.log(`\n${pass} passed, ${fail} failed`);

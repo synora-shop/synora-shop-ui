@@ -1,11 +1,13 @@
+import type { ComponentType } from "react";
+// The drawn glyphs from Assestz/SVG wherever one exists. Orders and Bin have
+// no drawn glyph yet, so they borrow lucide's until one is drawn.
+import { Inbox, Trash2 } from "lucide-react";
 import {
-  AccountIcon,
   AnalyticsIcon,
   CustomersIcon,
   DataIcon,
   DiscountsIcon,
   HomeIcon,
-  PreferencesIcon,
   ProductIcon,
   SettingsIcon,
   YourAppIcon,
@@ -71,7 +73,10 @@ export type NavTab = {
  */
 export type NavHidden = NavTab;
 
-export type NavIcon = (props: { className?: string; title?: string }) => React.ReactElement;
+export type NavIcon = ComponentType<{ className?: string }>;
+
+/** The brand colour a section wears: its dot in the rail and the chip on its pages. */
+export type NavTone = "iris" | "lavender" | "sky" | "mint" | "ink";
 
 /**
  * Which band of the sidebar a section sits in.
@@ -93,6 +98,7 @@ export type NavSection = {
   labels?: Partial<Record<BusinessType, string>>;
   /** The drawn glyph for this section — see components/admin/nav-icons.tsx. */
   icon: NavIcon;
+  tone: NavTone;
   group: NavGroup;
   tabs: NavTab[];
   /** Screens of this section that draw no tab. See NavHidden. */
@@ -129,162 +135,89 @@ export type NavSection = {
  * about them.
  */
 export const NAV_SECTIONS: readonly NavSection[] = [
+  // Redrawn on 15 October to the new admin: Shopify's grouping, a black rail
+  // that opens only the section you are in, and every address unchanged.
+  // Group 1 is running the shop, group 2 is the storefront, group 3 is the
+  // arrangements underneath (Settings) and the way back from a mistake (Bin).
+  { key: "home", label: "Home", icon: HomeIcon, tone: "ink", group: 1, tabs: [{ href: "/admin", label: "Home" }] },
   {
-    key: "home",
-    label: "Home",
-    icon: HomeIcon,
+    key: "orders",
+    label: "Orders",
+    icon: Inbox,
+    tone: "iris",
     group: 1,
-    // What this business *is*: its name, its address, its marks — and the
-    // defaults everything else is expressed in. Store defaults moved here from
-    // Settings, because "what currency do I charge in" is the same kind of
-    // question as "what am I called", and not the same kind as "how do I get
-    // paid".
     tabs: [
-      { href: "/admin", label: "Home" },
-      { href: "/admin/store-defaults", label: "Store defaults" },
+      { href: "/admin/orders", label: "Orders" },
+      { href: "/admin/enquiries", label: "Enquiries" },
     ],
   },
   {
     key: "products",
     label: "Products",
     icon: ProductIcon,
+    tone: "mint",
     group: 1,
-    // Everything about selling: the catalogue, and what happens to it.
     tabs: [
       { href: "/admin/products", label: "Products" },
-      // Beside Products because it is products: everything started and not yet
-      // put out. It sits before Categories rather than beside Bin — a draft is
-      // on its way in, not on its way out.
       { href: "/admin/drafts", label: "Drafts" },
-      { href: "/admin/categories", label: "Categories" },
-      { href: "/admin/orders", label: "Orders" },
-      // Customers is deliberately not here. It was, and it read as a property
-      // of the catalogue — but a customer is a person who bought, not a thing
-      // you sell, and a merchant looking for one does not think "products
-      // first". It is its own sidebar section, further down this same group.
-      { href: "/admin/enquiries", label: "Enquiries" },
-      { href: "/admin/bin", label: "Bin" },
+      { href: "/admin/categories", label: "Collections" },
     ],
   },
+  { key: "customers", label: "Customers", icon: CustomersIcon, tone: "sky", group: 1, tabs: [{ href: "/admin/customers", label: "Customers" }] },
+  { key: "discounts", label: "Discounts", icon: DiscountsIcon, tone: "lavender", group: 1, tabs: [{ href: "/admin/discounts", label: "Discounts" }] },
   {
-    key: "data",
-    label: "Data",
+    key: "content",
+    label: "Content",
     icon: DataIcon,
+    tone: "mint",
     group: 1,
-    // One screen, so no navigation bar is drawn — the same shape as Customers
-    // and Analytics. Was a tab under Your App; getting the catalogue in and out
-    // of the shop is not a question about how the shop looks.
-    tabs: [{ href: "/admin/data", label: "Data" }],
+    tabs: [
+      { href: "/admin/data", label: "Files" },
+      { href: "/admin/menus", label: "Menus" },
+      { href: "/admin/metafields", label: "Custom fields" },
+      { href: "/admin/site-text", label: "Store wording" },
+    ],
   },
+  { key: "analytics", label: "Analytics", icon: AnalyticsIcon, tone: "iris", group: 1, tabs: [{ href: "/admin/analytics", label: "Analytics" }] },
   {
-    key: "discounts",
-    label: "Discounts",
-    icon: DiscountsIcon,
-    group: 1,
-    // Also promoted out of Your App. A discount is an offer made to a customer,
-    // which puts it beside the catalogue and the orders, not beside Themes.
-    tabs: [{ href: "/admin/discounts", label: "Discounts" }],
-  },
-  {
-    key: "customers",
-    label: "Customers",
-    icon: CustomersIcon,
-    group: 1,
-    // One screen, so no navigation bar is drawn for it — the same shape as
-    // Home and Analytics. The detail page at /admin/customers/[id] resolves
-    // here too, because the active match is the longest href covering the
-    // path.
-    tabs: [{ href: "/admin/customers", label: "Customers" }],
-  },
-  {
-    key: "analytics",
-    label: "Analytics",
-    icon: AnalyticsIcon,
-    group: 1,
-    // Last in the group, and deliberately: everything above it is a thing you
-    // do, and this is how those things went.
-    tabs: [{ href: "/admin/analytics", label: "Analytics" }],
-  },
-  {
-    key: "shop",
-    label: "Your App",
+    key: "store",
+    label: "Online Store",
     icon: YourAppIcon,
+    tone: "sky",
     group: 2,
-    // The storefront as a visitor meets it. Data and Discounts used to sit in
-    // this list and no longer do — they are sections of their own in group 1.
-    // What is left is genuinely one job: the pages of the shop, what they look
-    // like, and the words on them.
-    // Three screens, and the design draws them in this order.
     tabs: [
       { href: "/admin/theme", label: "Themes" },
       { href: "/admin/pages", label: "Pages" },
-      { href: "/admin/menus", label: "Menus" },
-    ],
-    // Both of these are on their way out of the navigation, not out of the
-    // product — see docs/PANEL.md §4.
-    //
-    // Drafts: a draft belongs to the thing it is a draft of. Page drafts fold
-    // into the Pages screen; Products keeps its own Drafts screen, inside
-    // Products, where it already is.
-    //
-    // Site text: all storefront wording is to be edited in the live
-    // customizer. It cannot be yet — these are 66 strings the customizer has
-    // no way to reach, including the words on the checkout button — so the
-    // screen stays reachable until it does. Removing it first would not move
-    // the ability, it would end it.
-    hidden: [
-      { href: "/admin/pages/drafts", label: "Drafts" },
-      { href: "/admin/site-text", label: "Site text" },
-    ],
-  },
-  {
-    key: "preferences",
-    label: "Preferences",
-    icon: PreferencesIcon,
-    group: 2,
-    // How the shop behaves, as opposed to how it looks. Whether it is open to
-    // customers at all is the first question, so it is the first tab.
-    tabs: [
-      { href: "/admin/preferences", label: "Visibility" },
-      // Moved here from Your App on 22 September. The screen itself argued it
-      // belonged beside Pages and Themes *because it is a page on the
-      // storefront*, and that is true and is the weaker argument: whether the
-      // shop is open is how it behaves, not how it looks, and Visibility above
-      // is already that question. Second, so the two sit together.
-      { href: "/admin/maintenance", label: "Maintenance" },
+      { href: "/admin/look", label: "Store-wide look" },
+      { href: "/admin/preferences", label: "Preferences" },
+      // Directly after Preferences: whether the shop is open is the same
+      // question its visibility settings ask (scripts/check-holding.ts).
+      { href: "/admin/maintenance", label: "Holding page and status" },
       { href: "/admin/fonts", label: "Fonts" },
-      { href: "/admin/buttons", label: "Sticky buttons" },
-      { href: "/admin/redirects", label: "Links & redirects" },
-      { href: "/admin/metafields", label: "Custom fields" },
+      { href: "/admin/buttons", label: "Chat buttons" },
+      { href: "/admin/redirects", label: "Links and redirects" },
     ],
+    // Page drafts fold into Pages: a draft belongs to the thing it is a draft of.
+    hidden: [{ href: "/admin/pages/drafts", label: "Page drafts" }],
   },
   {
     key: "settings",
     label: "Settings",
     icon: SettingsIcon,
+    tone: "ink",
     group: 3,
-    // The shop's own arrangements — as opposed to Account below, which is the
-    // person's. Account used to be the fourth tab here and is not any more.
+    // Drawn as the list beside every settings screen rather than in the rail:
+    // see components/admin/settings-frame.tsx.
     tabs: [
-      { href: "/admin/settings", label: "General" },
-      // How the merchant takes money from their customers. Billing — what the
-      // merchant pays us — is the other direction and is not built yet; see
-      // docs/QUEUE.md. It gets its tab when there is something behind it,
-      // rather than a tab that explains why it is empty.
+      { href: "/admin/store", label: "Store details" },
+      { href: "/admin/store-defaults", label: "Store defaults" },
+      { href: "/admin/settings", label: "Checkout and delivery" },
       { href: "/admin/payments", label: "Payments" },
       { href: "/admin/domains", label: "Domains" },
+      { href: "/admin/account", label: "Users and your account" },
     ],
   },
-  {
-    key: "account",
-    label: "Account",
-    icon: AccountIcon,
-    group: 3,
-    // You, not the shop: who is signed in, the password, and leaving. It was a
-    // tab under Settings, where "delete my account" sat in a row with "domains"
-    // and read as one more setting of the store.
-    tabs: [{ href: "/admin/account", label: "Account" }],
-  },
+  { key: "bin", label: "Bin", icon: Trash2, tone: "ink", group: 3, tabs: [{ href: "/admin/bin", label: "Bin" }] },
 ];
 
 /** A section, ready to draw. */
@@ -292,6 +225,7 @@ export type ResolvedSection = {
   key: string;
   label: string;
   icon: NavIcon;
+  tone: NavTone;
   href: string;
   group: NavGroup;
   tabs: { href: string; label: string }[];
@@ -311,6 +245,7 @@ export function sections(): ResolvedSection[] {
     key: section.key,
     label: section.label,
     icon: section.icon,
+    tone: section.tone,
     group: section.group,
     // A section is a link as well as a heading — clicking it lands on its first
     // tab. Computed rather than written down so the two cannot disagree.

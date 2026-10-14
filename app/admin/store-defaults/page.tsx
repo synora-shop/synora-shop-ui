@@ -5,6 +5,7 @@ import { resolveStoreDefaults } from "@/lib/store-defaults";
 import { getStoreSettings } from "@/lib/data/settings";
 import { requireShop } from "@/lib/data/shop";
 import { registryBusinessType } from "@/lib/themes/business-type";
+import { SettingsFrame } from "@/components/admin/settings-frame";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +28,7 @@ export default async function StoreDefaultsPage() {
   const [settings, shop] = await Promise.all([getStoreSettings(), requireShop()]);
 
   return (
+    <SettingsFrame>
     <div className="space-y-2.5">
       <PageHeader
         title="Store defaults"
@@ -40,5 +42,6 @@ export default async function StoreDefaultsPage() {
           behaviour toggles it used to sit under. */}
       <BusinessTypeForm current={registryBusinessType(shop.businessType)} status={shop.status} />
     </div>
+    </SettingsFrame>
   );
 }

@@ -1,10 +1,9 @@
 import { PushNotificationsToggle } from "@/components/admin/push-notifications-toggle";
 import { StoreSettingsForm } from "@/components/admin/store-settings-form";
-import { GlobalEditsForm } from "@/components/admin/global-edits-form";
-import { Fieldset, PageHeader, SectionDivider } from "@/components/ui/primitives";
+import { Fieldset, PageHeader } from "@/components/ui/primitives";
 import { resolveStoreDefaults } from "@/lib/store-defaults";
 import { getStoreSettings } from "@/lib/data/settings";
-import { toGlobalEdits } from "@/lib/global-edits";
+import { SettingsFrame } from "@/components/admin/settings-frame";
 
 export const dynamic = "force-dynamic";
 
@@ -26,10 +25,11 @@ export default async function AdminSettingsPage() {
   const defaults = resolveStoreDefaults(settings);
 
   return (
+    <SettingsFrame>
     <div className="space-y-2.5">
       <PageHeader
-        title="Settings"
-        description="How customers reach you, what shipping costs, and how your storefront behaves."
+        title="Checkout and delivery"
+        description="How customers reach you, what delivery costs, and the alerts you get when an order comes in."
       />
 
       <StoreSettingsForm settings={settings} currency={defaults.currency} />
@@ -40,13 +40,7 @@ export default async function AdminSettingsPage() {
       >
         <PushNotificationsToggle />
       </Fieldset>
-
-      <SectionDivider
-        title="Global edits"
-        description="Site-wide behaviour. Every edit here applies live across the whole storefront, including products and pages you add later."
-      />
-
-      <GlobalEditsForm settings={toGlobalEdits(settings)} />
     </div>
+    </SettingsFrame>
   );
 }

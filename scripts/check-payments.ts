@@ -195,9 +195,12 @@ check(
 const nav = read("lib/admin-nav.ts");
 check("Payments is a tab under Settings", /\/admin\/payments/.test(nav));
 check(
-  "Store defaults is a tab under Home",
-  nav.indexOf("/admin/store-defaults") > nav.indexOf('key: "home"') &&
-    nav.indexOf("/admin/store-defaults") < nav.indexOf('key: "products"'),
+  // New admin (15 October): what the business is (its name, marks and
+  // address) moved from Home to Settings › Store details, and its defaults
+  // sit directly after it, still beside the same question.
+  "Store defaults sits directly after Store details",
+  nav.indexOf("/admin/store-defaults") > nav.indexOf('href: "/admin/store"') &&
+    nav.indexOf("/admin/store-defaults") < nav.indexOf('href: "/admin/settings"'),
   "it answers what the business is, not how it behaves"
 );
 check(

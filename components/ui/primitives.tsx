@@ -130,20 +130,12 @@ export function Card({
 }
 
 /**
- * A page's introduction: what this screen is for, and what you can do to it.
+ * A page's introduction: its name, what it is for, and what you can do to it.
  *
- * It used to print the page's name in a large heading. It no longer does, and
- * that is the change: the chrome names the page now. The heading bar carries
- * the section — "Your App" — and the navigation bar under it carries the
- * screen — "Themes" — so a third copy of the same word in the body was the
- * page telling the merchant something they had just read twice.
- *
- * `title` is still accepted, and still required, because it remains the honest
- * name of the screen and because the day this needs a heading again it should
- * not have to be reintroduced at ninety call sites. It is simply not drawn.
- *
- * With no description and no actions there is nothing left to draw, so nothing
- * is — rather than an empty row holding a gap open.
+ * The old panel left the name out, because an indigo header and a row of tabs
+ * already said it twice. The new admin (15 October) has neither: the rail
+ * names the section and the top bar's trail is small, so the screen names
+ * itself again, in the type the new screens use.
  */
 export function PageHeader({
   title,
@@ -151,19 +143,18 @@ export function PageHeader({
   actions,
   className,
 }: {
-  /** The screen's name. Not rendered — see above. */
+  /** The screen's name, drawn as its heading (new admin, 15 October). */
   title: React.ReactNode;
   description?: React.ReactNode;
   actions?: React.ReactNode;
   className?: string;
 }) {
-  void title;
-  if (!description && !actions) return null;
   return (
-    <div className={cn("flex flex-wrap items-start justify-between gap-3", className)}>
-      {description && (
-        <p className="min-w-0 max-w-2xl text-sm leading-snug text-ink-soft">{description}</p>
-      )}
+    <div className={cn("flex flex-wrap items-start justify-between gap-3 pb-1", className)}>
+      <div className="min-w-0 max-w-2xl">
+        <h2 className="text-[22px] font-semibold tracking-[-0.02em] text-[#0a0a0a]">{title}</h2>
+        {description && <p className="mt-0.5 text-[14px] leading-snug text-[#0a0a0a]/55">{description}</p>}
+      </div>
       {actions && <div className="ml-auto flex flex-shrink-0 flex-wrap items-center gap-2">{actions}</div>}
     </div>
   );

@@ -3,7 +3,6 @@ import { auth } from "@/auth";
 import { shopSession } from "@/lib/auth-guard";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { AdminTopbar, type Alert } from "@/components/admin/admin-topbar";
-import { AdminNavbar } from "@/components/admin/admin-navbar";
 import { EditorBar } from "@/components/admin/editor-bar";
 import { RefreshButton } from "@/components/admin/refresh-button";
 import { getStoreSettings } from "@/lib/data/settings";
@@ -47,103 +46,58 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
     pendingWork(schemaType),
   ]);
 
+  const isLive = !settings.maintenanceMode;
+  const badges = Object.fromEntries(alerts.map((a) => [a.href, a.count]));
+
   return (
-    // data-business-type no longer repaints anything — the panel is one palette
-    // now, whatever the trade. It stays because screens read it to choose their
-    // words: a restaurant's products are dishes.
-    // Every client component that draws money reads the currency from here
-    // rather than being handed it through six unrelated props.
-    // The window itself does not scroll, and that is the whole layout.
+    // data-business-type no longer repaints anything; screens read it to
+    // choose their words. Every client component that draws money reads the
+    // currency from the provider rather than through six unrelated props.
     //
-    // The global design document is explicit: the header, the sidebar, the
-    // navigation bar and the action bar all stay put, and scrolling happens
-    // inside the main container. So the shell is exactly one screen tall and
-    // clips, and the one box below that is allowed to overflow is the content.
-    //
-    // It is not a preference. A merchant halfway down four hundred products
-    // still needs the tabs and the actions for that screen, and a page that
-    // scrolls as a whole takes both off the top of the window precisely when
-    // they are most wanted.
+    // New admin (15 October): a black rail on the left, and beside it one
+    // sheet that is the only thing that scrolls. The window itself stays one
+    // screen tall, so the rail and the top bar never leave it however long a
+    // list gets, and the top bar and the save bar stick to the top of the
+    // sheet while its content moves under them.
     <CurrencyProvider currency={resolveStoreDefaults(settings).currency}>
-    <div
-      data-business-type={type}
-      className="admin-shell relative flex h-screen flex-col overflow-hidden bg-shell font-sans text-ink"
-    >
-      {/* The indigo, as a backdrop rather than as the header's own fill.
-        *
-        * It has to be *behind* the content, so the background's rounded
-        * corners can tuck under it. The header bar has to be *above* the
-        * content, so its search overlay and its account menu are not painted
-        * over. One element cannot be both, and while it tried, it was the
-        * second that lost: the bar was `z-0`, which traps everything inside it
-        * — a menu at z-50, an overlay at z-60 — beneath a content block that
-        * comes later in the document. Both were rendering. Neither was
-        * visible.
-        *
-        * So the colour is its own layer at the bottom, and the bar is a
-        * transparent row at the top of the stack. */}
-      <div
-        aria-hidden
-        className="absolute inset-x-0 top-0 z-0 h-[calc(var(--header-h)+var(--radius-page))] bg-header"
-      />
-      {/* Full width, above the sidebar as well as the content. */}
-      <AdminTopbar
-        storeName={me.shop.name}
-        isLive={!settings.maintenanceMode}
-        userEmail={me.email}
-        storeUrl={await canonicalUrl(me.shop.id)}
-        registryType={type}
-        storeStatus={me.shop.status}
-        hasOtherStores={(session.user.shops?.length ?? 0) > 1}
-        alerts={await pendingWork(schemaType)}
-      />
-
-      {/* The background, as a block that tucks under the header.
-        *
-        * The global design document says the background *overlaps* the header,
-        * the way it does on synoradigitals.com, and the design file draws it:
-        * the grey does not meet the indigo in a straight seam, it curves away
-        * from it, and the indigo fills the corners behind the curve. It was a
-        * flat edge here, which is the difference between the two screens that
-        * reads first and is hardest to name.
-        *
-        * No negative margin any more. The backdrop above already extends a
-        * radius past the bar, so the content starts where the bar ends and its
-        * corners reveal what is behind them.
-        *
-        * The white glow belongs to this block, not to the header — it is the
-        * *background* that glows, and what it lands on is the header above it.
-        * Putting it here rather than inside the bar is what makes that true
-        * rather than merely look true.
-        *
-        * 30px from every edge of the screen, and 30px between the sidebar and
-        * the column beside it — one margin where two meet, never both. */}
-      <div className="relative z-10 flex min-h-0 flex-1 gap-[var(--gap-lg)] rounded-t-[var(--radius-page)] bg-shell p-[var(--gap-lg)] shadow-glow-page max-lg:p-4">
-        <AdminSidebar />
-
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-[var(--gap-sm)]">
-          {/* The bars of the drawing, in order. The navigation bar carries no
-              bottom margin of its own: the action buttons beneath it bring
-              15px, and two margins meeting are one margin. */}
-          <AdminNavbar />
-
-          {/* The action bar. No container of its own — it is buttons side by
-              side, each carrying its own — so on a screen with nothing to
-              filter, sort or create it draws nothing at all and costs no
-              height. Themes is one of those. */}
-          <EditorBar />
-
-          {/* The main container, and the only thing on the screen that
-              scrolls. */}
-          <div className="min-h-0 flex-1 overflow-y-auto rounded-[var(--radius-container)] bg-panel p-[var(--gap-lg)] shadow-container max-lg:p-4">
-            {children}
+      <div data-business-type={type} className="admin-shell flex h-screen overflow-hidden bg-[#0a0a0a] font-sans text-ink">
+        <AdminSidebar
+          storeName={settings.storeName || me.shop.name}
+          statusLabel={statusLabel(me.shop.status, isLive)}
+          isLive={isLive && me.shop.status !== "PAUSED" && me.shop.status !== "CLOSED"}
+          badges={badges}
+          hasOtherStores={(session.user.shops?.length ?? 0) > 1}
+        />
+        <div className="min-w-0 flex-1 lg:py-2 lg:pr-2">
+          <div className="relative h-full overflow-y-auto overscroll-contain bg-canvas lg:rounded-[1.25rem]">
+            <AdminTopbar
+              storeName={me.shop.name}
+              isLive={isLive}
+              userEmail={me.email}
+              storeUrl={storeUrl}
+              registryType={type}
+              storeStatus={me.shop.status}
+              hasOtherStores={(session.user.shops?.length ?? 0) > 1}
+              alerts={alerts.map(({ label, href }) => ({ label, href }))}
+            />
+            <EditorBar />
+            <main className="mx-auto flex max-w-[76rem] flex-col gap-5 p-4 sm:p-6 lg:p-8">{children}</main>
           </div>
         </div>
+        <RefreshButton />
       </div>
-      <RefreshButton />
-    </div>
     </CurrencyProvider>
   );
+}
+
+/** The few words under the store's name in the rail. */
+function statusLabel(status: string, live: boolean): string {
+  if (status === "CLOSED") return "Closed";
+  if (status === "PAUSED") return "Paused: customers see your holding page";
+  if (status === "SUSPENDED") return "Suspended";
+  if (status === "PAST_DUE") return "Open · payment overdue";
+  if (!live) return "Hidden: holding page on";
+  return status === "TRIAL" ? "Open · free trial" : "Open";
 }
 
 /**
@@ -153,9 +107,9 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
  * ever happened is a second inbox nobody reads; the bell is only worth having
  * if a dot on it means something needs doing today.
  */
-async function pendingWork(businessType: BusinessType): Promise<Alert[]> {
+async function pendingWork(businessType: BusinessType): Promise<(Alert & { count: number })[]> {
   const prisma = await db();
-  const alerts: Alert[] = [];
+  const alerts: (Alert & { count: number })[] = [];
 
   // Both counts at once. A blog has no orders, and counting them would be a
   // query for a number that is always zero — so that one is skipped rather
@@ -171,6 +125,7 @@ async function pendingWork(businessType: BusinessType): Promise<Alert[]> {
     alerts.push({
       label: `${enquiries} new ${enquiries === 1 ? "enquiry" : "enquiries"}`,
       href: "/admin/enquiries",
+      count: enquiries,
     });
   }
 
@@ -178,6 +133,7 @@ async function pendingWork(businessType: BusinessType): Promise<Alert[]> {
     alerts.push({
       label: `${orders} ${orders === 1 ? "order" : "orders"} awaiting fulfilment`,
       href: "/admin/orders",
+      count: orders,
     });
   }
 

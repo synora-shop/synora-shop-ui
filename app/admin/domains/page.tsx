@@ -5,6 +5,7 @@ import { requiredRecords } from "@/lib/domains";
 import { canIssueCertificates } from "@/lib/hosting";
 import { DomainManager } from "@/components/admin/domain-manager";
 import { PageHeader } from "@/components/ui/primitives";
+import { SettingsFrame } from "@/components/admin/settings-frame";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +27,7 @@ export default async function DomainsPage() {
   const domains = canManage && me ? await domainsForShop(me.shop.id) : [];
 
   return (
+    <SettingsFrame>
     <div className="space-y-2.5">
       <PageHeader
         title="Domains"
@@ -54,5 +56,6 @@ export default async function DomainsPage() {
         </p>
       )}
     </div>
+    </SettingsFrame>
   );
 }

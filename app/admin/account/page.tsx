@@ -5,6 +5,7 @@ import { ROLE_RANK, roleAtLeast } from "@/lib/roles";
 import { PageHeader, SectionDivider } from "@/components/ui/primitives";
 import { AccountSecurity } from "@/components/admin/account-security";
 import { StaffManager } from "@/components/admin/staff-manager";
+import { SettingsFrame } from "@/components/admin/settings-frame";
 
 export const dynamic = "force-dynamic";
 
@@ -66,6 +67,7 @@ export default async function AccountPage() {
     .sort((a, b) => ROLE_RANK[b.role] - ROLE_RANK[a.role] || a.email.localeCompare(b.email));
 
   return (
+    <SettingsFrame>
     <div className="space-y-2.5">
       <PageHeader
         title="Account"
@@ -92,5 +94,6 @@ export default async function AccountPage() {
         </section>
       )}
     </div>
+    </SettingsFrame>
   );
 }

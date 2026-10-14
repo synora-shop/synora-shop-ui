@@ -8,6 +8,7 @@ import { allGatewayRows, describeGateway } from "@/lib/payments/gateways";
 import { paymentCryptoReady } from "@/lib/payments/crypto";
 import { GATEWAY_PROVIDERS } from "@/lib/payments/providers";
 import { resolveStoreDefaults } from "@/lib/store-defaults";
+import { SettingsFrame } from "@/components/admin/settings-frame";
 
 export const dynamic = "force-dynamic";
 
@@ -56,6 +57,7 @@ export default async function PaymentsPage() {
   });
 
   return (
+    <SettingsFrame>
     <div className="space-y-2.5">
       <PageHeader
         title="Payments"
@@ -82,5 +84,6 @@ export default async function PaymentsPage() {
         }}
       />
     </div>
+    </SettingsFrame>
   );
 }

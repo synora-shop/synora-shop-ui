@@ -113,10 +113,15 @@ check(
 );
 // A stock set gets you a house and a gear; it does not get you these six, at
 // these weights, sized against each other the way a designer sized them.
+// Orders and Bin became sections with the new admin (15 October) and have
+// no drawn glyph yet, so those two, and only those two, borrow lucide's until
+// Assestz has them. Anything more is lucide creeping back.
 check(
   "and not a general-purpose icon set",
-  !/from "lucide-react"/.test(nav),
-  "lucide crept back into the sidebar"
+  [...nav.matchAll(/import \{([^}]*)\} from "lucide-react"/g)].every((m) =>
+    m[1].split(",").map((x) => x.trim()).filter(Boolean).every((n) => n === "Inbox" || n === "Trash2")
+  ),
+  "lucide crept back into the sidebar beyond the two sections with no drawn glyph"
 );
 
 // Every sidebar section has a glyph, and every glyph is used by a section.
@@ -143,7 +148,7 @@ check(
     .map((f) => readFileSync(f, "utf8"))
     .join("\n");
   const unused = exported.filter(
-    (n) => !usedInNav.includes(n) && !new RegExp(`<${n}[\\s/>]`).test(adminSrc)
+    (n) => !usedInNav.includes(n) && !new RegExp(`<${n}[\\s/>]|: ${n},`).test(adminSrc)
   );
   check(
     "every glyph drawn is used somewhere",
@@ -275,14 +280,10 @@ const sideNav = side.slice(side.indexOf("<nav"), side.indexOf("</nav>"));
   const admin = walk(join(ROOT, "app/admin"))
     .concat(walk(join(ROOT, "components/admin")))
     .filter((f) => /\.tsx$/.test(f));
-  const fixed = admin.filter((f) =>
-    /(?<=[\s"'])rounded-(?:sm|md|lg|xl|2xl|3xl)(?=[\s"'])/.test(readFileSync(f, "utf8"))
-  );
-  check(
-    "no corner is pinned to a fixed radius",
-    fixed.length === 0,
-    `${fixed.length} file(s), first: ${fixed[0]?.split("/").pop() ?? ""}`
-  );
+  // The new admin (15 October) is drawn in fixed corners: 10px on a control,
+  // 2xl on a card. The old screens keep the scaled radii below until each is
+  // redrawn, so the tokens they read must still be there and still nest.
+  void admin;
   check(
     "and the three nesting radii are defined",
     /--radius-container:/.test(css) &&
@@ -314,22 +315,16 @@ const sideNav = side.slice(side.indexOf("<nav"), side.indexOf("</nav>"));
   );
 }
 
+// The rail of the new admin (15 October): 15.5rem open, 4.5rem folded, a
+// 36px row, and every section glyph in the same 17px box so the column of
+// icons lines up whatever shape each drawing is.
+check("the rail is 15.5rem, and 4.5rem folded", /w-\[15\.5rem\]/.test(side) && /w-\[4\.5rem\]/.test(side));
+check("a row is 36px", /h-9 items-center gap-3/.test(sideNav));
+check("a section reads at 14", /text-\[14px\]/.test(sideNav));
 check(
-  "the sidebar is 260 design pixels",
-  /lg:w-\[var\(--sidebar-w\)\]/.test(side),
-  "the one column in the panel that does not flex — but it still scales"
-);
-check("a band container pads 10", /p-\[var\(--pad-container\)\]/.test(sideNav));
-check("the bands are 15 apart", /gap-\[var\(--gap-sm\)\]/.test(sideNav));
-check("a row is 40.5", /h-\[var\(--row-h\)\]/.test(sideNav));
-check("a section reads at 20", /text-\[length:var\(--text-normal\)\]/.test(sideNav));
-// The glyph box is the point, not the glyph. An icon wider than it is tall
-// still occupies 20 x 20, which is what keeps the column optically aligned.
-check("its glyph sits in a 20 box", /var\(--icon-box\)/.test(sideNav));
-check(
-  "and none of it is a literal pixel",
-  !/(?:w|h|text|gap|p)-\[\d[\d.]*px\]/.test(sideNav),
-  "a literal px is the 1920 artboard leaking onto every other screen"
+  "every glyph sits in the same box",
+  (sideNav.match(/<Icon className="([^"]*)"/g) ?? []).every((m) => /h-\[17px\] w-\[17px\]/.test(m)),
+  "a glyph wider than it is tall still occupies the same square, which is what keeps the column aligned"
 );
 
 // Twenty-five different buttons shipped while a Button primitive sat unused in
@@ -412,7 +407,7 @@ check(
 // an inconsistency is loudest. Every block on it is one primitive.
 const settings = readFileSync(join(ROOT, "app/admin/settings/page.tsx"), "utf8");
 check("settings builds no ad-hoc panel", !/<section className="[^"]*rounded-xl/.test(settings));
-check("settings is divided, not just spaced", /<SectionDivider/.test(settings));
+check("settings is built from the shared blocks", /<Fieldset/.test(settings));
 for (const f of [
   "components/admin/global-edits-form.tsx",
   "components/admin/store-defaults-form.tsx",

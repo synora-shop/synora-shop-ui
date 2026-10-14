@@ -35,100 +35,52 @@ const layout = sourceOf("app", "admin", "layout.tsx");
 const css = sourceOf("app", "globals.css");
 const store = sourceOf("lib", "admin-nav-store.ts");
 
-console.log("\nTHE SIDEBAR IS A DRAWER ON A PHONE AND A COLUMN ON A DESKTOP");
-check("a drawer below lg", /-translate-x-full/.test(sidebar));
-check("a column from lg", /lg:sticky/.test(sidebar) && /lg:translate-x-0/.test(sidebar));
+console.log("\nTHE RAIL IS A DRAWER ON A PHONE AND A COLUMN ON A DESKTOP");
+// New admin (15 October): the black rail. On a phone it is a full-screen
+// drawer the top bar opens; from lg it is a column that stays put while the
+// sheet beside it scrolls.
+check("a drawer below lg", /id="admin-nav" className="fixed inset-0[^"]*lg:hidden/.test(sidebar));
+check("a column from lg", /<aside[\s\S]{0,120}sticky top-0 hidden h-dvh[^"]*lg:block/.test(sidebar));
 check("the drawer is named so the toggle can point at it", /id="admin-nav"/.test(sidebar));
-// The icon rail is gone with the nesting that made it necessary. Six flat items
-// fit at 15rem on any laptop, and a control that hides the words on a
-// navigation this short costs more than it saves.
-check("there is no icon rail left behind", !/4\.5rem/.test(sidebar), "the rail width");
-check("and no stored preference for one", !/collapsed/i.test(store) && !/collapsed/i.test(sidebar));
+// It folds to icons on a desktop, and remembers that in this browser rather
+// than on the server: a preference about one screen is not the shop's.
+check("the rail can fold to icons", /w-\[4\.5rem\]/.test(sidebar) && /w-\[15\.5rem\]/.test(sidebar));
+check("and the fold is remembered in this browser", /localStorage/.test(sidebar) && /useSyncExternalStore/.test(sidebar));
+check("and nothing else stores it", !/collapsed|folded/i.test(store));
 
-console.log("\nONLY ONE THING IS PINNED TO THE TOP OF THE VIEWPORT");
-// Anything else fixed at top-0 in the admin chrome is either hidden underneath
-// the top bar or hiding it.
+console.log("\nONLY ONE THING IS PINNED TO THE TOP OF THE SHEET");
 const sidebarTopBars = (sidebar.match(/fixed[^"]*top-0/g) ?? []).length;
-check("the sidebar declares no bar of its own", sidebarTopBars === 0, `found ${sidebarTopBars}`);
-// It used to be sticky, which it had to be while the page itself scrolled.
-// Nothing outside the main container scrolls now — the header is simply the
-// first row of a shell exactly one screen tall — so sticky would be a rule
-// with nothing to do, and `relative` is what the glow at its bottom edge is
-// positioned against.
-check(
-  "the header is the top row and does not scroll away",
-  /<header className="relative z-50 h-\[var\(--header-h\)\]/.test(topbar)
-);
-// Three layers, in this order: the indigo backdrop, the page, the bar.
-//
-// It was two — a filled bar at `z-0` with the page above it — and `z-0` opens
-// a stacking context, so the bar's own account menu at z-50 and its search
-// overlay at z-60 were only ever above other things *inside the bar*. The page
-// comes later in the document and painted over both. Search opened and could
-// not be seen; the profile menu dropped and was covered. Nothing was broken
-// except the order of two layers.
-//
-// The colour is its own backdrop underneath now, which runs a radius past the
-// bar — that strip is what the page's rounded corners reveal — so the bar can
-// sit at the top of the stack without hiding the tuck.
+check("the rail declares no bar of its own", sidebarTopBars === 0, `found ${sidebarTopBars}`);
 {
   const layout = readFileSync(join(process.cwd(), "app/admin/layout.tsx"), "utf8");
   check(
-    "the header outranks the page it sits above",
-    /<header className="relative z-50/.test(topbar),
-    "at z-0 it traps its own menus below the content"
+    "the top bar stays over the page as it scrolls",
+    /<header className="sticky top-0 z-30/.test(topbar),
+    "a merchant deep in a long list still needs search, Create and the account"
   );
   check(
-    "and carries no fill of its own",
-    !/<header[^>]*bg-header/.test(topbar) && /aria-hidden[\s\S]{0,200}bg-header/.test(layout),
-    "one element cannot be both behind the page and in front of it"
+    "and carries an opaque fill",
+    /<header[^>]*bg-white /.test(topbar) && !/<header[^>]*backdrop-blur/.test(topbar),
+    "a blurred bar makes a containing block, and the search overlay inside it would be trapped in the bar"
   );
   check(
-    "the page sits between the two",
-    /relative z-10 flex min-h-0 flex-1/.test(layout),
-    "above the backdrop so its corners show, below the bar so the menus do"
+    "the window is one screen tall and the sheet is what scrolls",
+    /h-screen overflow-hidden/.test(layout) && /overflow-y-auto/.test(layout)
   );
   check(
-    "the background tucks under it",
-    /h-\[calc\(var\(--header-h\)\+var\(--radius-page\)\)\][\s\S]{0,80}bg-header/.test(layout) &&
-      /rounded-t-\[var\(--radius-page\)\]/.test(layout),
-    "the backdrop runs a radius past the bar, which is what the corners reveal"
-  );
-  check(
-    "and the glow belongs to the background, not to the bar",
-    /shadow-glow-page/.test(layout) && !/shadow-glow-page/.test(topbar),
-    "it is the background that glows; what it lands on is the header above it"
+    "the save bar sits under the top bar, not over it",
+    /sticky top-\[3\.6rem\] z-20/.test(readFileSync(join(process.cwd(), "components/admin/editor-bar.tsx"), "utf8"))
   );
 }
-// The mark sits at the left of the header, where the design puts it. It was
-// centred on the window for as long as the header was colourless — the centre
-// was the only place it could sit without reading as a heading — and centring
-// it cost two bugs: a `fixed` version that floated free when `overflow-x:
-// hidden` made the bar's stickiness a no-op, and an absolute version needing a
-// hand-computed offset of half a sidebar. Neither problem exists at the left.
-check("the header is 80 design pixels", /h-\[var\(--header-h\)\]/.test(topbar));
-check("the mark is 30", /h-\[var\(--logo-h\)\]/.test(topbar));
-check(
-  "and it is not centred on the window any more",
-  !/absolute left-1\/2 top-0/.test(topbar),
-  "centring it needed an offset nobody could derive from the drawing"
-);
 
 console.log("\nTHE NAVIGATION CAN BE OPENED ON A PHONE");
 check("the topbar owns the toggle", /aria-controls="admin-nav"/.test(topbar));
 check("the toggle is hidden once the sidebar is visible", /lg:hidden/.test(topbar));
 check("both read the same state", /useAdminNav/.test(topbar) && /useAdminNav/.test(sidebar));
 
-console.log("\nTHE TAB ROW SCROLLS RATHER THAN WRAPPING");
-// A wrapped tab row changes height as you move between sections, and
-// everything below it jumps by a line. The bar is back as of 22 September, so
-// this is the original hazard again rather than a stand-in for it.
-const navbar = readFileSync(join(process.cwd(), "components/admin/admin-navbar.tsx"), "utf8");
-check("the tab row scrolls rather than wrapping", /overflow-x-auto/.test(navbar));
-check("and draws no scrollbar inside 55px of bar", /scrollbar-none/.test(navbar));
-check("a section of one screen draws no bar", /tabs\.length === 0\) return null/.test(navbar));
-check("a sidebar label does not break mid-word", /truncate/.test(sidebar));
-check("and the sidebar can scroll if it ever outgrows the screen", /overflow-y-auto/.test(sidebar));
+console.log("\nTHE RAIL HOLDS ITS ROWS");
+check("a rail label does not break mid-word", /truncate/.test(sidebar));
+check("and the rail can scroll if it ever outgrows the screen", /overflow-y-auto/.test(sidebar));
 
 console.log("\nBOTH LEVELS COME FROM ONE PLACE");
 check("the sidebar reads the navigation model", /@\/lib\/admin-nav"/.test(sidebar));
@@ -174,37 +126,22 @@ check(
   "a larger display should get the drawing larger — the design is a proportion, not a maximum"
 );
 check("the frame's measurements are named once", /--sidebar-w:\s*calc\(260 \* var\(--u\)\)/.test(css));
-// The whole point: a literal px anywhere in the frame is the artboard leaking
-// onto every other screen. Tailwind's own scale (p-2.5, gap-1) is left alone —
-// those are small paddings inside a control, not drawn measurements.
-check(
-  "and no frame file pins a drawn measurement to literal pixels",
-  (() => {
-    const frame = [layout, topbar, sidebar, navbar];
-    return frame.every((src) => !/(?:^|[^a-z-])(?:w|h|text|gap|px|py|p)-\[\d[\d.]*px\]/.test(src));
-  })(),
-  "every drawn number goes through --u"
-);
-
-console.log("\nSPACING IS THE DOCUMENT'S, AND STEPS DOWN ON A PHONE");
-// The panel used a gutter that scaled with the window. The global design
-// document gives one number instead — 30px from every edge — so the fluid
-// gutter and the fluid page title are both gone rather than left unused.
+// The new admin's frame (15 October) is drawn in fixed sizes, not scaled
+// off the 1920 artboard: the rail is 15.5rem, the type is the design's own.
+// What must still hold is that it steps down on a phone rather than keeping
+// a desktop's margins on a 390px screen.
+console.log("\nSPACING STEPS DOWN ON A PHONE");
 check("nothing is left using the old fluid gutter", !/gutter-fluid/.test(layout + topbar));
-check("the document's 30 is what the frame uses", /p-\[var\(--gap-lg\)\]/.test(layout));
 check(
-  "the gap between sidebar and content is one margin, not two",
-  /gap-\[var\(--gap-lg\)\]/.test(layout),
-  "30 meeting 30 is 30; counting both gives 60 and pulls the layout apart"
+  "the page's padding steps down below the rail's breakpoint",
+  /p-4 sm:p-6 lg:p-8/.test(layout),
+  "a desktop's 32px of every edge is most of a phone"
 );
+check("so does the top bar's", /px-4[^"]*sm:px-6/.test(topbar));
 check(
-  "and it steps down below the sidebar's breakpoint",
-  /max-lg:p-4/.test(layout),
-  "30px of every edge of a phone is most of the phone"
-);
-check(
-  "the body no longer steps its padding at one width",
-  !/px-4[^"]*lg:px-8/.test(layout)
+  "the content has a reading width",
+  /max-w-\[76rem\]/.test(layout),
+  "a table stretched across a 2560px display is a table nobody can follow along a row"
 );
 
 console.log(`\n${pass} passed, ${fail} failed\n`);

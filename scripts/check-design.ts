@@ -153,14 +153,16 @@ function stripComments(source: string): string {
 }
 
 const css = readFileSync(join(ROOT, "app/globals.css"), "utf8");
+// The new admin's palette (15 October): ink and white carry the panel, and
+// the indigo that meant "active" is ink now. See docs/DESIGN.md §1.
 const PANEL_COLOURS: [string, string][] = [
-  ["--color-shell", "#f5f5f5"],
+  ["--color-shell", "#f4f4f4"],
   ["--color-panel", "#ffffff"],
   ["--color-control", "#f5f5f5"],
-  ["--color-brand-500", "#5050ea"],
-  ["--color-header", "#5050ea"],
+  ["--color-brand-500", "#0a0a0a"],
+  ["--color-header", "#0a0a0a"],
   ["--color-section", "#f5f5f5"],
-  ["--color-selected", "#e9e9ff"],
+  ["--color-selected", "#f0f0f0"],
 ];
 for (const [token, colour] of PANEL_COLOURS) {
   check(
@@ -231,8 +233,11 @@ check(
       .filter((f) => /\.tsx$/.test(f));
     return files.every((f) => {
       const src = readFileSync(f, "utf8");
-      return !/border-(?:gray|slate|zinc|neutral|stone)-\d{2,3}|border-\[#/.test(src)
-        && !/outline-(?:gray|slate|zinc|neutral|stone)-\d{2,3}|outline-\[#/.test(src);
+      // The new admin draws its hairlines in ink (or white, on the black
+      // rail) at a low alpha, and nothing else: a grey scale or any other hex
+      // is still a third state nobody asked for.
+      return !/border-(?:gray|slate|zinc|neutral|stone)-\d{2,3}|border-\[#(?!0a0a0a\]|ffffff\])/.test(src)
+        && !/outline-(?:gray|slate|zinc|neutral|stone)-\d{2,3}|outline-\[#(?!0a0a0a\]|ffffff\])/.test(src);
     });
   })(),
   "the two outline colours are tokens; a hardcoded one is a third state nobody asked for"
@@ -250,26 +255,24 @@ check(
   "focus is #5050ea; a second shade of it is a second meaning"
 );
 
-/* #6666ff was the active colour until 22 September and left the palette with
-   the global design document. Two indigos one step apart is a distinction
-   nobody can make, so there is one — and a stray #6666ff anywhere in the panel
-   would be the old one growing back where nothing would notice. */
+/* #5050ea was the active colour until 15 October, when the new admin made
+   active ink and gave the brand's own colours (iris #6666ff among them) to the
+   sections. A stray #5050ea anywhere in the panel would be the old design
+   growing back where nothing would notice. */
 check(
-  "#6666ff is gone from the panel",
+  "#5050ea is gone from the panel",
   (() => {
-    // Comments stripped first, and that is not a detail. The palette guard and
-    // the manifest guard have each failed on the sentence explaining them —
-    // a probe that reads prose is testing the documentation, not the code.
+    // Comments stripped first: a probe that reads prose tests the docs.
     const files = walk(join(ROOT, "app/admin"))
       .concat(walk(join(ROOT, "components/admin")))
       .filter((f) => /\.tsx?$/.test(f));
-    const shell = stripComments(css.slice(css.indexOf(".admin-shell {")));
+    const shell = stripComments((css.match(/\.admin-shell\s*\{[\s\S]*?\n\}/) ?? [""])[0]);
     return (
-      !/#6666ff/i.test(shell) &&
-      files.every((f) => !/#6666ff/i.test(stripComments(readFileSync(f, "utf8"))))
+      !/#5050ea/i.test(shell) &&
+      files.every((f) => !/#5050ea/i.test(stripComments(readFileSync(f, "utf8"))))
     );
   })(),
-  "active is #5050ea everywhere now — see docs/PANEL.md §6"
+  "active is ink now; the old indigo is in APP extra/Synora app old Design kit"
 );
 /* The same colour written the other way.
  *
@@ -309,46 +312,28 @@ check(
   "the brand comes from --color-brand-500 so it follows whatever scope it is in"
 );
 
-/* The header is flat. What lightens it in the drawing is the page's own white
-   glow falling across it, which is a different thing that behaves differently:
-   a painted gradient would not move when the content beneath it does. */
-/* The header, measured off the artboard rather than guessed.
- *
- * Every one of these was wrong by eye and is now read from APP themes.ai's own
- * content stream: the search field was a translucent tint at 360 wide, the
- * avatar was a black circle with initials and a status dot, and the bell was
- * lucide's with a red mark pinned to the corner of its button. */
+/* The frame of the new admin (15 October): a black rail, a white top bar
+ * that stays over the page, the drawn glyphs from Assestz where they exist,
+ * and the merchant's initials on the account button. */
 {
   const topbarSrc = stripComments(
     readFileSync(join(ROOT, "components/admin/admin-topbar.tsx"), "utf8")
   );
+  const railSrc = stripComments(
+    readFileSync(join(ROOT, "components/admin/admin-sidebar.tsx"), "utf8")
+  );
   const declared = (css.match(/\.admin-shell\s*\{[\s\S]*?\n\}/) ?? [""])[0];
-  check("the search field is #0c0c4a", /--color-header-field:\s*#0c0c4a/.test(declared));
-  check("and it is 390.5 wide by 50", /390\.5\*var\(--u\)/.test(topbarSrc));
-  check("the avatar is #aa4cc1", /--color-avatar:\s*#aa4cc1/.test(declared));
-  check(
-    "and a rounded square rather than a circle",
-    /--radius-avatar:\s*37\.15%/.test(declared) &&
-      /rounded-\[var\(--radius-avatar\)\]/.test(topbarSrc) &&
-      !/rounded-full[^"]*var\(--color-avatar\)/.test(topbarSrc)
-  );
-  // The initials belong on it. The drawing shows an empty plate because a
-  // drawing has no store to name — reading that absence as a decision is how
-  // they came off in the first place.
-  check("it carries the store's initials", /initials\(storeName\)/.test(topbarSrc));
-  check(
-    "and no status dot",
-    !/ring-ink/.test(topbarSrc),
-    "that one really was invented; whether the store is live is said in words in the menu, where it can be acted on"
-  );
+  check("the rail is black", /bg-\[#0a0a0a\]/.test(railSrc));
+  check("the top bar is white and stays over the page", /<header[^>]*sticky top-0[^>]*bg-white/.test(topbarSrc));
+  check("the account button carries initials", /initials\(/.test(topbarSrc));
   check(
     "the bell is the drawn one",
     /<NotificationIcon/.test(topbarSrc) && !/<Bell/.test(topbarSrc),
-    "there is no bell in Assestz — it is read out of the artboard, and lucide's is a different drawing"
+    "there is no bell in Assestz; it is read out of the artboard, and lucide's is a different drawing"
   );
   check(
-    "and its mark is green, inside the glyph",
-    /--color-unread:\s*#39b54a/.test(declared) &&
+    "and its mark sits inside the glyph, in the brand's iris",
+    /--color-unread:\s*#6666ff/.test(declared) &&
       /circle[^>]*var\(--color-unread\)/.test(
         readFileSync(join(ROOT, "components/admin/nav-icons.tsx"), "utf8")
       ),
@@ -402,23 +387,14 @@ check(
 }
 
 check(
-  "the header is one flat colour, not a gradient",
+  "the frame is flat colour, not a gradient",
   (() => {
-    const topbar = stripComments(
-      readFileSync(join(ROOT, "components/admin/admin-topbar.tsx"), "utf8")
-    );
-    // The fill moved to the backdrop in app/admin/layout.tsx when the bar had
-    // to rise above the page to stop covering its own menus — so the colour is
-    // asked for there, and the bar is checked for not painting one.
+    const topbar = stripComments(readFileSync(join(ROOT, "components/admin/admin-topbar.tsx"), "utf8"));
+    const rail = stripComments(readFileSync(join(ROOT, "components/admin/admin-sidebar.tsx"), "utf8"));
     const layout = stripComments(readFileSync(join(ROOT, "app/admin/layout.tsx"), "utf8"));
-    return (
-      /bg-header/.test(layout) &&
-      !/<header[^>]*bg-header/.test(topbar) &&
-      !/gradient/i.test(topbar) &&
-      !/gradient/i.test(layout)
-    );
+    return ![topbar, rail, layout].some((src) => /gradient/i.test(src));
   })(),
-  "the lightening is --glow-page, not a fill"
+  "black, white and the brand colours, flat"
 );
 check(
   "the three lights the document specifies are all declared",
@@ -435,7 +411,11 @@ check(
     // By the class each one is reached through, not by the variable name —
     // the variable being present in a file proves nothing about whether any
     // element wears it.
-    return ["shadow-container", "shadow-section", "shadow-glow-page"].every((c) =>
+    // The page glow lit the old indigo header, and the container glow lifted
+    // the old white sidebar, tab bar and main container. The new admin (15
+    // October) has none of those, so both are declared but no longer worn.
+    // The section glow still is, by every section on the older screens.
+    return ["shadow-section"].every((c) =>
       src.includes(c)
     );
   })(),

@@ -177,42 +177,30 @@ check(
     !/border border-control-line/.test(sidebar),
     "ten outlined pills is what the bands replaced"
   );
-  // Active is three things at once, and one of them alone is not a state
-  // anyone reads at a glance: the #e9e9ff plate, the #5050ea colour, and the
-  // weight. A solid brand slab with white text is what this is not.
+  // Active is more than colour, and one cue alone is not a state anyone reads
+  // at a glance. On the new admin's black rail (15 October) it is a lighter
+  // plate, white, and the weight.
   check(
     "the selected row is a plate, a colour and a weight",
-    /bg-selected font-semibold text-brand-500/.test(sidebar) &&
-      !/bg-brand-500[^"]*text-white/.test(sidebar),
-    "#e9e9ff behind it, #5050ea on it, semibold — not a #5050ea slab"
+    /bg-white\/\[0\.12\] font-semibold text-white/.test(sidebar),
+    "on the black rail: a lighter plate, white, semibold, never colour alone"
   );
-  // The sidebar held the second level for one day. If children come back here
-  // the navigation bar is being said twice, which is the thing the design of
-  // 22 September settled.
+  // The tab bar is gone and a section's screens open beneath it in the rail,
+  // but only for the section you are in: every section open at once is a
+  // list nobody can scan.
   check(
-    "the sidebar draws parents only",
-    !/children/.test(sidebar),
-    "the section's screens belong to the navigation bar now — see docs/PANEL.md §4"
+    "the rail opens only the section you are in",
+    /inert=\{!inside\}/.test(sidebar) && /grid-rows-\[0fr\]/.test(sidebar)
   );
+  check("and a section's screens come from the navigation model", /s\.tabs\.map/.test(sidebar));
 }
 
-// The navigation bar is back, and a section of one still draws none.
-{
-  const navbar = readFileSync(join(process.cwd(), "components/admin/admin-navbar.tsx"), "utf8");
-  check("a section with one screen draws no bar", /tabs\.length === 0\) return null/.test(navbar));
-  check("it is 55 design pixels", /h-\[var\(--navbar-h\)\]/.test(navbar));
-  check("its tabs are 20", /text-\[length:var\(--text-normal\)\]/.test(navbar));
-  check(
-    "its selected tab matches the sidebar's",
-    /bg-selected font-semibold text-brand-500/.test(navbar),
-    "two different active states in one panel is two meanings for one idea"
-  );
-  check(
-    "it slides rather than wraps",
-    /scrollbar-none/.test(navbar) && /overflow-x-auto/.test(navbar),
-    "a bar that wrapped would be two rows tall on some sections and one on others"
-  );
-}
+// The old navigation bar is gone rather than left beside the rail: two places
+// naming the same screens is how they drift apart.
+check(
+  "the old tab bar is gone, not left beside the rail",
+  !existsSync(join(process.cwd(), "components/admin/admin-navbar.tsx"))
+);
 
 // The action bar is invisible: no container of its own, just the buttons.
 {
@@ -237,7 +225,7 @@ check(
   );
   check(
     "the main container does",
-    /overflow-y-auto[^"]*bg-panel/.test(layout),
+    /overflow-y-auto[^"]*bg-canvas/.test(layout),
     "a merchant deep in a long list still needs the tabs and the actions for it"
   );
 }
@@ -250,9 +238,8 @@ for (const section of all) {
   check(`${section.label} lands on itself`, resolved.section.key === section.key,
     `landed on ${resolved.section.label}`);
   check(`${section.label} starts at its first tab`, section.href === section.tabs[0].href);
-  // A section of one draws no navigation bar — a bar with a single tab in it is
-  // furniture, not navigation.
-  check(`${section.label} draws a bar only when it has somewhere to go`,
+  // A section of one lists no screens under it: a list of one is furniture.
+  check(`${section.label} lists its screens only when it has more than one`,
     section.tabs.length > 1
       ? resolved.tabs.length === section.tabs.length
       : resolved.tabs.length === 0);

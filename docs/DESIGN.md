@@ -18,23 +18,26 @@ design document — `docs/PANEL.md` §1, which is where these come from.
 
 | | |
 | --- | --- |
-| `#f5f5f5` | the page — and anything recessed into a container |
-| `#ffffff` | containers — header bar, nav bar, content, sidebar |
-| `#f5f5f5` | controls — anything you type into or press |
-| `#f5f5f5` | a section inside the main container |
-| `#5050ea` | the header, and the active state — **and only** the active state |
-| `#e9e9ff` | the plate behind whatever is active |
+| `#0a0a0a` | ink: the rail, the main button, the active state, and text |
+| `#f4f4f4` | the page, the sheet the screens sit on |
+| `#ffffff` | containers, cards and the top bar |
+| `#f5f5f5` | controls (anything you type into or press) and a section inside a container |
+| `#f0f0f0` | the plate behind whatever is selected on a white ground |
+| `#6666ff` `#b7b9ff` `#c8e7ff` `#b8efd6` | iris, lavender, sky, mint: the brand colours, one per section (its dot in the rail and the chip on its screens) |
 | `#86868b` | the outline of a control at rest, and secondary text |
 | `#2e2e2e` | the outline of a section, at 0.25px |
 
-**`#6666ff` is gone.** It was the active colour until 22 September and is not in
-the palette at all now. The global design document names `#5050ea`, which is
-also the header's colour, and two indigos one step apart would have been a
-distinction nobody could make.
+**The new admin (15 October): black and white carry the panel.** The indigo
+`#5050ea` that meant "active" until then is gone, and active is ink: a black
+row on white, a white row on the black rail. The brand's colours moved from
+meaning "selected" to meaning "where you are": each section wears one (see
+`lib/admin-nav.ts`), and state, and only state, wears green, amber and red.
+The old palette is kept in `APP extra/Synora app old Design kit` and in git as
+the `old-admin-design` tag.
 
-**Active is three things at once** — the `#e9e9ff` plate, the `#5050ea` colour,
-and DM Sans Semibold rather than Regular. Never one of them alone: colour by
-itself is not a state a merchant reads at 20px across a room.
+**Active is still more than colour.** A selected row is a plate and a weight
+(semibold) as well as ink; colour alone is not a state a merchant reads across
+a room.
 
 **Depth is carried by light, not by tone.** It used to be the other way: the
 page was `#d2d2d2`, containers `#e0e0e0`, controls `#fafafa` — each step
@@ -48,7 +51,7 @@ Two greys that close cannot separate themselves, so a container is lifted by
 height. A single hard shadow at this lightness reads as a badly drawn border.
 
 **A control at rest is outlined `#86868b`; the same control focused or active
-is outlined `#5050ea`.** That pair is what lets a merchant read the state of a
+is outlined in ink, `#0a0a0a`.** That pair is what lets a merchant read the state of a
 control off its edge without first having to know what the control is. A
 `border-gray-200` or a one-off hex is a third state nobody asked for, and
 `check:design` fails on one.

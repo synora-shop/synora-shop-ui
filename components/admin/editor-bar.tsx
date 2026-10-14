@@ -5,7 +5,6 @@ import { AlertTriangle } from "lucide-react";
 import { anyDirty, anySaving, useAdminEditors } from "@/lib/admin-editor-store";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast";
-import { Button } from "@/components/ui/primitives";
 
 /**
  * Discard and Save for whatever screen is open, in the action bar.
@@ -22,6 +21,8 @@ import { Button } from "@/components/ui/primitives";
  * render one — and every screen should ask the question the same way. It is
  * handed to the store on mount for useEditor to reach.
  */
+const DISCARD = "rounded-[10px] px-3.5 py-1.5 text-[13px] font-semibold ring-1 ring-white/25 hover:bg-white/10 disabled:opacity-50";
+
 export function EditorBar() {
   const editors = useAdminEditors((s) => s.editors);
   const setConfirmLeave = useAdminEditors((s) => s.setConfirmLeave);
@@ -76,34 +77,47 @@ export function EditorBar() {
   return (
     <>
       {dialog}
-      {/* The action bar has no container, and that is the specification rather
-          than a saving. It was a white rounded bar with a shadow, which on a
-          screen with one Save button drew a whole bar to hold it.
-          
-          40px, buttons side by side, each carrying its own container. Sliding
-          rather than wrapping for the same reason the navigation bar does: a
-          bar that wrapped would be two rows tall on the screens with the most
-          actions and one row everywhere else, and the content below it would
-          start at a different height depending on where you were. */}
-      <div className="scrollbar-none flex h-[var(--actionbar-h)] flex-shrink-0 items-center gap-2.5 overflow-x-auto">
+      {/* New admin (15 October): the bar sits under the top bar and stays put
+          while the page scrolls. Quiet while everything is saved; once there
+          is something to save it turns black, the way the design draws it, so
+          unsaved work is the one thing on the screen you cannot miss. Same
+          rules as before: Discard only when there is something to discard,
+          Save only when there is something to save, one press for every form. */}
+      <div
+        className={`scrollbar-none sticky top-[3.6rem] z-20 flex h-[var(--actionbar-h)] min-h-11 flex-shrink-0 items-center gap-2.5 overflow-x-auto px-4 transition-colors sm:px-6 ${
+          dirty ? "bg-[#0a0a0a] text-white" : "border-b border-[#0a0a0a]/[0.06] bg-white/80"
+        }`}
+      >
         {dirty ? (
-          <p className="flex items-center gap-1.5 px-1 text-xs font-medium text-amber">
-            <AlertTriangle className="h-[var(--icon-box)] w-[var(--icon-box)].5 flex-shrink-0" aria-hidden />
+          <p className="flex items-center gap-1.5 text-[13.5px] font-semibold">
+            <AlertTriangle className="h-4 w-4 flex-shrink-0 text-[#f2a33a]" aria-hidden />
             Unsaved changes
           </p>
         ) : (
-          <p className="px-1 text-xs text-control-soft">All changes saved</p>
+          <p className="text-[12.5px] text-[#0a0a0a]/45">All changes saved</p>
         )}
 
         <div className="ml-auto flex items-center gap-2">
           {dirty && (
-            <Button variant="secondary" size="sm" onClick={discardAll} disabled={saving}>
+            <button
+              type="button"
+              onClick={discardAll}
+              disabled={saving}
+              className={DISCARD}
+            >
               Discard
-            </Button>
+            </button>
           )}
-          <Button variant="primary" size="sm" onClick={saveAll} disabled={!dirty || saving}>
+          <button
+            type="button"
+            onClick={saveAll}
+            disabled={!dirty || saving}
+            className={`rounded-[10px] px-4 py-1.5 text-[13px] font-semibold disabled:cursor-not-allowed ${
+              dirty ? "bg-white text-[#0a0a0a] hover:bg-white/90" : "bg-[#0a0a0a]/[0.06] text-[#0a0a0a]/35"
+            }`}
+          >
             {saving ? "Saving…" : "Save"}
-          </Button>
+          </button>
         </div>
       </div>
     </>
