@@ -385,6 +385,7 @@ model Shop {
   paymentEvents     PaymentEvent[]
   pushSubscriptions PushSubscription[]
   auditLogs         AuditLog[]
+  helpRequests      HelpRequest[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -417,6 +418,7 @@ model User {
   pushSubscriptions  PushSubscription[]
   adminOtps          AdminOtp[]
   auditLogs          AuditLog[]
+  helpRequests       HelpRequest[]
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
 }
@@ -2007,4 +2009,98 @@ model Location {
   updatedAt DateTime @updatedAt
 
   @@index([shopId, order])
+}
+
+// ---------------------------------------------------------------- help desk
+//
+// Added 14 October. What merchants send Synora from /help, and the patch
+// notes the Synora team publishes at /release-notes. Answered from the Synora
+// console (/synora), which only addresses in SYNORA_TEAM_EMAILS can open.
+// Purely additive: three new tables and two enums, nothing existing changes.
+
+/// A problem (ticket) or an idea (suggestion).
+enum HelpKind {
+  TICKET
+  SUGGESTION
+}
+
+/// One list for both kinds; lib/help.ts says which apply to which.
+/// Tickets: OPEN, IN_PROGRESS, WAITING, RESOLVED, CLOSED.
+/// Suggestions: OPEN (received), UNDER_REVIEW, PLANNED, SHIPPED, DECLINED.
+enum HelpStatus {
+  OPEN
+  IN_PROGRESS
+  WAITING
+  RESOLVED
+  CLOSED
+  UNDER_REVIEW
+  PLANNED
+  SHIPPED
+  DECLINED
+}
+
+model HelpRequest {
+  id      String     @id @default(cuid())
+  /// What people quote: "#1042".
+  number  Int        @unique @default(autoincrement())
+  kind    HelpKind
+  status  HelpStatus @default(OPEN)
+  /// The part of the product it is about ("Payments", "Domains"...).
+  topic   String     @default("")
+  subject String
+  body    String
+  /// Email the sender when the team replies or the status moves.
+  notify  Boolean    @default(true)
+
+  userId String
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Which of their shops it is about, when they have more than one. Kept if
+  /// the shop goes: the conversation is the person's, not the shop's.
+  shopId String?
+  shop   Shop?   @relation(fields: [shopId], references: [id], onDelete: SetNull)
+
+  messages HelpMessage[]
+
+  /// When the team last wrote, and when the sender last looked: together
+  /// they say whether there is a reply the sender has not read.
+  teamRepliedAt DateTime?
+  userSeenAt    DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, createdAt])
+  @@index([kind, status, updatedAt])
+  @@index([shopId])
+}
+
+/// One entry in a request's thread: a message from either side, or a status
+/// change (statusTo set, body optional).
+model HelpMessage {
+  id         String      @id @default(cuid())
+  requestId  String
+  request    HelpRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  fromTeam   Boolean     @default(false)
+  /// Who wrote it, as a name: the thread survives a team member leaving.
+  authorName String      @default("")
+  body       String      @default("")
+  /// The team chose to answer by email; the email's text is this body.
+  viaEmail   Boolean     @default(false)
+  statusTo   HelpStatus?
+  createdAt  DateTime    @default(now())
+
+  @@index([requestId, createdAt])
+}
+
+/// A published patch note. `changes` is [{ kind: "New"|"Improved"|"Fixed", text }].
+model ReleaseNote {
+  id          String   @id @default(cuid())
+  title       String
+  publishedOn DateTime @db.Date
+  changes     Json
+  authorName  String   @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([publishedOn])
 }

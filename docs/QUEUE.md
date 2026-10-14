@@ -7,6 +7,17 @@ purpose — this is the list Abdul works from, not a ticket tracker.
 
 ## Next up
 
+> **Help desk and Synora console (14 October).** `/docs`, `/help`,
+> `/release-notes` with a header switch and ⌘K search; tickets and suggestions
+> with history, threads and "email me"; the team console at `/synora` (tickets,
+> suggestions, patch notes). New tables in `20261107000000_help_desk`
+> (additive; also inserts the eight existing release notes). **Before it is
+> useful live:** set `SYNORA_TEAM_EMAILS` in Vercel production. Locally the
+> tables were added to the local database by hand (`prisma db execute`), not
+> through `migrate deploy`, because that database is nine migrations behind.
+> Test logins on the local database only: help-test-merchant@example.com and
+> help-test-team@example.com.
+
 > **Emails that fail now say so (14 October).** Resend's library returns
 > `{ error }` instead of throwing, and every sender ignored it, so a refused
 > email looked delivered. All sends now go through `deliver()` in

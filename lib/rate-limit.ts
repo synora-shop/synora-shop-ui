@@ -38,6 +38,10 @@ export const LIMITS = {
   login: { max: 8, windowMs: 15 * 60 * 1000, blockMs: 15 * 60 * 1000 },
   passwordReset: { max: 5, windowMs: 60 * 60 * 1000, blockMs: 60 * 60 * 1000 },
   signup: { max: 5, windowMs: 60 * 60 * 1000, blockMs: 60 * 60 * 1000 },
+  // The help desk (/help). Signed in, but each one emails the Synora team, so
+  // a loop must not be able to fill that inbox.
+  helpRequest: { max: 6, windowMs: 60 * 60 * 1000, blockMs: 60 * 60 * 1000 },
+  helpReply: { max: 20, windowMs: 60 * 60 * 1000, blockMs: 30 * 60 * 1000 },
   enquiry: { max: 10, windowMs: 60 * 60 * 1000, blockMs: 30 * 60 * 1000 },
   otp: { max: 5, windowMs: 15 * 60 * 1000, blockMs: 15 * 60 * 1000 },
   inviteAccept: { max: 10, windowMs: 60 * 60 * 1000, blockMs: 30 * 60 * 1000 },
@@ -192,6 +196,8 @@ const MESSAGES: Record<LimitName, (seconds: number) => string> = {
   login: (s) => `Too many sign-in attempts. Try again in ${humanise(s)}.`,
   passwordReset: (s) => `Too many reset requests. Try again in ${humanise(s)}.`,
   signup: (s) => `Too many sign-ups from here. Try again in ${humanise(s)}.`,
+  helpRequest: (s) => `You've sent a few already. Try again in ${humanise(s)}, or add to one you sent.`,
+  helpReply: (s) => `That's a lot of replies. Try again in ${humanise(s)}.`,
   enquiry: (s) => `You've sent a lot of enquiries. Try again in ${humanise(s)}.`,
   otp: (s) => `Too many codes requested. Try again in ${humanise(s)}.`,
   inviteAccept: (s) => `Too many attempts. Try again in ${humanise(s)}.`,

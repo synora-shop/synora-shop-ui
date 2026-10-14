@@ -92,9 +92,10 @@ export function PlatformFooter({ tone = "dark", ...rest }: { tone?: keyof typeof
               away through the mark above, and a merchant standing in a
               footer looking for help is not looking for our About page. */}
           <FooterGroup t={t} title="Help">
-            <FooterLink t={t} href="/documentation">Documentation</FooterLink>
+            <FooterLink t={t} href="/docs">Docs</FooterLink>
+            <FooterLink t={t} href="/help">Help</FooterLink>
             <FooterLink t={t} href="/release-notes">Release notes</FooterLink>
-            <FooterLink t={t} href="/documentation#known-issues">Known issues</FooterLink>
+            <FooterLink t={t} href="/help#known-issues">Known issues</FooterLink>
           </FooterGroup>
         </div>
       </div>

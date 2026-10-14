@@ -82,10 +82,24 @@ The marketing page and merchant sign-up. The front page was redrawn on
 14 October in white and Synora's five colours, made for Pakistan
 (`components/platform/*`, its motion in the "front page's motion" block of
 `app/globals.css`); it draws its own light header and footer, and the
-documentation (`/documentation`) and release notes (`/release-notes`) use the
-same light frame (`components/platform/light-page.tsx`). Release notes are
-written for merchants from `docs/QUEUE.md`; add an entry when a change reaches
-them. The account pages (sign in, sign up,
+three help pages share the same light frame
+(`components/platform/light-page.tsx`), switched between in the header (a
+tab bar on phones), with ⌘K search across all of them:
+
+- `/docs` — how each part works (`lib/docs-content.ts`; `/documentation`
+  forwards here).
+- `/help` — known issues, and for a signed-in merchant: report a problem
+  (ticket) or suggest an idea, their history, a reply thread per request
+  (`/help/[number]`) and a per-request "email me" switch.
+- `/release-notes` — patch notes, read from the `ReleaseNote` table.
+
+**Synora console** — `app/synora/*`
+For the Synora team only: the addresses in `SYNORA_TEAM_EMAILS` (comma
+separated, a Vercel setting; empty means nobody). Everyone else gets a 404.
+Tickets and suggestions with the sender's account details, replies in the
+ticket or by email with a status change, and the patch notes editor
+(`/synora/patch-notes`). Tables: `HelpRequest`, `HelpMessage`, `ReleaseNote`
+(migration `20261107000000_help_desk`, additive). The account pages (sign in, sign up,
 forgot, reset, verify, invite) wear the same look through `.auth-shell` —
 scoped, because their form pieces are shared with the admin panel.
 

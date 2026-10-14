@@ -207,6 +207,27 @@
   .lp-head, .lp-progress, .lp-roll { animation: none; }
 }
 
+/* The help desk's one text box (14 October): /help and the Synora console
+   (components/help, components/synora). Its own, because those pages are
+   neither the panel (.input belongs to .admin-shell's look) nor a shop. Height
+   and padding top/bottom are left to each field. */
+@layer components {
+  .desk-field {
+    width: 100%;
+    border-radius: 1rem;
+    border: 1px solid rgb(13 13 80 / 0.12);
+    background: #ffffff;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    font-size: 16px;
+    color: #0d0d50;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .desk-field::placeholder { color: rgb(13 13 80 / 0.32); }
+  .desk-field:focus { border-color: #6666ff; box-shadow: 0 0 0 4px rgb(102 102 255 / 0.15); }
+}
+
 /* The merchant account pages (app/merchant/layout.tsx), in the front page's
    look. Field, FormMessage and the .input box are shared with the admin
    panel, so these rules reach them only inside .auth-shell — the panel's own

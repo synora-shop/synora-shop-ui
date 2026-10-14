@@ -30,15 +30,19 @@ export const C = { iris: "#6666ff", lavender: "#b7b9ff", sky: "#c8e7ff", mint: "
  */
 const TICKS = ["Cash on delivery", "JazzCash", "Easypaisa", "Cards through PayFast", "Your own domain"];
 
-export function LightHeader({ signup, login }: { signup: string; login: string }) {
+export function LightHeader({ signup, login, middle, panel }: { signup: string; login: string; middle?: React.ReactNode; panel?: string }) {
   return (
     <header className="fixed inset-x-0 top-0 z-50 px-4 pt-3 sm:px-6 sm:pt-4">
-      <div className="lp-head relative mx-auto flex max-w-[60rem] items-center justify-between gap-4 overflow-hidden rounded-full border border-[#0d0d50]/[0.08] bg-white/85 py-3 pl-6 pr-2.5 shadow-[0_8px_30px_-12px_rgba(13,13,80,0.15)] backdrop-blur-md">
+      {/* With a middle of its own (the help pages' switch) the pill keeps its
+          width instead of tightening on scroll: the switch needs the room. */}
+      <div className={`${middle ? "max-w-[64rem]" : "lp-head max-w-[60rem]"} relative mx-auto flex items-center justify-between gap-4 overflow-hidden rounded-full border border-[#0d0d50]/[0.08] bg-white/85 py-3 pl-6 pr-2.5 shadow-[0_8px_30px_-12px_rgba(13,13,80,0.15)] backdrop-blur-md`}>
         <Link href="/" className="shrink-0 rounded text-[#0d0d50] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6666ff] focus-visible:ring-offset-4">
           <SynoraAppMark />
         </Link>
 
-        {/* The ticker. */}
+        {/* The ticker, unless the page puts something of its own there (the
+            docs, help and release notes put their switch). */}
+        {middle ?? (
         <div aria-hidden className="hidden h-8 items-center gap-2.5 rounded-full bg-[#f2f2ff] py-1 pl-1.5 pr-4 md:flex">
           <span className="rounded-full bg-[#b8efd6] px-2 py-0.5 text-[10.5px] font-bold text-[#0d0d50]">PK</span>
           <span className="h-[20px] overflow-hidden text-[12.5px] font-medium leading-[20px] text-[#0d0d50]/75">
@@ -51,15 +55,24 @@ export function LightHeader({ signup, login }: { signup: string; login: string }
             </span>
           </span>
         </div>
+        )}
 
         <nav className="flex shrink-0 items-center gap-1 text-sm">
-          <a href={login} className="rounded-full px-3 py-2 font-medium text-[#0d0d50]/70 transition-colors hover:bg-[#0d0d50]/[0.05] hover:text-[#0d0d50]">
+{panel ? (
+            <a href={panel} className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-[#0d0d50] py-2 pl-4 pr-3.5 font-semibold text-white transition-colors hover:bg-[#1a1a6e]">
+              Your panel <ArrowRight className="h-4 w-4" />
+            </a>
+          ) : (
+          <>
+                    <a href={login} className="rounded-full px-3 py-2 font-medium text-[#0d0d50]/70 transition-colors hover:bg-[#0d0d50]/[0.05] hover:text-[#0d0d50]">
             Log in
           </a>
           <a href={signup} className="group inline-flex items-center rounded-full bg-[#6666ff] py-2 pl-4 pr-4 font-semibold text-white shadow-[0_6px_20px_-6px_rgba(102,102,255,0.7)] transition-[padding] duration-300 hover:pr-3">
             Start free
             <ArrowRight className="ml-0 h-4 w-0 opacity-0 transition-all duration-300 group-hover:ml-1.5 group-hover:w-4 group-hover:opacity-100" />
           </a>
+          </>
+          )}
         </nav>
 
         {/* How far down the page you are. */}

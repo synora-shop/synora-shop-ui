@@ -2,19 +2,40 @@ import type { ReactNode } from "react";
 import { appUrl } from "@/lib/shop-context";
 import { LightHeader } from "@/components/platform/lp-hero";
 import { PlatformFooter } from "@/components/platform/platform-footer";
+import { SectionSwitch, SectionTabBar, type HelpSection } from "@/components/platform/help-switch";
+import { HelpSearch, type SearchItem } from "@/components/platform/help-search";
+import { docsSearchItems, suggestedSearchItems } from "@/lib/docs-content";
 
 /**
- * The front page's frame for the site's other pages (documentation, release
- * notes): its light header, a white page, the light footer. `data-lp-light`
- * is what makes the shared dark header and footer stand aside
- * (app/globals.css), exactly as on the front page.
+ * The front page's frame for the site's other pages: its light header, a
+ * white page, the light footer. `data-lp-light` is what makes the shared dark
+ * header and footer stand aside (app/globals.css), exactly as on the front
+ * page.
+ *
+ * Given a `section`, it is one of the three help pages (docs, help, release
+ * notes): the header's middle becomes the switch between them, phones get the
+ * tab bar along the bottom, and the search opens over any of them. `search`
+ * adds entries of the page's own (the release notes add theirs).
+ * `signedIn` (only pages that already know who is asking pass it) swaps
+ * "Log in" and "Start free" for the way back to the panel.
  */
-export function LightPage({ children }: { children: ReactNode }) {
+export function LightPage({ children, section, search = [], signedIn = false }: { children: ReactNode; section?: HelpSection; search?: SearchItem[]; signedIn?: boolean }) {
   return (
-    <div data-lp-light className="bg-white text-[#0d0d50]">
-      <LightHeader signup={appUrl("/merchant/signup")} login={appUrl("/merchant/login")} />
+    <div data-lp-light className={`bg-white text-[#0d0d50] ${section ? "pb-24 md:pb-0" : ""}`}>
+      <LightHeader
+        signup={appUrl("/merchant/signup")}
+        login={appUrl("/merchant/login")}
+        middle={section ? <SectionSwitch active={section} /> : undefined}
+        panel={signedIn ? appUrl("/admin") : undefined}
+      />
       {children}
       <PlatformFooter tone="light" />
+      {section && (
+        <>
+          <SectionTabBar active={section} />
+          <HelpSearch items={[...docsSearchItems(), ...search]} suggested={suggestedSearchItems()} />
+        </>
+      )}
     </div>
   );
 }

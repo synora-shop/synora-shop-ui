@@ -255,3 +255,76 @@ export async function sendStaffInviteEmail(
       `If you weren't expecting this, ignore it, nothing happens until you accept.`,
   });
 }
+
+// ---------------------------------------------------------------- help desk
+//
+// /help and the Synora console (14 October). Every one throws through
+// deliver() on a refused send; the callers decide what the person is told.
+
+type HelpMailRef = { number: number; kind: "TICKET" | "SUGGESTION"; subject: string };
+const helpNoun = (k: HelpMailRef["kind"]) => (k === "TICKET" ? "ticket" : "suggestion");
+
+/** "We have it": to the person who sent it. */
+export async function sendHelpReceivedEmail(to: string, r: HelpMailRef) {
+  const link = `${platformUrl()}/help/${r.number}`;
+  if (!resend) {
+    console.log(`[email] Resend not configured, help received #${r.number} for ${to}:\n${link}`);
+    return;
+  }
+  await deliver({
+    from: FROM,
+    to,
+    subject: `We have your ${helpNoun(r.kind)} #${r.number}: ${r.subject}`,
+    text:
+      `Thanks, your ${helpNoun(r.kind)} reached the Synora team.\n\n` +
+      `#${r.number}: ${r.subject}\n\nFollow it, or add to it, here:\n${link}\n\n` +
+      `You can turn update emails off on that page.`,
+  });
+}
+
+/**
+ * A reply or a status change, to the sender. Only sent when they left
+ * "email me about this" on; the caller checks.
+ */
+export async function sendHelpUpdateEmail(
+  to: string,
+  r: HelpMailRef & { status?: string; reply?: string; from?: string }
+) {
+  const link = `${platformUrl()}/help/${r.number}`;
+  if (!resend) {
+    console.log(`[email] Resend not configured, help update #${r.number} for ${to} (${r.status ?? "reply"}):\n${link}`);
+    return;
+  }
+  const lines = [
+    r.status ? `Your ${helpNoun(r.kind)} is now: ${r.status}.` : "",
+    r.reply ? `${r.from ?? "The Synora team"} wrote:\n\n${r.reply}` : "",
+  ].filter(Boolean);
+  await deliver({
+    from: FROM,
+    to,
+    subject: `Re: #${r.number} ${r.subject}`,
+    text:
+      `${lines.join("\n\n")}\n\nSee the whole conversation, or reply:\n${link}\n\n` +
+      `You get these because you asked to be told about #${r.number}. Turn them off on that page.`,
+  });
+}
+
+/** A new request or reply, to the Synora team. */
+export async function sendHelpTeamAlertEmail(
+  to: string[],
+  r: HelpMailRef & { fromName: string; fromEmail: string; body: string; isReply?: boolean }
+) {
+  if (to.length === 0) return;
+  const link = `${platformUrl()}/synora/requests/${r.number}`;
+  if (!resend) {
+    console.log(`[email] Resend not configured, team alert #${r.number}:\n${link}`);
+    return;
+  }
+  await deliver({
+    from: FROM,
+    to,
+    replyTo: r.fromEmail,
+    subject: `${r.isReply ? "Reply on" : `New ${helpNoun(r.kind)}`} #${r.number}: ${r.subject}`,
+    text: `${r.fromName} <${r.fromEmail}>\n\n${r.body}\n\nOpen it in the console:\n${link}`,
+  });
+}
