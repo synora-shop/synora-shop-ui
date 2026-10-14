@@ -4,7 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useSyncExternalStore } from "react";
 import { Download, FileSpreadsheet, LayoutGrid, List, Plus, Trash2, Upload, X } from "lucide-react";
-import { Pill, pkr, td, th } from "@/components/new-admin/ui";
+import { Pill, pkr, td } from "@/components/new-admin/ui";
+import { PlainTh, SortNote, SortTh, thead, useSort } from "@/components/new-admin/sort";
 import { useToast } from "@/components/new-admin/shell";
 import type { Product } from "@/lib/new-admin/sample";
 
@@ -45,6 +46,9 @@ export function ProductsBoard({ products: start, actions = true }: { products: P
     const v = view === "All" || (view === "Active" && p.status === "Active") || (view === "Drafts" && p.status === "Draft") || (view === "Running low" && p.stock !== null && p.stock > 0 && p.stock < 10) || (view === "Sold out" && p.stock === 0);
     return v && (!q || p.name.toLowerCase().includes(q.toLowerCase()));
   });
+  const { sorted, sort, click, reset } = useSort(shown, {
+    product: (p) => p.name, status: (p) => p.status, stock: (p) => p.stock ?? -1, collection: (p) => p.collection, price: (p) => p.price,
+  });
   const apply = (fn: (p: Product) => Product | null, msg: string) => {
     const before = rows;
     const ids = picked;
@@ -72,6 +76,19 @@ export function ProductsBoard({ products: start, actions = true }: { products: P
             ))}
           </div>
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search products" className="h-9 flex-1 rounded-[10px] bg-[#f5f5f5] px-3 text-[13.5px] outline-none placeholder:text-[#0a0a0a]/40 sm:ml-2" />
+          <SortNote sort={sort} reset={reset} labels={{ product: "Name", status: "Status", stock: "Stock", collection: "Collection", price: "Price" }} numeric={["stock", "price"]} />
+          {tiles && (
+            <select aria-label="Sort tiles" value={sort ? `${sort.key}` : ""} onChange={(e) => e.target.value ? click(e.target.value) : reset()} className="h-9 rounded-[10px] bg-[#f5f5f5] px-2.5 text-[13px] font-semibold outline-none">
+              <option value="">Sort: as added</option>
+              <option value="product">Name</option>
+              <option value="price">Price</option>
+              <option value="stock">Stock</option>
+              <option value="collection">Collection</option>
+            </select>
+          )}
+          {tiles && sort && (
+            <button type="button" onClick={() => click(sort.key)} aria-label={sort.desc ? "High to low; click for low to high" : "Low to high; click for high to low"} className="grid h-9 w-9 place-items-center rounded-[10px] bg-[#f5f5f5] text-[15px] font-semibold">{sort.desc ? "↓" : "↑"}</button>
+          )}
           <div className="flex rounded-[10px] bg-[#f0f0f0] p-0.5">
             <button type="button" aria-label="Rows" aria-pressed={!tiles} onClick={() => setTiles(false)} className={`grid h-8 w-8 place-items-center rounded-lg ${!tiles ? "bg-white shadow-sm" : "text-[#0a0a0a]/45"}`}><List className="h-4 w-4" /></button>
             <button type="button" aria-label="Tiles" aria-pressed={tiles} onClick={() => setTiles(true)} className={`grid h-8 w-8 place-items-center rounded-lg ${tiles ? "bg-white shadow-sm" : "text-[#0a0a0a]/45"}`}><LayoutGrid className="h-4 w-4" /></button>
@@ -80,7 +97,7 @@ export function ProductsBoard({ products: start, actions = true }: { products: P
 
         {tiles ? (
           <div className="grid grid-cols-2 gap-3 p-3 sm:grid-cols-3 lg:grid-cols-4">
-            {shown.map((p) => (
+            {sorted.map((p) => (
               <article key={p.slug} className={`group relative overflow-hidden rounded-xl ring-1 ${picked.includes(p.slug) ? "ring-2 ring-[#0a0a0a]" : "ring-[#0a0a0a]/[0.07]"}`}>
                 <input type="checkbox" aria-label={`Select ${p.name}`} checked={picked.includes(p.slug)} onChange={() => toggle(p.slug)} className="absolute left-2.5 top-2.5 z-10 h-4 w-4 accent-[#0a0a0a]" />
                 <Link href={`/new-admin/products/${p.slug}`}>
@@ -100,14 +117,18 @@ export function ProductsBoard({ products: start, actions = true }: { products: P
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[720px]">
-              <thead className="bg-[#fafafa]">
+              <thead className={thead}>
                 <tr>
-                  <th className={`${th} w-10`}><input type="checkbox" aria-label="Select all" checked={shown.length > 0 && shown.every((p) => picked.includes(p.slug))} onChange={(e) => setPicked(e.target.checked ? shown.map((p) => p.slug) : [])} className="h-4 w-4 accent-[#0a0a0a]" /></th>
-                  <th className={th}>Product</th><th className={th}>Status</th><th className={th}>Stock</th><th className={th}>Collection</th><th className={`${th} text-right`}>Price</th>
+                  <PlainTh className="w-10"><input type="checkbox" aria-label="Select all" checked={shown.length > 0 && shown.every((p) => picked.includes(p.slug))} onChange={(e) => setPicked(e.target.checked ? shown.map((p) => p.slug) : [])} className="h-4 w-4 accent-white" /></PlainTh>
+                  <SortTh k="product" label="Product" sort={sort} onSort={click} />
+                  <SortTh k="status" label="Status" sort={sort} onSort={click} />
+                  <SortTh k="stock" label="Stock" sort={sort} onSort={click} />
+                  <SortTh k="collection" label="Collection" sort={sort} onSort={click} />
+                  <SortTh k="price" label="Price" sort={sort} onSort={click} align="right" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#0a0a0a]/[0.06]">
-                {shown.map((p) => (
+                {sorted.map((p) => (
                   <tr key={p.slug} className={picked.includes(p.slug) ? "bg-[#f5f5ff]" : "hover:bg-[#fafafa]"}>
                     <td className={td}><input type="checkbox" aria-label={`Select ${p.name}`} checked={picked.includes(p.slug)} onChange={() => toggle(p.slug)} className="h-4 w-4 accent-[#0a0a0a]" /></td>
                     <td className={td}>

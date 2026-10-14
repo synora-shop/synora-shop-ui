@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 import { ArrowUpCircle, Copy, Eye, MoreHorizontal, Paintbrush, PenLine, Plus, Trash2, Upload } from "lucide-react";
 import { Pill } from "@/components/new-admin/ui";
@@ -59,7 +60,7 @@ export function Themes() {
           <div className="mt-2 flex flex-wrap gap-2">
             <button type="button" onClick={() => toast("Opening the customiser")} className="inline-flex h-10 items-center gap-2 rounded-[10px] bg-[#0a0a0a] px-4 text-[13.5px] font-semibold text-white"><Paintbrush className="h-4 w-4" /> Customise</button>
             <button type="button" onClick={() => toast("Opening your store")} className="inline-flex h-10 items-center gap-2 rounded-[10px] px-4 text-[13.5px] font-semibold ring-1 ring-[#0a0a0a]/12"><Eye className="h-4 w-4" /> View</button>
-            <button type="button" onClick={() => toast("Colours, type and shapes")} className="inline-flex h-10 items-center gap-2 rounded-[10px] px-4 text-[13.5px] font-semibold ring-1 ring-[#0a0a0a]/12">Colours and type</button>
+            <Link href="/new-admin/online-store/look#type" className="inline-flex h-10 items-center gap-2 rounded-[10px] px-4 text-[13.5px] font-semibold ring-1 ring-[#0a0a0a]/12 hover:bg-[#f5f5f5]">Colours and type</Link>
           </div>
         </div>
       </section>

@@ -217,6 +217,6 @@ const WORDS: Record<string, string> = {
 };
 
 export default function SettingsPage() {
-  const sections: OpenSection[] = SETTINGS.map((s) => ({ id: s.slug, label: s.label, tone: s.tone, icon: s.icon, blurb: s.blurb, body: BODY[s.slug], words: WORDS[s.slug] }));
+  const sections: OpenSection[] = SETTINGS.map((s) => ({ id: s.slug, label: s.label, tone: s.tone, icon: s.icon, blurb: s.blurb, group: s.group, body: BODY[s.slug], words: WORDS[s.slug] }));
   return <OpenSections title="Settings" sections={sections} searchable />;
 }

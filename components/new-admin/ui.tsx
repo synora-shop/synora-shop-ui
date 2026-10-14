@@ -82,52 +82,59 @@ export function Card({ title, action, children, pad = true, className = "" }: { 
   );
 }
 
-/** Numbers across the top of a list: the four that matter for that screen. */
+/**
+ * Numbers across the top of a list: the four that matter for that screen.
+ * The first is the one to read first, so it is the black one.
+ */
 export function StatStrip({ stats }: { stats: { label: string; value: string; delta?: string; down?: boolean; spark?: number[] }[] }) {
   return (
-    <div className="grid grid-cols-2 overflow-hidden rounded-2xl bg-white ring-1 ring-[#0a0a0a]/[0.07] lg:grid-cols-4">
-      {stats.map((s, i) => (
-        <div key={s.label} className={`flex items-end justify-between gap-3 px-5 py-4 ${i > 0 ? "border-[#0a0a0a]/[0.06] lg:border-l" : ""} ${i % 2 === 1 ? "border-l" : ""} ${i > 1 ? "border-t lg:border-t-0" : ""}`}>
-          <div className="min-w-0">
-            <p className="text-[12.5px] font-medium text-[#0a0a0a]/55">{s.label}</p>
-            <p className="mt-1 text-[20px] font-semibold tracking-[-0.02em] text-[#0a0a0a]">{s.value}</p>
-            {s.delta && <p className={`mt-0.5 text-[12px] font-semibold ${s.down ? "text-[#c2410c]" : "text-[#1d7a52]"}`}>{s.delta}</p>}
+    <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+      {stats.map((s, i) => {
+        const lead = i === 0;
+        return (
+          <div key={s.label} className={`flex items-end justify-between gap-3 rounded-2xl px-5 py-4 ${lead ? "bg-[#0a0a0a] text-white" : "bg-white ring-1 ring-[#0a0a0a]/[0.07]"}`}>
+            <div className="min-w-0">
+              <p className={`text-[12.5px] font-medium ${lead ? "text-white/55" : "text-[#0a0a0a]/55"}`}>{s.label}</p>
+              <p className="mt-1 truncate text-[20px] font-semibold tracking-[-0.02em]">{s.value}</p>
+              {s.delta && <p className={`mt-0.5 text-[12px] font-semibold ${s.down ? (lead ? "text-[#ffb4a1]" : "text-[#c2410c]") : lead ? "text-[#b8efd6]" : "text-[#1d7a52]"}`}>{s.delta}</p>}
+            </div>
+            {s.spark && <Spark points={s.spark} down={s.down} light={lead} />}
           </div>
-          {s.spark && <Spark points={s.spark} down={s.down} />}
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
 
-export function Spark({ points, down = false, w = 84, h = 32 }: { points: number[]; down?: boolean; w?: number; h?: number }) {
+export function Spark({ points, down = false, light = false, w = 84, h = 32 }: { points: number[]; down?: boolean; light?: boolean; w?: number; h?: number }) {
   const max = Math.max(...points), min = Math.min(...points);
   const d = points.map((p, i) => `${(i / (points.length - 1)) * w},${h - ((p - min) / (max - min || 1)) * (h - 4) - 2}`).join(" ");
   return (
     <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden className="shrink-0">
-      <polyline points={d} fill="none" stroke={down ? "#c2410c" : "#0a0a0a"} strokeWidth="1.75" strokeLinejoin="round" strokeLinecap="round" />
+      <polyline points={d} fill="none" stroke={down ? (light ? "#ffb4a1" : "#c2410c") : light ? "#b7b9ff" : "#0a0a0a"} strokeWidth="1.75" strokeLinejoin="round" strokeLinecap="round" />
     </svg>
   );
 }
 
 /** A larger chart: an area with its line, and the days along the bottom. */
-export function AreaChart({ points, height = 180, label }: { points: number[]; height?: number; label: string }) {
-  const w = 600, h = height, max = Math.max(...points) * 1.1;
-  const xy = points.map((p, i) => [(i / (points.length - 1)) * w, h - (p / max) * h] as const);
-  const line = xy.map(([x, y]) => `${x},${y}`).join(" ");
+export function AreaChart({ points, height = 180, label, dark = false, compare }: { points: number[]; height?: number; label: string; dark?: boolean; compare?: number[] }) {
+  const w = 600, h = height, max = Math.max(...points, ...(compare ?? [])) * 1.1;
+  const toLine = (pts: number[]) => pts.map((p, i) => `${(i / (pts.length - 1)) * w},${h - (p / max) * h}`).join(" ");
+  const line = toLine(points);
   return (
     <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" role="img" aria-label={label} className="block h-[180px] w-full">
       <defs>
-        <linearGradient id="na-area" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#6666ff" stopOpacity="0.18" />
-          <stop offset="100%" stopColor="#6666ff" stopOpacity="0" />
+        <linearGradient id={dark ? "na-area-d" : "na-area"} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={dark ? "#b7b9ff" : "#6666ff"} stopOpacity={dark ? 0.28 : 0.18} />
+          <stop offset="100%" stopColor={dark ? "#b7b9ff" : "#6666ff"} stopOpacity="0" />
         </linearGradient>
       </defs>
       {[0.25, 0.5, 0.75].map((f) => (
-        <line key={f} x1="0" x2={w} y1={h * f} y2={h * f} stroke="#0a0a0a" strokeOpacity="0.06" />
+        <line key={f} x1="0" x2={w} y1={h * f} y2={h * f} stroke={dark ? "#ffffff" : "#0a0a0a"} strokeOpacity={dark ? 0.08 : 0.06} />
       ))}
-      <polygon points={`0,${h} ${line} ${w},${h}`} fill="url(#na-area)" />
-      <polyline points={line} fill="none" stroke="#6666ff" strokeWidth="2" vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
+      {compare && <polyline points={toLine(compare)} fill="none" stroke={dark ? "#ffffff" : "#0a0a0a"} strokeOpacity="0.35" strokeWidth="1.5" strokeDasharray="4 4" vectorEffect="non-scaling-stroke" />}
+      <polygon points={`0,${h} ${line} ${w},${h}`} fill={dark ? "url(#na-area-d)" : "url(#na-area)"} />
+      <polyline points={line} fill="none" stroke={dark ? "#b7b9ff" : "#6666ff"} strokeWidth="2" vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
     </svg>
   );
 }

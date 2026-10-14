@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Download, NotebookText, PackageCheck, PhoneCall, Printer, X } from "lucide-react";
-import { Pill, pkr, td, th } from "@/components/new-admin/ui";
+import { Pill, pkr, td } from "@/components/new-admin/ui";
+import { PlainTh, SortNote, SortTh, thead, useSort } from "@/components/new-admin/sort";
 import { useToast } from "@/components/new-admin/shell";
 import { STAGES, type Order, type Stage } from "@/lib/new-admin/sample";
 
@@ -26,6 +27,10 @@ export function OrdersBoard({ orders: start }: { orders: Order[] }) {
     () => orders.filter((o) => (stage === "All" || o.stage === stage) && (!q || `${o.id} ${o.customer} ${o.city}`.toLowerCase().includes(q.toLowerCase()))),
     [orders, stage, q]
   );
+  const { sorted, sort, click, reset } = useSort(shown, {
+    order: (o) => o.id, date: (o) => o.id, customer: (o) => o.customer, total: (o) => o.total,
+    payment: (o) => (o.paid ? 1 : 0), stage: (o) => STAGES.indexOf(o.stage),
+  });
   const count = (s: Stage) => orders.filter((o) => o.stage === s).length;
   const all = shown.length > 0 && shown.every((o) => picked.includes(o.id));
 
@@ -48,11 +53,12 @@ export function OrdersBoard({ orders: start }: { orders: Order[] }) {
               key={s}
               type="button"
               onClick={() => setStage(on ? "All" : s)}
-              className={`relative rounded-2xl px-4 py-3 text-left transition-all ${on ? "bg-[#0a0a0a] text-white" : "bg-white ring-1 ring-[#0a0a0a]/[0.07] hover:ring-[#0a0a0a]/20"}`}
+              className={`relative overflow-hidden rounded-2xl px-4 py-3 text-left transition-all ${on ? "bg-[#0a0a0a] text-white" : "bg-white ring-1 ring-[#0a0a0a]/[0.07] hover:ring-[#0a0a0a]/20"}`}
             >
               <span className={`block text-[12px] font-medium ${on ? "text-white/60" : "text-[#0a0a0a]/50"}`}>{i < 5 ? `${i + 1}. ` : ""}{s}</span>
               <span className="mt-0.5 block text-[22px] font-semibold tabular-nums">{count(s)}</span>
               {s === "Pending" && count(s) > 0 && !on && <span className="absolute right-3 top-3 h-2 w-2 rounded-full bg-[#f2a33a]" />}
+              <span aria-hidden className={`absolute inset-x-4 bottom-0 h-[3px] rounded-t-full ${{ Pending: "bg-[#f2a33a]", Confirmed: "bg-[#6666ff]", Packed: "bg-[#b7b9ff]", Shipped: "bg-[#8cc8f5]", Delivered: "bg-[#6fd6a8]", Cancelled: "bg-[#0a0a0a]/15" }[s]}`} />
             </button>
           );
         })}
@@ -66,6 +72,7 @@ export function OrdersBoard({ orders: start }: { orders: Order[] }) {
             ))}
           </div>
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by number, customer or city" className="h-9 flex-1 rounded-[10px] bg-[#f5f5f5] px-3 text-[13.5px] outline-none placeholder:text-[#0a0a0a]/40 focus:ring-2 focus:ring-[#0a0a0a]/15 sm:ml-2" />
+          <SortNote sort={sort} reset={reset} labels={{ order: "Order", date: "Date", customer: "Customer", total: "Total", payment: "Payment", stage: "Stage" }} numeric={["order", "date", "total", "payment", "stage"]} />
           {stage !== "All" && (
             <button type="button" onClick={() => setStage("All")} className="inline-flex items-center gap-1 rounded-full bg-[#0a0a0a] px-3 py-1.5 text-[12.5px] font-semibold text-white">
               {stage} <X className="h-3.5 w-3.5" />
@@ -74,21 +81,21 @@ export function OrdersBoard({ orders: start }: { orders: Order[] }) {
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[760px]">
-            <thead className="bg-[#fafafa]">
+            <thead className={thead}>
               <tr>
-                <th className={`${th} w-10`}>
-                  <input type="checkbox" aria-label="Select all" checked={all} onChange={() => setPicked(all ? [] : shown.map((o) => o.id))} className="h-4 w-4 accent-[#0a0a0a]" />
-                </th>
-                <th className={th}>Order</th>
-                <th className={th}>Date</th>
-                <th className={th}>Customer</th>
-                <th className={`${th} text-right`}>Total</th>
-                <th className={th}>Payment</th>
-                <th className={th}>Stage</th>
+                <PlainTh className="w-10">
+                  <input type="checkbox" aria-label="Select all" checked={all} onChange={() => setPicked(all ? [] : shown.map((o) => o.id))} className="h-4 w-4 accent-white" />
+                </PlainTh>
+                <SortTh k="order" label="Order" sort={sort} onSort={click} />
+                <SortTh k="date" label="Date" sort={sort} onSort={click} />
+                <SortTh k="customer" label="Customer" sort={sort} onSort={click} />
+                <SortTh k="total" label="Total" sort={sort} onSort={click} align="right" />
+                <SortTh k="payment" label="Payment" sort={sort} onSort={click} />
+                <SortTh k="stage" label="Stage" sort={sort} onSort={click} />
               </tr>
             </thead>
             <tbody className="divide-y divide-[#0a0a0a]/[0.06]">
-              {shown.map((o) => {
+              {sorted.map((o) => {
                 const on = picked.includes(o.id);
                 return (
                   <tr key={o.id} className={on ? "bg-[#f5f5ff]" : "hover:bg-[#fafafa]"}>

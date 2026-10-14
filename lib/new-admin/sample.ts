@@ -63,21 +63,21 @@ export const NAV: NavGroup[] = [
 ];
 
 /** Settings: one page, every section open; this is its index. */
-export const SETTINGS: { slug: string; label: string; icon: string; tone: Tone; blurb: string }[] = [
-  { slug: "general", label: "Store details", icon: "store", tone: "iris", blurb: "Name, logo, address, how customers reach you, and the units everything is in" },
-  { slug: "plan", label: "Plan and billing", icon: "plan", tone: "lavender", blurb: "Your plan, how you pay Synora, and your invoices" },
-  { slug: "users", label: "Users and permissions", icon: "users", tone: "sky", blurb: "Who can work on this store, and what they can do" },
-  { slug: "payments", label: "Payments", icon: "payments", tone: "mint", blurb: "Cash on delivery, wallets, cards and bank transfer" },
-  { slug: "checkout", label: "Checkout", icon: "checkout", tone: "iris", blurb: "What customers fill in, and what happens after" },
-  { slug: "customer-accounts", label: "Customer accounts", icon: "customers", tone: "sky", blurb: "How customers sign in to your store" },
-  { slug: "shipping", label: "Shipping and delivery", icon: "shipping", tone: "mint", blurb: "Where you deliver, how fast, and for how much" },
-  { slug: "domains", label: "Domains", icon: "domains", tone: "iris", blurb: "Your free address and your own domain" },
-  { slug: "notifications", label: "Notifications", icon: "bell", tone: "lavender", blurb: "Emails your store sends, and alerts on your phone" },
-  { slug: "custom-data", label: "Custom data", icon: "data", tone: "sky", blurb: "Which things can carry extra fields" },
-  { slug: "privacy", label: "Customer privacy", icon: "shield", tone: "mint", blurb: "Cookie banner, countries, and privacy choices" },
-  { slug: "policies", label: "Policies", icon: "policy", tone: "lavender", blurb: "Refunds, privacy, terms and shipping, linked from checkout" },
-  { slug: "store-status", label: "Store status", icon: "power", tone: "ink", blurb: "Pause the store, change what it sells, or close it" },
-  { slug: "account", label: "Your account", icon: "security", tone: "ink", blurb: "Your profile, password and signed-in devices" },
+export const SETTINGS: { slug: string; label: string; icon: string; tone: Tone; blurb: string; group: string }[] = [
+  { group: "Your store", slug: "general", label: "Store details", icon: "store", tone: "iris", blurb: "Name, logo, address, how customers reach you, and the units everything is in" },
+  { group: "Your store", slug: "plan", label: "Plan and billing", icon: "plan", tone: "lavender", blurb: "Your plan, how you pay Synora, and your invoices" },
+  { group: "Your store", slug: "users", label: "Users and permissions", icon: "users", tone: "sky", blurb: "Who can work on this store, and what they can do" },
+  { group: "Your store", slug: "domains", label: "Domains", icon: "domains", tone: "mint", blurb: "Your free address and your own domain" },
+  { group: "Selling", slug: "payments", label: "Payments", icon: "payments", tone: "mint", blurb: "Cash on delivery, wallets, cards and bank transfer" },
+  { group: "Selling", slug: "checkout", label: "Checkout", icon: "checkout", tone: "iris", blurb: "What customers fill in, and what happens after" },
+  { group: "Selling", slug: "shipping", label: "Shipping and delivery", icon: "shipping", tone: "sky", blurb: "Where you deliver, how fast, and for how much" },
+  { group: "Selling", slug: "notifications", label: "Notifications", icon: "bell", tone: "lavender", blurb: "Emails your store sends, and alerts on your phone" },
+  { group: "Customers", slug: "customer-accounts", label: "Customer accounts", icon: "customers", tone: "sky", blurb: "How customers sign in to your store" },
+  { group: "Customers", slug: "privacy", label: "Customer privacy", icon: "shield", tone: "mint", blurb: "Cookie banner, countries, and privacy choices" },
+  { group: "Customers", slug: "policies", label: "Policies", icon: "policy", tone: "lavender", blurb: "Refunds, privacy, terms and shipping, linked from checkout" },
+  { group: "Customers", slug: "custom-data", label: "Custom data", icon: "data", tone: "iris", blurb: "Which things can carry extra fields" },
+  { group: "You", slug: "store-status", label: "Store status", icon: "power", tone: "ink", blurb: "Pause the store, change what it sells, or close it" },
+  { group: "You", slug: "account", label: "Your account", icon: "security", tone: "ink", blurb: "Your profile, password and signed-in devices" },
 ];
 
 export const SHOP = { name: "Zohra Lawn", address: "zohra.app.synoradigitals.com", initials: "ZL", owner: "Ayesha Khan", email: "ayesha@zohralawn.pk" };

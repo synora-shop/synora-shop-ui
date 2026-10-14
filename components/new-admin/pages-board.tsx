@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { Paintbrush, Plus, X } from "lucide-react";
-import { Pill, td, th } from "@/components/new-admin/ui";
+import { Pill, td } from "@/components/new-admin/ui";
+import { PlainTh, SortNote, SortTh, thead, useSort } from "@/components/new-admin/sort";
 import { useToast } from "@/components/new-admin/shell";
 import { PAGES_LIST } from "@/lib/new-admin/sample";
 
@@ -14,6 +15,7 @@ export function PagesBoard() {
   const [tab, setTab] = useState("All");
   const [picked, setPicked] = useState<string[]>([]);
   const shown = rows.filter((p) => tab === "All" || (tab === "Policies" ? POLICY.test(p.title) : p.status === (tab === "Drafts" ? "Draft" : "Published")));
+  const { sorted, sort, click, reset } = useSort(shown, { title: (p) => p.title, path: (p) => p.path, sections: (p) => p.sections, status: (p) => p.status });
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -24,13 +26,14 @@ export function PagesBoard() {
             </button>
           ))}
         </div>
+        <span className="ml-auto"><SortNote sort={sort} reset={reset} labels={{ title: "Page", path: "Address", sections: "Sections", status: "Status" }} numeric={["sections"]} /></span>
         <span className="inline-flex h-9 items-center gap-1.5 rounded-[10px] bg-[#0a0a0a] px-3.5 text-[13.5px] font-semibold text-white"><Plus className="h-4 w-4" /> Add page</span>
       </div>
       <section className="overflow-x-auto rounded-2xl bg-white ring-1 ring-[#0a0a0a]/[0.07]">
         <table className="w-full min-w-[640px]">
-          <thead className="bg-[#fafafa]"><tr><th className={`${th} w-10`} /><th className={th}>Page</th><th className={th}>Address</th><th className={th}>Sections</th><th className={th}>Status</th><th className={th} /></tr></thead>
+          <thead className={thead}><tr><PlainTh className="w-10" /><SortTh k="title" label="Page" sort={sort} onSort={click} /><SortTh k="path" label="Address" sort={sort} onSort={click} /><SortTh k="sections" label="Sections" sort={sort} onSort={click} /><SortTh k="status" label="Status" sort={sort} onSort={click} /><PlainTh /></tr></thead>
           <tbody className="divide-y divide-[#0a0a0a]/[0.06]">
-            {shown.map((p) => (
+            {sorted.map((p) => (
               <tr key={p.path} className={picked.includes(p.path) ? "bg-[#f5f5ff]" : "hover:bg-[#fafafa]"}>
                 <td className={td}><input type="checkbox" aria-label={`Select ${p.title}`} checked={picked.includes(p.path)} onChange={() => setPicked(picked.includes(p.path) ? picked.filter((x) => x !== p.path) : [...picked, p.path])} className="h-4 w-4 accent-[#0a0a0a]" /></td>
                 <td className={td}><span className="block font-medium">{p.title}</span><span className="text-[12.5px] text-[#0a0a0a]/50">Edited {p.edited}</span></td>

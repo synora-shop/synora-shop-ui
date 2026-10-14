@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ChevronRight } from "lucide-react";
 import { ICONS, TONE } from "@/components/new-admin/ui";
 import type { Tone } from "@/lib/new-admin/sample";
@@ -74,21 +74,29 @@ export function Box({ title, children }: { title?: string; children: ReactNode }
 }
 
 /**
- * The index beside a long page of open sections. Lights the section being
- * read, by its own colour; a click scrolls there. On a phone it is a strip.
+ * The index beside a long page of open sections. The section being read is
+ * lit in black with its own colour; a click scrolls there and lights at once.
+ * A long index scrolls inside itself and keeps the lit entry in view, so
+ * nothing falls off a short laptop screen. On a phone it is a strip.
  */
-export function SectionIndex({ items, title }: { items: { id: string; label: string; tone: Tone; icon: string }[]; title: string }) {
+export function SectionIndex({ items, title }: { items: { id: string; label: string; tone: Tone; icon: string; group?: string }[]; title: string }) {
   const [active, setActive] = useState(items[0]?.id);
+  const [progress, setProgress] = useState(0);
+  const list = useRef<HTMLUListElement>(null);
+  const hold = useRef(0);
   useEffect(() => {
     let frame = 0;
     const measure = () => {
       frame = 0;
+      const doc = document.documentElement;
+      setProgress(Math.min(1, window.scrollY / Math.max(1, doc.scrollHeight - window.innerHeight)));
+      if (Date.now() < hold.current) return;
       let cur = items[0]?.id;
       for (const { id } of items) {
         const el = document.getElementById(id);
-        if (el && el.getBoundingClientRect().top <= 140) cur = id;
+        if (el && !el.hidden && el.getBoundingClientRect().top <= 150) cur = id;
       }
-      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) cur = items[items.length - 1]?.id;
+      if (window.innerHeight + window.scrollY >= doc.scrollHeight - 4) cur = [...items].reverse().find(({ id }) => !document.getElementById(id)?.hidden)?.id ?? cur;
       setActive(cur);
     };
     const on = () => {
@@ -96,22 +104,58 @@ export function SectionIndex({ items, title }: { items: { id: string; label: str
     };
     measure();
     window.addEventListener("scroll", on, { passive: true });
+    window.addEventListener("resize", on);
     return () => {
       window.removeEventListener("scroll", on);
+      window.removeEventListener("resize", on);
       cancelAnimationFrame(frame);
     };
   }, [items]);
+  // Keep the lit entry visible inside the index, without moving the page.
+  useEffect(() => {
+    const ul = list.current;
+    const li = ul?.querySelector<HTMLElement>(`[data-id="${active}"]`);
+    if (!ul || !li) return;
+    if (ul.scrollHeight > ul.clientHeight) {
+      const top = li.offsetTop - ul.offsetTop;
+      if (top < ul.scrollTop + 8 || top + li.offsetHeight > ul.scrollTop + ul.clientHeight - 8) ul.scrollTo({ top: top - ul.clientHeight / 2, behavior: "smooth" });
+    } else if (ul.scrollWidth > ul.clientWidth) {
+      ul.scrollTo({ left: li.offsetLeft - 16, behavior: "smooth" });
+    }
+  }, [active]);
+  const at = items.findIndex((i) => i.id === active);
   return (
-    <nav aria-label={title}>
-      <p className="mb-2 hidden px-3 text-[12px] font-semibold uppercase tracking-[0.08em] text-[#0a0a0a]/45 lg:block">{title}</p>
-      <ul className="-mx-1 flex gap-1 overflow-x-auto px-1 pb-1 lg:flex-col lg:overflow-visible">
-        {items.map(({ id, label, tone, icon }) => {
+    <nav aria-label={title} className="flex min-h-0 flex-col">
+      <div className="mb-2 hidden items-center justify-between px-3 lg:flex">
+        <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#0a0a0a]/45">{title}</p>
+        <span className="text-[11.5px] font-semibold tabular-nums text-[#0a0a0a]/35">{at + 1} of {items.length}</span>
+      </div>
+      <span aria-hidden className="mx-3 mb-2 hidden h-[3px] overflow-hidden rounded-full bg-[#0a0a0a]/[0.07] lg:block">
+        <span className="block h-full rounded-full bg-[#0a0a0a] transition-[width] duration-150" style={{ width: `${Math.max(4, progress * 100)}%` }} />
+      </span>
+      <ul ref={list} className="-mx-1 flex min-h-0 gap-1 overflow-x-auto px-1 pb-1 [scrollbar-width:none] lg:flex-col lg:gap-0.5 lg:overflow-y-auto lg:overflow-x-visible">
+        {items.map(({ id, label, tone, icon, group }, i) => {
           const Icon = ICONS[icon];
           const on = id === active;
+          const head = group && group !== items[i - 1]?.group;
           return (
-            <li key={id}>
-              <a href={`#${id}`} className={`flex items-center gap-2.5 whitespace-nowrap rounded-[10px] px-3 py-2 text-[13.5px] transition-colors ${on ? "bg-white font-semibold shadow-[0_1px_0_rgba(0,0,0,0.04)] ring-1 ring-[#0a0a0a]/10" : "text-[#0a0a0a]/60 hover:text-[#0a0a0a]"}`}>
-                <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-md ${on ? TONE[tone].chip : "bg-[#0a0a0a]/[0.05]"}`}>
+            <li key={id} data-id={id}>
+              {head && <p className={`hidden px-3 pb-1 text-[10.5px] font-bold uppercase tracking-[0.14em] text-[#0a0a0a]/35 lg:block ${i > 0 ? "pt-3" : ""}`}>{group}</p>}
+              <a
+                href={`#${id}`}
+                onClick={(e) => {
+                  const el = document.getElementById(id);
+                  if (!el) return;
+                  e.preventDefault();
+                  hold.current = Date.now() + 900;
+                  setActive(id);
+                  el.scrollIntoView({ behavior: "smooth", block: "start" });
+                  history.replaceState(null, "", `#${id}`);
+                }}
+                aria-current={on ? "location" : undefined}
+                className={`flex items-center gap-2.5 whitespace-nowrap rounded-[10px] px-2.5 py-[7px] text-[13.5px] transition-colors ${on ? "bg-[#0a0a0a] font-semibold text-white" : "text-[#0a0a0a]/60 hover:bg-[#0a0a0a]/[0.04] hover:text-[#0a0a0a]"}`}
+              >
+                <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-md ${on ? (tone === "ink" ? "bg-white text-[#0a0a0a]" : TONE[tone].chip) : "bg-[#0a0a0a]/[0.05]"}`}>
                   <Icon className="h-3.5 w-3.5" />
                 </span>
                 {label}

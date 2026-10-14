@@ -17,7 +17,17 @@ export default function AnalyticsPage() {
         <span className="ml-auto inline-flex items-center rounded-[10px] bg-white px-3 py-2 text-[13px] font-semibold ring-1 ring-[#0a0a0a]/10">Export</span>
       </div>
       <StatStrip stats={[{ label: "Total sales", value: pkr(sum(SALES_30)), delta: "+42%", spark: SALES_30 }, { label: "Orders", value: String(sum(ORDERS_30)), delta: "+31%", spark: ORDERS_30 }, { label: "Average order", value: pkr(Math.round(sum(SALES_30) / sum(ORDERS_30))) }, { label: "Sessions", value: sum(SESSIONS_30).toLocaleString("en-PK"), spark: SESSIONS_30 }]} />
-      <Card title="Sessions over time"><AreaChart points={SESSIONS_30} label="Sessions per day, rising" /></Card>
+      <section className="rounded-2xl bg-[#0a0a0a] p-5 text-white sm:p-6">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="text-[12px] font-semibold uppercase tracking-[0.1em] text-[#b7b9ff]">Sessions over time</p>
+            <p className="mt-1 text-[26px] font-semibold tracking-[-0.02em]">{sum(SESSIONS_30).toLocaleString("en-PK")} <span className="text-[14px] font-semibold text-[#b8efd6]">+38%</span></p>
+          </div>
+          <p className="flex items-center gap-4 text-[12.5px] text-white/55"><span className="flex items-center gap-1.5"><span className="h-0.5 w-4 rounded bg-[#b7b9ff]" /> These 30 days</span><span className="flex items-center gap-1.5"><span className="h-0.5 w-4 rounded border-t border-dashed border-white/40" /> The 30 before</span></p>
+        </div>
+        <div className="mt-4"><AreaChart dark points={SESSIONS_30} compare={SESSIONS_30.map((n, i) => Math.round(n * 0.7 + ((i * 37) % 11) * 4))} label="Sessions per day, rising, above the 30 days before" /></div>
+        <div className="mt-2 flex justify-between text-[11.5px] text-white/35"><span>16 Sep</span><span>1 Oct</span><span>Today</span></div>
+      </section>
       <div className="grid gap-5 lg:grid-cols-2">
         <Card title="Where orders come from">
           <ul className="flex flex-col gap-3">

@@ -1,33 +1,37 @@
 import { Plus } from "lucide-react";
-import { Button, PageHeader, Pill, td, th } from "@/components/new-admin/ui";
+import { Button, PageHeader, Pill } from "@/components/new-admin/ui";
+import { DataTable } from "@/components/new-admin/sort";
 
 export const metadata = { title: "Blog posts" };
 
 const POSTS = [
-  { title: "How to style a lawn suit for Eid", status: "Published", when: "12 Oct", views: 1840 },
-  { title: "Caring for chikankari: a washing guide", status: "Published", when: "2 Oct", views: 960 },
-  { title: "Behind the Winter collection", status: "Draft", when: "Edited today", views: 0 },
+  { title: "How to style a lawn suit for Eid", status: "Published", when: "12 Oct", at: 2, views: 1840 },
+  { title: "Caring for chikankari: a washing guide", status: "Published", when: "2 Oct", at: 1, views: 960 },
+  { title: "Behind the Winter collection", status: "Draft", when: "Edited today", at: 3, views: 0 },
 ];
 
 export default function BlogPage() {
   return (
     <>
       <PageHeader icon="content" tone="mint" title="Blog posts" sub="Write with pictures, videos and links, or your own HTML." actions={<Button primary><Plus className="h-4 w-4" /> Write a post</Button>} />
-      <section className="overflow-hidden rounded-2xl bg-white ring-1 ring-[#0a0a0a]/[0.07]">
-        <table className="w-full">
-          <thead className="bg-[#fafafa]"><tr><th className={th}>Title</th><th className={th}>Status</th><th className={th}>Date</th><th className={`${th} text-right`}>Views</th></tr></thead>
-          <tbody className="divide-y divide-[#0a0a0a]/[0.06]">
-            {POSTS.map((p) => (
-              <tr key={p.title}>
-                <td className={`${td} font-medium`}>{p.title}</td>
-                <td className={td}>{p.status === "Published" ? <Pill tone="good">Published</Pill> : <Pill tone="off">Draft</Pill>}</td>
-                <td className={`${td} text-[#0a0a0a]/60`}>{p.when}</td>
-                <td className={`${td} text-right tabular-nums`}>{p.views.toLocaleString("en-PK")}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
+      <DataTable
+        cols={[
+          { key: "title", label: "Title" },
+          { key: "status", label: "Status" },
+          { key: "when", label: "Date", numeric: true },
+          { key: "views", label: "Views", align: "right", numeric: true },
+        ]}
+        rows={POSTS.map((p) => ({
+          id: p.title,
+          by: { title: p.title, status: p.status, when: p.at, views: p.views },
+          cells: {
+            title: <span className="font-medium">{p.title}</span>,
+            status: p.status === "Published" ? <Pill tone="good">Published</Pill> : <Pill tone="off">Draft</Pill>,
+            when: <span className="text-[#0a0a0a]/60">{p.when}</span>,
+            views: p.views.toLocaleString("en-PK"),
+          },
+        }))}
+      />
     </>
   );
 }

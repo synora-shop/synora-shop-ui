@@ -78,7 +78,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
   const toast = useCallback((text: string, undo?: () => void) => {
     const id = Date.now() + Math.random();
-    setToasts((t) => [...t, { id, text, undo }]);
+    setToasts((t) => [...t.filter((x) => x.text !== text), { id, text, undo }].slice(-3));
     setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 6000);
   }, []);
 
@@ -174,16 +174,19 @@ export function AdminShell({ children }: { children: ReactNode }) {
                 href={g.href}
                 title={narrow ? g.label : undefined}
                 className={`relative flex h-9 items-center gap-3 rounded-[10px] text-[14px] font-medium transition-colors ${narrow ? "justify-center" : "px-2.5"} ${
-                  groupOn ? "bg-white/[0.12] text-white" : inside ? "text-white" : "text-white/65 hover:bg-white/[0.06] hover:text-white"
+                  groupOn ? "bg-white/[0.12] text-white" : inside ? "bg-white/[0.05] text-white" : "text-white/65 hover:bg-white/[0.06] hover:text-white"
                 }`}
               >
+                {inside && !narrow && <span aria-hidden className={`absolute -left-3 top-1.5 h-6 w-[3px] rounded-r-full ${TONE[g.tone].dot}`} />}
                 <Icon className="h-[17px] w-[17px] shrink-0" />
                 {!narrow && <span className="flex-1">{g.label}</span>}
                 {g.badge ? <span className={`rounded-full bg-[#6666ff] px-1.5 text-[11px] font-bold text-white ${narrow ? "absolute -right-0.5 -top-0.5" : ""}`}>{g.badge}</span> : null}
                 {!narrow && g.tone !== "ink" && <span aria-hidden className={`h-1.5 w-1.5 rounded-full ${TONE[g.tone].dot} ${inside ? "" : "opacity-40"}`} />}
               </Link>
+              {/* Only the area you are in opens its pages; the rest stay shut. */}
               {!narrow && g.items && (
-                <ul className="ml-[1.3rem] flex flex-col border-l border-white/[0.08] pl-3">
+                <div className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out motion-reduce:transition-none ${inside ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`} inert={!inside}>
+                <ul className="ml-[1.3rem] flex min-h-0 flex-col overflow-hidden border-l border-white/[0.08] pl-3">
                   {g.items.map((it) => {
                     const on = path === it.href || path.startsWith(`${it.href}/`);
                     return (
@@ -196,6 +199,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
                     );
                   })}
                 </ul>
+                </div>
               )}
             </li>
           );

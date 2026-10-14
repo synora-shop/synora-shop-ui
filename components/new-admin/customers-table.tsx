@@ -1,32 +1,38 @@
-import { ListBar, Pill, pkr, td, th } from "@/components/new-admin/ui";
+import { ListBar, Pill, pkr } from "@/components/new-admin/ui";
+import { DataTable } from "@/components/new-admin/sort";
 import { CUSTOMERS } from "@/lib/new-admin/sample";
 
 export function CustomersTable({ accountsOnly = false }: { accountsOnly?: boolean }) {
   const rows = accountsOnly ? CUSTOMERS.filter((c) => c.account) : CUSTOMERS;
   return (
-    <section className="overflow-hidden rounded-2xl bg-white ring-1 ring-[#0a0a0a]/[0.07]">
-      <ListBar views={accountsOnly ? ["With accounts"] : ["All", "Returning", "From Lahore", "Not ordered in 60 days"]} placeholder="Search by name, email or city" />
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[680px]">
-          <thead className="bg-[#fafafa]"><tr><th className={th}>Customer</th><th className={th}>City</th><th className={th}>Account</th><th className={`${th} text-right`}>Orders</th><th className={`${th} text-right`}>Spent</th></tr></thead>
-          <tbody className="divide-y divide-[#0a0a0a]/[0.06]">
-            {rows.map((c) => (
-              <tr key={c.email} className="hover:bg-[#fafafa]">
-                <td className={td}>
-                  <span className="flex items-center gap-3">
-                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#ecebff] text-[12px] font-semibold text-[#4b4bea]">{c.name.split(" ").map((w) => w[0]).join("")}</span>
-                    <span><span className="block font-medium">{c.name}</span><span className="text-[12.5px] text-[#0a0a0a]/50">{c.email}</span></span>
-                  </span>
-                </td>
-                <td className={`${td} text-[#0a0a0a]/70`}>{c.city}</td>
-                <td className={td}>{c.account ? <Pill tone="good">Signed up</Pill> : <Pill tone="off">Guest</Pill>}</td>
-                <td className={`${td} text-right tabular-nums`}>{c.orders}</td>
-                <td className={`${td} text-right font-semibold tabular-nums`}>{pkr(c.spent)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </section>
+    <DataTable
+      minWidth={680}
+      toolbar={<div className="-m-3"><ListBar views={accountsOnly ? ["With accounts"] : ["All", "Returning", "From Lahore", "Not ordered in 60 days"]} placeholder="Search by name, email or city" /></div>}
+      cols={[
+        { key: "name", label: "Customer" },
+        { key: "email", label: "Email" },
+        { key: "city", label: "City" },
+        { key: "account", label: "Account" },
+        { key: "orders", label: "Orders", align: "right", numeric: true },
+        { key: "spent", label: "Spent", align: "right", numeric: true },
+      ]}
+      rows={rows.map((c) => ({
+        id: c.email,
+        by: { name: c.name, email: c.email, city: c.city, account: c.account ? "Signed up" : "Guest", orders: c.orders, spent: c.spent },
+        cells: {
+          name: (
+            <span className="flex items-center gap-3">
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#c8e7ff] text-[12px] font-semibold text-[#0a0a0a]">{c.name.split(" ").map((w) => w[0]).join("")}</span>
+              <span className="font-medium">{c.name}</span>
+            </span>
+          ),
+          email: <span className="text-[#0a0a0a]/60">{c.email}</span>,
+          city: <span className="text-[#0a0a0a]/70">{c.city}</span>,
+          account: c.account ? <Pill tone="good">Signed up</Pill> : <Pill tone="off">Guest</Pill>,
+          orders: c.orders,
+          spent: <b className="font-semibold">{pkr(c.spent)}</b>,
+        },
+      }))}
+    />
   );
 }

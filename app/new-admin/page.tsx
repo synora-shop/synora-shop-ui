@@ -1,5 +1,6 @@
 import Image from "next/image";
-import { ArrowRight, Check, Lightbulb, PackageCheck, Sparkles, Wallet, AlertTriangle } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, Check, Lightbulb, MessageSquare, PackageCheck, Sparkles, Wallet, AlertTriangle } from "lucide-react";
 import { AreaChart, Card, StatStrip, pkr } from "@/components/new-admin/ui";
 import { ORDERS_30, PRODUCTS, SALES_30, SESSIONS_30, SHOP } from "@/lib/new-admin/sample";
 
@@ -43,15 +44,15 @@ export default function NewAdminHome() {
       </div>
 
       {/* The store itself, as the real Home leads with it. */}
-      <section className="flex flex-col gap-4 rounded-2xl bg-white p-4 ring-1 ring-[#0a0a0a]/[0.07] sm:flex-row sm:items-center sm:p-5">
-        <span className="grid h-14 w-14 shrink-0 place-items-center rounded-xl bg-[#0a0a0a] text-[13px] font-bold tracking-[0.1em] text-white">ZL</span>
+      <section className="flex flex-col gap-4 rounded-2xl bg-[#0a0a0a] p-4 text-white sm:flex-row sm:items-center sm:p-5">
+        <span className="grid h-14 w-14 shrink-0 place-items-center rounded-xl bg-[#b8efd6] text-[13px] font-bold tracking-[0.1em] text-[#0a0a0a]">ZL</span>
         <div className="min-w-0 flex-1">
-          <p className="flex flex-wrap items-center gap-2 text-[17px] font-semibold">{SHOP.name} <span className="inline-flex items-center gap-1.5 rounded-full bg-[#ddf5e9] px-2 py-0.5 text-[11.5px] font-semibold text-[#11643f]"><span className="h-1.5 w-1.5 rounded-full bg-current" /> Open</span></p>
-          <p className="truncate text-[13.5px] text-[#0a0a0a]/55">zohralawn.pk · Gulberg III, Lahore · Loom (Eid edit) is live</p>
+          <p className="flex flex-wrap items-center gap-2 text-[17px] font-semibold">{SHOP.name} <span className="inline-flex items-center gap-1.5 rounded-full bg-[#b8efd6]/15 px-2 py-0.5 text-[11.5px] font-semibold text-[#b8efd6]"><span className="h-1.5 w-1.5 rounded-full bg-current" /> Open</span></p>
+          <p className="truncate text-[13.5px] text-white/55">zohralawn.pk · Gulberg III, Lahore · Loom (Eid edit) is live</p>
         </div>
         <div className="flex gap-2">
-          <a href="#" className="inline-flex h-9 items-center rounded-[10px] px-3.5 text-[13.5px] font-semibold ring-1 ring-[#0a0a0a]/12">View store</a>
-          <a href="/new-admin/online-store" className="inline-flex h-9 items-center rounded-[10px] bg-[#0a0a0a] px-3.5 text-[13.5px] font-semibold text-white">Customise</a>
+          <a href="#" className="inline-flex h-9 items-center rounded-[10px] px-3.5 text-[13.5px] font-semibold ring-1 ring-white/20 hover:bg-white/10">View store</a>
+          <Link href="/new-admin/online-store" className="inline-flex h-9 items-center rounded-[10px] bg-white px-3.5 text-[13.5px] font-semibold text-[#0a0a0a]">Customise</Link>
         </div>
       </section>
 
@@ -83,16 +84,22 @@ export default function NewAdminHome() {
       </section>
 
       {/* What needs you today. */}
-      <div className="flex flex-wrap gap-2">
-        {[
-          { icon: PackageCheck, text: "4 orders to fulfil", href: "/new-admin/orders" },
-          { icon: Wallet, text: "2 cash orders to confirm", href: "/new-admin/orders" },
-          { icon: AlertTriangle, text: "3 products running low", href: "/new-admin/products/inventory" },
-        ].map(({ icon: Icon, text, href }) => (
-          <a key={text} href={href} className="inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-2 text-[13.5px] font-semibold ring-1 ring-[#0a0a0a]/10 hover:ring-[#0a0a0a]/25">
-            <Icon className="h-4 w-4 text-[#6666ff]" /> {text} <ArrowRight className="h-3.5 w-3.5 text-[#0a0a0a]/35" />
-          </a>
-        ))}
+      <div>
+        <p className="mb-2 text-[12px] font-semibold uppercase tracking-[0.1em] text-[#0a0a0a]/45">Needs you today</p>
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { icon: PackageCheck, n: 4, text: "orders to fulfil", href: "/new-admin/orders", bg: "bg-[#6666ff] text-white", sub: "text-white/70" },
+            { icon: Wallet, n: 2, text: "cash orders to confirm", href: "/new-admin/orders", bg: "bg-[#b7b9ff] text-[#0a0a0a]", sub: "text-[#0a0a0a]/60" },
+            { icon: MessageSquare, n: 2, text: "enquiries to answer", href: "/new-admin/orders/enquiries", bg: "bg-[#c8e7ff] text-[#0a0a0a]", sub: "text-[#0a0a0a]/60" },
+            { icon: AlertTriangle, n: 3, text: "products running low", href: "/new-admin/products/inventory", bg: "bg-[#b8efd6] text-[#0a0a0a]", sub: "text-[#0a0a0a]/60" },
+          ].map(({ icon: Icon, n, text, href, bg, sub }) => (
+            <Link key={text} href={href} className={`group flex items-center gap-3 rounded-2xl px-4 py-3.5 transition-transform hover:-translate-y-0.5 ${bg}`}>
+              <span className="text-[26px] font-semibold tabular-nums leading-none">{n}</span>
+              <span className={`min-w-0 flex-1 text-[13.5px] font-semibold leading-tight ${sub}`}>{text}</span>
+              <Icon className="h-4 w-4 opacity-60 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+          ))}
+        </div>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]">
