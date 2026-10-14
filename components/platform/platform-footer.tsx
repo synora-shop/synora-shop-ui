@@ -93,8 +93,8 @@ export function PlatformFooter({ tone = "dark", ...rest }: { tone?: keyof typeof
               footer looking for help is not looking for our About page. */}
           <FooterGroup t={t} title="Help">
             <FooterLink t={t} href="/documentation">Documentation</FooterLink>
-            <FooterLink t={t} href="/documentation">Release notes</FooterLink>
-            <FooterLink t={t} href="/documentation">Known issues</FooterLink>
+            <FooterLink t={t} href="/release-notes">Release notes</FooterLink>
+            <FooterLink t={t} href="/documentation#known-issues">Known issues</FooterLink>
           </FooterGroup>
         </div>
       </div>

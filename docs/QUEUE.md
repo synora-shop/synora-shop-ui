@@ -7,7 +7,7 @@ purpose — this is the list Abdul works from, not a ticket tracker.
 
 ## Next up
 
-> **Emails that fail now say so (15 October).** Resend's library returns
+> **Emails that fail now say so (14 October).** Resend's library returns
 > `{ error }` instead of throwing, and every sender ignored it, so a refused
 > email looked delivered. All sends now go through `deliver()` in
 > `lib/email.ts`, which throws; sign-up, "send a new link", password reset and
@@ -15,7 +15,7 @@ purpose — this is the list Abdul works from, not a ticket tracker.
 > logs show `[email] Resend refused …`. The live sign-up → email → confirm →
 > sign-in flow was tested end to end the same day (test account deleted).
 
-> **Order notes in theme checkouts (noted 15 October).** The front page's
+> **Order notes in theme checkouts (noted 14 October).** The front page's
 > receipt promises "Order notes, right in checkout". Orders store notes and the
 > admin shows them, and the platform's own checkout has the field — but Loom's
 > and Kite's checkout sections do not draw it yet, so a customer on either

@@ -25,7 +25,7 @@ const SECURITY_FROM = process.env.RESEND_FROM_SECURITY ?? FROM;
  * a bad key, a blocked address): it returns `{ error }` and carries on. Every
  * sender here used to `await deliver(...)` and ignore that, so each
  * "throws on failure" below was untrue and a refused email looked exactly like
- * a delivered one — no log, no message, nothing. Found 15 October. Everything
+ * a delivered one — no log, no message, nothing. Found 14 October. Everything
  * now goes through here, so a refusal is a thrown error the caller logs (and,
  * where a person is waiting for the email, tells them about).
  *

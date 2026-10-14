@@ -13,7 +13,7 @@ import { formatMoney } from "@/lib/money";
  * has never visited. So no shop chrome, no navigation, nothing to click but the
  * thing the page is for.
  *
- * Redrawn 15 October to match the front page: the form in a white column, and
+ * Redrawn 14 October to match the front page: the form in a white column, and
  * beside it on a wide screen the front page's colour panel saying what the
  * account is for. Only the look changed — every form is the one it was.
  *

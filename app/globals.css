@@ -168,7 +168,7 @@
 
 /* The front page draws its own light header; the shared dark one stands aside there. */
 
-/* Speed (15 October). Everything above still moves; what changed is what it
+/* Speed (14 October). Everything above still moves; what changed is what it
    costs. The hero's glows are gradients, not blurred boxes, so drifting them
    repaints nothing; the marquee fades with two still overlays instead of a
    mask re-composited every frame; sections far below are not drawn until

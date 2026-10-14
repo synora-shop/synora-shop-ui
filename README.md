@@ -79,10 +79,13 @@ types; sections drag to reorder.
 
 **Platform site** — `app/(platform)`, `app/merchant/*`
 The marketing page and merchant sign-up. The front page was redrawn on
-15 October in white and Synora's five colours, made for Pakistan
+14 October in white and Synora's five colours, made for Pakistan
 (`components/platform/*`, its motion in the "front page's motion" block of
-`app/globals.css`); it draws its own light header and footer, and the shared
-dark ones stay for `/documentation`. The account pages (sign in, sign up,
+`app/globals.css`); it draws its own light header and footer, and the
+documentation (`/documentation`) and release notes (`/release-notes`) use the
+same light frame (`components/platform/light-page.tsx`). Release notes are
+written for merchants from `docs/QUEUE.md`; add an entry when a change reaches
+them. The account pages (sign in, sign up,
 forgot, reset, verify, invite) wear the same look through `.auth-shell` —
 scoped, because their form pieces are shared with the admin panel.
 
