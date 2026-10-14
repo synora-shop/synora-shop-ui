@@ -131,8 +131,8 @@ export default function ReleaseNotesPage() {
                 <ul className="mt-6 flex flex-col gap-3.5">
                   {changes.map(([kind, text]) => (
                     <li key={text} className="flex flex-col items-start gap-2 sm:flex-row sm:gap-4">
-                      <span className={`mt-0.5 w-[5.5rem] shrink-0 rounded-full px-2.5 py-1 text-center text-xs font-semibold ${KIND[kind]}`}>{kind}</span>
-                      <p className="text-[15px] leading-relaxed text-[#0d0d50]/75">{text}</p>
+                      <span className={`mt-1 w-[5.5rem] shrink-0 rounded-full px-2.5 py-1 text-center text-xs font-semibold ${KIND[kind]}`}>{kind}</span>
+                      <p className="text-[17px] leading-[1.7] text-[#0d0d50]/80">{text}</p>
                     </li>
                   ))}
                 </ul>
