@@ -18,6 +18,25 @@ const FROM =
   process.env.RESEND_FROM ?? "APP by Synora Digitals <onboarding@resend.dev>";
 const SECURITY_FROM = process.env.RESEND_FROM_SECURITY ?? FROM;
 
+/**
+ * Sends one email, and throws if Resend refuses it.
+ *
+ * The Resend library does not throw on a refused send (an unverified sender,
+ * a bad key, a blocked address): it returns `{ error }` and carries on. Every
+ * sender here used to `await deliver(...)` and ignore that, so each
+ * "throws on failure" below was untrue and a refused email looked exactly like
+ * a delivered one — no log, no message, nothing. Found 15 October. Everything
+ * now goes through here, so a refusal is a thrown error the caller logs (and,
+ * where a person is waiting for the email, tells them about).
+ *
+ * The recipient is left out of the error on purpose: it ends up in the logs.
+ */
+async function deliver(mail: Parameters<Resend["emails"]["send"]>[0]) {
+  if (!resend) return;
+  const { error } = await resend.emails.send(mail);
+  if (error) throw new Error(`[email] Resend refused "${mail.subject}": ${error.name}: ${error.message}`);
+}
+
 type OrderEmailItem = { title: string; size: string; color: string; price: number; quantity: number };
 type OrderEmailData = {
   id: string;
@@ -69,16 +88,22 @@ export async function sendOrderEmails(order: OrderEmailData) {
 
   const summary = `Order #${order.id}\n\n${itemsList(order.items, currency)}\n\nSubtotal: ${money(order.subtotal)}\nShipping: ${money(order.shippingFee)}\nTotal: ${money(order.total)}\nPayment: ${order.paymentMethod}`;
 
+  // Each in its own try, so a refused confirmation to the customer does not
+  // also cost the merchant their notice of the sale.
   try {
-    await resend.emails.send({
+    await deliver({
       from: FROM,
       to: order.customerEmail,
       subject: `Your ${order.shopName} order #${order.id} is confirmed`,
       text: `Hi ${order.customerName},\n\nThank you for your order from ${order.shopName}.\n\n${summary}\n\n${order.orderUrl ? `See your order at any time: ${order.orderUrl}\n\n` : ""}We'll be in touch once it ships.`,
     });
+  } catch (err) {
+    console.error("[email] Failed to send the order confirmation", err);
+  }
 
+  try {
     if (order.notifyEmail) {
-      await resend.emails.send({
+      await deliver({
         from: FROM,
         to: order.notifyEmail,
         subject: `New order #${order.id}, ${order.customerName}`,
@@ -86,7 +111,7 @@ export async function sendOrderEmails(order: OrderEmailData) {
       });
     }
   } catch (err) {
-    console.error("[email] Failed to send order emails", err);
+    console.error("[email] Failed to send the new-order notice", err);
   }
 }
 
@@ -104,7 +129,7 @@ export async function sendAdminOtpEmail(to: string, code: string) {
     return;
   }
 
-  await resend.emails.send({
+  await deliver({
     from: SECURITY_FROM,
     to,
     subject: `Your Shop admin login code: ${code}`,
@@ -127,7 +152,7 @@ export async function sendCustomerCodeEmail(to: string, code: string, shopName: 
     console.log(`[email] Resend not configured, ${shopName} sign-in code for ${to}: ${code}`);
     return;
   }
-  await resend.emails.send({
+  await deliver({
     from: SECURITY_FROM,
     to,
     subject: `${code} is your ${shopName} sign-in code`,
@@ -174,7 +199,7 @@ export async function sendVerificationEmail(to: string, token: string) {
     return;
   }
 
-  await resend.emails.send({
+  await deliver({
     from: SECURITY_FROM,
     to,
     subject: "Confirm your email to finish setting up your store",
@@ -194,7 +219,7 @@ export async function sendPasswordResetEmail(to: string, token: string) {
     return;
   }
 
-  await resend.emails.send({
+  await deliver({
     from: SECURITY_FROM,
     to,
     subject: "Reset your Shop password",
@@ -220,7 +245,7 @@ export async function sendStaffInviteEmail(
     return;
   }
 
-  await resend.emails.send({
+  await deliver({
     from: FROM,
     to,
     subject: `${invitedBy} invited you to help run ${shopName}`,

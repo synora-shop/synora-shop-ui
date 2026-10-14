@@ -19,6 +19,7 @@ export function SignupForm({ platformDomain }: { platformDomain: string }) {
   const [error, setError] = useState<string | null>(null);
   const [refusal, setRefusal] = useState<SignupRefusal | null>(null);
   const [sent, setSent] = useState<string | null>(null);
+  const [emailFailed, setEmailFailed] = useState(false);
   const [pending, setPending] = useState(false);
 
   if (sent) {
@@ -27,18 +28,33 @@ export function SignupForm({ platformDomain }: { platformDomain: string }) {
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#b8efd6] text-[#0f5c3e]">
           <Check className="h-5 w-5" />
         </div>
-        <h2 className="text-[1.75rem] font-semibold tracking-[-0.03em] text-[#0d0d50]">Check your email</h2>
-        <p className="text-sm leading-relaxed text-ink-soft">
-          We&rsquo;ve sent a confirmation link to{" "}
-          <span className="font-medium text-ink">{sent}</span>. Open it and your store is ready.
-        </p>
-        <p className="text-sm leading-relaxed text-ink-soft">
-          Nothing after a minute or two? Check the spam folder, or{" "}
-          <a href="/merchant/verify" className="font-medium text-brand-600 underline-scribble">
-            send it again
-          </a>
-          .
-        </p>
+        <h2 className="text-[1.75rem] font-semibold tracking-[-0.03em] text-[#0d0d50]">
+          {emailFailed ? "Your store is ready" : "Check your email"}
+        </h2>
+        {emailFailed ? (
+          <p className="text-sm leading-relaxed text-ink-soft">
+            But the confirmation email to <span className="font-medium text-ink">{sent}</span> didn&rsquo;t go out.
+            Wait a few minutes, then{" "}
+            <a href="/merchant/verify" className="font-medium text-brand-600 underline-scribble">
+              send it again
+            </a>
+            .
+          </p>
+        ) : (
+          <>
+            <p className="text-sm leading-relaxed text-ink-soft">
+              We&rsquo;ve sent a confirmation link to{" "}
+              <span className="font-medium text-ink">{sent}</span>. Open it and your store is ready.
+            </p>
+            <p className="text-sm leading-relaxed text-ink-soft">
+              Nothing after a minute or two? Check the spam folder, or{" "}
+              <a href="/merchant/verify" className="font-medium text-brand-600 underline-scribble">
+                send it again
+              </a>
+              .
+            </p>
+          </>
+        )}
       </div>
     );
   }
@@ -65,6 +81,7 @@ export function SignupForm({ platformDomain }: { platformDomain: string }) {
       setPending(false);
       return;
     }
+    setEmailFailed(!!result.emailFailed);
     setSent(email);
   }
 

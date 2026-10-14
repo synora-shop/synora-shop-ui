@@ -29,7 +29,8 @@ export type Result = { ok: true; message?: string } | { ok: false; error: string
 export type SignupRefusal = "email_taken" | "email_pending";
 
 export type SignupResult =
-  | { ok: true; message?: string }
+  /** emailFailed: the store exists but the confirmation link did not go out. */
+  | { ok: true; message?: string; emailFailed?: boolean }
   | { ok: false; error: string; code?: SignupRefusal };
 
 /** The shortest password worth calling one. */
@@ -143,16 +144,19 @@ export async function signUp(input: SignupInput): Promise<SignupResult> {
           expiresAt: expiryFor("EMAIL_VERIFICATION"),
         },
       });
+      let sent = true;
       try {
         await sendVerificationEmail(email, token);
       } catch (err) {
+        sent = false;
         console.error("[signup] verification email (resend) failed to send", err);
       }
       return {
         ok: false,
         code: "email_pending",
-        error:
-          "You already started signing up with this address. We've sent a fresh confirmation link, open it, then sign in with the password you chose the first time.",
+        error: sent
+          ? "You already started signing up with this address. We've sent a fresh confirmation link, open it, then sign in with the password you chose the first time."
+          : "You already started signing up with this address, but the new confirmation email didn't go out. Wait a few minutes and try again.",
       };
     }
 
@@ -225,6 +229,7 @@ export async function signUp(input: SignupInput): Promise<SignupResult> {
     await sendVerificationEmail(email, token);
   } catch (err) {
     console.error("[signup] verification email failed to send", err);
+    return { ok: true, emailFailed: true };
   }
   return { ok: true, message: "Check your email to finish setting up your store." };
 }
@@ -299,7 +304,10 @@ export async function resendVerification(email: string): Promise<Result> {
     try {
       await sendVerificationEmail(address, token);
     } catch (err) {
+      // Saying so does show the address has an account, but only while mail
+      // is failing — and a person told "on its way" waits for nothing.
       console.error("[resend-verification] email failed to send", err);
+      return { ok: false, error: "We couldn't send the email just now. Try again in a few minutes." };
     }
   }
 
@@ -340,7 +348,10 @@ export async function requestPasswordReset(email: string): Promise<Result> {
     try {
       await sendPasswordResetEmail(address, token);
     } catch (err) {
+      // As in resendVerification: honest about a failed send, at the small
+      // cost of showing the address has an account while mail is down.
       console.error("[password-reset] email failed to send", err);
+      return { ok: false, error: "We couldn't send the email just now. Try again in a few minutes." };
     }
   }
 

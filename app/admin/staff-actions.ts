@@ -70,9 +70,11 @@ export async function inviteStaff(email: string, role: MemberRole): Promise<Resu
     },
   });
 
+  let sent = true;
   try {
     await sendStaffInviteEmail(address, token, me.shop.name, me.email);
   } catch (err) {
+    sent = false;
     console.error("[staff-invite] email failed to send", err);
   }
   await audit({
@@ -85,6 +87,8 @@ export async function inviteStaff(email: string, role: MemberRole): Promise<Resu
   });
 
   revalidatePath("/admin/staff");
+  // Inviting again replaces the link (the upsert above), so that is the retry.
+  if (!sent) return { ok: false, error: `The invitation to ${address} is saved, but its email didn't go out. Invite them again in a few minutes.` };
   return { ok: true, message: `Invitation sent to ${address}.` };
 }
 
