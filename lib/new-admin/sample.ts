@@ -26,6 +26,7 @@ export const NAV: NavGroup[] = [
     items: [
       { href: `${A}/orders/drafts`, label: "Drafts" },
       { href: `${A}/orders/abandoned`, label: "Abandoned checkouts" },
+      { href: `${A}/orders/enquiries`, label: "Enquiries" },
     ],
   },
   {
@@ -33,6 +34,7 @@ export const NAV: NavGroup[] = [
     items: [
       { href: `${A}/products/collections`, label: "Collections" },
       { href: `${A}/products/inventory`, label: "Inventory" },
+      { href: `${A}/products/unfinished`, label: "Unfinished" },
     ],
   },
   {
@@ -45,6 +47,8 @@ export const NAV: NavGroup[] = [
     items: [
       { href: `${A}/content/menus`, label: "Menus" },
       { href: `${A}/content/blog`, label: "Blog posts" },
+      { href: `${A}/content/fields`, label: "Custom fields" },
+      { href: `${A}/content/words`, label: "Store wording" },
     ],
   },
   { id: "analytics", label: "Analytics", href: `${A}/analytics`, icon: "analytics", tone: "iris" },
@@ -52,6 +56,7 @@ export const NAV: NavGroup[] = [
     id: "store", label: "Online Store", href: `${A}/online-store`, icon: "app", tone: "sky",
     items: [
       { href: `${A}/online-store/pages`, label: "Pages" },
+      { href: `${A}/online-store/look`, label: "Store-wide look" },
       { href: `${A}/online-store/preferences`, label: "Preferences" },
     ],
   },
@@ -59,19 +64,19 @@ export const NAV: NavGroup[] = [
 
 /** Settings: one page, every section open; this is its index. */
 export const SETTINGS: { slug: string; label: string; icon: string; tone: Tone; blurb: string }[] = [
-  { slug: "general", label: "General", icon: "store", tone: "iris", blurb: "Store details and defaults" },
-  { slug: "plan", label: "Plan", icon: "plan", tone: "lavender", blurb: "Your plan and what it includes" },
-  { slug: "billing", label: "Billing", icon: "billing", tone: "lavender", blurb: "How you pay Synora, and your invoices" },
+  { slug: "general", label: "Store details", icon: "store", tone: "iris", blurb: "Name, logo, address, how customers reach you, and the units everything is in" },
+  { slug: "plan", label: "Plan and billing", icon: "plan", tone: "lavender", blurb: "Your plan, how you pay Synora, and your invoices" },
   { slug: "users", label: "Users and permissions", icon: "users", tone: "sky", blurb: "Who can work on this store, and what they can do" },
-  { slug: "payments", label: "Payments", icon: "payments", tone: "mint", blurb: "Cash on delivery, wallets and cards" },
+  { slug: "payments", label: "Payments", icon: "payments", tone: "mint", blurb: "Cash on delivery, wallets, cards and bank transfer" },
   { slug: "checkout", label: "Checkout", icon: "checkout", tone: "iris", blurb: "What customers fill in, and what happens after" },
   { slug: "customer-accounts", label: "Customer accounts", icon: "customers", tone: "sky", blurb: "How customers sign in to your store" },
   { slug: "shipping", label: "Shipping and delivery", icon: "shipping", tone: "mint", blurb: "Where you deliver, how fast, and for how much" },
   { slug: "domains", label: "Domains", icon: "domains", tone: "iris", blurb: "Your free address and your own domain" },
-  { slug: "notifications", label: "Notifications", icon: "bell", tone: "lavender", blurb: "The emails your store sends, and to whom" },
-  { slug: "custom-data", label: "Custom data", icon: "data", tone: "sky", blurb: "Extra fields on products, orders and customers" },
-  { slug: "privacy", label: "Customer privacy", icon: "shield", tone: "mint", blurb: "Cookie banner and privacy choices" },
+  { slug: "notifications", label: "Notifications", icon: "bell", tone: "lavender", blurb: "Emails your store sends, and alerts on your phone" },
+  { slug: "custom-data", label: "Custom data", icon: "data", tone: "sky", blurb: "Which things can carry extra fields" },
+  { slug: "privacy", label: "Customer privacy", icon: "shield", tone: "mint", blurb: "Cookie banner, countries, and privacy choices" },
   { slug: "policies", label: "Policies", icon: "policy", tone: "lavender", blurb: "Refunds, privacy, terms and shipping, linked from checkout" },
+  { slug: "store-status", label: "Store status", icon: "power", tone: "ink", blurb: "Pause the store, change what it sells, or close it" },
   { slug: "account", label: "Your account", icon: "security", tone: "ink", blurb: "Your profile, password and signed-in devices" },
 ];
 
@@ -96,18 +101,20 @@ export const PRODUCTS: Product[] = [
 ];
 
 export type Payment = "Cash on delivery" | "JazzCash" | "Easypaisa" | "Card";
-export type Order = { id: number; when: string; customer: string; city: string; items: number; total: number; payment: Payment; paid: boolean; fulfilled: "Unfulfilled" | "Fulfilled" | "Returned"; note?: boolean };
+export const STAGES = ["Pending", "Confirmed", "Packed", "Shipped", "Delivered", "Cancelled"] as const;
+export type Stage = (typeof STAGES)[number];
+export type Order = { id: number; when: string; customer: string; city: string; items: number; total: number; payment: Payment; paid: boolean; stage: Stage; note?: boolean };
 export const ORDERS: Order[] = [
-  { id: 1048, when: "Today, 2:31 pm", customer: "Hira Malik", city: "Lahore", items: 2, total: 16350, payment: "Cash on delivery", paid: false, fulfilled: "Unfulfilled", note: true },
-  { id: 1047, when: "Today, 11:05 am", customer: "Sana Iqbal", city: "Karachi", items: 1, total: 8900, payment: "JazzCash", paid: true, fulfilled: "Unfulfilled" },
-  { id: 1046, when: "Yesterday, 9:48 pm", customer: "Mehwish Raza", city: "Islamabad", items: 3, total: 23100, payment: "Card", paid: true, fulfilled: "Unfulfilled" },
-  { id: 1045, when: "Yesterday, 4:12 pm", customer: "Ayesha Tariq", city: "Faisalabad", items: 1, total: 6200, payment: "Easypaisa", paid: true, fulfilled: "Unfulfilled" },
-  { id: 1044, when: "13 Oct, 7:20 pm", customer: "Fatima Noor", city: "Lahore", items: 2, total: 13350, payment: "Cash on delivery", paid: true, fulfilled: "Fulfilled" },
-  { id: 1043, when: "13 Oct, 1:02 pm", customer: "Zainab Ali", city: "Multan", items: 1, total: 11900, payment: "JazzCash", paid: true, fulfilled: "Fulfilled", note: true },
-  { id: 1042, when: "12 Oct, 6:45 pm", customer: "Rabia Saeed", city: "Rawalpindi", items: 1, total: 5600, payment: "Cash on delivery", paid: false, fulfilled: "Returned" },
-  { id: 1041, when: "12 Oct, 10:15 am", customer: "Amna Shah", city: "Karachi", items: 4, total: 29800, payment: "Card", paid: true, fulfilled: "Fulfilled" },
-  { id: 1040, when: "11 Oct, 8:30 pm", customer: "Noor Fatima", city: "Peshawar", items: 1, total: 7450, payment: "Easypaisa", paid: true, fulfilled: "Fulfilled" },
-  { id: 1039, when: "10 Oct, 3:55 pm", customer: "Iqra Javed", city: "Lahore", items: 2, total: 12750, payment: "Cash on delivery", paid: true, fulfilled: "Fulfilled" },
+  { id: 1048, when: "Today, 2:31 pm", customer: "Hira Malik", city: "Lahore", items: 2, total: 16350, payment: "Cash on delivery", paid: false, stage: "Pending", note: true },
+  { id: 1047, when: "Today, 11:05 am", customer: "Sana Iqbal", city: "Karachi", items: 1, total: 8900, payment: "JazzCash", paid: true, stage: "Confirmed" },
+  { id: 1046, when: "Yesterday, 9:48 pm", customer: "Mehwish Raza", city: "Islamabad", items: 3, total: 23100, payment: "Card", paid: true, stage: "Packed" },
+  { id: 1045, when: "Yesterday, 4:12 pm", customer: "Ayesha Tariq", city: "Faisalabad", items: 1, total: 6200, payment: "Easypaisa", paid: true, stage: "Confirmed" },
+  { id: 1044, when: "13 Oct, 7:20 pm", customer: "Fatima Noor", city: "Lahore", items: 2, total: 13350, payment: "Cash on delivery", paid: true, stage: "Delivered" },
+  { id: 1043, when: "13 Oct, 1:02 pm", customer: "Zainab Ali", city: "Multan", items: 1, total: 11900, payment: "JazzCash", paid: true, stage: "Shipped", note: true },
+  { id: 1042, when: "12 Oct, 6:45 pm", customer: "Rabia Saeed", city: "Rawalpindi", items: 1, total: 5600, payment: "Cash on delivery", paid: false, stage: "Cancelled" },
+  { id: 1041, when: "12 Oct, 10:15 am", customer: "Amna Shah", city: "Karachi", items: 4, total: 29800, payment: "Card", paid: true, stage: "Delivered" },
+  { id: 1040, when: "11 Oct, 8:30 pm", customer: "Noor Fatima", city: "Peshawar", items: 1, total: 7450, payment: "Easypaisa", paid: true, stage: "Shipped" },
+  { id: 1039, when: "10 Oct, 3:55 pm", customer: "Iqra Javed", city: "Lahore", items: 2, total: 12750, payment: "Cash on delivery", paid: true, stage: "Delivered" },
 ];
 
 export const CUSTOMERS = [
@@ -151,3 +158,43 @@ export const ORDER_DETAIL = {
     { at: "2:34 pm", text: "New-order email sent to the store." },
   ],
 };
+
+/** Enquiries from bulk and made-to-order products. */
+export const ENQUIRIES = [
+  { who: "Shabnam Boutique", contact: "0321 4455667", product: "Zohra 3-piece embroidered lawn", qty: 120, ask: "Wholesale rate for 120 suits, delivery to Hyderabad?", status: "New" as const, when: "35 min ago" },
+  { who: "Mahnoor Bridal", contact: "mahnoor@bridal.pk", product: "Made-to-order Eid formal", qty: 1, ask: "Chest 36, length 44, maroon instead of green. Ready by 2 Nov?", status: "New" as const, when: "2 hours ago" },
+  { who: "Corporate gifting, Engro", contact: "hr@company.pk", product: "Safa white cotton kurta", qty: 300, ask: "300 kurtas in mixed sizes, branded packaging.", status: "Quoted" as const, when: "Yesterday" },
+  { who: "Rida Textiles", contact: "0300 9988776", product: "Naqsh block-print lawn", qty: 60, ask: "Can you do 60 in one colour?", status: "Won" as const, when: "12 Oct" },
+];
+
+/** The theme library: copies, not themes. Two copies of Loom are both Loom. */
+export const THEME_COPIES = [
+  { id: "c3", theme: "Loom", name: "Loom (Eid edit)", version: "2.3", latest: "2.4", added: "9 Oct", live: true, image: "/platform/theme-loom.jpg" },
+  { id: "c2", theme: "Kite", name: "Kite", version: "1.2", latest: "1.2", added: "9 Oct", live: false, image: "/platform/theme-kite.jpg" },
+  { id: "c1", theme: "Loom", name: "Loom (original)", version: "2.1", latest: "2.4", added: "3 Sep", live: false, image: "/platform/theme-loom.jpg" },
+];
+
+export const PAGES_LIST = [
+  { title: "About us", path: "/about", status: "Published" as const, sections: 5, edited: "2 days ago" },
+  { title: "Size guide", path: "/p/size-guide", status: "Published" as const, sections: 3, edited: "12 Oct" },
+  { title: "Wholesale", path: "/p/wholesale", status: "Published" as const, sections: 4, edited: "8 Oct" },
+  { title: "Eid lookbook", path: "/p/eid-lookbook", status: "Draft" as const, sections: 6, edited: "Today" },
+  { title: "Return and refund policy", path: "/p/refund-policy", status: "Published" as const, sections: 1, edited: "Sep" },
+  { title: "Privacy policy", path: "/p/privacy", status: "Published" as const, sections: 1, edited: "Sep" },
+  { title: "Terms of service", path: "/p/terms", status: "Draft" as const, sections: 1, edited: "Sep" },
+];
+
+/** Alerts in the bell. */
+export const ALERTS = [
+  { kind: "order", text: "New order #1048 from Hira Malik", sub: "Cash on delivery · Lahore", when: "5 min", unread: true, href: "/new-admin/orders/1048" },
+  { kind: "enquiry", text: "Shabnam Boutique asked about 120 suits", sub: "Bulk enquiry", when: "35 min", unread: true, href: "/new-admin/orders/enquiries" },
+  { kind: "stock", text: "Kajal kurta is running low", sub: "Size M: 2 left", when: "2 h", unread: true, href: "/new-admin/products/kajal" },
+  { kind: "support", text: "Synora replied to your ticket #1001", sub: "JazzCash payment not showing as paid", when: "Yesterday", unread: false, href: "/support/1001" },
+];
+
+/** Deleted things, kept 30 days. */
+export const BIN = [
+  { kind: "Product", name: "Ruby velvet suit (old)", deleted: "2 days ago", by: "Bilal Khan" },
+  { kind: "Order", name: "#1031, test order", deleted: "6 days ago", by: "Ayesha Khan" },
+  { kind: "Page", name: "Summer sale 2025", deleted: "11 days ago", by: "Ayesha Khan" },
+];

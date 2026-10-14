@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import {
   BarChart3, Bell, Boxes, CreditCard, Database, FileText, Globe, Home, Inbox, LayoutTemplate, LockKeyhole, Package, Receipt, ScrollText,
-  Settings2, Shapes, ShieldCheck, ShoppingCart, SlidersHorizontal, Store, Tag, Truck, Users, Wallet, type LucideIcon,
+  Power, Settings2, Shapes, ShieldCheck, ShoppingCart, SlidersHorizontal, Store, Tag, Truck, Users, Wallet, type LucideIcon,
 } from "lucide-react";
 import type { Tone } from "@/lib/new-admin/sample";
 import { formatMoney } from "@/lib/money";
@@ -15,7 +15,7 @@ export const ICONS: Record<string, LucideIcon> = {
   home: Home, orders: Inbox, products: Package, customers: Users, discounts: Tag, content: FileText, analytics: BarChart3,
   app: LayoutTemplate, preferences: SlidersHorizontal, settings: Settings2, store: Store, plan: Shapes, billing: Receipt,
   domains: Globe, payments: Wallet, users: Users, shipping: Truck, security: LockKeyhole, card: CreditCard, boxes: Boxes, shield: ShieldCheck,
-  checkout: ShoppingCart, bell: Bell, data: Database, policy: ScrollText,
+  checkout: ShoppingCart, bell: Bell, data: Database, policy: ScrollText, power: Power,
 };
 
 /**

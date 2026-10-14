@@ -102,7 +102,7 @@ export function SectionIndex({ items, title }: { items: { id: string; label: str
     };
   }, [items]);
   return (
-    <nav aria-label={title} className="lg:sticky lg:top-6 lg:self-start">
+    <nav aria-label={title}>
       <p className="mb-2 hidden px-3 text-[12px] font-semibold uppercase tracking-[0.08em] text-[#0a0a0a]/45 lg:block">{title}</p>
       <ul className="-mx-1 flex gap-1 overflow-x-auto px-1 pb-1 lg:flex-col lg:overflow-visible">
         {items.map(({ id, label, tone, icon }) => {
@@ -121,5 +121,63 @@ export function SectionIndex({ items, title }: { items: { id: string; label: str
         })}
       </ul>
     </nav>
+  );
+}
+
+/** The announcement bar's words, shown on a bar as they are typed. */
+export function AnnouncementEditor() {
+  const [text, setText] = useState("Free delivery on orders over 10,000 · Eid orders close 28 Oct");
+  const [colour, setColour] = useState("#0a0a0a");
+  return (
+    <div className="overflow-hidden rounded-2xl bg-white ring-1 ring-[#0a0a0a]/[0.08]">
+      <div className="px-5 pt-4">
+        <p className="mb-2 text-[12px] font-semibold uppercase tracking-[0.06em] text-[#0a0a0a]/45">As customers see it</p>
+        <div className="overflow-hidden rounded-xl ring-1 ring-[#0a0a0a]/10">
+          <p className="truncate px-4 py-2 text-center text-[12.5px] font-medium text-white" style={{ background: colour }}>{text || " "}</p>
+          <div className="flex items-center justify-between bg-white px-4 py-3 text-[12px] text-[#0a0a0a]/45"><span className="font-bold text-[#0a0a0a]">ZOHRA LAWN</span><span>Shop · About · Bag</span></div>
+        </div>
+      </div>
+      <div className="grid gap-3 p-5 sm:grid-cols-[minmax(0,1fr)_12rem]">
+        <label className="block">
+          <span className="mb-1.5 block text-[13px] font-semibold">Text</span>
+          <input value={text} onChange={(e) => setText(e.target.value)} maxLength={90} className="h-10 w-full rounded-[10px] px-3.5 text-[14px] outline-none ring-1 ring-[#0a0a0a]/15 focus:ring-2 focus:ring-[#0a0a0a]" />
+          <span className="mt-1 block text-[12px] text-[#0a0a0a]/45">{text.length} of 90</span>
+        </label>
+        <div>
+          <span className="mb-1.5 block text-[13px] font-semibold">Background</span>
+          <div className="flex gap-1.5">
+            {["#0a0a0a", "#6666ff", "#1f9d68", "#b45309", "#a3330c"].map((c) => (
+              <button key={c} type="button" aria-label={`Colour ${c}`} aria-pressed={colour === c} onClick={() => setColour(c)} className={`h-9 w-9 rounded-full ring-offset-2 ${colour === c ? "ring-2 ring-[#0a0a0a]" : ""}`} style={{ background: c }} />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Narrows a page of open sections as you type: "jazz", "password", "domain"
+ * leave only the sections that mention it (and their index entries).
+ */
+export function SectionFilter() {
+  const [q, setQ] = useState("");
+  useEffect(() => {
+    const words = q.toLowerCase().split(/\s+/).filter(Boolean);
+    document.querySelectorAll<HTMLElement>("[data-open-section]").forEach((el) => {
+      const hit = words.every((w) => (el.dataset.openSection ?? "").includes(w) || el.innerText.toLowerCase().includes(w));
+      el.hidden = !hit;
+      const link = document.querySelector<HTMLElement>(`nav a[href="#${el.id}"]`)?.parentElement;
+      if (link) link.hidden = !hit;
+    });
+  }, [q]);
+  return (
+    <input
+      value={q}
+      onChange={(e) => setQ(e.target.value)}
+      placeholder="Find a setting"
+      aria-label="Find a setting"
+      className="h-10 w-full rounded-[10px] bg-white px-3.5 text-[14px] outline-none ring-1 ring-[#0a0a0a]/12 focus:ring-2 focus:ring-[#0a0a0a]"
+    />
   );
 }

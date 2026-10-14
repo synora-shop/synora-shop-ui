@@ -1,103 +1,85 @@
-import type { ReactNode } from "react";
-import { Plus } from "lucide-react";
-import { Box, Field, Row, SectionIndex, Toggle } from "@/components/new-admin/bits";
-import { ICONS, PageHeader, Pill, TONE } from "@/components/new-admin/ui";
-import { SHOP, type Tone } from "@/lib/new-admin/sample";
+import { Plus, X } from "lucide-react";
+import { Box, Field, Row, Toggle } from "@/components/new-admin/bits";
+import { PageHeader, Pill } from "@/components/new-admin/ui";
+import { OpenSections, type OpenSection } from "@/components/new-admin/open-sections";
 
 export const metadata = { title: "Preferences" };
 
 /**
- * Online Store preferences (preview): how the store behaves, every section
- * open on one page, the index following you down. The search preview shows
- * the page as Google would list it, from what is typed beside it.
+ * Online Store preferences (preview): who can see the store, and how it
+ * behaves for them. The real Visibility, Maintenance and Links screens, plus
+ * tracking codes, on one open page.
  */
-const SECTIONS: { id: string; label: string; tone: Tone; icon: string; blurb: string; body: ReactNode }[] = [
+const SECTIONS: OpenSection[] = [
   {
-    id: "access",
-    label: "Store access",
-    tone: "iris",
-    icon: "security",
-    blurb: "Who can see your store right now",
+    id: "access", label: "Store access", tone: "iris", icon: "security", blurb: "Open, private, or closed for a while",
+    body: (
+      <>
+        <Box>
+          <Row label="Private mode" value="Only people with the password can enter. For before launch." right={<Toggle label="Private mode" />} />
+          <Row label="Closed for a while" value="Customers see your holding page instead of the store" right={<Toggle label="Closed" />} />
+        </Box>
+        <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+          <Box title="Holding page">
+            <Field label="Heading" value="Back on 1 November" />
+            <Field label="Message" area value="We are photographing the Winter collection. Leave your email and we will tell you the moment we open." />
+            <Row label="Let people ask to be told" value="38 people are waiting" right={<Toggle on label="Waiting list" />} />
+          </Box>
+          <Box title="As customers see it">
+            <div className="flex min-h-[15rem] flex-col items-center justify-center gap-2 bg-[#0a0a0a] px-6 py-8 text-center text-white">
+              <p className="text-[11px] font-bold tracking-[0.2em] text-white/50">ZOHRA LAWN</p>
+              <p className="text-[22px] font-semibold">Back on 1 November</p>
+              <p className="max-w-xs text-[13px] text-white/65">We are photographing the Winter collection. Leave your email and we will tell you the moment we open.</p>
+              <span className="mt-2 flex w-full max-w-xs overflow-hidden rounded-full bg-white/10 text-[12.5px]"><span className="flex-1 px-4 py-2 text-left text-white/45">Your email</span><span className="bg-white px-4 py-2 font-semibold text-[#0a0a0a]">Tell me</span></span>
+            </div>
+          </Box>
+        </div>
+      </>
+    ),
+  },
+  {
+    id: "countries", label: "Countries", tone: "sky", icon: "domains", blurb: "Hide the store from places you do not serve",
     body: (
       <Box>
-        <Row label="Private mode" value="Only people with the password can enter. For before launch." right={<Toggle label="Private mode" />} />
-        <Row label="Closed for a while" value="A holding page saying when you are back, with a way to be told" right={<Toggle label="Closed" />} />
+        <div className="flex flex-wrap items-center gap-2 px-5 py-4">
+          {["India", "Afghanistan"].map((c) => <span key={c} className="inline-flex items-center gap-1 rounded-full bg-[#f0f0f0] px-3 py-1 text-[13px] font-medium">{c} <X className="h-3.5 w-3.5 text-[#0a0a0a]/40" /></span>)}
+          <span className="rounded-full px-3 py-1 text-[13px] text-[#0a0a0a]/45 ring-1 ring-dashed ring-[#0a0a0a]/20">Add a country</span>
+        </div>
+        <Row label="What they see" value="A plain page: this store does not deliver to your country" right={<span />} />
       </Box>
     ),
   },
   {
-    id: "seo",
-    label: "Search and sharing",
-    tone: "mint",
-    icon: "domains",
-    blurb: "How your store looks on Google, WhatsApp and Instagram",
-    body: (
-      <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <Box title="As typed">
-          <Field label="Home page title" value="Zohra Lawn · Embroidered lawn and pret, made in Lahore" hint="52 of 70 characters" />
-          <Field label="Description" value="Three-piece lawn suits, chikankari kurtas and Eid formals. Cash on delivery across Pakistan." hint="103 of 320 characters" area />
-        </Box>
-        <Box title="As Google shows it">
-          <div className="p-5">
-            <p className="text-[12.5px] text-[#0a0a0a]/55">zohralawn.pk</p>
-            <p className="mt-0.5 text-[17px] leading-snug text-[#1a0dab]">Zohra Lawn · Embroidered lawn and pret, made in Lahore</p>
-            <p className="mt-1 text-[13.5px] leading-snug text-[#0a0a0a]/65">Three-piece lawn suits, chikankari kurtas and Eid formals. Cash on delivery across Pakistan.</p>
-          </div>
-          <div className="flex items-center gap-3 p-5">
-            <span className="grid h-16 w-28 shrink-0 place-items-center rounded-lg bg-[#0a0a0a] text-[12px] font-semibold text-white">Share image</span>
-            <span className="text-[13px] text-[#0a0a0a]/55">Shown when your link is shared on WhatsApp, Facebook or Instagram. 1200 by 628.</span>
-          </div>
-        </Box>
-      </div>
-    ),
-  },
-  {
-    id: "chat",
-    label: "Chat buttons",
-    tone: "sky",
-    icon: "users",
-    blurb: "Buttons that float on every page of your store",
+    id: "search", label: "Search engines", tone: "mint", icon: "analytics", blurb: "Whether Google can list your store",
     body: (
       <Box>
-        <Row label="WhatsApp" value="0300 1234567 · bottom right" right={<Toggle on label="WhatsApp button" />} />
-        <Row label="Instagram" value="@zohralawn" right={<Toggle label="Instagram button" />} />
-        <Row label="Call" value="Show a call button on phones" right={<Toggle label="Call button" />} />
+        <Row label="Let search engines list my store" value="Off while you are in private mode, whatever this says" right={<Toggle on label="Search engines" />} />
+        <Field label="Home page title" value="Zohra Lawn · Embroidered lawn and pret, made in Lahore" hint="52 of 70 characters" />
+        <Field label="Description" area value="Three-piece lawn suits, chikankari kurtas and Eid formals. Cash on delivery across Pakistan." hint="103 of 320 characters" />
       </Box>
     ),
   },
   {
-    id: "redirects",
-    label: "Links and redirects",
-    tone: "lavender",
-    icon: "domains",
-    blurb: "Send old addresses to new ones, so no link you shared breaks",
+    id: "spam", label: "Spam protection", tone: "lavender", icon: "shield", blurb: "Keep bots out of your forms",
     body: (
       <Box>
-        <Row label="/eid-2025" value="goes to /collections/eid-edit" right={<Pill tone="off">301</Pill>} />
-        <Row label="/lawn" value="goes to /collections/summer-lawn" right={<Pill tone="off">301</Pill>} />
+        <Row label="Protect my public forms" value="Contact, enquiries and the waiting list" right={<Toggle on label="Protect forms" />} />
+        <Row label="Slow down repeated sign-in attempts" right={<Pill tone="off">Always on</Pill>} />
+      </Box>
+    ),
+  },
+  {
+    id: "redirects", label: "Links and redirects", tone: "iris", icon: "domains", blurb: "Send old addresses to new ones, so no shared link breaks",
+    body: (
+      <Box>
+        <Row label="/eid-2025" value="goes to /collections/eid-edit · used 214 times" right={<Pill tone="off">Permanent</Pill>} />
+        <Row label="/lawn" value="goes to /collections/summer-lawn · used 1,032 times" right={<Pill tone="off">Permanent</Pill>} />
         <Row label={<span className="inline-flex items-center gap-1.5 font-semibold"><Plus className="h-4 w-4" /> Add a redirect</span>} />
       </Box>
     ),
   },
   {
-    id: "spam",
-    label: "Spam protection",
-    tone: "mint",
-    icon: "shield",
-    blurb: "Keep bots out of your forms",
-    body: (
-      <Box>
-        <Row label="Contact and enquiry forms" value="A quiet check that visitors are people" right={<Toggle on label="Form protection" />} />
-        <Row label="Sign-in and sign-up" value="Slow down repeated attempts" right={<Toggle on label="Sign-in protection" />} />
-      </Box>
-    ),
-  },
-  {
-    id: "tracking",
-    label: "Tracking codes",
-    tone: "iris",
-    icon: "analytics",
-    blurb: "Measure your ads and visitors with the tools you already use",
+    id: "tracking", label: "Tracking codes", tone: "sky", icon: "analytics", blurb: "Measure your ads with the tools you already use",
     body: (
       <Box>
         <Field label="Google Analytics" value="G-7XK2PL91QZ" />
@@ -108,32 +90,11 @@ const SECTIONS: { id: string; label: string; tone: Tone; icon: string; blurb: st
   },
 ];
 
-export default function OnlineStorePreferences() {
+export default function PreferencesPage() {
   return (
     <>
-      <PageHeader icon="preferences" tone="sky" title="Preferences" sub={`How ${SHOP.name} behaves for visitors.`} />
-      <div className="grid gap-6 lg:grid-cols-[13.5rem_minmax(0,1fr)] lg:gap-10">
-        <SectionIndex title="On this page" items={SECTIONS.map(({ id, label, tone, icon }) => ({ id, label, tone, icon }))} />
-        <div className="flex min-w-0 flex-col gap-10">
-          {SECTIONS.map((s) => {
-            const Icon = ICONS[s.icon];
-            return (
-              <section key={s.id} id={s.id} className="scroll-mt-6">
-                <div className="mb-3.5 flex items-start gap-3.5">
-                  <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-[10px] ${TONE[s.tone].chip}`}>
-                    <Icon className="h-[18px] w-[18px]" />
-                  </span>
-                  <div>
-                    <h2 className="text-[17px] font-semibold tracking-[-0.015em]">{s.label}</h2>
-                    <p className="text-[13.5px] text-[#0a0a0a]/55">{s.blurb}</p>
-                  </div>
-                </div>
-                {s.body}
-              </section>
-            );
-          })}
-        </div>
-      </div>
+      <PageHeader icon="preferences" tone="sky" title="Preferences" sub="Who can see your store, and how it behaves for them." />
+      <OpenSections title="On this page" sections={SECTIONS} />
     </>
   );
 }

@@ -42,6 +42,19 @@ export default function NewAdminHome() {
         </div>
       </div>
 
+      {/* The store itself, as the real Home leads with it. */}
+      <section className="flex flex-col gap-4 rounded-2xl bg-white p-4 ring-1 ring-[#0a0a0a]/[0.07] sm:flex-row sm:items-center sm:p-5">
+        <span className="grid h-14 w-14 shrink-0 place-items-center rounded-xl bg-[#0a0a0a] text-[13px] font-bold tracking-[0.1em] text-white">ZL</span>
+        <div className="min-w-0 flex-1">
+          <p className="flex flex-wrap items-center gap-2 text-[17px] font-semibold">{SHOP.name} <span className="inline-flex items-center gap-1.5 rounded-full bg-[#ddf5e9] px-2 py-0.5 text-[11.5px] font-semibold text-[#11643f]"><span className="h-1.5 w-1.5 rounded-full bg-current" /> Open</span></p>
+          <p className="truncate text-[13.5px] text-[#0a0a0a]/55">zohralawn.pk · Gulberg III, Lahore · Loom (Eid edit) is live</p>
+        </div>
+        <div className="flex gap-2">
+          <a href="#" className="inline-flex h-9 items-center rounded-[10px] px-3.5 text-[13.5px] font-semibold ring-1 ring-[#0a0a0a]/12">View store</a>
+          <a href="/new-admin/online-store" className="inline-flex h-9 items-center rounded-[10px] bg-[#0a0a0a] px-3.5 text-[13.5px] font-semibold text-white">Customise</a>
+        </div>
+      </section>
+
       <StatStrip
         stats={[
           { label: "Sessions", value: sum(SESSIONS_30).toLocaleString("en-PK"), delta: "+38% on last month", spark: SESSIONS_30 },

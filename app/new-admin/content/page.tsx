@@ -14,6 +14,14 @@ export default function FilesPage() {
   return (
     <>
       <PageHeader icon="content" tone="mint" title="Files" sub="Pictures, fonts, videos and documents you use across the store." actions={<Button primary><Upload className="h-4 w-4" /> Upload files</Button>} />
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="flex rounded-[10px] bg-white p-0.5 text-[13px] font-semibold ring-1 ring-[#0a0a0a]/10">{["All", "Pictures", "Fonts", "Videos", "Not used anywhere"].map((t, i) => <span key={t} className={`rounded-lg px-3 py-1.5 ${i === 0 ? "bg-[#0a0a0a] text-white" : "text-[#0a0a0a]/55"}`}>{t}</span>)}</span>
+        <span className="ml-auto text-[13px] text-[#0a0a0a]/50">412 MB of 5 GB used</span>
+      </div>
+      <div className="rounded-2xl border-2 border-dashed border-[#0a0a0a]/12 bg-white/60 px-6 py-8 text-center">
+        <p className="text-[14.5px] font-semibold">Drop files here to upload</p>
+        <p className="text-[13px] text-[#0a0a0a]/50">Pictures, fonts, videos and PDFs. Pictures are resized and sharpened for phones automatically.</p>
+      </div>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {PRODUCTS.slice(0, 7).map((p) => (
           <figure key={p.slug} className="overflow-hidden rounded-xl bg-white ring-1 ring-[#0a0a0a]/[0.07]">

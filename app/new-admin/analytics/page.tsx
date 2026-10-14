@@ -9,7 +9,13 @@ export default function AnalyticsPage() {
   const pay: [string, number, string][] = [["Cash on delivery", 52, "#0a0a0a"], ["JazzCash", 21, "#6666ff"], ["Easypaisa", 15, "#b7b9ff"], ["Card", 12, "#c8e7ff"]];
   return (
     <>
-      <PageHeader icon="analytics" tone="iris" title="Analytics" sub="How your store is doing, last 30 days." />
+      <PageHeader icon="analytics" tone="iris" title="Analytics" sub="Only the figures you would act on." />
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="flex rounded-[10px] bg-white p-0.5 text-[13px] font-semibold ring-1 ring-[#0a0a0a]/10">{["Today", "7 days", "30 days", "This year"].map((p) => <span key={p} className={`rounded-lg px-3 py-1.5 ${p === "30 days" ? "bg-[#0a0a0a] text-white" : "text-[#0a0a0a]/55"}`}>{p}</span>)}</span>
+        <span className="inline-flex items-center gap-2 rounded-[10px] bg-white px-3 py-2 text-[13px] font-semibold ring-1 ring-[#0a0a0a]/10"><span className="h-4 w-7 rounded-full bg-[#0a0a0a] p-0.5"><span className="block h-3 w-3 translate-x-3 rounded-full bg-white" /></span> Compare with the 30 days before</span>
+        <span className="inline-flex items-center gap-2 rounded-[10px] bg-white px-3 py-2 text-[13px] font-semibold ring-1 ring-[#0a0a0a]/10"><span className="h-2 w-2 animate-pulse rounded-full bg-[#2fb37c] motion-reduce:animate-none" /> Live · 12 on the store</span>
+        <span className="ml-auto inline-flex items-center rounded-[10px] bg-white px-3 py-2 text-[13px] font-semibold ring-1 ring-[#0a0a0a]/10">Export</span>
+      </div>
       <StatStrip stats={[{ label: "Total sales", value: pkr(sum(SALES_30)), delta: "+42%", spark: SALES_30 }, { label: "Orders", value: String(sum(ORDERS_30)), delta: "+31%", spark: ORDERS_30 }, { label: "Average order", value: pkr(Math.round(sum(SALES_30) / sum(ORDERS_30))) }, { label: "Sessions", value: sum(SESSIONS_30).toLocaleString("en-PK"), spark: SESSIONS_30 }]} />
       <Card title="Sessions over time"><AreaChart points={SESSIONS_30} label="Sessions per day, rising" /></Card>
       <div className="grid gap-5 lg:grid-cols-2">

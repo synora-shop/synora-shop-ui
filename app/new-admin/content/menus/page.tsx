@@ -17,8 +17,11 @@ export default function MenusPage() {
       <div className="grid gap-5 lg:grid-cols-[16rem_minmax(0,1fr)]">
         <Card pad={false}>
           <ul className="p-2">
-            {["Main menu", "Footer", "Help links"].map((m, i) => (
-              <li key={m} className={`rounded-lg px-3 py-2.5 text-[14px] ${i === 0 ? "bg-[#f0f0f0] font-semibold" : "text-[#0a0a0a]/70"}`}>{m}<span className="float-right text-[12px] text-[#0a0a0a]/40">{[7, 5, 3][i]}</span></li>
+            {[["Main menu", "Header", 7], ["Footer", "Footer", 5], ["Help links", "Not shown", 3]].map(([m, where, n], i) => (
+              <li key={m as string} className={`rounded-lg px-3 py-2.5 text-[14px] ${i === 0 ? "bg-[#f0f0f0] font-semibold" : "text-[#0a0a0a]/70"}`}>
+                <span className="flex items-center justify-between">{m}<span className="text-[12px] font-normal text-[#0a0a0a]/40">{n} links</span></span>
+                <span className={`mt-0.5 block text-[11.5px] font-medium ${where === "Not shown" ? "text-[#b45309]" : "text-[#0a0a0a]/45"}`}>{where === "Not shown" ? "Not shown anywhere yet" : `Shown in the ${String(where).toLowerCase()}`}</span>
+              </li>
             ))}
           </ul>
         </Card>

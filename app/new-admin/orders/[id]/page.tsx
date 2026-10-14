@@ -1,7 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Copy, MessageCircle, NotebookText, Package, Phone, Printer } from "lucide-react";
+import { ArrowLeft, Copy, NotebookText, Phone, Printer } from "lucide-react";
+import { OrderFlow, OrderPager, WhatsAppTemplates } from "@/components/new-admin/order-flow";
+import { STAGE_TONE } from "@/components/new-admin/orders-board";
 import { Button, Card, Pill, pkr } from "@/components/new-admin/ui";
 import { ORDERS, ORDER_DETAIL, PRODUCTS } from "@/lib/new-admin/sample";
 
@@ -13,7 +15,8 @@ import { ORDERS, ORDER_DETAIL, PRODUCTS } from "@/lib/new-admin/sample";
  */
 export default async function OrderPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const o = ORDERS.find((x) => String(x.id) === id);
+  const idx = ORDERS.findIndex((x) => String(x.id) === id);
+  const o = ORDERS[idx];
   if (!o) notFound();
   const detail = o.id === ORDER_DETAIL.id ? ORDER_DETAIL : null;
   const lines = (detail?.lines ?? PRODUCTS.slice(o.id % 5, (o.id % 5) + o.items).map((p) => ({ slug: p.slug, qty: 1, size: "M", price: p.price }))).map((l) => ({ ...l, p: PRODUCTS.find((p) => p.slug === l.slug)! }));
@@ -30,20 +33,22 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
           <div className="mt-2 flex flex-wrap items-center gap-2.5">
             <h1 className="text-[24px] font-semibold tracking-[-0.02em]">#{o.id}</h1>
             {o.paid ? <Pill tone="good">Paid</Pill> : <Pill tone="wait">{cod ? "Collect on delivery" : "Awaiting payment"}</Pill>}
-            {o.fulfilled === "Fulfilled" ? <Pill tone="off">Fulfilled</Pill> : o.fulfilled === "Returned" ? <Pill tone="bad">Returned</Pill> : <Pill tone="info">Unfulfilled</Pill>}
+            <Pill tone={STAGE_TONE[o.stage]}>{o.stage}</Pill>
           </div>
           <p className="mt-1 text-[13.5px] text-[#0a0a0a]/55">{detail?.when ?? o.when} · from the online store</p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button><Printer className="h-4 w-4" /> Print slip</Button>
-          {cod && !o.paid && <Button>Mark as confirmed</Button>}
-          <Button primary><Package className="h-4 w-4" /> Fulfil items</Button>
+          <Button>Cancel order</Button>
+          <OrderPager prev={ORDERS[idx - 1]?.id} next={ORDERS[idx + 1]?.id} />
         </div>
       </div>
 
+      <OrderFlow start={o.stage} />
+
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="flex min-w-0 flex-col gap-5">
-          <Card title={o.fulfilled === "Fulfilled" ? "Sent" : "To send"} action={<span className="text-[12.5px] font-semibold text-[#0a0a0a]/50">{lines.length} item{lines.length > 1 ? "s" : ""}</span>}>
+          <Card title={o.stage === "Delivered" || o.stage === "Shipped" ? "Sent" : "To send"} action={<span className="text-[12.5px] font-semibold text-[#0a0a0a]/50">{lines.length} item{lines.length > 1 ? "s" : ""}</span>}>
             <ul className="divide-y divide-[#0a0a0a]/[0.06]">
               {lines.map((l) => (
                 <li key={l.slug} className="flex items-center gap-4 py-3 first:pt-0 last:pb-0">
@@ -96,9 +101,9 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
               <p className="flex items-center justify-between gap-2">{detail?.customer.email ?? "customer@example.com"} <Copy className="h-3.5 w-3.5 text-[#0a0a0a]/35" /></p>
               <p>{detail?.customer.phone ?? "0300 0000000"}</p>
             </div>
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <span className="inline-flex items-center justify-center gap-1.5 rounded-[10px] py-2 text-[13px] font-semibold ring-1 ring-[#0a0a0a]/12"><Phone className="h-4 w-4" /> Call</span>
-              <span className="inline-flex items-center justify-center gap-1.5 rounded-[10px] bg-[#b8efd6] py-2 text-[13px] font-semibold"><MessageCircle className="h-4 w-4" /> WhatsApp</span>
+            <div className="mt-3">
+              <span className="mb-2 inline-flex w-full items-center justify-center gap-1.5 rounded-[10px] py-2 text-[13px] font-semibold ring-1 ring-[#0a0a0a]/12"><Phone className="h-4 w-4" /> Call {o.customer.split(" ")[0]}</span>
+              <WhatsAppTemplates name={o.customer} id={o.id} phone={detail?.customer.phone ?? "0300 0000000"} />
             </div>
             <p className="mt-4 text-[12px] font-semibold uppercase tracking-[0.06em] text-[#0a0a0a]/45">Deliver to</p>
             <p className="mt-1 text-[13.5px] leading-relaxed">{detail?.customer.address ?? `${o.city}, Pakistan`}</p>
