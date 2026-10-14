@@ -15,6 +15,8 @@ declare module "next-auth" {
       /** Set only for a shopper session. */
       customerId?: string;
       customerShopId?: string;
+      /** A Synora master admin's avatar initials ("" if none set); null for everyone else. */
+      master?: string | null;
     } & DefaultSession["user"];
   }
 

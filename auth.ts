@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { verifyOtpCode, OTP_MAX_ATTEMPTS } from "@/lib/otp";
 import { clearRateLimit, rateLimit } from "@/lib/rate-limit";
+import { isTeamEmail, teamInitials } from "@/lib/team";
 
 /** One shop a signed-in user can act in, and what they may do there. */
 export type ShopMembership = {
@@ -255,6 +256,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.shops = (token.shops as ShopMembership[]) ?? [];
         session.user.customerId = token.customerId as string | undefined;
         session.user.customerShopId = token.customerShopId as string | undefined;
+        // A Synora master admin carries their gold avatar's initials ("" when
+        // none are set); everyone else null. From the setting, no database
+        // read (lib/team.ts).
+        session.user.master = !token.customerId && isTeamEmail(session.user.email) ? (teamInitials(session.user.email) ?? "") : null;
       }
       return session;
     },

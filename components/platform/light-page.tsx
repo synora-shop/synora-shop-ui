@@ -16,17 +16,14 @@ import { docsSearchItems, suggestedSearchItems } from "@/lib/docs-content";
  * notes): the header's middle becomes the switch between them, phones get the
  * tab bar along the bottom, and the search opens over any of them. `search`
  * adds entries of the page's own (the release notes add theirs).
- * `signedIn` (only pages that already know who is asking pass it) swaps
- * "Log in" and "Start free" for the way back to the panel.
  */
-export function LightPage({ children, section, search = [], signedIn = false }: { children: ReactNode; section?: HelpSection; search?: SearchItem[]; signedIn?: boolean }) {
+export function LightPage({ children, section, search = [] }: { children: ReactNode; section?: HelpSection; search?: SearchItem[] }) {
   return (
     <div data-lp-light className={`bg-white text-[#0d0d50] ${section ? "pb-24 md:pb-0" : ""}`}>
       <LightHeader
         signup={appUrl("/merchant/signup")}
         login={appUrl("/merchant/login")}
         middle={section ? <SectionSwitch active={section} /> : undefined}
-        panel={signedIn ? appUrl("/admin") : undefined}
       />
       {children}
       <PlatformFooter tone="light" />

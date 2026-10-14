@@ -30,7 +30,7 @@ export default async function HelpRequestPage({ params }: { params: Promise<{ nu
   await prisma.helpRequest.update({ where: { id: r.id }, data: { userSeenAt: new Date() } });
 
   return (
-    <LightPage section="help" signedIn={!!me}>
+    <LightPage section="help">
       <div className="mx-auto max-w-[52rem] px-5 pb-24 pt-32 sm:pt-36">
         <Link href="/help#history" className="inline-flex items-center gap-1.5 rounded-full py-1 text-[14px] font-semibold text-[#0d0d50]/55 hover:text-[#0d0d50]">
           <ArrowLeft className="h-4 w-4" /> Everything you&rsquo;ve sent

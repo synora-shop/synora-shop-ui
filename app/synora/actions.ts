@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { synoraTeamMember } from "@/lib/help-server";
+import { teamInitials } from "@/lib/team";
 import { LIMITS, STATUSES, statusLabel, type HelpStatusName } from "@/lib/help";
 import { CHANGE_KINDS, readChanges } from "@/lib/release-notes";
 import { sendHelpUpdateEmail } from "@/lib/email";
@@ -38,7 +39,7 @@ export async function answerHelpRequest(input: { number: number; body: string; v
   const now = new Date();
   await prisma.$transaction([
     prisma.helpMessage.create({
-      data: { requestId: r.id, fromTeam: true, authorName: me.name, body, viaEmail: input.via === "email" && !!body, statusTo },
+      data: { requestId: r.id, fromTeam: true, authorName: teamInitials(me.email) || me.name, body, viaEmail: input.via === "email" && !!body, statusTo },
     }),
     prisma.helpRequest.update({
       where: { id: r.id },
@@ -55,7 +56,7 @@ export async function answerHelpRequest(input: { number: number; body: string; v
         subject: r.subject,
         status: statusTo ? statusLabel(r.kind, statusTo) : undefined,
         reply: body || undefined,
-        from: `${me.name} at Synora`,
+        from: `${teamInitials(me.email) || me.name} at Synora`,
       });
     } catch (err) {
       emailFailed = true;

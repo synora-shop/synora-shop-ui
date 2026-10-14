@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
 import { PLATFORM_DOMAIN } from "@/lib/shop-context";
 import { SignupForm } from "@/components/merchant/signup-form";
 import { FormFooter, FormHeading, FormLink } from "@/components/merchant/form-shell";
@@ -10,7 +12,11 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function SignupPage() {
+export default async function SignupPage() {
+  // Already signed in: a second account is not what they came for. On to the
+  // dashboard (or the console, for a master admin) via /merchant/stores.
+  const session = await auth();
+  if (session?.user?.id && !session.user.customerId) redirect("/merchant/stores");
   return (
     <>
       <FormHeading

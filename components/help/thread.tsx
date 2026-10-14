@@ -1,5 +1,6 @@
 import { Check, Mail } from "lucide-react";
 import { statusLabel, type HelpKindName, type HelpStatusName } from "@/lib/help";
+import { AccountAvatar } from "@/components/platform/account-avatar";
 
 /**
  * A request's conversation (14 October), drawn the same for the person who
@@ -75,8 +76,10 @@ export function Thread({ kind, entries, viewer }: { kind: HelpKindName; entries:
             <span className="mb-1.5 flex items-center gap-2 px-1 text-[13px] text-[#0d0d50]/50">
               {e.fromTeam ? (
                 <>
-                  <span className="rounded-full bg-[#0d0d50] px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-[0.06em] text-white">Synora</span>
-                  <span className="font-semibold text-[#0d0d50]/75">{e.authorName || "The Synora team"}</span>
+                  {/* Team replies are signed with the admin's initials, in gold. */}
+                  {e.authorName && e.authorName.length <= 4 ? <AccountAvatar initials={e.authorName} master /> : null}
+                  <span className="rounded-full bg-[#0d0d50] px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-[0.06em] text-[#f2cf72]">Synora</span>
+                  {e.authorName.length > 4 && <span className="font-semibold text-[#0d0d50]/75">{e.authorName}</span>}
                 </>
               ) : (
                 <span className="font-semibold text-[#0d0d50]/75">{viewer === "sender" ? "You" : e.authorName}</span>

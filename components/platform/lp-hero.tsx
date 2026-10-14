@@ -3,6 +3,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { formatMoney } from "@/lib/money";
 import { SynoraAppMark } from "@/components/ui/synora-marks";
+import { AccountSlot } from "@/components/platform/account-slot";
 
 /**
  * The front page's top: its own light header, and the hero — "Your online
@@ -30,12 +31,12 @@ export const C = { iris: "#6666ff", lavender: "#b7b9ff", sky: "#c8e7ff", mint: "
  */
 const TICKS = ["Cash on delivery", "JazzCash", "Easypaisa", "Cards through PayFast", "Your own domain"];
 
-export function LightHeader({ signup, login, middle, panel }: { signup: string; login: string; middle?: React.ReactNode; panel?: string }) {
+export function LightHeader({ signup, login, middle }: { signup: string; login: string; middle?: React.ReactNode }) {
   return (
     <header className="fixed inset-x-0 top-0 z-50 px-4 pt-3 sm:px-6 sm:pt-4">
       {/* With a middle of its own (the help pages' switch) the pill keeps its
           width instead of tightening on scroll: the switch needs the room. */}
-      <div className={`${middle ? "max-w-[64rem]" : "lp-head max-w-[60rem]"} relative mx-auto flex items-center justify-between gap-4 overflow-hidden rounded-full border border-[#0d0d50]/[0.08] bg-white/85 py-3 pl-6 pr-2.5 shadow-[0_8px_30px_-12px_rgba(13,13,80,0.15)] backdrop-blur-md`}>
+      <div className={`${middle ? "max-w-[64rem]" : "lp-head max-w-[60rem]"} relative mx-auto flex items-center justify-between gap-4 rounded-full border border-[#0d0d50]/[0.08] bg-white/85 py-3 pl-6 pr-2.5 shadow-[0_8px_30px_-12px_rgba(13,13,80,0.15)] backdrop-blur-md`}>
         <Link href="/" className="shrink-0 rounded text-[#0d0d50] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6666ff] focus-visible:ring-offset-4">
           <SynoraAppMark />
         </Link>
@@ -57,23 +58,8 @@ export function LightHeader({ signup, login, middle, panel }: { signup: string; 
         </div>
         )}
 
-        <nav className="flex shrink-0 items-center gap-1 text-sm">
-{panel ? (
-            <a href={panel} className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-[#0d0d50] py-2 pl-4 pr-3.5 font-semibold text-white transition-colors hover:bg-[#1a1a6e]">
-              Your panel <ArrowRight className="h-4 w-4" />
-            </a>
-          ) : (
-          <>
-                    <a href={login} className="rounded-full px-3 py-2 font-medium text-[#0d0d50]/70 transition-colors hover:bg-[#0d0d50]/[0.05] hover:text-[#0d0d50]">
-            Log in
-          </a>
-          <a href={signup} className="group inline-flex items-center rounded-full bg-[#6666ff] py-2 pl-4 pr-4 font-semibold text-white shadow-[0_6px_20px_-6px_rgba(102,102,255,0.7)] transition-[padding] duration-300 hover:pr-3">
-            Start free
-            <ArrowRight className="ml-0 h-4 w-0 opacity-0 transition-all duration-300 group-hover:ml-1.5 group-hover:w-4 group-hover:opacity-100" />
-          </a>
-          </>
-          )}
-        </nav>
+        {/* Log in and Start free, or the avatar of whoever is signed in. */}
+        <AccountSlot signup={signup} login={login} />
 
         {/* How far down the page you are. */}
         <span aria-hidden className="lp-progress pointer-events-none absolute inset-x-6 bottom-0 h-[2px] rounded-full bg-gradient-to-r from-[#6666ff] via-[#b7b9ff] to-[#b8efd6]" />

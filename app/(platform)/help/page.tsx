@@ -54,7 +54,7 @@ export default async function HelpPage({ searchParams }: { searchParams: Promise
   const unread = rows.filter((r) => r.unread).length;
 
   return (
-    <LightPage section="help" signedIn={!!me}>
+    <LightPage section="help">
       <LightPageHero
         pill={me ? `Signed in as ${me.email}` : "Help · the Synora team reads every one"}
         title={

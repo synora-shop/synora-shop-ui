@@ -7,6 +7,15 @@ purpose — this is the list Abdul works from, not a ticket tracker.
 
 ## Next up
 
+> **Accounts in the light header (14 October).** Signed in, "Log in / Start
+> free" becomes the person's avatar (components/platform/account-slot.tsx),
+> asked from the browser so the front page stays one cached page. Master
+> admins wear gold with their initials from `SYNORA_TEAM_EMAILS`
+> (`email=AA,…`; live: AA, HSN, FHD, Ansab's to come as ANS), merchants iris.
+> Menu: dashboard or console, help, sign out (stays on the page). The console
+> has its own sign out; team replies are signed with the gold initials. The
+> login and sign-up pages forward anyone already signed in.
+
 > **Help desk and Synora console (14 October).** `/docs`, `/help`,
 > `/release-notes` with a header switch and ⌘K search; tickets and suggestions
 > with history, threads and "email me"; the team console at `/synora` (tickets,
