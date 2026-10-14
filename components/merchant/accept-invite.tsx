@@ -23,10 +23,13 @@ export function AcceptInvite({ token, shopName }: { token: string; shopName: str
       return;
     }
     setDone(result.message ?? `You've joined ${shopName}.`);
-    // The membership only reaches the session token on the next sign-in cycle,
-    // so refresh rather than pushing straight into an admin the session does
-    // not yet have access to.
-    router.refresh();
+    // Straight into the store. acceptInvite has already refreshed the session
+    // and chosen this store, so the dashboard opens at once. It used to
+    // router.refresh() here instead, which re-rendered this page with the
+    // invitation now "used": the welcome and its button vanished and the
+    // person was told to sign in again. Fixed 14 October.
+    startNavProgress();
+    router.push("/admin");
   }
 
   if (done) {

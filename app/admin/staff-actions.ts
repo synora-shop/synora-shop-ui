@@ -1,8 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
+import { SELECTED_SHOP_COOKIE, selectedShopCookieOptions } from "@/lib/selected-shop";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/auth";
+import { auth, unstable_update } from "@/auth";
 import { audit } from "@/lib/audit";
 import { isValidEmail } from "@/lib/validation";
 import { createToken, expiryFor, hashToken } from "@/lib/tokens";
@@ -182,6 +184,14 @@ export async function acceptInvite(token: string): Promise<Result> {
     actorEmail: user.email,
     detail: { role: invite.role },
   });
+
+  // The session carries the list of stores (auth.ts) and was minted before
+  // this one existed. Without a refresh, someone who had no store until now is
+  // turned back at the door of the one they just joined. Fixed 14 October.
+  await unstable_update({});
+  // And open the store just joined, not whichever one was open before
+  // (app/merchant/stores/actions.ts does the same for "open store").
+  (await cookies()).set(SELECTED_SHOP_COOKIE, invite.shopId, selectedShopCookieOptions);
 
   return { ok: true, message: `You've joined ${invite.shop.name}.` };
 }

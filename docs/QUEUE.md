@@ -17,9 +17,9 @@ purpose — this is the list Abdul works from, not a ticket tracker.
 > your store" to any signed-in account with none (`createMyStore`, which
 > refreshes the session with `unstable_update`). Everyone signing in lands on
 > the front page. Help is now Support at `/support`; `/help` forwards. New
-> Theme Store gallery at `/theme-store`. **Known gap, not new:** accepting a
-> staff invitation does not refresh the session's list of stores, so someone
-> with no store before the invite may be sent to sign in once.
+> Theme Store gallery at `/theme-store`. Accepting a staff invitation now
+> refreshes the session's list of stores and opens the store joined; before,
+> the page re-rendered as "already used" and sent the person to sign in.
 
 > **One site header, colour-coded help pages (14 October, later).** The
 > front page and the three help pages share `components/platform/site-header.tsx`:
