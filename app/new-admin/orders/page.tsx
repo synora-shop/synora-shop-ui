@@ -8,7 +8,7 @@ export const metadata = { title: "Orders" };
 export default function OrdersPage() {
   return (
     <>
-      <PageHeader icon="orders" title="Orders" sub="Every order, how it was paid, and what is left to send." actions={<><Button><Download className="h-4 w-4" /> Export</Button><Button primary><Plus className="h-4 w-4" /> Create order</Button></>} />
+      <PageHeader icon="orders" tone="iris" title="Orders" sub="Every order, how it was paid, and what is left to send." actions={<><Button><Download className="h-4 w-4" /> Export</Button><Button primary><Plus className="h-4 w-4" /> Create order</Button></>} />
       <StatStrip
         stats={[
           { label: "Orders today", value: "2", delta: "+1 on yesterday" },

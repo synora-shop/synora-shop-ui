@@ -7,82 +7,72 @@
 import { formatMoney } from "@/lib/money";
 
 export type NavItem = { href: string; label: string };
-export type NavGroup = { id: string; label: string; href: string; icon: string; badge?: number; items?: NavItem[] };
+/** The brand colour an area of the admin wears: its dot in the rail and its page icon. */
+export type Tone = "iris" | "lavender" | "sky" | "mint" | "ink";
+export type NavGroup = { id: string; label: string; href: string; icon: string; tone: Tone; badge?: number; items?: NavItem[] };
 
 const A = "/new-admin";
 
-/** Abdul's organisation of the panel (draft, 14 October), in his order. */
+/**
+ * Shopify's organisation of the panel, cut to what Synora can build in code
+ * alone (Abdul, 15 October): Home; Orders; Products; Customers; Discounts;
+ * Content; Analytics; Online Store (themes, pages, preferences). Settings sit
+ * apart, and Policies live there, as on Shopify. Every group is drawn open.
+ */
 export const NAV: NavGroup[] = [
-  { id: "home", label: "Home", href: A, icon: "home" },
+  { id: "home", label: "Home", href: A, icon: "home", tone: "ink" },
   {
-    id: "orders",
-    label: "Orders",
-    href: `${A}/orders`,
-    icon: "orders",
-    badge: 4,
+    id: "orders", label: "Orders", href: `${A}/orders`, icon: "orders", tone: "iris", badge: 4,
     items: [
-      { href: `${A}/orders`, label: "Orders" },
       { href: `${A}/orders/drafts`, label: "Drafts" },
       { href: `${A}/orders/abandoned`, label: "Abandoned checkouts" },
     ],
   },
   {
-    id: "products",
-    label: "Products",
-    href: `${A}/products`,
-    icon: "products",
+    id: "products", label: "Products", href: `${A}/products`, icon: "products", tone: "mint",
     items: [
-      { href: `${A}/products`, label: "Products" },
       { href: `${A}/products/collections`, label: "Collections" },
       { href: `${A}/products/inventory`, label: "Inventory" },
     ],
   },
   {
-    id: "customers",
-    label: "Customers",
-    href: `${A}/customers`,
-    icon: "customers",
-    items: [
-      { href: `${A}/customers`, label: "All customers" },
-      { href: `${A}/customers/accounts`, label: "With accounts" },
-    ],
+    id: "customers", label: "Customers", href: `${A}/customers`, icon: "customers", tone: "sky",
+    items: [{ href: `${A}/customers/accounts`, label: "With accounts" }],
   },
-  { id: "discounts", label: "Discounts", href: `${A}/discounts`, icon: "discounts" },
+  { id: "discounts", label: "Discounts", href: `${A}/discounts`, icon: "discounts", tone: "lavender" },
   {
-    id: "content",
-    label: "Content",
-    href: `${A}/content`,
-    icon: "content",
+    id: "content", label: "Content", href: `${A}/content`, icon: "content", tone: "mint",
     items: [
-      { href: `${A}/content`, label: "Files" },
       { href: `${A}/content/menus`, label: "Menus" },
       { href: `${A}/content/blog`, label: "Blog posts" },
     ],
   },
-  { id: "analytics", label: "Analytics", href: `${A}/analytics`, icon: "analytics" },
+  { id: "analytics", label: "Analytics", href: `${A}/analytics`, icon: "analytics", tone: "iris" },
   {
-    id: "app",
-    label: "Your App",
-    href: `${A}/your-app`,
-    icon: "app",
+    id: "store", label: "Online Store", href: `${A}/online-store`, icon: "app", tone: "sky",
     items: [
-      { href: `${A}/your-app`, label: "Themes" },
-      { href: `${A}/your-app/pages`, label: "Pages" },
-      { href: `${A}/your-app/policies`, label: "Policies" },
+      { href: `${A}/online-store/pages`, label: "Pages" },
+      { href: `${A}/online-store/preferences`, label: "Preferences" },
     ],
   },
-  { id: "preferences", label: "Preferences", href: `${A}/preferences`, icon: "preferences" },
 ];
 
-export const SETTINGS: { slug: string; label: string; icon: string; blurb: string }[] = [
-  { slug: "general", label: "General", icon: "store", blurb: "Store name, contact details and defaults" },
-  { slug: "plan", label: "Plan", icon: "plan", blurb: "Your plan and what it includes" },
-  { slug: "billing", label: "Billing", icon: "billing", blurb: "Invoices and how you pay Synora" },
-  { slug: "domains", label: "Domains", icon: "domains", blurb: "Your free address and your own domain" },
-  { slug: "payments", label: "Payments", icon: "payments", blurb: "Cash on delivery, wallets and cards" },
-  { slug: "users", label: "Users and staff", icon: "users", blurb: "Who can work on this store" },
-  { slug: "shipping", label: "Shipping and delivery", icon: "shipping", blurb: "Rates, cities and couriers" },
-  { slug: "security", label: "Security", icon: "security", blurb: "Password and signed-in devices" },
+/** Settings: one page, every section open; this is its index. */
+export const SETTINGS: { slug: string; label: string; icon: string; tone: Tone; blurb: string }[] = [
+  { slug: "general", label: "General", icon: "store", tone: "iris", blurb: "Store details and defaults" },
+  { slug: "plan", label: "Plan", icon: "plan", tone: "lavender", blurb: "Your plan and what it includes" },
+  { slug: "billing", label: "Billing", icon: "billing", tone: "lavender", blurb: "How you pay Synora, and your invoices" },
+  { slug: "users", label: "Users and permissions", icon: "users", tone: "sky", blurb: "Who can work on this store, and what they can do" },
+  { slug: "payments", label: "Payments", icon: "payments", tone: "mint", blurb: "Cash on delivery, wallets and cards" },
+  { slug: "checkout", label: "Checkout", icon: "checkout", tone: "iris", blurb: "What customers fill in, and what happens after" },
+  { slug: "customer-accounts", label: "Customer accounts", icon: "customers", tone: "sky", blurb: "How customers sign in to your store" },
+  { slug: "shipping", label: "Shipping and delivery", icon: "shipping", tone: "mint", blurb: "Where you deliver, how fast, and for how much" },
+  { slug: "domains", label: "Domains", icon: "domains", tone: "iris", blurb: "Your free address and your own domain" },
+  { slug: "notifications", label: "Notifications", icon: "bell", tone: "lavender", blurb: "The emails your store sends, and to whom" },
+  { slug: "custom-data", label: "Custom data", icon: "data", tone: "sky", blurb: "Extra fields on products, orders and customers" },
+  { slug: "privacy", label: "Customer privacy", icon: "shield", tone: "mint", blurb: "Cookie banner and privacy choices" },
+  { slug: "policies", label: "Policies", icon: "policy", tone: "lavender", blurb: "Refunds, privacy, terms and shipping, linked from checkout" },
+  { slug: "account", label: "Your account", icon: "security", tone: "ink", blurb: "Your profile, password and signed-in devices" },
 ];
 
 export const SHOP = { name: "Zohra Lawn", address: "zohra.app.synoradigitals.com", initials: "ZL", owner: "Ayesha Khan", email: "ayesha@zohralawn.pk" };
@@ -142,3 +132,22 @@ export const DISCOUNTS = [
 export const SALES_30 = [41, 38, 52, 47, 60, 55, 49, 63, 71, 58, 66, 74, 69, 81, 77, 72, 88, 84, 79, 93, 90, 86, 101, 97, 92, 108, 114, 105, 121, 128].map((n) => n * 1000);
 export const ORDERS_30 = [5, 4, 6, 6, 7, 6, 5, 8, 9, 7, 8, 9, 8, 10, 9, 9, 11, 10, 9, 12, 11, 10, 13, 12, 11, 13, 14, 13, 15, 16];
 export const SESSIONS_30 = [310, 290, 355, 340, 402, 388, 361, 420, 455, 410, 438, 470, 452, 501, 489, 470, 530, 516, 498, 560, 548, 531, 590, 575, 560, 612, 640, 618, 668, 702];
+
+/** One order in full, for the order page. */
+export const ORDER_DETAIL = {
+  id: 1048,
+  when: "15 Oct 2026 at 2:31 pm",
+  customer: { name: "Hira Malik", email: "hira.malik@outlook.com", phone: "0300 1234567", orders: 4, address: "House 14, Street 7, DHA Phase 5, Lahore" },
+  lines: [
+    { slug: "zohra", qty: 1, size: "M", price: 8900 },
+    { slug: "gulnaar", qty: 1, size: "L", price: 7450 },
+  ],
+  delivery: 0,
+  discount: null as { code: string; amount: number } | null,
+  note: "Please gift wrap the Gulnaar suit, it is for my sister's mehndi.",
+  timeline: [
+    { at: "2:31 pm", text: "Order placed by Hira Malik, cash on delivery." },
+    { at: "2:31 pm", text: "Confirmation email sent to hira.malik@outlook.com." },
+    { at: "2:34 pm", text: "New-order email sent to the store." },
+  ],
+};
