@@ -1,6 +1,9 @@
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { teamEmails } from "@/lib/team";
+
+export { isTeamEmail, teamEmails } from "@/lib/team";
 
 /**
  * Who is asking, for the help desk (14 October). Server only.
@@ -25,21 +28,6 @@ export async function merchantUser() {
   });
   if (!user) return null;
   return { id: user.id, name: user.name, email: user.email, shops: user.memberships.map((m) => m.shop) };
-}
-
-/**
- * The Synora team: the addresses in SYNORA_TEAM_EMAILS (comma separated).
- *
- * A setting, not a table, on purpose: being on the team reads every
- * merchant's tickets, so joining it should take a deliberate change in the
- * hosting settings, not a click somebody could be talked into. Empty means
- * nobody, never everybody.
- */
-export function teamEmails(): string[] {
-  return (process.env.SYNORA_TEAM_EMAILS ?? "")
-    .split(",")
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean);
 }
 
 export async function synoraTeamMember() {

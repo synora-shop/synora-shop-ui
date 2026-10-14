@@ -12,7 +12,12 @@ purpose — this is the list Abdul works from, not a ticket tracker.
 > with history, threads and "email me"; the team console at `/synora` (tickets,
 > suggestions, patch notes). New tables in `20261107000000_help_desk`
 > (additive; also inserts the eight existing release notes). **Before it is
-> useful live:** set `SYNORA_TEAM_EMAILS` in Vercel production. Locally the
+> useful live:** `SYNORA_TEAM_EMAILS` set in Vercel production on 14 October
+> (three master admins, one more address to come). Master admins sign in on
+> the normal page and land in `/synora`, never a shop panel (`lib/team.ts`,
+> checked in proxy.ts, the admin layout and /merchant/stores). Their
+> passwords are set by the owner with `scripts/set-master-admins.mjs`
+> (dry run first, `--apply` to write; it warns if an address runs a shop). Locally the
 > tables were added to the local database by hand (`prisma db execute`), not
 > through `migrate deploy`, because that database is nine migrations behind.
 > Test logins on the local database only: help-test-merchant@example.com and

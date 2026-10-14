@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Store } from "lucide-react";
 import { auth } from "@/auth";
+import { isTeamEmail } from "@/lib/help-server";
 import { prisma } from "@/lib/prisma";
 import { PLATFORM_DOMAIN } from "@/lib/shop-context";
 import { roleLabel } from "@/lib/roles";
@@ -28,6 +29,9 @@ export default async function StoresPage(props: PageProps<"/merchant/stores">) {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) redirect("/merchant/login?callbackUrl=/merchant/stores");
+  // Synora master admins sign in on the same page and land in the Synora
+  // console, never in a shop's panel (14 October).
+  if (isTeamEmail(session.user.email) && !session.user.customerId) redirect("/synora");
 
   const memberships = await prisma.membership.findMany({
     where: { userId },
