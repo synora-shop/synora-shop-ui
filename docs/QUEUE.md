@@ -7,6 +7,17 @@ purpose — this is the list Abdul works from, not a ticket tracker.
 
 ## Next up
 
+> **One site header, colour-coded help pages (14 October, later).** The
+> front page and the three help pages share `components/platform/site-header.tsx`:
+> Docs (iris), Help (mint), Release notes (sky) as links, ⌘K search, and
+> "Go to dashboard" + avatar when signed in (the ticker of payment methods
+> left the header to make room). Signing in with nowhere asked for now goes
+> through `/merchant/continue`: merchants back to the front page, master
+> admins to the console. Each help page opens on a short band in its colour
+> (`PageBand`); known issues are an amber strip (`KnownIssuesStrip`); /help
+> keeps "Your requests" in a sticky panel beside the form; release notes are
+> grouped by month with changes sorted by kind.
+
 > **Accounts in the light header (14 October).** Signed in, "Log in / Start
 > free" becomes the person's avatar (components/platform/account-slot.tsx),
 > asked from the browser so the front page stays one cached page. Master

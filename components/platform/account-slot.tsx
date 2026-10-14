@@ -72,21 +72,31 @@ export function AccountSlot({ signup, login }: { signup: string; login: string }
 
   const master = me.master !== null;
   const initials = (master && me.master) || initialsOf(me.name, me.email);
-  const home = master ? "/synora" : me.shops.length > 1 ? "/merchant/stores" : "/admin";
+  const home = master ? "/synora" : me.shops.length === 1 ? "/admin" : "/merchant/stores";
   const owner = me.shops.find((s) => s.role === "OWNER");
 
   return (
-    <div ref={box} className="relative shrink-0">
+    <div ref={box} className="relative flex shrink-0 items-center gap-1.5">
+      {/* The way in, always in sight: signing in leaves you where you were. */}
+      <Link
+        href={home}
+        className={`inline-flex h-10 items-center gap-1.5 whitespace-nowrap rounded-full px-4 text-[13.5px] font-semibold transition-colors ${
+          master ? "bg-[#0d0d50] text-[#f2cf72] hover:bg-[#1a1a6e]" : "bg-[#6666ff] text-white shadow-[0_6px_20px_-6px_rgba(102,102,255,0.7)] hover:bg-[#5a5af5]"
+        }`}
+      >
+        {master ? <Crown className="h-4 w-4" /> : <LayoutDashboard className="h-4 w-4" />}
+        <span className="sm:hidden">{master ? "Console" : "Dashboard"}</span>
+        <span className="hidden sm:inline">{master ? "Open console" : me.shops.length === 0 ? "Create your store" : "Go to dashboard"}</span>
+      </Link>
       <button
         type="button"
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label={`Account: ${me.name || me.email}`}
         onClick={() => setOpen(!open)}
-        className={`flex items-center gap-2 rounded-full py-1 pl-1 pr-1 transition-colors sm:pr-3 ${open ? "bg-[#f2f2ff]" : "hover:bg-[#f2f2ff]"}`}
+        className={`rounded-full p-0.5 transition-shadow ${open ? "ring-2 ring-[#6666ff]/40" : "hover:ring-2 hover:ring-[#0d0d50]/10"}`}
       >
         <AccountAvatar initials={initials} master={master} />
-        <span className="hidden text-[13px] font-semibold text-[#0d0d50] sm:inline">{master ? "Console" : "Dashboard"}</span>
       </button>
 
       {open && (

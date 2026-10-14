@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, HelpCircle, TriangleAlert } from "lucide-react";
+import { ArrowRight, BookOpen, HelpCircle, LifeBuoy, Sparkles } from "lucide-react";
 import { appUrl } from "@/lib/shop-context";
-import { ANSWERS, DOC_TOPICS, KNOWN_ISSUES, TONE } from "@/lib/docs-content";
-import { Highlight, LightPage, LightPageHero } from "@/components/platform/light-page";
+import { ANSWERS, DOC_TOPICS, KNOWN_ISSUES, TINT, TONE } from "@/lib/docs-content";
+import { KnownIssuesStrip, LightPage, PageBand } from "@/components/platform/light-page";
 import { DocsNav } from "@/components/platform/docs-nav";
 import { SearchBar } from "@/components/platform/help-search";
 
@@ -17,124 +17,122 @@ export const metadata: Metadata = {
 };
 
 /**
- * The docs (14 October; at /documentation until then, which now forwards
- * here): how each part works. The words live in lib/docs-content.ts, shared
- * with the search and with /help. One of three help pages, switched between
- * in the header (components/platform/help-switch.tsx).
+ * The docs (14 October; /documentation forwards here): how each part works.
+ *
+ * Built to be read, not admired: a short band in the docs' iris with search
+ * beside the title, the one known issue right under it, then an index that
+ * follows you down the left and each topic as its own card, its header
+ * tinted in the topic's colour so one topic never runs into the next. Wide
+ * screens add a rail on the right for when the docs are not enough. The
+ * words live in lib/docs-content.ts, shared with the search and with /help.
  */
 export default function DocsPage() {
-  const nav = [...DOC_TOPICS.map(({ id, title }) => ({ id, title })), { id: "known-issues", title: "Known issues" }, { id: "answers", title: "Answers" }];
+  const nav = [...DOC_TOPICS.map(({ id, title }) => ({ id, title })), { id: "answers", title: "Answers" }];
   return (
     <LightPage section="docs">
-      <LightPageHero
-        pill="Docs · short versions while the full guides are written"
-        title={
-          <>
-            Everything you need
-            <br />
-            to <Highlight>run your shop.</Highlight>
-          </>
-        }
-        lead="How each part of your shop works: products, orders, payments the way Pakistan pays, domains and your team."
-      >
-        <SearchBar />
-      </LightPageHero>
+      <PageBand
+        section="docs"
+        icon={BookOpen}
+        label="Docs"
+        title="How Synora App works"
+        lead="Short guides to every part of your shop: products, orders, payments the way Pakistan pays, domains and your team."
+        aside={<SearchBar placeholder="Search the docs" compact />}
+      />
+      <KnownIssuesStrip issues={KNOWN_ISSUES} />
 
-      <div className="mx-auto grid max-w-[78rem] grid-cols-[minmax(0,1fr)] gap-x-16 px-5 pb-24 lg:grid-cols-[15rem_minmax(0,1fr)]">
+      <div className="mx-auto grid max-w-[78rem] grid-cols-[minmax(0,1fr)] gap-x-10 px-5 pb-24 pt-8 lg:grid-cols-[13rem_minmax(0,1fr)] lg:pt-10 xl:grid-cols-[13rem_minmax(0,1fr)_16rem]">
         <DocsNav items={nav} />
 
-        {/* One reading column, kept to a comfortable line length. */}
-        <div className="min-w-0 max-w-[44rem]">
-          {DOC_TOPICS.map(({ id, icon: Icon, tone, title, blurb, steps, points }, i) => (
-            <section key={id} id={id} className={`scroll-mt-36 py-12 lg:scroll-mt-28 ${i > 0 ? "border-t border-[#0d0d50]/[0.08]" : "pt-6 lg:pt-0"}`}>
-              <div className="flex items-start gap-4">
-                <span className={`mt-1 grid h-11 w-11 shrink-0 place-items-center rounded-2xl ${TONE[tone]}`}>
+        <div className="flex min-w-0 flex-col gap-6">
+          {DOC_TOPICS.map(({ id, icon: Icon, tone, title, blurb, steps, points }) => (
+            <section key={id} id={id} className="scroll-mt-36 overflow-hidden rounded-[1.6rem] bg-white ring-1 ring-[#0d0d50]/[0.08] lg:scroll-mt-28">
+              <header className={`flex items-center gap-4 px-6 py-5 sm:px-7 ${TINT[tone]}`}>
+                <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-2xl ${TONE[tone]}`}>
                   <Icon className="h-5 w-5" />
                 </span>
-                <div>
-                  <h2 className="text-[1.85rem] font-semibold leading-tight tracking-[-0.03em]">{title}</h2>
-                  <p className="mt-1 text-[17px] leading-relaxed text-[#0d0d50]/60">{blurb}</p>
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-[1.45rem] font-semibold leading-tight tracking-[-0.025em]">{title}</h2>
+                  <p className="text-[15.5px] text-[#0d0d50]/65">{blurb}</p>
                 </div>
+                <span className="hidden shrink-0 rounded-full bg-white/70 px-3 py-1 text-[12.5px] font-semibold text-[#0d0d50]/55 sm:inline">
+                  {steps ? `${steps.length} steps` : `${points?.length ?? 0} things to know`}
+                </span>
+              </header>
+
+              <div className="p-5 sm:p-7">
+                {steps && (
+                  <ol className="grid gap-3 sm:grid-cols-2">
+                    {steps.map((s, n) => (
+                      <li key={s} className="flex gap-4 rounded-2xl bg-[#f7f7fc] p-5">
+                        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#6666ff] text-sm font-bold text-white">{n + 1}</span>
+                        <p className="text-[16px] leading-[1.65] text-[#0d0d50]/85">{s}</p>
+                      </li>
+                    ))}
+                  </ol>
+                )}
+                {points && (
+                  <dl className="grid gap-3 sm:grid-cols-2">
+                    {points.map(([term, def]) => (
+                      <div key={term} className="rounded-2xl border border-[#0d0d50]/[0.07] p-5">
+                        <dt className="text-[16px] font-semibold">{term}</dt>
+                        <dd className="mt-1.5 text-[15.5px] leading-[1.65] text-[#0d0d50]/75">{def}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                )}
               </div>
-
-              {steps && (
-                <ol className="mt-8 flex flex-col">
-                  {steps.map((s, n) => (
-                    <li key={s} className="relative flex gap-5 pb-7 last:pb-0">
-                      {n < steps.length - 1 && <span aria-hidden className="absolute left-[15px] top-9 h-[calc(100%-2.5rem)] w-px bg-[#6666ff]/25" />}
-                      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#6666ff] text-sm font-bold text-white">{n + 1}</span>
-                      <p className="pt-0.5 text-[17px] leading-[1.7] text-[#0d0d50]/80">{s}</p>
-                    </li>
-                  ))}
-                </ol>
-              )}
-
-              {points && (
-                <dl className="mt-8 flex flex-col gap-6">
-                  {points.map(([term, def]) => (
-                    <div key={term} className="border-l-2 border-[#0d0d50]/[0.08] pl-5">
-                      <dt className="text-[17px] font-semibold">{term}</dt>
-                      <dd className="mt-1 text-[17px] leading-[1.7] text-[#0d0d50]/75">{def}</dd>
-                    </div>
-                  ))}
-                </dl>
-              )}
             </section>
           ))}
 
-          <section id="known-issues" className="scroll-mt-36 border-t border-[#0d0d50]/[0.08] py-12 lg:scroll-mt-28">
-            <h2 className="flex items-center gap-3 text-[1.85rem] font-semibold leading-tight tracking-[-0.03em]">
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#fff0e6] text-[#c2410c]">
-                <TriangleAlert className="h-5 w-5" />
-              </span>
-              Known issues
-            </h2>
-            <p className="mt-3 text-[17px] leading-relaxed text-[#0d0d50]/60">Published, not hidden. Finding out the hard way costs you a sale.</p>
-            <ul className="mt-7 flex flex-col gap-3">
-              {KNOWN_ISSUES.map(([t, d]) => (
-                <li key={t} className="rounded-2xl bg-[#fff7f1] p-5 ring-1 ring-[#c2410c]/15">
-                  <p className="text-[17px] font-semibold">{t}</p>
-                  <p className="mt-1 text-[17px] leading-[1.7] text-[#0d0d50]/75">{d}</p>
-                </li>
-              ))}
-            </ul>
-          </section>
-
-          <section id="answers" className="scroll-mt-36 border-t border-[#0d0d50]/[0.08] py-12 lg:scroll-mt-28">
-            <h2 className="flex items-center gap-3 text-[1.85rem] font-semibold leading-tight tracking-[-0.03em]">
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#0d0d50] text-white">
+          <section id="answers" className="scroll-mt-36 overflow-hidden rounded-[1.6rem] bg-[#0d0d50] text-white lg:scroll-mt-28">
+            <header className="flex items-center gap-4 px-6 py-5 sm:px-7">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-white/10 text-[#b8efd6]">
                 <HelpCircle className="h-5 w-5" />
               </span>
-              Answers
-            </h2>
-            <div className="mt-7 flex flex-col gap-2.5">
+              <div>
+                <h2 className="text-[1.45rem] font-semibold leading-tight tracking-[-0.025em]">Answers</h2>
+                <p className="text-[15.5px] text-white/60">The questions that come up most.</p>
+              </div>
+            </header>
+            <div className="flex flex-col gap-2 px-4 pb-5 sm:px-6 sm:pb-7">
               {ANSWERS.map(([q, a]) => (
-                <details key={q} className="group rounded-2xl border border-[#0d0d50]/[0.08] px-5 py-4 open:bg-[#f7f7ff]">
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-[17px] font-semibold [&::-webkit-details-marker]:hidden">
+                <details key={q} className="group rounded-2xl bg-white/[0.06] px-5 py-4 open:bg-white/[0.1]">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-[16px] font-semibold [&::-webkit-details-marker]:hidden">
                     {q}
-                    <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#f2f2ff] text-lg leading-none text-[#6666ff] transition-transform group-open:rotate-45">+</span>
+                    <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-white/10 text-lg leading-none text-[#b8efd6] transition-transform group-open:rotate-45">+</span>
                   </summary>
-                  <p className="mt-3 text-[17px] leading-[1.7] text-[#0d0d50]/75">{a}</p>
+                  <p className="mt-3 text-[16px] leading-[1.65] text-white/75">{a}</p>
                 </details>
               ))}
             </div>
           </section>
-
-          <div className="mt-4 flex flex-col items-start justify-between gap-5 rounded-[2rem] bg-[#0d0d50] p-7 text-white sm:flex-row sm:items-center sm:p-9">
-            <div>
-              <p className="text-xl font-semibold tracking-[-0.02em]">Ready when you are.</p>
-              <p className="mt-1 text-[15px] text-white/60">The panel explains each screen as you use it.</p>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Link href="/help" className="inline-flex h-11 items-center rounded-full border border-white/20 px-5 text-sm font-semibold transition-colors hover:bg-white/10">
-                Ask the team
-              </Link>
-              <a href={appUrl("/merchant/signup")} className="inline-flex h-11 items-center gap-2 rounded-full bg-[#6666ff] px-5 text-sm font-semibold transition-colors hover:bg-[#5a5af5]">
-                Create your shop <ArrowRight className="h-4 w-4" />
-              </a>
-            </div>
-          </div>
         </div>
+
+        {/* For when the docs are not enough. */}
+        <aside className="mt-6 grid gap-4 sm:grid-cols-2 lg:col-start-2 xl:col-start-auto xl:mt-0 xl:block">
+          <div className="flex flex-col gap-4 xl:sticky xl:top-28">
+            <Link href="/help" className="group block rounded-[1.4rem] bg-[#e4f7ee] p-5 ring-1 ring-[#1f9d68]/15 transition-transform hover:-translate-y-0.5">
+              <span className="grid h-9 w-9 place-items-center rounded-xl bg-[#1f9d68] text-white">
+                <LifeBuoy className="h-4 w-4" />
+              </span>
+              <p className="mt-3 text-[16px] font-semibold">Still stuck?</p>
+              <p className="mt-1 text-[14px] leading-relaxed text-[#0d0d50]/65">Ask the Synora team and follow the answer on your help page.</p>
+              <span className="mt-3 inline-flex items-center gap-1 text-[14px] font-semibold text-[#16704a]">
+                Ask the team <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              </span>
+            </Link>
+            <Link href="/release-notes" className="group block rounded-[1.4rem] bg-[#e8f4ff] p-5 ring-1 ring-[#2f86cf]/15 transition-transform hover:-translate-y-0.5">
+              <span className="grid h-9 w-9 place-items-center rounded-xl bg-[#2f86cf] text-white">
+                <Sparkles className="h-4 w-4" />
+              </span>
+              <p className="mt-3 text-[16px] font-semibold">What&rsquo;s new</p>
+              <p className="mt-1 text-[14px] leading-relaxed text-[#0d0d50]/65">Every update, and what each one fixed.</p>
+              <span className="mt-3 inline-flex items-center gap-1 text-[14px] font-semibold text-[#1b5d97]">
+                Release notes <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              </span>
+            </Link>
+          </div>
+        </aside>
       </div>
     </LightPage>
   );

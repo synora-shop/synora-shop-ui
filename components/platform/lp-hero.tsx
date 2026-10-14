@@ -1,9 +1,6 @@
 import { ArrowRight, Check, CreditCard, Lock, MessageCircle, ShoppingBag, Tag, TriangleAlert } from "lucide-react";
-import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { formatMoney } from "@/lib/money";
-import { SynoraAppMark } from "@/components/ui/synora-marks";
-import { AccountSlot } from "@/components/platform/account-slot";
 
 /**
  * The front page's top: its own light header, and the hero — "Your online
@@ -19,54 +16,6 @@ import { AccountSlot } from "@/components/platform/account-slot";
 const pkr = (n: number) => formatMoney(n, "PKR");
 
 export const C = { iris: "#6666ff", lavender: "#b7b9ff", sky: "#c8e7ff", mint: "#b8efd6", navy: "#0d0d50" } as const;
-
-/**
- * The home page's header (the shared one is dark; this page is white).
- *
- * A pill that tightens as the page scrolls, with a thin iris-to-mint line
- * along its foot filling as you go down, and in its middle a small ticker of
- * what a Pakistani shop gets — the ways to pay, its own domain — rolling up
- * one at a time. All of it CSS tied to scrolling (".lp-head" in
- * app/globals.css); "Start free" shows its arrow when pointed at.
- */
-const TICKS = ["Cash on delivery", "JazzCash", "Easypaisa", "Cards through PayFast", "Your own domain"];
-
-export function LightHeader({ signup, login, middle }: { signup: string; login: string; middle?: React.ReactNode }) {
-  return (
-    <header className="fixed inset-x-0 top-0 z-50 px-4 pt-3 sm:px-6 sm:pt-4">
-      {/* With a middle of its own (the help pages' switch) the pill keeps its
-          width instead of tightening on scroll: the switch needs the room. */}
-      <div className={`${middle ? "max-w-[64rem]" : "lp-head max-w-[60rem]"} relative mx-auto flex items-center justify-between gap-4 rounded-full border border-[#0d0d50]/[0.08] bg-white/85 py-3 pl-6 pr-2.5 shadow-[0_8px_30px_-12px_rgba(13,13,80,0.15)] backdrop-blur-md`}>
-        <Link href="/" className="shrink-0 rounded text-[#0d0d50] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6666ff] focus-visible:ring-offset-4">
-          <SynoraAppMark />
-        </Link>
-
-        {/* The ticker, unless the page puts something of its own there (the
-            docs, help and release notes put their switch). */}
-        {middle ?? (
-        <div aria-hidden className="hidden h-8 items-center gap-2.5 rounded-full bg-[#f2f2ff] py-1 pl-1.5 pr-4 md:flex">
-          <span className="rounded-full bg-[#b8efd6] px-2 py-0.5 text-[10.5px] font-bold text-[#0d0d50]">PK</span>
-          <span className="h-[20px] overflow-hidden text-[12.5px] font-medium leading-[20px] text-[#0d0d50]/75">
-            <span className="lp-roll flex flex-col">
-              {[...TICKS, TICKS[0]].map((t, i) => (
-                <span key={i} className="flex h-[20px] items-center gap-1.5 whitespace-nowrap">
-                  <Check className="h-3.5 w-3.5 text-[#6666ff]" /> {t}
-                </span>
-              ))}
-            </span>
-          </span>
-        </div>
-        )}
-
-        {/* Log in and Start free, or the avatar of whoever is signed in. */}
-        <AccountSlot signup={signup} login={login} />
-
-        {/* How far down the page you are. */}
-        <span aria-hidden className="lp-progress pointer-events-none absolute inset-x-6 bottom-0 h-[2px] rounded-full bg-gradient-to-r from-[#6666ff] via-[#b7b9ff] to-[#b8efd6]" />
-      </div>
-    </header>
-  );
-}
 
 /* ---------------------------------------------------------------- pieces -- */
 

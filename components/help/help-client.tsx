@@ -300,73 +300,74 @@ export type HistoryRow = {
   unread: boolean;
 };
 
+/**
+ * Everything the person has sent. In the help page's side panel: tight rows
+ * (status, a dot for an unread reply) and the first few, with the rest a tap
+ * away. The "email me" switch lives on each request's own page.
+ */
 export function HelpHistory({ rows }: { rows: HistoryRow[] }) {
   const [tab, setTab] = useState<"ALL" | HelpKindName>("ALL");
-  const shown = rows.filter((r) => tab === "ALL" || r.kind === tab);
+  const [all, setAll] = useState(false);
+  const matching = rows.filter((r) => tab === "ALL" || r.kind === tab);
+  const shown = all ? matching : matching.slice(0, 6);
   const tabs: [typeof tab, string, number][] = [
     ["ALL", "All", rows.length],
     ["TICKET", "Tickets", rows.filter((r) => r.kind === "TICKET").length],
-    ["SUGGESTION", "Suggestions", rows.filter((r) => r.kind === "SUGGESTION").length],
+    ["SUGGESTION", "Ideas", rows.filter((r) => r.kind === "SUGGESTION").length],
   ];
 
   return (
     <div>
-      <div role="tablist" aria-label="Show" className="inline-flex rounded-full bg-[#f2f2ff] p-1">
+      <div role="tablist" aria-label="Show" className="grid grid-cols-3 rounded-full bg-[#f2f2f7] p-1">
         {tabs.map(([id, label, n]) => (
           <button
             key={id}
             role="tab"
             type="button"
             aria-selected={tab === id}
-            onClick={() => setTab(id)}
-            className={`inline-flex h-9 items-center gap-1.5 rounded-full px-4 text-[14px] font-semibold transition-all ${
-              tab === id ? "bg-white text-[#4b4bea] shadow-[0_2px_10px_-3px_rgba(13,13,80,0.25)]" : "text-[#0d0d50]/60"
+            onClick={() => {
+              setTab(id);
+              setAll(false);
+            }}
+            className={`inline-flex h-8 items-center justify-center gap-1 rounded-full text-[13px] font-semibold transition-all ${
+              tab === id ? "bg-white text-[#0d0d50] shadow-[0_2px_8px_-3px_rgba(13,13,80,0.25)]" : "text-[#0d0d50]/55"
             }`}
           >
-            {label} <span className="text-[12px] opacity-60">{n}</span>
+            {label} <span className="text-[11.5px] opacity-55">{n}</span>
           </button>
         ))}
       </div>
 
-      {shown.length === 0 ? (
-        <p className="mt-6 rounded-2xl border border-dashed border-[#0d0d50]/15 px-5 py-10 text-center text-[16px] text-[#0d0d50]/55">
-          {rows.length === 0 ? "Nothing sent yet. When you do, it shows here with where it's up to." : "Nothing here yet."}
+      {matching.length === 0 ? (
+        <p className="mt-4 rounded-2xl bg-[#f7f7fb] px-4 py-7 text-center text-[14.5px] leading-relaxed text-[#0d0d50]/55">
+          {rows.length === 0 ? "Nothing sent yet. What you send shows here, with where it's up to." : "Nothing here yet."}
         </p>
       ) : (
-        <ul className="mt-5 flex flex-col gap-2.5">
+        <ul className="mt-3 flex flex-col">
           {shown.map((r) => (
-            <li
-              key={r.number}
-              className="relative flex flex-col gap-3 rounded-[1.4rem] border border-[#0d0d50]/[0.08] bg-white p-4 transition-[border-color,box-shadow] focus-within:border-[#6666ff] hover:border-[#6666ff]/40 hover:shadow-[0_14px_36px_-22px_rgba(102,102,255,0.6)] sm:flex-row sm:items-center sm:gap-4 sm:p-5"
-            >
-                <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${r.kind === "TICKET" ? "bg-[#f2f2ff] text-[#6666ff]" : "bg-[#effcf6] text-[#1d7a52]"}`}>
-                  {r.kind === "TICKET" ? <Bug className="h-[18px] w-[18px]" /> : <Lightbulb className="h-[18px] w-[18px]" />}
+            <li key={r.number}>
+              <Link href={`/help/${r.number}`} className="group flex items-center gap-3 rounded-2xl px-2.5 py-3 transition-colors hover:bg-[#f5f5fb]">
+                <span className={`relative grid h-9 w-9 shrink-0 place-items-center rounded-xl ${r.kind === "TICKET" ? "bg-[#ecebff] text-[#6666ff]" : "bg-[#e4f7ee] text-[#1d7a52]"}`}>
+                  {r.kind === "TICKET" ? <Bug className="h-4 w-4" /> : <Lightbulb className="h-4 w-4" />}
+                  {r.unread && <span aria-label="New reply" className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full bg-[#ff5a5f] ring-2 ring-white" />}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="flex items-center gap-2">
-                    <span className="text-[13px] font-semibold text-[#0d0d50]/45">{ref(r.number)}</span>
-                    {r.unread && <span className="rounded-full bg-[#6666ff] px-2 py-0.5 text-[11px] font-bold text-white">New reply</span>}
-                  </span>
-                  {/* The whole row is this link (its ::after covers the row); the switch sits above it. */}
-                  <Link
-                    href={`/help/${r.number}`}
-                    className={`block truncate text-[16px] font-semibold outline-none after:absolute after:inset-0 after:rounded-[1.4rem] ${isClosed(r.status) ? "text-[#0d0d50]/60" : ""}`}
-                  >
-                    {r.subject}
-                  </Link>
-                  <span className="text-[13px] text-[#0d0d50]/50">Updated {formatRelativeTime(r.updatedAt)}</span>
-                </span>
-                <span className="flex items-center justify-between gap-4 sm:justify-end">
-                  <span className={`rounded-full px-3 py-1 text-[12.5px] font-semibold ${STATUS_TONE[r.status]}`}>{statusLabel(r.kind, r.status)}</span>
-                  <span className="relative z-10">
-                    <NotifySwitch number={r.number} initial={r.notify} label={false} />
+                  <span className={`block truncate text-[14.5px] font-semibold ${isClosed(r.status) ? "text-[#0d0d50]/55" : "text-[#0d0d50]"}`}>{r.subject}</span>
+                  <span className="block text-[12.5px] text-[#0d0d50]/45">
+                    {ref(r.number)} · {r.unread ? <b className="font-semibold text-[#ff5a5f]">new reply</b> : formatRelativeTime(r.updatedAt)}
                   </span>
                 </span>
+                <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11.5px] font-semibold ${STATUS_TONE[r.status]}`}>{statusLabel(r.kind, r.status)}</span>
+              </Link>
             </li>
           ))}
         </ul>
       )}
-      {rows.length > 0 && <p className="mt-3 text-[13px] text-[#0d0d50]/45">The switch on each one turns its update emails on or off.</p>}
+      {matching.length > 6 && (
+        <button type="button" onClick={() => setAll(!all)} className="mt-1 w-full rounded-xl py-2 text-[13.5px] font-semibold text-[#4b4bea] hover:bg-[#f5f5ff]">
+          {all ? "Show fewer" : `Show all ${matching.length}`}
+        </button>
+      )}
     </div>
   );
 }

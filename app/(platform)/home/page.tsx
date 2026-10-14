@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { appUrl, PLATFORM_DOMAIN } from "@/lib/shop-context";
-import { Hero, LightHeader } from "@/components/platform/lp-hero";
+import { Hero } from "@/components/platform/lp-hero";
+import { SiteHeader } from "@/components/platform/site-header";
 import { Comparison, Included, Marquee, Slabs } from "@/components/platform/lp-sections";
 import { ShopPreviewClaim } from "@/components/platform/shop-preview-claim";
 import { PlatformFooter } from "@/components/platform/platform-footer";
@@ -32,8 +33,8 @@ export const metadata: Metadata = {
  *   comparison      coming from somewhere else
  *   the ask         type a name, and a preview of the shop builds beside it
  *
- * It draws its own light header and the light colouring of the shared
- * footer (the dark ones stand aside on this page, see app/globals.css).
+ * It draws the site's light header (components/platform/site-header.tsx) and
+ * the light colouring of the shared footer (the dark ones stand aside on this page, see app/globals.css).
  */
 export default function PlatformHome() {
   const signup = appUrl("/merchant/signup");
@@ -41,7 +42,7 @@ export default function PlatformHome() {
   return (
     <div data-lp-light className="bg-white">
       <PauseOffscreen />
-      <LightHeader signup={signup} login={login} />
+      <SiteHeader />
       <Hero signup={signup} login={login} />
       <Marquee />
       <Slabs />

@@ -117,8 +117,15 @@ check("its name is namespaced", SELECTED_SHOP_COOKIE.startsWith("shp_"));
 
 console.log("\nSIGNING IN LEADS SOMEWHERE USEFUL");
 const loginForm = sourceOf("components", "merchant", "login-form.tsx");
-check("login goes to the stores list by default",
-  loginForm.includes('"/merchant/stores"'));
+// Since 14 October, by the owner's decision: signing in with nowhere asked
+// for brings a merchant back to the front page, signed in, with "Go to
+// dashboard" in the header; a Synora master admin goes to the console.
+// app/merchant/continue/route.ts decides which.
+check("login goes through /merchant/continue by default",
+  loginForm.includes('"/merchant/continue"'));
+const cont = sourceOf("app", "merchant", "continue", "route.ts");
+check("which sends a master admin to the console and a merchant to the front page",
+  cont.includes('"/synora"') && cont.includes('"/"') && cont.includes("isTeamEmail"));
 check("and still honours a callbackUrl", loginForm.includes("callbackUrl"));
 // An open redirect on a sign-in page is how a phishing link borrows a real
 // login form and bounces the victim somewhere else afterwards.

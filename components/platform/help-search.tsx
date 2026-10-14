@@ -204,12 +204,12 @@ export function HelpSearch({ items, suggested }: { items: SearchItem[]; suggeste
 }
 
 /** The big search box at the top of a page; opens the same search. */
-export function SearchBar({ placeholder = "Search docs, answers and updates" }: { placeholder?: string }) {
+export function SearchBar({ placeholder = "Search docs, answers and updates", compact = false }: { placeholder?: string; compact?: boolean }) {
   return (
     <button
       type="button"
       onClick={() => window.dispatchEvent(new Event(OPEN_EVENT))}
-      className="group mt-9 flex h-14 w-full max-w-xl items-center gap-3 rounded-2xl border border-[#0d0d50]/10 bg-white px-5 text-left text-[16px] text-[#0d0d50]/45 shadow-[0_14px_40px_-20px_rgba(13,13,80,0.35)] transition-[border-color,box-shadow] hover:border-[#6666ff]/50 hover:shadow-[0_14px_40px_-16px_rgba(102,102,255,0.45)]"
+      className={`group flex h-14 w-full items-center ${compact ? "" : "mt-9 max-w-xl"} gap-3 rounded-2xl border border-[#0d0d50]/10 bg-white px-5 text-left text-[16px] text-[#0d0d50]/45 shadow-[0_14px_40px_-20px_rgba(13,13,80,0.35)] transition-[border-color,box-shadow] hover:border-[#6666ff]/50 hover:shadow-[0_14px_40px_-16px_rgba(102,102,255,0.45)]`}
     >
       <Search className="h-5 w-5 text-[#6666ff]" />
       <span className="flex-1 truncate">{placeholder}</span>

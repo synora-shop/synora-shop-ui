@@ -17,6 +17,14 @@ export const TONE: Record<Tone, string> = {
   mint: "bg-[#b8efd6] text-[#0d0d50]",
 };
 
+/** A topic card's header: its colour, lightly. */
+export const TINT: Record<Tone, string> = {
+  iris: "bg-[#ecebff]",
+  lavender: "bg-[#f1f0ff]",
+  sky: "bg-[#e8f4ff]",
+  mint: "bg-[#e4f7ee]",
+};
+
 export type Topic = {
   id: string;
   icon: LucideIcon;
@@ -119,10 +127,11 @@ export const DOC_TOPICS: Topic[] = [
   },
 ];
 
+/** [what is broken, what to do instead]. */
 export const KNOWN_ISSUES: [string, string][] = [
   [
     "No order notes box in the Loom and Kite checkouts",
-    "Customers on these two themes can't leave a note at checkout yet. Ask for it on WhatsApp or your contact page until it is added.",
+    "Ask customers to send gift messages or special instructions on WhatsApp or through your contact page until the box is added.",
   ],
 ];
 

@@ -45,7 +45,9 @@ export function MerchantLoginForm() {
     const requested = searchParams.get("callbackUrl");
     const destination = requested?.startsWith("/") && !requested.startsWith("//")
       ? requested
-      : "/merchant/stores";
+      : // Nothing asked for: back to the front page, signed in (a master
+        // admin to the console). See app/merchant/continue/route.ts.
+        "/merchant/continue";
 
     startNavProgress();
     router.push(destination);
