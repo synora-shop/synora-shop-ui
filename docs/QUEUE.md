@@ -11,8 +11,10 @@ purpose — this is the list Abdul works from, not a ticket tracker.
 > Documentation · Support · Release notes, and Log in / Sign up free, or
 > Dashboard + avatar (menu: Dashboard, Log out). Footer: The product (Home,
 > Dashboard or Log in / Sign up free, Theme Store) and Help (Documentation,
-> Support, Release notes). Master admins: the same, plus a gold glass "Master
-> dashboard" (header and footer), and a working Dashboard of their own: the
+> Support, Release notes). Master admins: the same, plus "Master dashboard"
+> marked by a small gold dot (header and footer); their avatar is navy with gold
+> initials. The earlier gold coin, sheen and crowns were taken out on Abdul's
+> word ("too flashy"), and a working Dashboard of their own: the
 > console redirects were removed, and `/merchant/stores` now offers "Create
 > your store" to any signed-in account with none (`createMyStore`, which
 > refreshes the session with `unstable_update`). Everyone signing in lands on

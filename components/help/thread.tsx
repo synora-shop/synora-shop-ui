@@ -76,9 +76,9 @@ export function Thread({ kind, entries, viewer }: { kind: HelpKindName; entries:
             <span className="mb-1.5 flex items-center gap-2 px-1 text-[13px] text-[#0d0d50]/50">
               {e.fromTeam ? (
                 <>
-                  {/* Team replies are signed with the admin's initials, in gold. */}
+                  {/* Team replies are signed with the admin's initials. */}
                   {e.authorName && e.authorName.length <= 4 ? <AccountAvatar initials={e.authorName} master /> : null}
-                  <span className="rounded-full bg-[#0d0d50] px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-[0.06em] text-[#f2cf72]">Synora</span>
+                  <span className="text-[12.5px] font-semibold text-[#0d0d50]/75">Synora team</span>
                   {e.authorName.length > 4 && <span className="font-semibold text-[#0d0d50]/75">{e.authorName}</span>}
                 </>
               ) : (

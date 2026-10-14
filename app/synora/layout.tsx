@@ -36,7 +36,7 @@ export default async function SynoraConsoleLayout({ children }: { children: Reac
             <Link href="/synora/tickets" className="flex items-center gap-2.5">
               <SynoraAppMark />
             </Link>
-            <p className="rounded-full bg-[#0d0d50] px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-[0.1em] text-[#f2cf72] lg:mt-3 lg:inline-block">Master admin</p>
+            <p className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#0d0d50]/60 lg:mt-3"><span className="h-1.5 w-1.5 rounded-full bg-[#e3b94f]" />Master dashboard</p>
           </div>
           <div className="lg:hidden">
             <ConsoleAccount name={me.name} email={me.email} initials={initials} compact />

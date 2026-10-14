@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { signOut } from "next-auth/react";
-import { ArrowRight, Crown, LayoutDashboard, LogOut, Loader2, Store } from "lucide-react";
+import { ArrowRight, LayoutDashboard, LogOut, Loader2, Store } from "lucide-react";
 import { AccountAvatar } from "@/components/platform/account-avatar";
-import { MasterDashboardPill } from "@/components/platform/gold-glass";
+import { MasterDashboardLink, MasterDot } from "@/components/platform/master-link";
 import { useAccount, dashboardHref } from "@/components/platform/use-account";
 import { initialsOf } from "@/lib/initials";
 
@@ -14,8 +14,8 @@ import { initialsOf } from "@/lib/initials";
  *
  *   a visitor        Log in · Sign up free
  *   signed in        Dashboard · the avatar (its menu: Dashboard, Log out)
- *   master admin     the same, plus the gold "Master dashboard" pill, and the
- *                    avatar in gold with their initials
+ *   master admin     the same, plus "Master dashboard" with a small gold
+ *                    dot, and their avatar in navy with gold initials
  *
  * Signing in leaves you on the page you were on; this is how you go on to
  * your dashboard. Who is signed in comes from the browser (use-account.ts),
@@ -63,12 +63,8 @@ export function AccountSlot({ signup, login }: { signup: string; login: string }
     <div ref={box} className="relative flex shrink-0 items-center gap-1.5">
       {master && (
         <span className="hidden md:inline-flex">
-          <span className="inline-flex xl:hidden">
-            <MasterDashboardPill compact />
-          </span>
-          <span className="hidden xl:inline-flex">
-            <MasterDashboardPill />
-          </span>
+          <MasterDashboardLink short className="xl:hidden" />
+          <MasterDashboardLink className="hidden xl:inline-flex" />
         </span>
       )}
       <Link
@@ -91,14 +87,14 @@ export function AccountSlot({ signup, login }: { signup: string; login: string }
 
       {open && (
         <div role="menu" className="absolute right-0 top-[calc(100%+12px)] w-[min(18rem,calc(100vw-2rem))] overflow-hidden rounded-[1.4rem] bg-white shadow-[0_30px_80px_-24px_rgba(13,13,80,0.45)] ring-1 ring-[#0d0d50]/10">
-          <div className={`flex items-center gap-3.5 p-4 ${master ? "bg-[linear-gradient(140deg,#fff9e6_0%,#fdf0c8_55%,#f7e2a4_100%)]" : "bg-[linear-gradient(140deg,#f3f3ff_0%,#eef8ff_60%,#effcf6_100%)]"}`}>
+          <div className="flex items-center gap-3.5 bg-[#f7f7fb] p-4">
             <AccountAvatar initials={initials} master={master} size="md" />
             <div className="min-w-0">
               <p className="truncate text-[15px] font-semibold text-[#0d0d50]">{me.name || me.email.split("@")[0]}</p>
               <p className="truncate text-[12.5px] text-[#0d0d50]/55">{me.email}</p>
               {master ? (
-                <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-[#0d0d50] px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-[0.08em] text-[#f2cf72]">
-                  <Crown className="h-3 w-3" /> Synora master admin
+                <span className="mt-1 inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#0d0d50]/60">
+                  <MasterDot /> Master admin
                 </span>
               ) : (
                 <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-white/80 px-2 py-0.5 text-[11px] font-semibold text-[#4b4bea]">
@@ -118,9 +114,13 @@ export function AccountSlot({ signup, login }: { signup: string; login: string }
               <ArrowRight className="h-4 w-4 text-[#0d0d50]/30 transition-transform group-hover:translate-x-0.5" />
             </Link>
             {master && (
-              <div className="px-1 pb-1">
-                <MasterDashboardPill onClick={() => setOpen(false)} />
-              </div>
+              <Link role="menuitem" href="/synora" onClick={() => setOpen(false)} className="group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-semibold text-[#0d0d50] hover:bg-[#f2f2ff]">
+                <span className="grid h-8 w-8 place-items-center rounded-lg bg-[#0d0d50]">
+                  <MasterDot />
+                </span>
+                <span className="flex-1">Master dashboard</span>
+                <ArrowRight className="h-4 w-4 text-[#0d0d50]/30 transition-transform group-hover:translate-x-0.5" />
+              </Link>
             )}
           </div>
 

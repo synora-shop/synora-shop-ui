@@ -207,24 +207,6 @@
   .lp-head, .lp-progress, .lp-roll { animation: none; }
 }
 
-/* The gold avatar's sheen (components/platform/account-avatar.tsx): a band
-   of light that crosses the coin, then rests. Still when motion is reduced. */
-.av-shine::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(115deg, transparent 30%, rgb(255 255 255 / 0.7) 50%, transparent 70%);
-  transform: translateX(-130%);
-  animation: av-shine 5s ease-in-out infinite;
-}
-@keyframes av-shine {
-  0%, 62% { transform: translateX(-130%); }
-  100% { transform: translateX(130%); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .av-shine::after { animation: none; opacity: 0; }
-}
-
 /* The help desk's one text box (14 October): /support and the Synora console
    (components/help, components/synora). Its own, because those pages are
    neither the panel (.input belongs to .admin-shell's look) nor a shop. Height
