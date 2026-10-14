@@ -51,7 +51,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
         <button
           type="button"
           onClick={() => { startNavProgress(); router.push("/merchant/login"); }}
-          className="w-full rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-700"
+          className="w-full h-12 rounded-full bg-[#6666ff] px-5 text-[15px] font-semibold text-white shadow-[0_12px_30px_-12px_rgba(102,102,255,0.8)] transition-colors hover:bg-[#5a5af5]"
         >
           Sign in
         </button>

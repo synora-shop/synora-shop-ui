@@ -103,6 +103,164 @@
   --foreground: var(--color-ink);
 }
 
+/* The front page's motion (app/(platform)/home).
+ *
+ * Kept above the panel's section on purpose: the design checks read
+ * everything from .admin-shell onwards as the panel's own CSS, and the
+ * front page uses Synora's #6666ff, which the panel retired.
+ *
+ * All CSS — the page stays a server component that ships nothing to move:
+ *   the colour wash breathing behind the hero, the strike drawn through
+ *   "expensive mistakes", the pieces of a shop floating round the phone and
+ *   gathering in as the page scrolls, the marquee, the slabs stacking.
+ * Everything holds still for anyone who asks the browser for less motion,
+ * and every piece is drawn finished first, so a still frame is right.
+ */
+@keyframes lp-breathe { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(3%,-4%) scale(1.1); } }
+.lp-breathe { animation: lp-breathe 18s ease-in-out infinite; will-change: transform; }
+.lp-breathe-2 { animation: lp-breathe 23s ease-in-out infinite reverse; will-change: transform; }
+
+@keyframes lp-in { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+.lp-in { animation: lp-in 1s cubic-bezier(.2,.7,.2,1) both; }
+
+/* The strike through "expensive mistakes", drawn once, then the stamp lands. */
+@keyframes lp-strike { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+.lp-strike { stroke-dasharray: 1; stroke-dashoffset: 0; animation: lp-strike 0.9s cubic-bezier(.6,0,.2,1) 1.1s both; }
+@keyframes lp-stamp { 0% { opacity: 0; transform: rotate(-8deg) scale(1.6); } 60% { opacity: 1; transform: rotate(-8deg) scale(.94); } 100% { opacity: 1; transform: rotate(-8deg) scale(1); } }
+.lp-stamp { animation: lp-stamp .55s cubic-bezier(.3,1.4,.5,1) 1.9s both; }
+
+/* A piece of the shop, floating at its own tilt (--r), on its own beat. */
+@keyframes lp-bob { 0%,100% { translate: 0 0; } 50% { translate: 0 -12px; } }
+.lp-piece { rotate: var(--r, 0deg); animation: lp-bob var(--d, 7s) ease-in-out infinite; animation-delay: var(--delay, 0s); will-change: translate; }
+/* …and gathering in as the stage scrolls into view: from scattered and
+   tilted to closer and straighter. Where the browser cannot tie motion to
+   scrolling, the pieces simply float. */
+@keyframes lp-gather { from { transform: translate(var(--gx, 0), var(--gy, 0)) scale(.92); } to { transform: none; } }
+/* Wide screens only: on a phone the pieces sit in a column and need no gathering. */
+@supports (animation-timeline: view()) {
+  @media (min-width: 1024px) {
+    .lp-gather { animation: lp-gather linear both; animation-timeline: view(); animation-range: entry 10% cover 50%; }
+  }
+}
+
+@keyframes lp-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.lp-marquee { animation: lp-marquee 48s linear infinite; will-change: transform; }
+.lp-marquee-rev { animation: lp-marquee 56s linear infinite reverse; will-change: transform; }
+
+/* Bars of a week rising, and a dot pulsing. */
+@keyframes lp-bar { from { transform: scaleY(.1); } to { transform: scaleY(1); } }
+.lp-bar { transform-origin: bottom; animation: lp-bar 1.2s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes lp-ping { 0% { transform: scale(1); opacity: .7; } 100% { transform: scale(2.6); opacity: 0; } }
+.lp-ping { animation: lp-ping 1.8s cubic-bezier(0,0,.2,1) infinite; }
+
+/* A slab, sinking back a little as the next one slides over it. */
+@keyframes lp-sink { to { transform: scale(.94); filter: brightness(.96); } }
+@supports (animation-timeline: view()) {
+  @media (min-width: 1024px) {
+    .lp-slab { animation: lp-sink linear both; animation-timeline: view(); animation-range: exit-crossing 0% exit-crossing 100%; }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-breathe, .lp-breathe-2, .lp-in, .lp-strike, .lp-stamp, .lp-piece, .lp-gather,
+  .lp-marquee, .lp-marquee-rev, .lp-bar, .lp-ping, .lp-slab { animation: none; }
+}
+
+/* The front page draws its own light header; the shared dark one stands aside there. */
+
+/* Speed (15 October). Everything above still moves; what changed is what it
+   costs. The hero's glows are gradients, not blurred boxes, so drifting them
+   repaints nothing; the marquee fades with two still overlays instead of a
+   mask re-composited every frame; sections far below are not drawn until
+   they come near (content-visibility); and a section scrolled off screen
+   pauses its endless animations (data-offscreen, set by PauseOffscreen). */
+.lp-later { content-visibility: auto; contain-intrinsic-size: auto 900px; }
+[data-offscreen] *, [data-offscreen] { animation-play-state: paused !important; }
+
+/* The header: it tightens as the page scrolls, and a thin line along its
+   foot fills to show how far down you are. Tied to scrolling, so no script;
+   where a browser cannot, the header simply stays as it is at the top. */
+@keyframes lp-head-tighten {
+  from { max-width: 60rem; padding-top: 0.75rem; padding-bottom: 0.75rem; }
+  to { max-width: 44rem; padding-top: 0.45rem; padding-bottom: 0.45rem; box-shadow: 0 14px 40px -14px rgb(13 13 80 / 0.28); }
+}
+@keyframes lp-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@supports (animation-timeline: scroll()) {
+  .lp-head { animation: lp-head-tighten linear both; animation-timeline: scroll(root); animation-range: 0 260px; }
+  .lp-progress { transform-origin: left; animation: lp-fill linear both; animation-timeline: scroll(root); }
+}
+@supports not (animation-timeline: scroll()) { .lp-progress { display: none; } }
+
+/* The header's ticker: five lines taking turns, rolling up. A sixth, the
+   first again, ends the loop, so the jump back to the start is invisible. */
+@keyframes lp-roll {
+  0%, 15% { transform: translateY(0); }
+  20%, 35% { transform: translateY(-16.6667%); }
+  40%, 55% { transform: translateY(-33.3333%); }
+  60%, 75% { transform: translateY(-50%); }
+  80%, 95% { transform: translateY(-66.6667%); }
+  100% { transform: translateY(-83.3333%); }
+}
+.lp-roll { animation: lp-roll 14s cubic-bezier(.7,0,.3,1) infinite; will-change: transform; }
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-head, .lp-progress, .lp-roll { animation: none; }
+}
+
+/* The merchant account pages (app/merchant/layout.tsx), in the front page's
+   look. Field, FormMessage and the .input box are shared with the admin
+   panel, so these rules reach them only inside .auth-shell — the panel's own
+   forms stay exactly as they are. Written outside any layer, so they outrank
+   the shared styles without !important. */
+.auth-shell .input {
+  height: 3rem;
+  border-radius: 0.95rem;
+  border: 1px solid rgb(13 13 80 / 0.12);
+  background: #ffffff;
+  padding-left: 1rem;
+  font-size: 0.95rem;
+  color: #0d0d50;
+  box-shadow: 0 1px 2px rgb(13 13 80 / 0.04);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.auth-shell .input:hover { border-color: rgb(13 13 80 / 0.22); }
+.auth-shell .input:focus,
+.auth-shell .input:focus-visible { outline: none; border-color: #6666ff; box-shadow: 0 0 0 4px rgb(102 102 255 / 0.16); }
+.auth-shell form label > span:first-child { margin-bottom: 0.45rem; font-size: 0.85rem; font-weight: 600; color: #0d0d50; }
+.auth-shell form label > span:last-child:not(:first-child) { color: rgb(13 13 80 / 0.55); }
+.auth-shell form > * + * { margin-top: 1.1rem; }
+.auth-shell p[role="alert"] { border-radius: 0.95rem; border: 1px solid rgb(194 65 12 / 0.25); background: #fff4ee; color: #7c2d12; padding: 0.7rem 0.9rem; }
+.auth-shell p[role="status"] { border-radius: 0.95rem; border: 1px solid rgb(58 165 122 / 0.3); background: #ecfbf3; color: #0f5c3e; padding: 0.7rem 0.9rem; }
+
+/* The keyboard of features: the screen shows the pressed key's line, the
+   first one while none is pressed; a pressed key sinks onto its shadow. */
+.lp-kb [data-desc] { display: none; }
+.lp-kb:not(:has([data-key]:hover, [data-key]:focus-visible)) [data-desc="0"],
+.lp-kb:has([data-key="0"]:hover, [data-key="0"]:focus-visible) [data-desc="0"],
+.lp-kb:has([data-key="1"]:hover, [data-key="1"]:focus-visible) [data-desc="1"],
+.lp-kb:has([data-key="2"]:hover, [data-key="2"]:focus-visible) [data-desc="2"],
+.lp-kb:has([data-key="3"]:hover, [data-key="3"]:focus-visible) [data-desc="3"],
+.lp-kb:has([data-key="4"]:hover, [data-key="4"]:focus-visible) [data-desc="4"],
+.lp-kb:has([data-key="5"]:hover, [data-key="5"]:focus-visible) [data-desc="5"],
+.lp-kb:has([data-key="6"]:hover, [data-key="6"]:focus-visible) [data-desc="6"],
+.lp-kb:has([data-key="7"]:hover, [data-key="7"]:focus-visible) [data-desc="7"],
+.lp-kb:has([data-key="8"]:hover, [data-key="8"]:focus-visible) [data-desc="8"] { display: block; }
+.lp-kb [data-key]:hover,
+.lp-kb [data-key]:focus-visible,
+.lp-kb:not(:has([data-key]:hover, [data-key]:focus-visible)) [data-key="0"] {
+  transform: translateY(5px);
+  box-shadow: 0 1px 0 rgb(13 13 80 / 0.25), 0 6px 14px -8px rgb(13 13 80 / 0.35);
+  outline: 2px solid #6666ff;
+  outline-offset: 3px;
+}
+@keyframes lp-cursor { 50% { opacity: 0; } }
+.lp-cursor { animation: lp-cursor 1s steps(1) infinite; }
+@media (prefers-reduced-motion: reduce) { .lp-cursor { animation: none; } }
+
+/* …and the same for the footer: the front page draws the light colouring of it. */
+.platform-shell:has([data-lp-light]) > [data-platform-header],
+.platform-shell:has([data-lp-light]) > [data-platform-footer] { display: none; }
+
 /* The admin panel's own surfaces — APP.ai, exactly.
  *
  * Three greys, an outline grey and one accent, and nothing in the panel is
@@ -434,44 +592,6 @@ a:hover .sd-sheen { animation-duration: 1.6s; }
   .sd-sheen { animation: none; opacity: 0; }
 }
 
-/* A tab set with no JavaScript.
- *
- * Three radios carry the state, the labels switch them, and :has() on the
- * wrapper lights the chosen tile and reveals its panel. The front page is a
- * server component and stays one: a marketing page that ships a bundle to
- * switch between three panels has spent a merchant's first two seconds on
- * something a radio button has done since 1995.
- *
- * Every panel is in the markup, so the page reads correctly with CSS disabled
- * and a screen reader meets a labelled radio group rather than a widget.
- */
-.showcase [data-panel] { display: none; }
-.showcase:has(#sc-a:checked) [data-panel="a"],
-.showcase:has(#sc-b:checked) [data-panel="b"],
-.showcase:has(#sc-c:checked) [data-panel="c"] { display: block; }
-
-.showcase:has(#sc-a:checked) [data-tile="a"],
-.showcase:has(#sc-b:checked) [data-tile="b"],
-.showcase:has(#sc-c:checked) [data-tile="c"] {
-  transform: translateY(-6px);
-  filter: saturate(1.35) brightness(1.12);
-}
-/* The chosen tile keeps a ring the others do not have, so the state survives
-   for somebody who cannot see the lift. */
-.showcase:has(#sc-a:checked) [data-tile="a"]::after,
-.showcase:has(#sc-b:checked) [data-tile="b"]::after,
-.showcase:has(#sc-c:checked) [data-tile="c"]::after {
-  content: "";
-  position: absolute;
-  inset: -5px;
-  border-radius: 30px;
-  border: 1px solid rgb(255 255 255 / 0.42);
-}
-.showcase label:focus-within {
-  outline: 2px solid rgb(255 255 255 / 0.7);
-  outline-offset: 6px;
-  border-radius: 28px;
-}
 
 /* The product's own site, in the product's own colours.
  *

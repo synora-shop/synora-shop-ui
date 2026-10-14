@@ -18,11 +18,11 @@ export function FormHeading({
 }) {
   return (
     <div className="mb-8">
-      <h1 className="font-serif text-3xl font-semibold tracking-tight text-balance text-ink">
+      <h1 className="text-[2.25rem] font-semibold leading-[1.05] tracking-[-0.035em] text-balance text-[#0d0d50]">
         {title}
       </h1>
       {description && (
-        <p className="mt-2 text-sm leading-relaxed text-ink-soft">{description}</p>
+        <p className="mt-2.5 text-[15px] leading-relaxed text-[#0d0d50]/60">{description}</p>
       )}
     </div>
   );
@@ -127,12 +127,12 @@ export function FormFooter({
 }: {
   children: React.ReactNode;
 }) {
-  return <p className="mt-6 text-center text-sm text-ink-soft">{children}</p>;
+  return <p className="mt-8 text-center text-sm text-[#0d0d50]/60">{children}</p>;
 }
 
 export function FormLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <Link href={href} className="font-medium text-brand-600 hover:text-brand-700 underline-scribble">
+    <Link href={href} className="font-semibold text-[#5050e0] hover:text-[#0d0d50] underline-scribble">
       {children}
     </Link>
   );
@@ -159,7 +159,7 @@ export function SubmitButton({
     <button
       type="submit"
       disabled={pending}
-      className="w-full rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+      className="h-12 w-full rounded-full bg-[#6666ff] px-5 text-[15px] font-semibold text-white shadow-[0_12px_30px_-12px_rgba(102,102,255,0.8)] transition-[transform,background-color] hover:-translate-y-0.5 hover:bg-[#5a5af5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6666ff] focus-visible:ring-offset-2 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
     >
       {pending ? pendingLabel : children}
     </button>

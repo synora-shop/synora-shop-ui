@@ -24,10 +24,10 @@ export function SignupForm({ platformDomain }: { platformDomain: string }) {
   if (sent) {
     return (
       <div className="space-y-4">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-bg text-green">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#b8efd6] text-[#0f5c3e]">
           <Check className="h-5 w-5" />
         </div>
-        <h2 className="font-serif text-2xl font-semibold text-ink">Check your email</h2>
+        <h2 className="text-[1.75rem] font-semibold tracking-[-0.03em] text-[#0d0d50]">Check your email</h2>
         <p className="text-sm leading-relaxed text-ink-soft">
           We&rsquo;ve sent a confirmation link to{" "}
           <span className="font-medium text-ink">{sent}</span>. Open it and your store is ready.

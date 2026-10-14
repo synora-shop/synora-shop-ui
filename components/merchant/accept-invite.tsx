@@ -40,7 +40,7 @@ export function AcceptInvite({ token, shopName }: { token: string; shopName: str
             router.push("/admin");
             router.refresh();
           }}
-          className="w-full rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-700"
+          className="w-full h-12 rounded-full bg-[#6666ff] px-5 text-[15px] font-semibold text-white shadow-[0_12px_30px_-12px_rgba(102,102,255,0.8)] transition-colors hover:bg-[#5a5af5]"
         >
           Go to {shopName}
         </button>
@@ -55,7 +55,7 @@ export function AcceptInvite({ token, shopName }: { token: string; shopName: str
         type="button"
         onClick={accept}
         disabled={pending}
-        className="w-full rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+        className="w-full h-12 rounded-full bg-[#6666ff] px-5 text-[15px] font-semibold text-white shadow-[0_12px_30px_-12px_rgba(102,102,255,0.8)] transition-colors hover:bg-[#5a5af5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6666ff] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {pending ? "Joining…" : `Join ${shopName}`}
       </button>

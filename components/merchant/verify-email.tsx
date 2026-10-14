@@ -45,7 +45,7 @@ export function ConfirmEmail({ token }: { token: string }) {
         <FormMessage tone="success">{state.message}</FormMessage>
         <Link
           href="/merchant/login"
-          className="block w-full rounded-lg bg-brand-600 px-4 py-2.5 text-center text-sm font-medium text-white transition-colors hover:bg-brand-700"
+          className="flex h-12 w-full items-center justify-center rounded-full bg-[#6666ff] px-5 text-center text-[15px] font-semibold text-white shadow-[0_12px_30px_-12px_rgba(102,102,255,0.8)] transition-colors hover:bg-[#5a5af5]"
         >
           Sign in
         </Link>
@@ -65,7 +65,7 @@ export function ConfirmEmail({ token }: { token: string }) {
         type="button"
         onClick={confirm}
         disabled={state.kind === "pending"}
-        className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+        className="flex w-full items-center justify-center gap-2 h-12 rounded-full bg-[#6666ff] px-5 text-[15px] font-semibold text-white shadow-[0_12px_30px_-12px_rgba(102,102,255,0.8)] transition-colors hover:bg-[#5a5af5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6666ff] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
       >
         <MailCheck className="h-4 w-4" />
         {state.kind === "pending" ? "Confirming…" : "Confirm my email address"}

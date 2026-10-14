@@ -7,6 +7,13 @@ purpose — this is the list Abdul works from, not a ticket tracker.
 
 ## Next up
 
+> **Order notes in theme checkouts (noted 15 October).** The front page's
+> receipt promises "Order notes, right in checkout". Orders store notes and the
+> admin shows them, and the platform's own checkout has the field — but Loom's
+> and Kite's checkout sections do not draw it yet, so a customer on either
+> cannot leave one. Add a notes field to both (sent as `notes` to the order
+> API, which already accepts it), or change the receipt line.
+
 ### 1. Element design, section by section
 
 **Where:** every section. Not a layout pass — an *element* pass.

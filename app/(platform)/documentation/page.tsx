@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 const SECTIONS = [
   {
     title: "Guides",
-    body: "How to do each thing in the panel, in order, with the screen in front of you — opening a shop, adding a product that has sizes, connecting a domain, taking your first payment.",
+    body: "How to do each thing in the panel, in order, with the screen in front of you: opening a shop, adding a product that has sizes, connecting a domain, taking your first payment.",
   },
   {
     title: "How it works",
@@ -74,7 +74,7 @@ export default function DocumentationPage() {
         </h1>
 
         <p className="mt-5 max-w-xl text-base leading-relaxed text-white/65 sm:text-lg">
-          Everything you need to run your shop will live here — how to do each thing, what changed
+          Everything you need to run your shop will live here: how to do each thing, what changed
           in the last update, and what is broken today. Here is what is being written.
         </p>
 
