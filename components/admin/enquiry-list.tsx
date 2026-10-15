@@ -12,6 +12,7 @@ import { useMoney } from "@/components/ui/currency";
 import { formatRelativeTime } from "@/lib/format-relative-time";
 import type { CustomField } from "@/lib/product-kind";
 import { cn } from "@/lib/utils";
+import { FieldLabel } from "@/components/merchant/form-shell";
 
 /**
  * Enquiries (new admin, 15 October): bulk and made-to-order requests, as an
@@ -274,7 +275,7 @@ function NotesBox({ id, initial }: { id: string; initial: string }) {
 
   return (
     <div>
-      <label htmlFor={notesId} className="mb-1 block text-[11.5px] font-semibold uppercase tracking-[0.06em] text-[#0a0a0a]/45">Private notes</label>
+      <FieldLabel htmlFor={notesId}>Private notes</FieldLabel>
       <textarea
         id={notesId}
         rows={2}
@@ -282,7 +283,7 @@ function NotesBox({ id, initial }: { id: string; initial: string }) {
         onChange={(e) => setNotes(e.target.value)}
         onBlur={persist}
         placeholder="Waiting on fabric confirmation…"
-        className="w-full rounded-xl bg-white px-3 py-2 text-[14px] outline-none ring-1 ring-[#0a0a0a]/10 focus:ring-2 focus:ring-[#0a0a0a]"
+        className="mt-1 w-full rounded-xl bg-white px-3 py-2 text-[14px] outline-none ring-1 ring-[#0a0a0a]/10 focus:ring-2 focus:ring-[#0a0a0a]"
       />
       <p className="mt-1 text-[11.5px] text-[#0a0a0a]/45">Only your team sees this. Saves when you click away.</p>
     </div>
