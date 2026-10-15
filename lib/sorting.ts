@@ -130,6 +130,7 @@ export const MEDIA_SORTS: readonly SortOption[] = [
  */
 export type CustomerSummaryish = {
   name: string;
+  email?: string;
   orderCount: number;
   totalSpent: number;
   lastOrderAt: Date | null;
@@ -142,6 +143,14 @@ export const CUSTOMER_SORTS: readonly { value: string; label: string }[] = [
   { value: "recent", label: "Ordered most recently" },
   { value: "name", label: "Name A–Z" },
   { value: "newest", label: "Newest customer" },
+  // The other way round for each, so every column of the list sorts both
+  // ways (new admin, 15 October).
+  { value: "spend-low", label: "Lowest spend" },
+  { value: "orders-low", label: "Fewest orders" },
+  { value: "recent-oldest", label: "Ordered longest ago" },
+  { value: "name-desc", label: "Name Z–A" },
+  { value: "email", label: "Email A–Z" },
+  { value: "email-desc", label: "Email Z–A" },
 ];
 
 const time = (d: Date | null) => (d ? d.getTime() : 0);
@@ -160,6 +169,19 @@ export function compareCustomers(
       return (a, b) => a.name.localeCompare(b.name);
     case "newest":
       return (a, b) => time(b.createdAt) - time(a.createdAt);
+    case "spend-low":
+      return (a, b) => a.totalSpent - b.totalSpent || a.orderCount - b.orderCount;
+    case "orders-low":
+      return (a, b) => a.orderCount - b.orderCount || a.totalSpent - b.totalSpent;
+    case "recent-oldest":
+      // Still never-ordered last: "longest ago" is a question about orders.
+      return (a, b) => (a.lastOrderAt ? 0 : 1) - (b.lastOrderAt ? 0 : 1) || time(a.lastOrderAt) - time(b.lastOrderAt);
+    case "name-desc":
+      return (a, b) => b.name.localeCompare(a.name);
+    case "email":
+      return (a, b) => (a.email ?? "").localeCompare(b.email ?? "");
+    case "email-desc":
+      return (a, b) => (b.email ?? "").localeCompare(a.email ?? "");
     default:
       return (a, b) => b.totalSpent - a.totalSpent || b.orderCount - a.orderCount;
   }

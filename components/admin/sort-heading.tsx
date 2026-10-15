@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react";
-import { columnSort, sortHref, type SearchParams, type SortOption } from "@/lib/sorting";
+import { columnSort, sortHref, type SearchParams } from "@/lib/sorting";
 import { cn } from "@/lib/utils";
 
 /**
@@ -19,7 +19,7 @@ export function SortHeading({
   current: string;
   basePath: string;
   searchParams: SearchParams;
-  options: readonly SortOption[];
+  options: readonly { value: string }[];
   align?: "left" | "right";
   className?: string;
 }) {

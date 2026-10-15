@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft, Mail, MapPin, Phone } from "lucide-react";
+import { ArrowLeft, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { shopSession } from "@/lib/auth-guard";
 import { getCustomer } from "@/lib/data/customers";
 
 import { formatRelativeTime } from "@/lib/format-relative-time";
-import { orderStatusStyle } from "@/lib/order-status-style";
-import { Badge, Card, GroupLabel, PageHeader, Stat } from "@/components/ui/primitives";
-import { cn } from "@/lib/utils";
+import { statusLabel } from "@/lib/order-status-style";
+import { Panel, STAGE_TONE, StatePill } from "@/components/admin/kit";
+import { PageCrumb } from "@/components/admin/page-crumb";
 import { formatMoney } from "@/lib/money";
 import { getCurrency } from "@/lib/data/settings";
 
@@ -30,73 +30,82 @@ export default async function CustomerPage(props: PageProps<"/admin/customers/[i
   const counted = customer.orders.filter((o) => o.orderStatus !== "CANCELLED");
   const totalSpent = counted.reduce((sum, o) => sum + o.total, 0);
 
+  const digits = (customer.phone ?? "").replace(/\D/g, "").replace(/^0/, "92");
+  const initials = customer.name.trim().split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+
   return (
     <div className="space-y-5">
-      <Link
-        href="/admin/customers"
-        className="inline-flex items-center gap-1.5 text-sm text-ink-soft transition-colors hover:text-ink"
-      >
-        <ArrowLeft className="h-[var(--icon-box)] w-[var(--icon-box)]" />
-        All customers
+      <PageCrumb label={customer.name} />
+      <Link href="/admin/customers" className="-mb-2 inline-flex items-center gap-1.5 self-start text-[13.5px] font-semibold text-[#0a0a0a]/55 hover:text-[#0a0a0a]">
+        <ArrowLeft className="h-4 w-4" /> Customers
       </Link>
 
-      <PageHeader
-        title={customer.name}
-        description={
-          customer.hasAccount
-            ? "Has an account on your store."
-            : "Checked out as a guest, no account, no password."
-        }
-      />
+      {/* Who they are and what they are worth, at a glance. */}
+      <section className="flex flex-col gap-5 rounded-2xl bg-[#0a0a0a] p-5 text-white sm:flex-row sm:items-center sm:p-6">
+        <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-[#c8e7ff] text-[20px] font-semibold text-[#0a0a0a]">{initials}</span>
+        <div className="min-w-0 flex-1">
+          <h2 className="flex flex-wrap items-center gap-2 text-[22px] font-semibold tracking-[-0.02em]">
+            {customer.name}
+            {customer.hasAccount ? (
+              <span className="rounded-full bg-[#b8efd6]/15 px-2 py-0.5 text-[11.5px] font-semibold text-[#b8efd6]">Has an account</span>
+            ) : (
+              <span className="rounded-full bg-white/10 px-2 py-0.5 text-[11.5px] font-semibold text-white/60">Guest</span>
+            )}
+          </h2>
+          <p className="text-[13.5px] text-white/55">First seen {formatRelativeTime(customer.createdAt)}</p>
+        </div>
+        <dl className="grid grid-cols-3 gap-6 text-right">
+          <div><dt className="text-[12px] text-white/50">Spent</dt><dd className="text-[18px] font-semibold">{money(totalSpent)}</dd></div>
+          <div><dt className="text-[12px] text-white/50">Orders</dt><dd className="text-[18px] font-semibold">{counted.length}</dd></div>
+          <div><dt className="text-[12px] text-white/50">Average</dt><dd className="text-[18px] font-semibold">{counted.length > 0 ? money(Math.round(totalSpent / counted.length)) : "None"}</dd></div>
+        </dl>
+      </section>
 
-      <div className="grid gap-3 sm:grid-cols-3">
-        <Stat label="Orders" value={counted.length} />
-        <Stat label="Spent" value={money(totalSpent)} />
-        <Stat
-          label="Average order"
-          value={counted.length > 0 ? money(Math.round(totalSpent / counted.length)) : ","}
-        />
-      </div>
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <Panel title={`Orders · ${customer.orders.length}`} pad={false}>
+          {customer.orders.length === 0 ? (
+            <p className="px-5 py-10 text-center text-[14px] text-[#0a0a0a]/55">They have an account but haven&rsquo;t ordered yet.</p>
+          ) : (
+            <ul className="mt-2 divide-y divide-[#0a0a0a]/[0.06]">
+              {customer.orders.map((order) => (
+                <li key={order.id}>
+                  <Link href={`/admin/orders/${order.id}`} className="flex flex-wrap items-center gap-x-4 gap-y-1 px-5 py-3.5 hover:bg-[#fafafa]">
+                    <span className="w-20 font-mono text-[13.5px] font-semibold text-[#0a0a0a]">#{order.id}</span>
+                    <span className="min-w-0 flex-1 truncate text-[13px] text-[#0a0a0a]/55">{order.items.map((i) => `${i.title} ×${i.quantity}`).join(", ")}</span>
+                    <StatePill tone={STAGE_TONE[order.orderStatus] ?? "off"}>{statusLabel(order.orderStatus)}</StatePill>
+                    <span className="w-24 text-right">
+                      <span className="block text-[14px] font-semibold tabular-nums text-[#0a0a0a]">{money(order.total)}</span>
+                      <span className="block text-[11.5px] text-[#0a0a0a]/45">{formatRelativeTime(order.createdAt)}</span>
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Panel>
 
-      <div className="grid gap-6 lg:grid-cols-[20rem_1fr]">
-        <div className="space-y-6">
-          <Card className="p-4">
-            <GroupLabel>Contact</GroupLabel>
-            <dl className="mt-3 space-y-2 text-sm">
-              <div className="flex items-start gap-2">
-                <Mail className="mt-0.5 h-[var(--icon-box)] w-[var(--icon-box)].5 flex-shrink-0 text-ink-faint" />
-                <dd className="min-w-0 break-words">
-                  {/* Mailing a customer is the most common next action after
-                      looking one up, so it is a link rather than text to copy. */}
-                  <a href={`mailto:${customer.email}`} className="text-brand-600 hover:underline">
-                    {customer.email}
-                  </a>
-                </dd>
+        <div className="space-y-5">
+          <Panel title="Reach them">
+            <div className="flex flex-col gap-2 text-[13.5px]">
+              {/* Mailing a customer is the most common next action after
+                  looking one up, so it is a link rather than text to copy. */}
+              <a href={`mailto:${customer.email}`} className="inline-flex items-center gap-2 break-all hover:underline"><Mail className="h-4 w-4 shrink-0 text-[#0a0a0a]/40" /> {customer.email}</a>
+              {customer.phone && <a href={`tel:${customer.phone}`} className="inline-flex items-center gap-2 hover:underline"><Phone className="h-4 w-4 shrink-0 text-[#0a0a0a]/40" /> {customer.phone}</a>}
+            </div>
+            {customer.phone && digits.length >= 10 && (
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                <a href={`tel:${customer.phone}`} className="inline-flex items-center justify-center gap-1.5 rounded-[10px] py-2 text-[13px] font-semibold ring-1 ring-[#0a0a0a]/12 hover:bg-[#f5f5f5]"><Phone className="h-4 w-4" /> Call</a>
+                <a href={`https://wa.me/${digits}`} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-1.5 rounded-[10px] bg-[#0a0a0a] py-2 text-[13px] font-semibold text-white hover:bg-[#262626]"><MessageCircle className="h-4 w-4" /> WhatsApp</a>
               </div>
-              {customer.phone && (
-                <div className="flex items-start gap-2">
-                  <Phone className="mt-0.5 h-[var(--icon-box)] w-[var(--icon-box)].5 flex-shrink-0 text-ink-faint" />
-                  <dd>
-                    <a href={`tel:${customer.phone}`} className="text-brand-600 hover:underline">
-                      {customer.phone}
-                    </a>
-                  </dd>
-                </div>
-              )}
-            </dl>
-            <p className="mt-3 text-[11px] text-ink-faint">
-              First seen {formatRelativeTime(customer.createdAt)}
-            </p>
-          </Card>
-
+            )}
+          </Panel>
           {customer.addresses.length > 0 && (
-            <Card className="p-4">
-              <GroupLabel>Saved addresses</GroupLabel>
-              <ul className="mt-3 space-y-3 text-sm">
+            <Panel title="Saved addresses">
+              <ul className="space-y-3 text-[13.5px]">
                 {customer.addresses.map((address) => (
                   <li key={address.id} className="flex items-start gap-2">
-                    <MapPin className="mt-0.5 h-[var(--icon-box)] w-[var(--icon-box)].5 flex-shrink-0 text-ink-faint" />
-                    <span className="leading-snug text-ink-soft">
+                    <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#0a0a0a]/40" />
+                    <span className="leading-snug text-[#0a0a0a]/70">
                       {address.line1}
                       {address.line2 ? `, ${address.line2}` : ""}
                       <br />
@@ -105,51 +114,7 @@ export default async function CustomerPage(props: PageProps<"/admin/customers/[i
                   </li>
                 ))}
               </ul>
-            </Card>
-          )}
-        </div>
-
-        <div>
-          <GroupLabel className="mb-2">Order history ({customer.orders.length})</GroupLabel>
-          {customer.orders.length === 0 ? (
-            <Card className="p-6 text-center text-sm text-ink-soft">
-              They have an account but haven&rsquo;t ordered yet.
-            </Card>
-          ) : (
-            <Card className="divide-y divide-border">
-              {customer.orders.map((order) => (
-                <Link
-                  key={order.id}
-                  href={`/admin/orders/${order.id}`}
-                  className="flex flex-wrap items-center gap-3 p-4 transition-colors hover:bg-subtle"
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="flex items-center gap-2 text-sm font-medium text-ink">
-                      <span className="font-mono">{order.id}</span>
-                      <span
-                        className={cn(
-                          "rounded-full px-2 py-0.5 text-[11px] font-medium",
-                          orderStatusStyle(order.orderStatus)
-                        )}
-                      >
-                        {order.orderStatus.toLowerCase()}
-                      </span>
-                    </p>
-                    <p className="mt-0.5 truncate text-xs text-ink-soft">
-                      {order.items.map((i) => `${i.title} ×${i.quantity}`).join(", ")}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-mono text-sm tabular-nums text-ink">
-                      {money(order.total)}
-                    </p>
-                    <p className="text-[11px] text-ink-faint">
-                      {formatRelativeTime(order.createdAt)}
-                    </p>
-                  </div>
-                </Link>
-              ))}
-            </Card>
+            </Panel>
           )}
         </div>
       </div>
