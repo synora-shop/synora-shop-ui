@@ -1,198 +1,144 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Trash2, Check, X, ImagePlus } from "lucide-react";
+import { Check, ImageIcon, Pencil, Trash2, X } from "lucide-react";
 import { renameCategory, deleteCategory } from "@/app/admin/categories/actions";
 import { useServerRows } from "@/components/ui/use-server-rows";
-import { SwipeRow } from "@/components/ui/swipe-row";
 import { CollectionDetailsForm } from "@/components/admin/collection-details-form";
 import type { CollectionDetails } from "@/app/admin/categories/actions";
-import { useConfirm, type ConfirmOptions } from "@/components/ui/confirm-dialog";
-import { FieldError } from "@/components/ui/primitives";
+import { useConfirm } from "@/components/ui/confirm-dialog";
+import { useToast } from "@/components/ui/toast";
 
+/**
+ * Collections as the design draws them (new admin, 15 October): a card each,
+ * with the collection's own picture or two of its products, its name and how
+ * many products it holds. Everything the old list did is still here: rename
+ * in place, picture, description and SEO, and delete once it is empty.
+ */
 type CategoryRow = {
   id: string;
   name: string;
   slug: string;
   productCount: number;
+  previews: string[];
   details: CollectionDetails;
 };
 
-function Row({
-  category,
-  confirm,
-  onError,
-  onDeleted,
-  onRenamed,
-  onDetails,
-  refresh,
-}: {
-  category: CategoryRow;
-  confirm: (options: ConfirmOptions) => Promise<boolean>;
-  onError: (msg: string) => void;
-  onDeleted: (id: string) => void;
-  onRenamed: (id: string, name: string) => void;
-  onDetails: (id: string, details: CollectionDetails) => void;
-  refresh: () => void;
-}) {
-  const [name, setName] = useState(category.name);
-  const [editing, setEditing] = useState(false);
-  const [editingDetails, setEditingDetails] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const dirty = name.trim() !== category.name && name.trim().length > 0;
+export function CategoryList({ categories }: { categories: CategoryRow[] }) {
+  const router = useRouter();
+  const toast = useToast();
+  const [rows, setRows] = useServerRows(categories);
+  const { confirm, dialog } = useConfirm();
+  const [renaming, setRenaming] = useState<string | null>(null);
+  const [name, setName] = useState("");
+  const [editing, setEditing] = useState<CategoryRow | null>(null);
 
-  async function handleSave() {
-    setSaving(true);
+  async function rename(c: CategoryRow) {
     const trimmed = name.trim();
-    const result = await renameCategory(category.id, trimmed);
-    setSaving(false);
-    if (result.error) {
-      onError(result.error);
-      setName(category.name);
-    } else {
-      onRenamed(category.id, trimmed);
-      setEditing(false);
-      refresh();
-    }
+    if (!trimmed || trimmed === c.name) return setRenaming(null);
+    const result = await renameCategory(c.id, trimmed);
+    if (result.error) return toast.error(result.error, { blocking: true });
+    setRows((r) => r.map((x) => (x.id === c.id ? { ...x, name: trimmed } : x)));
+    setRenaming(null);
+    toast.success("Renamed. Every menu link follows.");
+    router.refresh();
   }
 
-  async function handleDelete() {
-    if (category.productCount > 0) {
-      onError(
-        `Can't delete "${category.name}", ${category.productCount} product(s) are still assigned to it. Remove them from this category first.`
-      );
+  async function remove(c: CategoryRow) {
+    if (c.productCount > 0) {
+      toast.error(`"${c.name}" still has ${c.productCount} product${c.productCount === 1 ? "" : "s"}. Take them out of it first.`, { blocking: true });
       return;
     }
     const ok = await confirm({
-      title: `Permanently delete "${category.name}"?`,
-      description: "It's empty, so this can't be undone, there's nothing to restore.",
-      confirmLabel: "Delete Forever",
+      title: `Delete "${c.name}"?`,
+      description: "It is empty, so nothing is lost, but this cannot be undone.",
+      confirmLabel: "Delete",
       danger: true,
     });
     if (!ok) return;
-
-    const result = await deleteCategory(category.id);
-    if (result.error) onError(result.error);
-    else {
-      onDeleted(category.id);
-      refresh();
-    }
+    const result = await deleteCategory(c.id);
+    if (result.error) return toast.error(result.error, { blocking: true });
+    setRows((r) => r.filter((x) => x.id !== c.id));
+    router.refresh();
   }
 
   return (
-    <SwipeRow actions={[{ key: "delete", label: "Delete", icon: Trash2, tone: "danger", onClick: handleDelete }]}>
-      <div className="px-5 py-3">
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => setEditingDetails((v) => !v)}
-            aria-expanded={editingDetails}
-            aria-label={`Edit the ${category.name} collection`}
-            title="Picture, description and SEO"
-            className="h-11 w-11 flex-shrink-0 overflow-hidden rounded-[var(--radius-control)] border border-border bg-subtle transition-colors hover:border-brand-500"
-          >
-            {category.details.image ? (
-              // eslint-disable-next-line @next/next/no-img-element -- arbitrary/pasted URLs, skip the image optimizer
-              <img src={category.details.image} alt="" className="h-full w-full object-cover" />
-            ) : (
-              <ImagePlus className="mx-auto h-[var(--icon-box)] w-[var(--icon-box)] text-ink-soft" />
-            )}
-          </button>
-          <div className="min-w-0 flex-1">
-          {editing ? (
-            <div className="flex items-center gap-1">
-              <input
-                autoFocus
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && dirty) handleSave();
-                  if (e.key === "Escape") {
-                    setName(category.name);
-                    setEditing(false);
-                  }
-                }}
-                className="input input-sm w-48"
-              />
-              {dirty && (
-                <button
-                  type="button"
-                  onClick={handleSave}
-                  disabled={saving}
-                  aria-label="Save name"
-                  className="rounded p-1 text-brand-600 transition-colors hover:bg-brand-50 active:bg-brand-100 disabled:opacity-50"
-                >
-                  <Check className="h-[var(--icon-box)] w-[var(--icon-box)]" />
+    <>
+      {dialog}
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {rows.map((c) => {
+          const pictures = c.details.image ? [c.details.image] : c.previews.slice(0, 2);
+          return (
+            <article key={c.id} className="group overflow-hidden rounded-2xl bg-white ring-1 ring-[#0a0a0a]/[0.07]">
+              <Link href={`/admin/products?category=${c.slug}`} aria-label={`Products in ${c.name}`} className="flex aspect-[4/3] gap-0.5 overflow-hidden bg-[#f0f0f0]">
+                {pictures.length === 0 ? (
+                  <span className="grid flex-1 place-items-center text-[#0a0a0a]/30"><ImageIcon className="h-8 w-8" /></span>
+                ) : (
+                  pictures.map((src) => (
+                    <span key={src} className="relative min-w-0 flex-1">
+                      {/* eslint-disable-next-line @next/next/no-img-element -- merchants' own pictures, from any host they used */}
+                      <img src={src} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                    </span>
+                  ))
+                )}
+              </Link>
+              <div className="flex items-start gap-2 p-4">
+                <div className="min-w-0 flex-1">
+                  {renaming === c.id ? (
+                    <span className="flex items-center gap-1">
+                      <input
+                        autoFocus
+                        aria-label="Collection name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") rename(c);
+                          if (e.key === "Escape") setRenaming(null);
+                        }}
+                        className="h-8 w-full min-w-0 rounded-lg bg-[#f5f5f5] px-2 text-[14px] outline-none ring-1 ring-[#0a0a0a]/10 focus:ring-2 focus:ring-[#0a0a0a]"
+                      />
+                      <button type="button" aria-label="Save name" onClick={() => rename(c)} className="grid h-8 w-8 place-items-center rounded-lg hover:bg-[#f5f5f5]"><Check className="h-4 w-4" /></button>
+                      <button type="button" aria-label="Cancel" onClick={() => setRenaming(null)} className="grid h-8 w-8 place-items-center rounded-lg hover:bg-[#f5f5f5]"><X className="h-4 w-4" /></button>
+                    </span>
+                  ) : (
+                    <button type="button" title="Rename" onClick={() => { setName(c.name); setRenaming(c.id); }} className="block max-w-full truncate text-left text-[15px] font-semibold hover:underline">
+                      {c.name}
+                    </button>
+                  )}
+                  <p className="text-[13px] text-[#0a0a0a]/55">{c.productCount} product{c.productCount === 1 ? "" : "s"} · /{c.slug}</p>
+                </div>
+                <button type="button" aria-label={`Picture, description and SEO for ${c.name}`} title="Picture, description and SEO" onClick={() => setEditing(c)} className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-[#0a0a0a]/55 hover:bg-[#f5f5f5] hover:text-[#0a0a0a]">
+                  <Pencil className="h-4 w-4" />
                 </button>
-              )}
-              <button
-                type="button"
-                onClick={() => {
-                  setName(category.name);
-                  setEditing(false);
-                }}
-                aria-label="Cancel"
-                className="rounded p-1 text-ink-soft transition-colors hover:bg-subtle active:bg-subtle"
-              >
-                <X className="h-[var(--icon-box)] w-[var(--icon-box)]" />
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setEditing(true)}
-              className="truncate rounded text-left text-sm font-medium transition-colors hover:text-brand-600 active:text-brand-700"
-              title="Click to rename"
-            >
-              {category.name}
-            </button>
-          )}
-            <p className="text-xs text-ink-soft">
-              /{category.slug} · {category.productCount} product(s)
-            </p>
-          </div>
-        </div>
+                <button type="button" aria-label={`Delete ${c.name}`} title={c.productCount > 0 ? "Empty it first" : "Delete"} onClick={() => remove(c)} className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-[#a3330c]/70 hover:bg-[#ffe9e2] hover:text-[#a3330c]">
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+            </article>
+          );
+        })}
+      </div>
 
-        {editingDetails && (
-          <div className="mt-3 border-t border-border pt-3">
+      {editing && (
+        <div className="fixed inset-0 z-[100] grid place-items-center bg-black/30 px-3 backdrop-blur-[2px]" onMouseDown={() => setEditing(null)}>
+          <div role="dialog" aria-label={`Edit ${editing.name}`} onMouseDown={(e) => e.stopPropagation()} className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-5 shadow-[0_40px_100px_-30px_rgba(0,0,0,0.6)]">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-[17px] font-semibold">{editing.name}</h2>
+              <button type="button" aria-label="Close" onClick={() => setEditing(null)} className="grid h-8 w-8 place-items-center rounded-lg hover:bg-[#f5f5f5]"><X className="h-4 w-4" /></button>
+            </div>
             <CollectionDetailsForm
-              categoryId={category.id}
-              initial={category.details}
-              onSaved={(details) => onDetails(category.id, details)}
+              categoryId={editing.id}
+              initial={editing.details}
+              onSaved={(details) => {
+                setRows((r) => r.map((x) => (x.id === editing.id ? { ...x, details } : x)));
+                setEditing(null);
+              }}
             />
           </div>
-        )}
-      </div>
-    </SwipeRow>
-  );
-}
-
-export function CategoryList({ categories }: { categories: CategoryRow[] }) {
-  const router = useRouter();
-  const [rows, setRows] = useServerRows(categories);
-  const [error, setError] = useState<string | null>(null);
-  const { confirm, dialog } = useConfirm();
-
-  return (
-    <div>
-      {dialog}
-      {error && <FieldError className="mb-2">{error}</FieldError>}
-      <div className="divide-y divide-border rounded-[var(--radius-control)] border border-border bg-white">
-        {rows.map((cat) => (
-          <Row
-            key={cat.id}
-            category={cat}
-            confirm={confirm}
-            onError={setError}
-            onDeleted={(id) => setRows((r) => r.filter((c) => c.id !== id))}
-            onRenamed={(id, name) => setRows((r) => r.map((c) => (c.id === id ? { ...c, name } : c)))}
-            onDetails={(id, details) => setRows((r) => r.map((c) => (c.id === id ? { ...c, details } : c)))}
-            refresh={() => router.refresh()}
-          />
-        ))}
-        
-      </div>
-    </div>
+        </div>
+      )}
+    </>
   );
 }
