@@ -72,7 +72,7 @@ export function ProductKindFields({
       : [];
 
   return (
-    <div className="space-y-5 rounded-[var(--radius-container)] border border-border bg-surface p-5">
+    <div className="space-y-5 rounded-2xl bg-white p-5 ring-1 ring-[#0a0a0a]/[0.07]">
       <div>
         <GroupLabel>How this is sold</GroupLabel>
         <div className="mt-2 grid gap-2 sm:grid-cols-3">
@@ -86,16 +86,16 @@ export function ProductKindFields({
                 onClick={() => set("kind", k)}
                 aria-pressed={active}
                 className={cn(
-                  "rounded-[var(--radius-control)] border p-3 text-left transition-colors",
+                  "rounded-xl border p-3.5 text-left transition-colors",
                   active
-                    ? "border-brand-500 bg-brand-50"
-                    : "border-border hover:border-brand-300 hover:bg-subtle"
+                    ? "border-[#0a0a0a] bg-[#0a0a0a] text-white"
+                    : "border-[#0a0a0a]/12 hover:bg-[#f5f5f5]"
                 )}
               >
-                <span className={cn("block text-sm font-medium", active && "text-brand-600")}>
+                <span className="block text-sm font-semibold">
                   {meta.label}
                 </span>
-                <span className="mt-1 block text-[11px] leading-snug text-ink-soft">
+                <span className={cn("mt-1 block text-[12px] leading-snug", active ? "text-white/65" : "text-ink-soft")}>
                   {meta.blurb}
                 </span>
               </button>

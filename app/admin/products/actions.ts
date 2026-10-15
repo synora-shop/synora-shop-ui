@@ -53,6 +53,8 @@ function slugify(text: string) {
 }
 
 export type VariantInput = {
+  /** The variant's own id when it already exists, so a save updates it in place. */
+  id?: string;
   size: string;
   color: string;
   colorHex: string;
@@ -93,6 +95,16 @@ export type SaveProductResult =
 
 export async function saveProduct(input: ProductInput): Promise<SaveProductResult> {
   await requireAdmin();
+
+  // A variant is a size, a colour, or both. One with neither is an empty row
+  // the merchant never filled in. Requiring both (as the form once did)
+  // dropped every size-only variant, a lawn suit in S, M and L, on save.
+  input = {
+    ...input,
+    variants: input.variants
+      .map((v) => ({ ...v, size: v.size.trim(), color: v.color.trim() }))
+      .filter((v) => v.size || v.color),
+  };
 
   // Draft is the safety net for half-configured products — only a title is ever required,
   // so nothing entered in the form is lost by saving early or navigating away.
@@ -191,22 +203,46 @@ export async function saveProduct(input: ProductInput): Promise<SaveProductResul
           },
         });
 
-    // Replace variants wholesale — simplest consistent approach for a small admin-managed catalog.
-    await (await db()).productVariant.deleteMany({ where: { productId: product.id } });
-    if (input.variants.length > 0) {
-      const sid = await currentShopId();
-      await (await db()).productVariant.createMany({
-        data: input.variants.map((v) => ({
-          shopId: sid,
-          productId: product.id,
-          size: v.size,
-          color: v.color,
-          colorHex: v.colorHex || null,
-          sku: v.sku,
-          stock: v.stock,
-        })),
-      });
-    }
+    // Variants are updated in place, not replaced (15 October). Replacing
+    // them gave every size a new id on every save, which cut the link from
+    // past orders and draft orders to what they sold, and reset everything
+    // per size this form does not show: whether stock is counted, selling
+    // when sold out, shipping, barcode, weight, its own price, and the
+    // columns a Shopify import keeps. Now: an existing variant (by its id,
+    // and only one of this product's) is updated with what the form shows;
+    // a new row is created; a row taken away is deleted. One transaction, so
+    // a refused save leaves the product as it was.
+    const sid = await currentShopId();
+    const scoped = await db();
+    const existing = await scoped.productVariant.findMany({ where: { productId: product.id }, select: { id: true } });
+    const ours = new Set(existing.map((v) => v.id));
+    const kept = new Set(input.variants.flatMap((v) => (v.id && ours.has(v.id) ? [v.id] : [])));
+    const fields = (v: VariantInput) => ({
+      size: v.size,
+      color: v.color,
+      // The named-option columns hold what size and colour hold
+      // (20261011000000_variant_named_options), so they move with them.
+      option1: v.size,
+      option2: v.color,
+      colorHex: v.colorHex || null,
+      sku: v.sku,
+      stock: v.stock,
+    });
+    await scoped.$transaction([
+      scoped.productVariant.deleteMany({ where: { productId: product.id, id: { notIn: [...kept] } } }),
+      ...input.variants
+        .filter((v) => v.id && kept.has(v.id))
+        .map((v) => scoped.productVariant.update({ where: { id: v.id! }, data: fields(v) })),
+      ...(input.variants.some((v) => !(v.id && kept.has(v.id)))
+        ? [
+            scoped.productVariant.createMany({
+              data: input.variants
+                .filter((v) => !(v.id && kept.has(v.id)))
+                .map((v) => ({ shopId: sid, productId: product.id, ...fields(v) })),
+            }),
+          ]
+        : []),
+    ]);
 
     revalidatePath("/admin/products");
     revalidatePath(`/product/${slug}`);

@@ -722,5 +722,28 @@ check(
   );
 }
 
+// Saving a product in the admin keeps its variants (15 October). It used to
+// delete them all and recreate them: new ids on every save, the per-variant
+// columns an import brought (tracked stock, pre-order, shipping, barcode,
+// weight, its own price, the CSV extras) reset to defaults, and any variant
+// without a colour, a size-only lawn suit, dropped outright.
+{
+  const actions = readFileSync(join(process.cwd(), "app/admin/products/actions.ts"), "utf8");
+  const save = actions.slice(actions.indexOf("export async function saveProduct"), actions.indexOf("export async function moveProductToBin"));
+  check(
+    "saving a product updates its variants in place",
+    /productVariant\.update\(/.test(save) && !/productVariant\.deleteMany\(\{ where: \{ productId: product\.id \} \}\)/.test(save),
+    "a wholesale delete gives every variant a new id and resets everything the form does not show"
+  );
+  check(
+    "and keeps a variant with a size or a colour, not only both",
+    /filter\(\(v\) => v\.size \|\| v\.color\)/.test(save),
+    "requiring both dropped every size-only variant on save"
+  );
+  const form = readFileSync(join(process.cwd(), "components/admin/product-form.tsx"), "utf8");
+  check("the form sends each variant's id back", /id: v\.id, size: v\.size/.test(form));
+  check("and does not drop a size-only variant itself", !/filter\(\(v\) => v\.size && v\.color\)/.test(form));
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);
