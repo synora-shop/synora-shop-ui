@@ -40,6 +40,35 @@ one fixed list with a search (`components/admin/settings-frame.tsx`). Lists
 sort by their column names, both ways, through the address, so paging keeps
 the order.
 
+**Features the design drew, built (15 October).** Each on real data:
+
+- Orders: tick rows for a bulk bar (Confirm, Mark packed, Packing slips at
+  `/admin/slips`, Export just those); courier and tracking on Mark shipped,
+  with an optional "on its way" email; a timeline per order (`OrderEvent`)
+  of every stage, payment, courier and email change, and team notes.
+- Draft orders (`/admin/orders/drafts`, table `DraftOrder`): an order built
+  by hand for a WhatsApp or phone customer, sent as a summary to confirm,
+  then made into an ordinary order with stock taken, in one transaction
+  that claims the draft first.
+- Abandoned checkouts (`CheckoutDraft`, saved by every checkout as it is
+  filled in) with Remind by email or WhatsApp, and an optional automatic
+  reminder an hour later (`lib/abandoned-reminders.ts`).
+- Enquiries answered with a quote; customers with notes, tags and offers;
+  Inventory (`/admin/products/inventory`) with stock edited in place;
+  Analytics with cities, payment split and the window before.
+- Checkout settings: order notes on or off, the "send me offers" tick box,
+  "Arrives in N to M days", tidy delivered and paid orders out of the list.
+- Restyled to the design: Bin (one list, Empty the Bin; nothing empties it
+  on a timer, so it does not claim to), Collections (cards), Themes (live,
+  your library, the Theme Store strip; §2 below is the old drawing), and
+  the product editor.
+- Not built, by decision: a custom order number format. Order codes stay
+  random; they are also the key in links and payments.
+
+Saving a product updates its variants in place (by id) and keeps a
+size-only variant. It used to delete and recreate them all, which reset
+every per-variant setting the form does not show; `check:csv` guards it.
+
 ## Where this comes from
 
 | File | What it is |
