@@ -231,6 +231,7 @@ export async function completeDraftOrder(id: string): Promise<{ ok: true; orderI
               shippingProvince: province,
               shippingPostalCode: draft.shippingPostalCode || null,
               paymentMethod: draft.paymentMethod as (typeof DRAFT_PAYMENTS)[number],
+              // The merchant's own word, from an admin session: "Already paid".
               paymentStatus: draft.paid ? "CONFIRMED" : "PENDING",
               // The customer has said yes already: that is what the draft was for.
               orderStatus: "CONFIRMED",

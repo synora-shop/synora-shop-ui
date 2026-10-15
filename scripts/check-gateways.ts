@@ -204,6 +204,8 @@ const MAY_CONFIRM = [
   "app/admin/orders/actions.ts",
   "lib/csv/orders.ts",
   "app/admin/orders/import/actions.ts",
+  // A hand order the merchant marks "already paid" (new admin, 15 October).
+  "app/admin/orders/drafts/actions.ts",
 ];
 const confirmWriters = ALL.filter((f) => /paymentStatus:\s*"CONFIRMED"/.test(read(f)));
 check(

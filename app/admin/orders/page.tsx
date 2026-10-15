@@ -48,7 +48,8 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
   // shop asks (Settings > Checkout and delivery). Any stage filter or search
   // still finds them, and ?done=1 shows them all.
   const tidy = archiveDoneOrders && status.length === 0 && !q && sp.done !== "1";
-  const DONE = { orderStatus: "DELIVERED" as const, paymentStatus: "CONFIRMED" as const };
+  // A filter, not a write: `equals` keeps it plainly a question.
+  const DONE = { orderStatus: { equals: "DELIVERED" as const }, paymentStatus: { equals: "CONFIRMED" as const } };
   const where = {
     deletedAt: null,
     orderStatus: whereIn(status as never[]),
