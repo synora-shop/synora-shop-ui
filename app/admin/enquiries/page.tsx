@@ -4,6 +4,8 @@ import type { EnquiryStatus } from "@/lib/generated/prisma/client";
 import { PageHeader, EmptyState } from "@/components/ui/primitives";
 import { ListEmpty } from "@/components/admin/list-empty";
 import { EnquiryList } from "@/components/admin/enquiry-list";
+import { Figures } from "@/components/admin/kit";
+import { humanSpan, startOfMonth } from "@/lib/abandoned";
 import { parseCustomFields } from "@/lib/product-kind";
 import { FilterBar, type FilterGroup } from "@/components/admin/filter-bar";
 import { activeCount, keepKnown, readFilter, whereIn } from "@/lib/filters";
@@ -85,6 +87,17 @@ export default async function EnquiriesPage(props: PageProps<"/admin/enquiries">
   // The field definitions live on the product, so labels are resolved here
   // rather than storing them on every enquiry. An enquiry whose product was
   // deleted keeps its answers and simply shows them by key.
+  // The design's four figures (new admin, 15 October): what is new and needs
+  // an answer, what is quoted, what was won this month (and how many pieces),
+  // and how long an enquiry usually waits for its first answer.
+  const [wonThisMonth, answered] = await Promise.all([
+    (await db()).enquiry.findMany({ where: { status: "WON", updatedAt: { gte: startOfMonth() } }, select: { quantity: true } }),
+    (await db()).enquiry.findMany({ where: { answeredAt: { not: null } }, select: { createdAt: true, answeredAt: true }, orderBy: { answeredAt: "desc" }, take: 50 }),
+  ]);
+  const waits = answered.map((e) => e.answeredAt!.getTime() - e.createdAt.getTime()).filter((w) => w >= 0).sort((a, b) => a - b);
+  const typical = waits.length ? waits[Math.floor(waits.length / 2)] : null;
+  const pieces = wonThisMonth.reduce((n, e) => n + (e.quantity ?? 0), 0);
+
   const rows = enquiries.map((e) => ({
     id: e.id,
     productTitle: e.productTitle,
@@ -98,6 +111,8 @@ export default async function EnquiriesPage(props: PageProps<"/admin/enquiries">
     notes: e.notes,
     status: e.status,
     createdAt: e.createdAt.toISOString(),
+    quotedPrice: e.quotedPrice,
+    quotedAt: e.quotedAt?.toISOString() ?? null,
     details: (e.details ?? {}) as Record<string, string>,
     fields: parseCustomFields(e.product?.customFields),
   }));
@@ -106,7 +121,16 @@ export default async function EnquiriesPage(props: PageProps<"/admin/enquiries">
     <div className="space-y-5">
       <PageHeader
         title="Enquiries"
-        description="Questions about bulk and made-to-order products. These aren't orders, nothing has been paid for yet."
+        description="Bulk and made-to-order requests. Answer, quote, and turn them into orders."
+      />
+
+      <Figures
+        items={[
+          { label: "New", value: String(countFor("NEW")), delta: countFor("NEW") > 0 ? "Answer within a day" : null },
+          { label: "Quoted", value: String(countFor("QUOTED")) },
+          { label: "Won this month", value: String(wonThisMonth.length), delta: pieces > 0 ? `${pieces} pieces` : null },
+          { label: "Usually answered in", value: typical === null ? "Not yet" : humanSpan(typical) },
+        ]}
       />
 
       <ActionBar>

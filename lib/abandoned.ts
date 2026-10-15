@@ -50,3 +50,18 @@ export function abandonedWindow(now: Date = new Date()) {
     weekAgo: new Date(now.getTime() - 7 * 86_400_000),
   };
 }
+
+/** "3 hours", "2 days", "40 minutes": a span the way a person says it. */
+export function humanSpan(ms: number): string {
+  const m = Math.round(ms / 60_000);
+  if (m < 60) return `${Math.max(1, m)} minute${m === 1 ? "" : "s"}`;
+  const h = Math.round(m / 60);
+  if (h < 48) return `${h} hour${h === 1 ? "" : "s"}`;
+  const d = Math.round(h / 24);
+  return `${d} day${d === 1 ? "" : "s"}`;
+}
+
+/** The first moment of this month, for "this month" counts. */
+export function startOfMonth(now: Date = new Date()): Date {
+  return new Date(now.getFullYear(), now.getMonth(), 1);
+}

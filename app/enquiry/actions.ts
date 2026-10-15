@@ -1,8 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { sendEnquiryQuoteEmail } from "@/lib/email";
+import { formatMoney } from "@/lib/money";
+import { resolveStoreDefaults } from "@/lib/store-defaults";
+import { whatsappNumber } from "@/lib/abandoned";
 import { requireRole } from "@/lib/auth-guard";
-import { currentShopId, db, requireShop } from "@/lib/data/shop";
+import { currentShopId, db, requireShop, shopNotificationEmail } from "@/lib/data/shop";
 import { isDemoShop } from "@/lib/theme-store";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { looksAutomated } from "@/lib/spam";
@@ -167,11 +171,70 @@ export async function updateEnquiryStatus(id: string, status: string) {
   await requireRole("STAFF");
   if (!(STATUSES as readonly string[]).includes(status)) throw new Error("Unknown status");
 
-  await (await db()).enquiry.update({
+  const scoped = await db();
+  // The first time an enquiry leaves New is when it was answered, which is
+  // what "Usually answered in" measures (new admin, 15 October).
+  const was = await scoped.enquiry.findFirst({ where: { id }, select: { answeredAt: true } });
+  await scoped.enquiry.update({
     where: { id },
-    data: { status: status as (typeof STATUSES)[number] },
+    data: {
+      status: status as (typeof STATUSES)[number],
+      ...(status !== "NEW" && was && !was.answeredAt ? { answeredAt: new Date() } : {}),
+    },
   });
   revalidatePath("/admin/enquiries");
+}
+
+/**
+ * Quote a price for an enquiry (new admin, 15 October): so much a piece. The
+ * enquiry is marked Quoted and answered, and the customer is emailed the
+ * quote from the shop, with the shop's address to reply to. With no email to
+ * send it to, the merchant gets a WhatsApp message written out instead.
+ */
+export async function sendEnquiryQuote(
+  id: string,
+  pricePerPiece: number
+): Promise<{ ok: true; sent: "email" | "whatsapp"; whatsappUrl?: string } | { ok: false; error: string }> {
+  await requireRole("STAFF");
+  const price = Math.round(Number(pricePerPiece));
+  if (!Number.isFinite(price) || price <= 0 || price > 100_000_000) return { ok: false, error: "Enter the price for one piece." };
+
+  const scoped = await db();
+  const enquiry = await scoped.enquiry.findFirst({ where: { id } });
+  if (!enquiry) return { ok: false, error: "That enquiry is no longer there." };
+
+  const settings = await getStoreSettings();
+  const shopName = settings.storeName || "our store";
+  const currency = resolveStoreDefaults(settings).currency;
+  const total = enquiry.quantity ? formatMoney(price * enquiry.quantity, currency) : null;
+
+  await scoped.enquiry.update({
+    where: { id },
+    data: { quotedPrice: price, quotedAt: new Date(), status: "QUOTED", answeredAt: enquiry.answeredAt ?? new Date() },
+  });
+  revalidatePath("/admin/enquiries");
+
+  if (enquiry.email && isValidEmail(enquiry.email)) {
+    try {
+      await sendEnquiryQuoteEmail(enquiry.email, {
+        shopName,
+        name: enquiry.name,
+        product: enquiry.productTitle,
+        quantity: enquiry.quantity,
+        pricePerPiece: formatMoney(price, currency),
+        total,
+        replyTo: (await shopNotificationEmail(enquiry.shopId)) ?? undefined,
+      });
+      return { ok: true, sent: "email" };
+    } catch (error) {
+      console.error("[enquiry] quote email failed", error);
+      return { ok: false, error: "The quote is saved, but the email could not be sent. Reply from your own email instead." };
+    }
+  }
+  const number = whatsappNumber(enquiry.phone);
+  if (!number) return { ok: true, sent: "email" };
+  const text = `Assalam o Alaikum ${enquiry.name.split(" ")[0]}, this is ${shopName}. For ${enquiry.productTitle} our price is ${formatMoney(price, currency)} a piece${enquiry.quantity && total ? `, so ${enquiry.quantity} pieces come to ${total}` : ""}.`;
+  return { ok: true, sent: "whatsapp", whatsappUrl: `https://wa.me/${number}?text=${encodeURIComponent(text)}` };
 }
 
 export async function saveEnquiryNotes(id: string, notes: string) {
