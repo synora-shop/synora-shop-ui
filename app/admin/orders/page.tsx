@@ -1,4 +1,4 @@
-import { Download } from "lucide-react";
+import { Download, Plus } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/primitives";
 import { cn } from "@/lib/utils";
@@ -127,6 +127,10 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
               <Download className="h-4 w-4" />
               Export CSV
             </a>
+            <Link href="/admin/orders/drafts/new" className="inline-flex h-9 items-center gap-1.5 rounded-[10px] bg-[#0a0a0a] px-3.5 text-[13.5px] font-semibold text-white">
+              <Plus className="h-4 w-4" />
+              Create order
+            </Link>
           </>
         }
       />

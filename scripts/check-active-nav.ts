@@ -295,6 +295,10 @@ const OWN_FLOW = ["/admin/welcome"];
 for (const route of adminRoutes) {
   if (hrefs.includes(route)) continue;
   if (CHILD_OF_A_TAB.test(route)) continue;
+  // A detail or new page under a tab deeper than one level (Orders > Draft
+  // orders > a draft) is reached the same way: from the tab it sits under.
+  const parent = route.replace(/\/(\[[a-z]+\]|new)$/, "");
+  if (parent !== route && hrefs.includes(parent)) continue;
   if (OWN_FLOW.some((f) => route.startsWith(f))) continue;
   if (REDIRECTS_OUT.includes(route)) {
     const src = readFileSync(join(process.cwd(), "app", route.replace("/admin/", "admin/"), "page.tsx"), "utf8");

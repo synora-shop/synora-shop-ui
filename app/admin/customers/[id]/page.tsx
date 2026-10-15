@@ -64,7 +64,11 @@ export default async function CustomerPage(props: PageProps<"/admin/customers/[i
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="space-y-5">
-        <Panel title={`Orders · ${customer.orders.length}`} pad={false}>
+        <Panel
+          title={`Orders · ${customer.orders.length}`}
+          pad={false}
+          action={<Link href={`/admin/orders/drafts/new?customer=${customer.id}`} className="text-[13px] font-semibold text-[#4b4bea] hover:underline">Create order</Link>}
+        >
           {customer.orders.length === 0 ? (
             <p className="px-5 py-10 text-center text-[14px] text-[#0a0a0a]/55">{customer.hasAccount ? "They have an account but haven\u2019t ordered yet." : "No orders yet."}</p>
           ) : (

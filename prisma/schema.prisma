@@ -390,8 +390,10 @@ model Shop {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  checkoutDrafts    CheckoutDraft[]
-  orderEvents       OrderEvent[]
+  checkoutDrafts CheckoutDraft[]
+  orderEvents    OrderEvent[]
+  draftOrders    DraftOrder[]
+
   @@index([status])
 }
 
@@ -647,13 +649,13 @@ model Customer {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
-
   /// What only the merchant's team sees, and how they file this person (new
   /// admin, 15 October). acceptsMarketing is the customer's own yes to news
   /// and offers, never assumed.
   note             String   @default("")
   tags             String[] @default([])
   acceptsMarketing Boolean  @default(false)
+
   @@unique([shopId, email])
   @@index([shopId])
 }
@@ -975,13 +977,13 @@ model Order {
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @updatedAt
 
-
   /// The courier and its tracking number, given when the order is handed over
   /// (new admin, 15 October). Shown on the order and in the customer's
   /// "on its way" message.
   courier        String?
   trackingNumber String?
   events         OrderEvent[]
+
   @@index([customerId])
   @@index([shopId, createdAt])
   @@index([shopId, orderStatus])
@@ -1330,15 +1332,15 @@ model StoreSettings {
   // it's called, what it charges in, where it trades from, and what "now"
   // means when an order is stamped. Kept together because they are what a
   // merchant sets once, on day one, and then rarely thinks about again.
-  storeName     String  @default("Your Store")
-  currency      String  @default("PKR")
-  countryCode   String  @default("PK")
+  storeName          String  @default("Your Store")
+  currency           String  @default("PKR")
+  countryCode        String  @default("PK")
   /// "METRIC" or "IMPERIAL" — drives which weight and length units are offered.
-  unitSystem    String  @default("METRIC")
-  weightUnit    String  @default("kg")
+  unitSystem         String  @default("METRIC")
+  weightUnit         String  @default("kg")
   /// IANA zone. Orders and analytics are recorded against this, so changing it
   /// changes which day a sale belongs to.
-  timeZone      String  @default("Asia/Karachi")
+  timeZone           String  @default("Asia/Karachi")
   // --- Checkout, from the new admin (15 October) -----------------------
   /// The order notes box at checkout ("gift messages and special
   /// instructions"). On by default: every checkout had it already.
@@ -1948,13 +1950,13 @@ model Enquiry {
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
-
   /// The price quoted per piece, and when (new admin, 15 October). answeredAt
   /// is the first time the merchant did anything with it, for "Usually
   /// answered in".
   quotedPrice Int?
   quotedAt    DateTime?
   answeredAt  DateTime?
+
   @@index([shopId, status, createdAt])
   @@index([productId])
 }
@@ -2198,4 +2200,46 @@ model OrderEvent {
   createdAt DateTime @default(now())
 
   @@index([shopId, orderId, createdAt])
+}
+
+/// An order the merchant builds by hand, for a customer who messaged or
+/// called (new admin, 15 October). Sent to the customer as a summary to
+/// confirm, then made into an ordinary Order, with stock taken, in one
+/// transaction. Numbered per shop: D1, D2, and on.
+model DraftOrder {
+  id     String @id @default(cuid())
+  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId String
+  number Int
+
+  /// Where it came in: WhatsApp, Phone, Instagram, In person, Other.
+  channel String @default("WhatsApp")
+  /// OPEN, SENT (the summary went to the customer), COMPLETED (an order).
+  status  String @default("OPEN")
+
+  customerName       String @default("")
+  customerEmail      String @default("")
+  customerPhone      String @default("")
+  shippingLine1      String @default("")
+  shippingLine2      String @default("")
+  shippingCity       String @default("")
+  shippingPostalCode String @default("")
+
+  /// [{ variantId, quantity, price }]: the price is the merchant's to set.
+  lines          Json    @default("[]")
+  shippingFee    Int     @default(0)
+  discountAmount Int     @default(0)
+  paymentMethod  String  @default("COD")
+  /// Paid already (a transfer before the order was made): the order starts paid.
+  paid           Boolean @default(false)
+  notes          String  @default("")
+
+  orderId     String?
+  sentAt      DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([shopId, number])
+  @@index([shopId, updatedAt])
 }

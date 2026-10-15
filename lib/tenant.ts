@@ -77,6 +77,7 @@ export const TENANT_MODELS: ReadonlySet<string> = new Set([
   // The new admin (15 October): started checkouts and order timelines.
   "CheckoutDraft",
   "OrderEvent",
+  "DraftOrder",
   "Membership",
   "StaffInvite",
   "Domain",

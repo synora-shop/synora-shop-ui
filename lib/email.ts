@@ -388,3 +388,12 @@ export async function sendOrderShippedEmail(
   }
   await deliver({ from: FROM, to, replyTo: o.replyTo, subject: `Your order ${o.orderId} is on its way`, text });
 }
+
+/** An order made by hand, sent for the customer to confirm. The text is the same summary WhatsApp gets. */
+export async function sendDraftOrderEmail(to: string, o: { shopName: string; text: string; replyTo?: string }) {
+  if (!resend) {
+    console.log(`[email] Resend not configured, order to confirm for ${to}:\n${o.text}`);
+    return;
+  }
+  await deliver({ from: FROM, to, replyTo: o.replyTo, subject: `Your order from ${o.shopName}, to confirm`, text: o.text });
+}
