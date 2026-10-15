@@ -25,7 +25,7 @@ export default async function AdminPagesPage() {
   const pages = (await getAllPages()).filter((p) => !p.categoryId);
 
   return (
-    <div className="space-y-2.5">
+    <div className="space-y-5">
       <p className="text-sm text-ink-soft">
         Every page on your storefront, and the blocks each one is built from. Three come with
         the store — your homepage, your story and your FAQs — and cannot be deleted, though

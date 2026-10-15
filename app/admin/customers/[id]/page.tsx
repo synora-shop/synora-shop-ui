@@ -31,7 +31,7 @@ export default async function CustomerPage(props: PageProps<"/admin/customers/[i
   const totalSpent = counted.reduce((sum, o) => sum + o.total, 0);
 
   return (
-    <div className="space-y-2.5">
+    <div className="space-y-5">
       <Link
         href="/admin/customers"
         className="inline-flex items-center gap-1.5 text-sm text-ink-soft transition-colors hover:text-ink"

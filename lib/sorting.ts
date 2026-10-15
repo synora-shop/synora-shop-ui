@@ -85,7 +85,25 @@ export const ORDER_SORTS: readonly SortOption[] = [
   { value: "oldest", label: "Oldest first", orderBy: { createdAt: "asc" } },
   { value: "total-desc", label: "Largest first", orderBy: { total: "desc" } },
   { value: "total", label: "Smallest first", orderBy: { total: "asc" } },
+  // Every column of the list sorts both ways (new admin, 15 October).
+  { value: "id", label: "Order number A–Z", orderBy: { id: "asc" } },
+  { value: "id-desc", label: "Order number Z–A", orderBy: { id: "desc" } },
+  { value: "customer", label: "Customer A–Z", orderBy: [{ customerName: "asc" }, { createdAt: "desc" }] },
+  { value: "customer-desc", label: "Customer Z–A", orderBy: [{ customerName: "desc" }, { createdAt: "desc" }] },
+  { value: "status", label: "Stage, first to last", orderBy: [{ orderStatus: "asc" }, { createdAt: "desc" }] },
+  { value: "status-desc", label: "Stage, last to first", orderBy: [{ orderStatus: "desc" }, { createdAt: "desc" }] },
 ];
+
+/**
+ * A column heading that sorts (new admin, 15 October). The first click sorts
+ * by the column A to Z or low to high; a second click turns it round. Which
+ * way is "first" is the column's own `asc` value.
+ */
+export function columnSort(current: string, asc: string, desc: string): { next: string; dir: "asc" | "desc" | null } {
+  if (current === asc) return { next: desc, dir: "asc" };
+  if (current === desc) return { next: asc, dir: "desc" };
+  return { next: asc, dir: null };
+}
 
 export const ENQUIRY_SORTS: readonly SortOption[] = [
   { value: "newest", label: "Newest first", orderBy: { createdAt: "desc" } },

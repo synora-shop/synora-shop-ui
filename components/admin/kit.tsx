@@ -156,3 +156,25 @@ export function changeText(now: number, before: number, unit = "on the 30 days b
   const pct = Math.round(((now - before) / before) * 100);
   return { delta: `${pct >= 0 ? "+" : ""}${pct}% ${unit}`, down: pct < 0 };
 }
+
+/**
+ * The orders list's columns, shared by its head (drawn by the server page)
+ * and its rows (a client component). Here, in a server-safe file, because a
+ * server page that imports a plain value from a client file gets a reference
+ * to it, not the string.
+ */
+export const ORDER_GRID = "lg:grid lg:grid-cols-[6.5rem_minmax(0,1.4fr)_8rem_minmax(0,1fr)_7.5rem_7.5rem_2.5rem] lg:items-center";
+
+/** Each order stage's colour, and how its money stands, in a merchant's words. */
+export const STAGE_TONE: Record<string, PillTone> = {
+  PENDING: "wait", CONFIRMED: "info", PACKED: "info", SHIPPED: "info", DELIVERED: "good", CANCELLED: "off",
+};
+
+/** How the money stands, in the words a merchant would use. */
+export function paymentState(method: string, status: string): { tone: PillTone; label: string } {
+  if (status === "CONFIRMED") return { tone: "good", label: "Paid" };
+  if (status === "FAILED") return { tone: "bad", label: "Payment failed" };
+  if (status === "AWAITING_VERIFICATION") return { tone: "wait", label: "Check the payment" };
+  return method === "COD" ? { tone: "wait", label: "Collect on delivery" } : { tone: "wait", label: "Awaiting payment" };
+}
+

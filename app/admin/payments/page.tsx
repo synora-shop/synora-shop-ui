@@ -58,7 +58,7 @@ export default async function PaymentsPage() {
 
   return (
     <SettingsFrame>
-    <div className="space-y-2.5">
+    <div className="space-y-5">
       <PageHeader
         title="Payments"
         description="How your customers pay you. What you pay us is Billing, which is a different screen and the other direction."

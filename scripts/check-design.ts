@@ -619,7 +619,9 @@ check("there is still no renaming layer", !existsSync(join(ROOT, "lib/themes/voc
     if (!root) continue; // A screen with a single block needs no rhythm.
     check(
       `${rel} uses the standard gap between sections`,
-      root === "space-y-2.5",
+      // 5 since the new admin (15 October): the screens breathe at the
+      // same distance the frame puts between its own blocks (gap-5).
+      root === "space-y-5",
       `it uses ${root}`
     );
   }

@@ -2,11 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ShoppingBag, Trash2 } from "lucide-react";
+import type { ReactNode } from "react";
+import { NotebookText, ShoppingBag, Trash2 } from "lucide-react";
 import { ListEmpty } from "@/components/admin/list-empty";
-import { cn } from "@/lib/utils";
+import { ORDER_GRID, STAGE_TONE, StatePill, paymentState } from "@/components/admin/kit";
 import { useServerRows } from "@/components/ui/use-server-rows";
-import { orderStatusDotStyle, orderStatusStyle, paymentLabel, statusLabel } from "@/lib/order-status-style";
+import { paymentLabel, statusLabel } from "@/lib/order-status-style";
 import { moveOrderToBin } from "@/app/admin/orders/actions";
 import { SwipeRow } from "@/components/ui/swipe-row";
 import { useConfirm } from "@/components/ui/confirm-dialog";
@@ -14,28 +15,33 @@ import { useToast } from "@/components/ui/toast";
 import { isNavigationError } from "@/lib/is-redirect";
 import { useMoney } from "@/components/ui/currency";
 
+/**
+ * The orders list (new admin, 15 October).
+ *
+ * A black head whose column names sort the list on the server (the page
+ * hands them in as `head`, because the ordering lives in the address), then
+ * one row per order: its number, who and where, when, what it came to and the
+ * profit on it, how it is being paid and whether that is done, and the stage
+ * it is at. Each stage and payment state wears its colour; nothing else does.
+ *
+ * Moving an order to the Bin is unchanged: asked first, removed at once, put
+ * back if the server refuses. On a phone it is a swipe.
+ */
 type OrderRow = {
   id: string;
   customerName: string;
   shippingCity: string;
-  /**
-   * Already written out, both of them.
-   *
-   * Formatting a date inside a client component is a hydration mismatch
-   * waiting to happen: toLocaleString follows the browser's locale and zone,
-   * and a relative time reads Date.now(), so the server's HTML and the
-   * client's first render disagree. Both strings are made once, on the server,
-   * in the shop's own zone.
-   */
   placed: string;
   placedExact: string;
   total: number;
   paymentMethod: string;
+  paymentStatus: string;
   orderStatus: string;
+  notes: string | null;
   items: { price: number; costPrice: number; quantity: number }[];
 };
 
-export function OrderList({ orders, filtered = false }: { orders: OrderRow[]; filtered?: boolean }) {
+export function OrderList({ orders, filtered = false, head }: { orders: OrderRow[]; filtered?: boolean; head?: ReactNode }) {
   const money = useMoney();
   const router = useRouter();
   const [rows, setRows] = useServerRows(orders);
@@ -50,7 +56,6 @@ export function OrderList({ orders, filtered = false }: { orders: OrderRow[]; fi
       danger: true,
     });
     if (!ok) return;
-
     const previous = rows;
     setRows((r) => r.filter((o) => o.id !== id));
     const formData = new FormData();
@@ -59,12 +64,7 @@ export function OrderList({ orders, filtered = false }: { orders: OrderRow[]; fi
       await moveOrderToBin(formData);
       router.refresh();
     } catch (error) {
-      // moveOrderToBin redirects on success, and a redirect announces itself
-      // by throwing — catching it here would report a completed delete as a
-      // failure and put the row back.
       if (isNavigationError(error)) throw error;
-      // Rolling the row back without a word reads as the action having
-      // worked and then quietly undone itself.
       setRows(previous);
       toast.error("Couldn't remove that order. Try again.", { blocking: true });
     }
@@ -82,81 +82,49 @@ export function OrderList({ orders, filtered = false }: { orders: OrderRow[]; fi
   return (
     <>
       {dialog}
-      {/* Columns, not two blocks pushed to opposite ends. The row used to carry
-          the order number and a name on the left and everything else on the
-          right, with the whole middle of a 1500px screen empty — and no date,
-          which is the column an order list is scanned by. */}
-      <div className="overflow-hidden rounded-[var(--radius-container)] border border-border bg-surface">
-        <div className="hidden items-center gap-3 border-b border-border px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-faint lg:flex">
-          <span className="w-24">Order</span>
-          <span className="min-w-0 flex-1">Customer</span>
-          <span className="w-28">Placed</span>
-          <span className="w-16 text-right">Items</span>
-          <span className="w-36">Payment</span>
-          <span className="w-24">Status</span>
-          <span className="w-28 text-right">Total</span>
-        </div>
-
-        <div className="divide-y divide-border">
+      <section className="overflow-hidden rounded-2xl bg-white ring-1 ring-[#0a0a0a]/[0.07]">
+        {head}
+        <div className="divide-y divide-[#0a0a0a]/[0.06]">
           {rows.map((o) => {
             const units = o.items.reduce((n, i) => n + i.quantity, 0);
             const profit = o.items.reduce((sum, i) => sum + (i.price - i.costPrice) * i.quantity, 0);
+            const pay = paymentState(o.paymentMethod, o.paymentStatus);
             return (
-              <SwipeRow
-                key={o.id}
-                actions={[{ key: "delete", label: "Delete", icon: Trash2, tone: "danger", onClick: () => handleDelete(o.id) }]}
-              >
-                <Link
-                  href={`/admin/orders/${o.id}`}
-                  className="no-tap-scale flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2.5 transition-colors hover:bg-subtle active:bg-subtle lg:flex-nowrap"
-                >
-                  <span className="w-24 flex-shrink-0 font-mono text-xs text-ink-soft">{o.id}</span>
-
-                  <span className="min-w-0 flex-1 basis-full lg:basis-auto">
-                    <span className="block truncate text-[13px] font-medium text-ink">{o.customerName}</span>
-                    <span className="block truncate text-[11px] text-ink-faint">{o.shippingCity}</span>
+              <SwipeRow key={o.id} actions={[{ key: "delete", label: "Delete", icon: Trash2, tone: "danger", onClick: () => handleDelete(o.id) }]}>
+                <div className={`group relative flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 transition-colors hover:bg-[#fafafa] ${ORDER_GRID}`}>
+                  <Link href={`/admin/orders/${o.id}`} className="flex items-center gap-1.5 font-mono text-[13.5px] font-semibold text-[#0a0a0a] underline-offset-4 after:absolute after:inset-0 hover:underline">
+                    #{o.id}
+                    {o.notes && <NotebookText aria-label="Has a note" className="h-3.5 w-3.5 text-[#b45309]" />}
+                  </Link>
+                  <span className="min-w-0 basis-full lg:basis-auto">
+                    <span className="block truncate text-[14px] font-medium text-[#0a0a0a]">{o.customerName}</span>
+                    <span className="block truncate text-[12.5px] text-[#0a0a0a]/50">{o.shippingCity} · {units} item{units === 1 ? "" : "s"}</span>
                   </span>
-
-                  <span className="w-28 flex-shrink-0 text-[11px] text-ink-soft" title={o.placedExact}>
-                    {o.placed}
+                  <span className="text-[13px] text-[#0a0a0a]/60" title={o.placedExact}>{o.placed}</span>
+                  <span className="flex flex-col items-start gap-1">
+                    <StatePill tone={pay.tone}>{pay.label}</StatePill>
+                    <span className="text-[12px] text-[#0a0a0a]/50">{paymentLabel(o.paymentMethod)}</span>
                   </span>
-
-                  <span className="w-16 flex-shrink-0 text-right font-mono text-[11px] tabular-nums text-ink-soft">
-                    {units}
+                  <span className="lg:text-right">
+                    <span className="block text-[14px] font-semibold tabular-nums text-[#0a0a0a]">{money(o.total)}</span>
+                    <span className="block text-[11.5px] tabular-nums text-[#0a0a0a]/45">{money(profit)} profit</span>
                   </span>
-
-                  <span className="w-36 flex-shrink-0 truncate text-[11px] text-ink-soft">
-                    {paymentLabel(o.paymentMethod)}
-                  </span>
-
-                  <span className="w-24 flex-shrink-0">
-                    <span
-                      className={cn(
-                        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium",
-                        orderStatusStyle(o.orderStatus)
-                      )}
-                    >
-                      {/* A dot as well as a fill, so the state is not carried by
-                          colour alone. */}
-                      <span className={cn("h-1.5 w-1.5 rounded-full", orderStatusDotStyle(o.orderStatus))} aria-hidden />
-                      {statusLabel(o.orderStatus)}
-                    </span>
-                  </span>
-
-                  <span className="w-28 flex-shrink-0 text-right">
-                    <span className="block font-mono text-[13px] font-medium tabular-nums text-ink">
-                      {money(o.total)}
-                    </span>
-                    <span className="block font-mono text-[10px] tabular-nums text-ink-faint">
-                      {money(profit)} profit
-                    </span>
-                  </span>
-                </Link>
+                  <span><StatePill tone={STAGE_TONE[o.orderStatus] ?? "off"}>{statusLabel(o.orderStatus)}</StatePill></span>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(o.id)}
+                    aria-label={`Move order ${o.id} to the Bin`}
+                    title="Move to the Bin"
+                    className="relative z-10 hidden h-8 w-8 place-items-center rounded-lg text-[#0a0a0a]/35 opacity-0 transition-opacity hover:bg-[#ffe9e2] hover:text-[#a3330c] focus-visible:opacity-100 group-hover:opacity-100 lg:grid"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
               </SwipeRow>
             );
           })}
         </div>
-      </div>
+      </section>
     </>
   );
 }

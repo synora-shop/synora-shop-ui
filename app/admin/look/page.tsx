@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 export default async function StoreWideLookPage() {
   const settings = await getStoreSettings();
   return (
-    <div className="space-y-2.5">
+    <div className="space-y-5">
       <PageHeader
         title="Store-wide look"
         description="Site-wide edits. Each applies live across the whole storefront, including products and pages you add later."

@@ -1,16 +1,18 @@
 import { Download } from "lucide-react";
-import { buttonClass } from "@/components/ui/primitives";
+import Link from "next/link";
+import { PageHeader } from "@/components/ui/primitives";
 import { cn } from "@/lib/utils";
 import { db } from "@/lib/data/shop";
 import { getStoreSettings } from "@/lib/data/settings";
 import { formatRelativeTime } from "@/lib/format-relative-time";
 import { OrderList } from "@/components/admin/order-list";
+import { ORDER_GRID } from "@/components/admin/kit";
+import { PlainHeading, SortHeading } from "@/components/admin/sort-heading";
 import { FilterBar, type FilterGroup } from "@/components/admin/filter-bar";
 import { activeCount, keepKnown, readFilter, whereIn } from "@/lib/filters";
 import { readPaging } from "@/lib/paging";
-import { ORDER_SORTS, readSort, sortHref } from "@/lib/sorting";
-import { SortMenu } from "@/components/admin/sort-menu";
-import { orderStatusDotStyle } from "@/lib/order-status-style";
+import { ORDER_SORTS, readSort } from "@/lib/sorting";
+import { orderStatusDotStyle, statusLabel } from "@/lib/order-status-style";
 import { ActionBar } from "@/components/admin/action-bar";
 import { ListSearch } from "@/components/admin/list-search";
 import { FilterDisclosure } from "@/components/admin/filter-disclosure";
@@ -57,7 +59,13 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
       : {}),
   };
 
-  const total = await (await db()).order.count({ where });
+  const [total, stageRows] = await Promise.all([
+    (await db()).order.count({ where }),
+    // The pipeline across the top counts every order at each stage, whatever
+    // the search: it is where the shop stands, not what this list shows.
+    (await db()).order.groupBy({ by: ["orderStatus"], where: { deletedAt: null }, _count: true }),
+  ]);
+  const stageCount = Object.fromEntries(stageRows.map((r) => [r.orderStatus, r._count])) as Record<string, number>;
   const { skip, take } = readPaging(sp, total);
   const sort = readSort(sp, ORDER_SORTS);
 
@@ -65,7 +73,7 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
     where,
     select: {
       id: true, customerName: true, shippingCity: true, createdAt: true,
-      total: true, paymentMethod: true, orderStatus: true,
+      total: true, paymentMethod: true, paymentStatus: true, orderStatus: true, notes: true,
       items: { select: { price: true, costPrice: true, quantity: true } },
     },
     orderBy: sort.orderBy as { createdAt: "desc" },
@@ -85,56 +93,105 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
     },
   ];
 
+  const stageHref = (st: string) => {
+    const qs = new URLSearchParams();
+    if (q) qs.set("q", q);
+    const raw = sp.sort;
+    if (typeof raw === "string") qs.set("sort", raw);
+    if (!(status.length === 1 && status[0] === st)) qs.set("status", st);
+    const query = qs.toString();
+    return query ? `/admin/orders?${query}` : "/admin/orders";
+  };
+  const heading = (label: string, asc: string, desc: string, align?: "right") => (
+    <SortHeading label={label} asc={asc} desc={desc} current={sort.value} basePath="/admin/orders" searchParams={sp} options={ORDER_SORTS} align={align} />
+  );
+
   return (
-    <div className="space-y-2.5">
+    <div className="space-y-5">
+      <PageHeader
+        title="Orders"
+        description="Every order, where it is on its way, and what it needs from you next."
+        actions={
+          <>
+            <ImportDialog
+              noun="order"
+              plural="orders"
+              blurb="A Shopify order export, or one from here. Orders already here are skipped rather than overwritten — an order is a record of something that happened. Nothing is emailed and no stock moves."
+              matchedBy="order number"
+              overwriteWarning="Orders already here are left exactly as they are. Only the ones this file brings are written."
+              plan={planOrderImport}
+              apply={applyOrderImport}
+            />
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- a download, not a page: <Link> would prefetch the CSV and hand the browser a file it never asked for */}
+            <a href="/admin/orders/export" className="inline-flex h-9 items-center gap-1.5 rounded-[10px] bg-white px-3.5 text-[13.5px] font-semibold text-[#0a0a0a] ring-1 ring-[#0a0a0a]/12 hover:bg-[#f5f5f5]">
+              <Download className="h-4 w-4" />
+              Export
+            </a>
+          </>
+        }
+      />
+
+      {/* The pipeline: every stage, counted, and each one a filter. */}
+      <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+        {STATUSES.map((st, i) => {
+          const on = status.length === 1 && status[0] === st;
+          const n = stageCount[st] ?? 0;
+          return (
+            <Link
+              key={st}
+              href={stageHref(st)}
+              aria-current={on ? "true" : undefined}
+              className={cn(
+                "relative overflow-hidden rounded-2xl px-4 py-3 transition-shadow",
+                on ? "bg-[#0a0a0a] text-white" : "bg-white text-[#0a0a0a] ring-1 ring-[#0a0a0a]/[0.07] hover:ring-[#0a0a0a]/20"
+              )}
+            >
+              <span className={cn("block text-[12px] font-medium", on ? "text-white/60" : "text-[#0a0a0a]/50")}>{i < 5 ? `${i + 1}. ` : ""}{statusLabel(st)}</span>
+              <span className="mt-0.5 block text-[22px] font-semibold tabular-nums">{n}</span>
+              {st === "PENDING" && n > 0 && !on && <span className="absolute right-3 top-3 h-2 w-2 rounded-full bg-[#f2a33a]" />}
+              <span aria-hidden className={cn("absolute inset-x-4 bottom-0 h-[3px] rounded-t-full", STAGE_BAR[st])} />
+            </Link>
+          );
+        })}
+      </div>
+
       <ActionBar>
         <ListSearch placeholder="Search by order number, name, email or phone" />
         <FilterDisclosure activeCount={activeCount({ status })}>
           <FilterBar basePath="/admin/orders" groups={groups} filters={{ status }} />
         </FilterDisclosure>
-        <SortMenu
-          current={sort.value}
-          options={ORDER_SORTS.map((o) => ({
-            value: o.value,
-            label: o.label,
-            href: sortHref("/admin/orders", sp, o.value, ORDER_SORTS),
-          }))}
-        />
         <div className="ml-auto flex flex-wrap items-center gap-2">
           <PerPageSelect basePath="/admin/orders" searchParams={sp} total={total} />
-          {/* Shopify exports orders and cannot import them, which is why a
-              merchant moving between platforms loses their history. */}
-          <ImportDialog
-            noun="order"
-            plural="orders"
-            blurb="A Shopify order export, or one from here. Orders already here are skipped rather than overwritten — an order is a record of something that happened. Nothing is emailed and no stock moves."
-            matchedBy="order number"
-            overwriteWarning="Orders already here are left exactly as they are. Only the ones this file brings are written."
-            plan={planOrderImport}
-            apply={applyOrderImport}
-          />
-          {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- a download, not a page: <Link> would prefetch the CSV and hand the browser a file it never asked for */}
-          <a href="/admin/orders/export" className={buttonClass("secondary", "sm")}>
-            <Download className="h-[var(--icon-box)] w-[var(--icon-box)]" />
-            Export CSV
-          </a>
         </div>
       </ActionBar>
 
       <OrderList
         filtered={q.length > 0 || activeCount({ status }) > 0}
+        head={
+          <div role="row" className={`hidden gap-x-4 bg-[#0a0a0a] px-4 py-1.5 lg:grid ${ORDER_GRID}`}>
+            {heading("Order", "id", "id-desc")}
+            {heading("Customer", "customer", "customer-desc")}
+            {heading("Placed", "oldest", "newest")}
+            <PlainHeading>Payment</PlainHeading>
+            {heading("Total", "total", "total-desc", "right")}
+            {heading("Stage", "status", "status-desc")}
+            <span />
+          </div>
+        }
         orders={orders.map((o) => ({
           ...o,
-          // Written out here rather than in the row: a client component
-          // formatting a date disagrees with the server that rendered it.
           placed: formatRelativeTime(o.createdAt),
           placedExact: new Intl.DateTimeFormat("en-GB", {
             dateStyle: "medium", timeStyle: "short", timeZone,
           }).format(o.createdAt),
         }))}
       />
-
       <PaginationBar basePath="/admin/orders" searchParams={sp} total={total} />
     </div>
   );
 }
+
+const STAGE_BAR: Record<string, string> = {
+  PENDING: "bg-[#f2a33a]", CONFIRMED: "bg-[#6666ff]", PACKED: "bg-[#b7b9ff]",
+  SHIPPED: "bg-[#8cc8f5]", DELIVERED: "bg-[#6fd6a8]", CANCELLED: "bg-[#0a0a0a]/15",
+};

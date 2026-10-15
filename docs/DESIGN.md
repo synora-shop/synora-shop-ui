@@ -305,7 +305,9 @@ plus five headings written as `<p>`, which name nothing as far as the page
 outline or a screen reader is concerned. *Check: `check:design`, "does not
 hand-write a card title".*
 
-**One gap between sections: `space-y-2.5`.** Every screen's outermost container
+**One gap between sections: `space-y-5`** (it was `space-y-2.5` until the new
+admin of 15 October, which gave the screens the same distance the frame puts
+between its own blocks). Every screen's outermost container
 used a different value — 2.5, 3, 4, 5, 6 and 8 across thirty-three screens,
 depending on when each was built. Most of it was invisible, because most
 screens have one section; the cost was that the next section added to any of

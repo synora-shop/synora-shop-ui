@@ -46,7 +46,7 @@ export default async function AnalyticsPage(props: PageProps<"/admin/analytics">
   }));
 
   return (
-    <div className="space-y-2.5">
+    <div className="space-y-5">
       <PageHeader
         title="Analytics"
         description={`${range.label.toLowerCase()}, in ${data.timeZone.replace("_", " ")}.`}

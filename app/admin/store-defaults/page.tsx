@@ -29,7 +29,7 @@ export default async function StoreDefaultsPage() {
 
   return (
     <SettingsFrame>
-    <div className="space-y-2.5">
+    <div className="space-y-5">
       <PageHeader
         title="Store defaults"
         description="What your store charges in, where it trades from, and what kind of business it is."

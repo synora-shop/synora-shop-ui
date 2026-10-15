@@ -26,7 +26,7 @@ export default async function AdminSettingsPage() {
 
   return (
     <SettingsFrame>
-    <div className="space-y-2.5">
+    <div className="space-y-5">
       <PageHeader
         title="Checkout and delivery"
         description="How customers reach you, what delivery costs, and the alerts you get when an order comes in."
