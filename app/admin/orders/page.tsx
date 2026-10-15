@@ -29,7 +29,7 @@ const STATUSES = ["PENDING", "CONFIRMED", "PACKED", "SHIPPED", "DELIVERED", "CAN
 
 export default async function AdminOrdersPage(props: PageProps<"/admin/orders">) {
   const sp = await props.searchParams;
-  const { timeZone } = await getStoreSettings();
+  const { timeZone, archiveDoneOrders } = await getStoreSettings();
 
   // Give back stock held by online payments nobody finished.
   //
@@ -44,9 +44,15 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
   // An order is looked for by its number, or by whoever placed it. Those are
   // the only three things a merchant has to hand when the phone rings.
   const q = readFilter(sp, "q")[0] ?? "";
+  // Done orders, delivered and paid, tidied out of the plain list when the
+  // shop asks (Settings > Checkout and delivery). Any stage filter or search
+  // still finds them, and ?done=1 shows them all.
+  const tidy = archiveDoneOrders && status.length === 0 && !q && sp.done !== "1";
+  const DONE = { orderStatus: "DELIVERED" as const, paymentStatus: "CONFIRMED" as const };
   const where = {
     deletedAt: null,
     orderStatus: whereIn(status as never[]),
+    ...(tidy ? { NOT: DONE } : {}),
     ...(q
       ? {
           OR: [
@@ -59,11 +65,12 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
       : {}),
   };
 
-  const [total, stageRows] = await Promise.all([
+  const [total, stageRows, tidied] = await Promise.all([
     (await db()).order.count({ where }),
     // The pipeline across the top counts every order at each stage, whatever
     // the search: it is where the shop stands, not what this list shows.
     (await db()).order.groupBy({ by: ["orderStatus"], where: { deletedAt: null }, _count: true }),
+    tidy ? (await db()).order.count({ where: { deletedAt: null, ...DONE } }) : Promise.resolve(0),
   ]);
   const stageCount = Object.fromEntries(stageRows.map((r) => [r.orderStatus, r._count])) as Record<string, number>;
   const { skip, take } = readPaging(sp, total);
@@ -190,6 +197,12 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
         }))}
       />
       <PaginationBar basePath="/admin/orders" searchParams={sp} total={total} />
+      {tidied > 0 && (
+        <p className="text-center text-[13px] text-[#0a0a0a]/55">
+          {tidied} done order{tidied === 1 ? " is" : "s are"} tidied away: delivered and paid.{" "}
+          <Link href="/admin/orders?done=1" className="font-semibold text-[#4b4bea] hover:underline">Show them</Link>
+        </p>
+      )}
     </div>
   );
 }

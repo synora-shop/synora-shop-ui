@@ -1357,6 +1357,10 @@ model StoreSettings {
   /// "Arrives in 2 to 4 days" at checkout. Both empty means nothing is said.
   deliveryDaysMin    Int?
   deliveryDaysMax    Int?
+  /// Tidy delivered, paid orders out of the main Orders list. They stay
+  /// under Delivered, in search and in every report. Off by default, so no
+  /// shop's list changes until it asks.
+  archiveDoneOrders  Boolean @default(false)
 
   shopFilterBar Boolean @default(true)
 

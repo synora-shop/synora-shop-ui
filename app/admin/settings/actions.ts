@@ -47,6 +47,7 @@ export async function updateSettings(formData: FormData) {
     checkoutReminder: formData.get("checkoutReminder") === "on",
     deliveryDaysMin,
     deliveryDaysMax,
+    archiveDoneOrders: formData.get("archiveDoneOrders") === "on",
   };
 
   await prisma.storeSettings.upsert({

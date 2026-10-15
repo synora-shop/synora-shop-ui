@@ -25,6 +25,7 @@ type Settings = {
   checkoutReminder: boolean;
   deliveryDaysMin: number | null;
   deliveryDaysMax: number | null;
+  archiveDoneOrders: boolean;
 };
 
 function toFields(s: Settings) {
@@ -39,6 +40,7 @@ function toFields(s: Settings) {
     checkoutReminder: s.checkoutReminder ? "on" : "",
     deliveryDaysMin: s.deliveryDaysMin != null ? String(s.deliveryDaysMin) : "",
     deliveryDaysMax: s.deliveryDaysMax != null ? String(s.deliveryDaysMax) : "",
+    archiveDoneOrders: s.archiveDoneOrders ? "on" : "",
   };
 }
 
@@ -173,6 +175,15 @@ export function StoreSettingsForm({
           onChange={(v) => set("checkoutReminder", v ? "on" : "")}
           label="Remind people who leave at checkout"
           description="One email, about an hour after they stop, to anyone who gave an email address. You can still remind anyone by hand from Abandoned checkouts."
+        />
+      </Fieldset>
+
+      <Fieldset title="After an order is done" description="Delivered and paid: nothing left to do.">
+        <ToggleSwitch inline
+          checked={fields.archiveDoneOrders === "on"}
+          onChange={(v) => set("archiveDoneOrders", v ? "on" : "")}
+          label="Tidy delivered, paid orders away"
+          description="They leave the main list but stay searchable, under Delivered, and in your reports."
         />
       </Fieldset>
     </div>
