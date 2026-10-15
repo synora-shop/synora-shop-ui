@@ -1,7 +1,7 @@
 import { db, requireShop } from "@/lib/data/shop";
 import { prisma } from "@/lib/prisma";
 import { getStoreSettings } from "@/lib/data/settings";
-import { seriesByDay, topBy, type Point } from "@/lib/analytics";
+import { daySpan, seriesByDay, topBy, type Point } from "@/lib/analytics";
 
 /**
  * Everything the analytics screen reads, in one place.
@@ -148,6 +148,14 @@ export async function analytics(days: number) {
     t.productVariant.count({ where: { stock: 0, product: { deletedAt: null } } }),
   ]);
 
+  // The new admin's analytics (15 October): where orders come from, how
+  // people pay, and the previous window's visitors for the dashed line.
+  const [cityRows, payRows, previousVisits] = await Promise.all([
+    t.order.groupBy({ by: ["shippingCity"], _count: true, where: { ...CANCELLED_EXCLUDED, createdAt: { gte: from, lte: to } } }),
+    t.order.groupBy({ by: ["paymentMethod"], _count: true, where: { ...CANCELLED_EXCLUDED, createdAt: { gte: from, lte: to } } }),
+    visitsByDay(shop.id, previousFrom, from),
+  ]);
+
   const [visits, live, pages, referrers] = await Promise.all([
     visitsByDay(shop.id, from, to),
     // "Right now" is the last five minutes. Shorter reads as empty on a quiet
@@ -194,6 +202,11 @@ export async function analytics(days: number) {
     value: visitLookup.get(p.day)?.people ?? 0,
   }));
 
+  const previousPeople = new Map(previousVisits.map((v) => [v.day, v.people]));
+  const previousDays = daySpan(previousFrom, from, timeZone);
+  const previousPeopleSeries: Point[] = previousDays.slice(-revenueSeries.length).map((day) => ({ day, value: previousPeople.get(day) ?? 0 }));
+  const orderCount = cityRows.reduce((n, r) => n + r._count, 0);
+
   return {
     timeZone,
     from, to,
@@ -206,6 +219,14 @@ export async function analytics(days: number) {
     liveVisitors: Number(live[0]?.people ?? 0),
     topPages: pages.map((p) => ({ label: p.label, value: Number(p.value) })) as Ranked[],
     topReferrers: referrers.map((p) => ({ label: p.label, value: Number(p.value) })) as Ranked[],
+    previousPeopleSeries,
+    previousTotalPeople: previousVisits.reduce((s, v) => s + v.people, 0),
+    cities: cityRows
+      .map((r) => ({ label: r.shippingCity || "Not given", value: r._count }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 6),
+    payments: payRows.map((r) => ({ method: r.paymentMethod, value: r._count })).sort((a, b) => b.value - a.value),
+    orderCount,
     totalVisits: visits.reduce((s, v) => s + v.views, 0),
     totalPeople: visits.reduce((s, v) => s + v.people, 0),
   };

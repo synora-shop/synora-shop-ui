@@ -189,3 +189,11 @@ export const HEAD_PAD = "pl-4 pr-16";
 /** The products list's columns: tick, picture, name, stock, price, status. */
 export const PRODUCT_GRID = "lg:grid-cols-[1.25rem_2.75rem_minmax(0,1fr)_7.5rem_9rem_7rem]";
 export const PRODUCT_GRID_NO_STATUS = "lg:grid-cols-[1.25rem_2.75rem_minmax(0,1fr)_7.5rem_9rem]";
+
+/** "2026-09-15" as a person reads it: "15 Sep". */
+export function shortDay(day: string | undefined): string {
+  if (!day) return "";
+  const [y, m, d] = day.split("-").map(Number);
+  if (!y || !m || !d) return day;
+  return new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", timeZone: "UTC" }).format(new Date(Date.UTC(y, m - 1, d)));
+}

@@ -5,7 +5,7 @@ import { getStoreSettings } from "@/lib/data/settings";
 import { canonicalUrl, db, requireShop } from "@/lib/data/shop";
 import { resolveStoreDefaults } from "@/lib/store-defaults";
 import { formatMoney } from "@/lib/money";
-import { ActionLink, AreaChart, Figures, Panel, changeText } from "@/components/admin/kit";
+import { ActionLink, AreaChart, Figures, Panel, changeText, shortDay } from "@/components/admin/kit";
 
 export const dynamic = "force-dynamic";
 
@@ -133,7 +133,7 @@ export default async function AdminHomePage() {
             <AreaChart points={data.revenueSeries.map((p) => p.value)} label="Sales per day over the last 30 days" />
           </div>
           <div className="mt-2 flex justify-between text-[11.5px] text-[#0a0a0a]/40">
-            <span>{data.revenueSeries[0]?.day}</span>
+            <span>{shortDay(data.revenueSeries[0]?.day)}</span>
             <span>Today</span>
           </div>
         </Panel>

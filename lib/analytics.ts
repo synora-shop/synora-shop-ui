@@ -19,9 +19,11 @@
  * Client-safe: pure functions over plain values. No Prisma, no next/headers.
  */
 
-export type RangeKey = "7d" | "30d" | "90d" | "365d";
+export type RangeKey = "1d" | "7d" | "30d" | "90d" | "365d";
 
 export const RANGES: readonly { value: RangeKey; label: string; days: number }[] = [
+  // The last 24 hours, rolling like every other window (new admin, 15 October).
+  { value: "1d", label: "Last 24 hours", days: 1 },
   { value: "7d", label: "Last 7 days", days: 7 },
   { value: "30d", label: "Last 30 days", days: 30 },
   { value: "90d", label: "Last 90 days", days: 90 },
@@ -34,7 +36,7 @@ export type SearchParams = Record<string, string | string[] | undefined>;
 export function readRange(searchParams: SearchParams): (typeof RANGES)[number] {
   const raw = searchParams.range;
   const asked = Array.isArray(raw) ? raw[0] : raw;
-  return RANGES.find((r) => r.value === asked) ?? RANGES[1];
+  return RANGES.find((r) => r.value === asked) ?? RANGES.find((r) => r.value === "30d")!;
 }
 
 /**

@@ -186,7 +186,10 @@ check(
     const users = walk(join(ROOT, "components"))
       .concat(walk(join(ROOT, "app")))
       .filter((f) => /\.tsx$/.test(f) && readFileSync(f, "utf8").includes("shadow-panel"));
-    return users.length >= 5;
+    // The new admin (15 October) lifts its own cards with a hairline ring
+    // rather than this shadow, so fewer screens wear it as they are redrawn;
+    // what must hold is that it is still applied, not left declared.
+    return users.length >= 1;
   })(),
   "a token nothing applies is a token that does nothing"
 );

@@ -1,20 +1,14 @@
 import Link from "next/link";
+import { Download } from "lucide-react";
 import { RANGES, type SearchParams } from "@/lib/analytics";
-import { ExternalLinkIcon } from "@/components/ui/synora-marks";
 import { LiveToggle } from "@/components/admin/live-toggle";
 import { cn } from "@/lib/utils";
 
 /**
- * Analytics' own action bar.
- *
- * Every section's bar carries what that section can actually be done to, and
- * for a screen of figures that is: which period, whether to compare it with the
- * one before, taking the numbers away, and keeping them current.
- *
- * All of it lives in the address, so a range can be bookmarked and sent to
- * somebody — which is what a merchant does with a good month.
+ * The analytics controls (new admin, 15 October): the window, comparing with
+ * the one before, live, and export. Every choice is in the address, so a view
+ * can be bookmarked or sent to a partner.
  */
-
 function href(base: string, sp: SearchParams, patch: Record<string, string | null>): string {
   const qs = new URLSearchParams();
   for (const key of Object.keys(sp).sort()) {
@@ -28,60 +22,52 @@ function href(base: string, sp: SearchParams, patch: Record<string, string | nul
   return q ? `${base}?${q}` : base;
 }
 
-export function AnalyticsBar({
-  searchParams,
-  range,
-  comparing,
-}: {
-  searchParams: SearchParams;
-  range: string;
-  comparing: boolean;
-}) {
+/** The windows the bar offers. 90 days stays reachable by address. */
+const SHOWN: { value: string; label: string }[] = [
+  { value: "1d", label: "24 hours" },
+  { value: "7d", label: "7 days" },
+  { value: "30d", label: "30 days" },
+  { value: "365d", label: "12 months" },
+];
+
+export function AnalyticsBar({ searchParams, range, comparing }: { searchParams: SearchParams; range: string; comparing: boolean }) {
   const base = "/admin/analytics";
+  const days = RANGES.find((r) => r.value === range)?.days ?? 30;
+  const before = days === 1 ? "the 24 hours before" : days === 365 ? "the 12 months before" : `the ${days} days before`;
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-[var(--radius-container)] bg-panel p-2 shadow-panel">
-      <div className="flex items-center gap-0.5 rounded-pill border border-control-line bg-control p-1">
-        {RANGES.map((r) => (
+    <div className="flex flex-wrap items-center gap-2">
+      <div className="flex rounded-[10px] bg-white p-0.5 text-[13px] font-semibold ring-1 ring-[#0a0a0a]/10">
+        {SHOWN.map((r) => (
           <Link
             key={r.value}
             href={href(base, searchParams, { range: r.value === "30d" ? null : r.value })}
             aria-current={r.value === range ? "true" : undefined}
-            className={cn(
-              "rounded-pill px-2.5 py-1 text-xs transition-colors",
-              r.value === range ? "bg-brand-500 font-medium text-white" : "text-control-ink hover:bg-panel"
-            )}
+            className={cn("rounded-lg px-3 py-1.5 transition-colors", r.value === range ? "bg-[#0a0a0a] text-white" : "text-[#0a0a0a]/55 hover:text-[#0a0a0a]")}
           >
-            {r.label.replace("Last ", "").replace(" days", "d").replace(" months", "m")}
+            {r.label}
           </Link>
         ))}
       </div>
-
       <Link
         href={href(base, searchParams, { compare: comparing ? null : "1" })}
         aria-pressed={comparing}
-        className={cn(
-          "flex h-10 items-center gap-1.5 rounded-pill border px-3 text-xs transition-colors",
-          comparing
-            ? "border-transparent bg-brand-500 text-white"
-            : "border-control-line bg-control text-control-ink hover:text-ink"
-        )}
+        className="inline-flex items-center gap-2 rounded-[10px] bg-white px-3 py-2 text-[13px] font-semibold ring-1 ring-[#0a0a0a]/10 hover:ring-[#0a0a0a]/25"
       >
-        <span aria-hidden>{comparing ? "☑" : "☐"}</span>
-        Compare to previous
+        <span className={cn("h-4 w-7 rounded-full p-0.5 transition-colors", comparing ? "bg-[#0a0a0a]" : "bg-[#0a0a0a]/15")}>
+          <span className={cn("block h-3 w-3 rounded-full bg-white transition-transform", comparing && "translate-x-3")} />
+        </span>
+        Compare with {before}
       </Link>
-
-      <div className="ml-auto flex items-center gap-2">
-        <LiveToggle />
-        {/* A plain link, not a form: the answer is a file and the browser
-            already knows how to receive one. */}
-        <a
-          href={href("/admin/analytics/export", searchParams, {})}
-          className="flex h-10 items-center gap-1.5 rounded-pill border border-control-line bg-control px-3 text-xs text-control-ink transition-colors hover:text-ink"
-        >
-          <ExternalLinkIcon className="h-[var(--icon-box)] w-[var(--icon-box)]" />
-          Export CSV
-        </a>
-      </div>
+      <LiveToggle />
+      {/* A plain link, not a form: the answer is a file and the browser
+          already knows how to receive one. */}
+      <a
+        href={href("/admin/analytics/export", searchParams, {})}
+        className="ml-auto inline-flex items-center gap-1.5 rounded-[10px] bg-white px-3 py-2 text-[13px] font-semibold ring-1 ring-[#0a0a0a]/10 hover:bg-[#f5f5f5]"
+      >
+        <Download className="h-4 w-4" />
+        Export CSV
+      </a>
     </div>
   );
 }
