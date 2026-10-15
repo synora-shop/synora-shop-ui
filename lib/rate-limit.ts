@@ -86,6 +86,10 @@ export const LIMITS = {
   customerCode: { max: 5, windowMs: 15 * 60 * 1000, blockMs: 15 * 60 * 1000 },
   customerCodeTry: { max: 10, windowMs: 15 * 60 * 1000, blockMs: 15 * 60 * 1000 },
   orderLookup: { max: 6, windowMs: 15 * 60 * 1000, blockMs: 30 * 60 * 1000 },
+  // A checkout saving itself as it is filled in (abandoned checkouts). The
+  // form waits for a pause in typing before it saves, so a real checkout
+  // makes a handful of these; twenty is a person, more is a script.
+  checkoutDraft: { max: 20, windowMs: 15 * 60 * 1000, blockMs: 15 * 60 * 1000 },
 } as const satisfies Record<string, Limit>;
 
 export type LimitName = keyof typeof LIMITS;
@@ -208,6 +212,7 @@ const MESSAGES: Record<LimitName, (seconds: number) => string> = {
   reopenSignup: (s) => `That's already been sent. Try again in ${humanise(s)}.`,
   paymentCallback: (s) => `Too many notifications. Try again in ${humanise(s)}.`,
   paymentCheck: (s) => `Checking too often. Try again in ${humanise(s)}.`,
+  checkoutDraft: (s) => `Too many saves. Try again in ${humanise(s)}.`,
   customerCode: (s) => `Too many codes sent. Try again in ${humanise(s)}.`,
   customerCodeTry: (s) => `Too many tries. Try again in ${humanise(s)}.`,
   orderLookup: (s) => `Too many tries. Try again in ${humanise(s)}.`,

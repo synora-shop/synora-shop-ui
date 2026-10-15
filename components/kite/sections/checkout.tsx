@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { checkoutToken, draftStep, forgetCheckoutToken, useCheckoutDraft } from "@/lib/checkout-draft";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { route, type KiteContext } from "@/components/kite/contract";
@@ -83,6 +84,23 @@ export function KiteCheckout({ ctx }: { data: Record<string, unknown>; ctx: Kite
   const [codeError, setCodeError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+  // Gift messages and special instructions, carried on the order.
+  const [notes, setNotes] = useState("");
+  const [payTouched, setPayTouched] = useState(false);
+
+  // Saved quietly as it is filled in, so the shop can see a checkout that
+  // stopped and remind the customer (Orders > Abandoned checkouts).
+  useCheckoutDraft(
+    {
+      email: form.email,
+      phone: form.phone,
+      name: `${form.first} ${form.last}`.trim(),
+      city: form.city,
+      step: draftStep({ email: form.email, name: form.first + form.last, address: form.address, city: form.city, phone: form.phone, paymentTouched: payTouched }),
+      lines: lines.map((l) => ({ title: l.title, qty: l.qty, price: l.price, variantId: l.id })),
+    },
+    { base: ctx.base ?? "", enabled: live }
+  );
 
   // The shop's one delivery charge, free over its threshold; nothing in the reference build.
   const delivery = terms ? (terms.freeShippingFrom !== null && subtotal >= terms.freeShippingFrom ? 0 : terms.shippingFee) : 0;
@@ -136,7 +154,9 @@ export function KiteCheckout({ ctx }: { data: Record<string, unknown>; ctx: Kite
       shippingCity: form.city,
       shippingPostalCode: form.postcode.trim(),
       paymentMethod: pay,
+      notes: notes.trim() || undefined,
       discountCode: discount?.code,
+      checkoutToken: checkoutToken() || undefined,
       items: cart.orderItems(),
     }, ctx.base ?? "").then((result) => {
       if (!result.ok) {
@@ -144,6 +164,7 @@ export function KiteCheckout({ ctx }: { data: Record<string, unknown>; ctx: Kite
         setSubmitting(false);
         return;
       }
+      forgetCheckoutToken();
       cart.clear();
       // A card payment has already left for the provider's page.
       if (!result.leaving) router.push(`${ctx.base ?? ""}/order-confirmation/${result.orderId}?key=${result.accessKey}&placed=1`);
@@ -218,7 +239,10 @@ export function KiteCheckout({ ctx }: { data: Record<string, unknown>; ctx: Kite
             <Choices
               label={ktx(ctx, "checkout.stepPayment")}
               value={pay}
-              onChange={setPay}
+              onChange={(v) => {
+                setPay(v);
+                setPayTouched(true);
+              }}
               options={
                 terms
                   ? terms.methods.map((m) => ({ value: m.value, title: m.label, note: m.hint }))
@@ -230,6 +254,14 @@ export function KiteCheckout({ ctx }: { data: Record<string, unknown>; ctx: Kite
             />
             {terms && method?.instructions ? <p {...t} className={cn(t.className, "whitespace-pre-line opacity-80")}>{method.instructions}</p> : null}
           </Step>
+
+          <KiteField
+            label={ktx(ctx, "checkout.notes")}
+            placeholder={ktx(ctx, "checkout.notesHint")}
+            maxLength={1000}
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+          />
 
           <div className="flex flex-col gap-[calc(16*var(--u))]">
             {serverError ? <p role="alert" {...t} className={cn(t.className, "text-[#e2735f]")}>{serverError}</p> : null}

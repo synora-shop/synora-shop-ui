@@ -43,6 +43,8 @@ type CheckoutPayload = {
   notes?: string;
   /** Optional. Validated and priced server-side; never trusted. */
   discountCode?: string;
+  /** The browser's started-checkout token (lib/checkout-draft.ts). */
+  checkoutToken?: string;
   items: CheckoutItem[];
 };
 
@@ -340,7 +342,9 @@ export async function POST(request: Request) {
               // it back. Null for the manual methods, which are not waiting on
               // anything and whose stock the merchant releases by cancelling.
               reservedUntil: usingGateway ? new Date(Date.now() + RESERVATION_MS) : null,
-              notes: body.notes,
+              // Capped: a note is a gift message or an instruction, and the
+              // field reaches the admin, the packing slip and an email.
+              notes: typeof body.notes === "string" ? body.notes.trim().slice(0, 1000) || null : null,
               discountId,
               discountCode,
               discountAmount,
@@ -396,6 +400,13 @@ export async function POST(request: Request) {
 
       return created;
     });
+
+    // The started checkout this order came from is not abandoned any more.
+    // Matched by this tab's token, or failing that by the same email in the
+    // last fortnight (a different device, or a cleared tab). Best effort: an
+    // order must never fail because this did.
+    await markCheckoutRecovered(sid, order.id, typeof body.checkoutToken === "string" ? body.checkoutToken : "", body.customerEmail)
+      .catch((err) => console.error("[orders] marking the checkout recovered failed", err));
 
     // A gateway order is not finished here. It is an intention with stock held
     // against it, and it becomes an order when the money is verified.
@@ -482,4 +493,21 @@ export async function POST(request: Request) {
     const message = err instanceof Error ? err.message : "Failed to place order";
     return NextResponse.json({ error: message }, { status: 400 });
   }
+}
+
+async function markCheckoutRecovered(shopId: string, orderId: string, token: string, email: string) {
+  const recovered = { recoveredOrderId: orderId, recoveredAt: new Date() };
+  if (/^[\w-]{8,64}$/.test(token)) {
+    const byToken = await prisma.checkoutDraft.updateMany({ where: { shopId, token, recoveredOrderId: null }, data: recovered });
+    if (byToken.count > 0) return;
+  }
+  await prisma.checkoutDraft.updateMany({
+    where: {
+      shopId,
+      email: email.trim().toLowerCase(),
+      recoveredOrderId: null,
+      updatedAt: { gte: new Date(Date.now() - 14 * 86_400_000) },
+    },
+    data: recovered,
+  });
 }

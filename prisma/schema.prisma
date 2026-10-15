@@ -390,6 +390,8 @@ model Shop {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  checkoutDrafts    CheckoutDraft[]
+  orderEvents       OrderEvent[]
   @@index([status])
 }
 
@@ -645,6 +647,13 @@ model Customer {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
+
+  /// What only the merchant's team sees, and how they file this person (new
+  /// admin, 15 October). acceptsMarketing is the customer's own yes to news
+  /// and offers, never assumed.
+  note             String   @default("")
+  tags             String[] @default([])
+  acceptsMarketing Boolean  @default(false)
   @@unique([shopId, email])
   @@index([shopId])
 }
@@ -966,6 +975,13 @@ model Order {
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @updatedAt
 
+
+  /// The courier and its tracking number, given when the order is handed over
+  /// (new admin, 15 October). Shown on the order and in the customer's
+  /// "on its way" message.
+  courier        String?
+  trackingNumber String?
+  events         OrderEvent[]
   @@index([customerId])
   @@index([shopId, createdAt])
   @@index([shopId, orderStatus])
@@ -1915,6 +1931,13 @@ model Enquiry {
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
+
+  /// The price quoted per piece, and when (new admin, 15 October). answeredAt
+  /// is the first time the merchant did anything with it, for "Usually
+  /// answered in".
+  quotedPrice Int?
+  quotedAt    DateTime?
+  answeredAt  DateTime?
   @@index([shopId, status, createdAt])
   @@index([productId])
 }
@@ -2103,4 +2126,59 @@ model ReleaseNote {
   updatedAt   DateTime @updatedAt
 
   @@index([publishedOn])
+}
+
+/// A checkout somebody started (new admin, 15 October): saved quietly as the
+/// customer fills it in, once there is a way to reach them, so a merchant can
+/// see who stopped and remind them. Recovered when an order follows from it.
+model CheckoutDraft {
+  id     String @id @default(cuid())
+  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId String
+
+  /// The browser's own id for this checkout, so each save updates one row.
+  token String
+
+  email String @default("")
+  phone String @default("")
+  name  String @default("")
+  city  String @default("")
+
+  /// What was in the cart: [{ title, qty, price, productId, variantId }].
+  lines    Json
+  subtotal Int  @default(0)
+
+  /// How far they got: contact, address, delivery or payment.
+  step String @default("contact")
+
+  remindedAt       DateTime?
+  recoveredOrderId String?
+  recoveredAt      DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([shopId, token])
+  @@index([shopId, updatedAt])
+}
+
+/// One thing that happened to an order, for its timeline (new admin, 15
+/// October): a stage or payment change, a courier handover, or a note the
+/// team left. Written by the server actions that make the change.
+model OrderEvent {
+  id      String @id @default(cuid())
+  shop    Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId  String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId String
+
+  /// stage, payment, courier, note
+  kind String
+  text String
+  /// Who did it, as they are shown to the team: an email, or empty for the system.
+  by   String @default("")
+
+  createdAt DateTime @default(now())
+
+  @@index([shopId, orderId, createdAt])
 }

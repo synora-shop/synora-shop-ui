@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { checkoutToken, draftStep, forgetCheckoutToken, useCheckoutDraft } from "@/lib/checkout-draft";
 import { cn } from "@/lib/utils";
 import { LOOM_RULE, LoomButton, LoomCard } from "@/components/loom/primitives";
 import { LoomChevronDown } from "@/components/loom/icons";
@@ -64,6 +65,23 @@ export function LoomCheckout({ data, ctx }: { data: Record<string, unknown>; ctx
   const [codeError, setCodeError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+  // Gift messages and special instructions, carried on the order.
+  const [notes, setNotes] = useState("");
+  const [payTouched, setPayTouched] = useState(false);
+
+  // Saved quietly as it is filled in, so the shop can see a checkout that
+  // stopped and remind the customer (Orders > Abandoned checkouts).
+  useCheckoutDraft(
+    {
+      email: form.email,
+      phone: form.phone,
+      name: `${form.first} ${form.last}`.trim(),
+      city: form.city,
+      step: draftStep({ email: form.email, name: form.first + form.last, address: form.address, city: form.city, phone: form.phone, paymentTouched: payTouched }),
+      lines: lines.map((l) => ({ title: l.title, qty: l.qty, price: l.price, variantId: l.id })),
+    },
+    { base: ctx.base ?? "", enabled: live }
+  );
 
   // The shop's one delivery charge, free over its threshold; the demo's
   // sample choice of two speeds.
@@ -142,7 +160,9 @@ export function LoomCheckout({ data, ctx }: { data: Record<string, unknown>; ctx
       shippingCity: form.city,
       shippingPostalCode: form.postcode.trim(),
       paymentMethod: pay,
+      notes: notes.trim() || undefined,
       discountCode: discount?.code,
+      checkoutToken: checkoutToken() || undefined,
       items: cart.orderItems(),
     }, ctx.base ?? "").then((result) => {
       if (!result.ok) {
@@ -150,6 +170,7 @@ export function LoomCheckout({ data, ctx }: { data: Record<string, unknown>; ctx
         setSubmitting(false);
         return;
       }
+      forgetCheckoutToken();
       cart.clear();
       // A card payment has already left for the provider's page.
       // The order's link, with its key — the same one the email carries — and
@@ -318,7 +339,10 @@ export function LoomCheckout({ data, ctx }: { data: Record<string, unknown>; ctx
             <Choices
               name="pay"
               value={pay}
-              onChange={(v) => setPay(v)}
+              onChange={(v) => {
+                setPay(v);
+                setPayTouched(true);
+              }}
               options={
                 shopTerms && terms
                   ? terms.methods.map((m) => ({ value: m.value, title: m.label, note: m.hint }))
@@ -335,6 +359,14 @@ export function LoomCheckout({ data, ctx }: { data: Record<string, unknown>; ctx
               </p>
             )}
           </Step>
+
+          <LoomField
+            label={tx(ctx, "checkout.notes")}
+            placeholder={tx(ctx, "checkout.notesHint")}
+            maxLength={1000}
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+          />
 
           <div className="flex flex-col gap-[calc(16*var(--u))]">
             {serverError && (

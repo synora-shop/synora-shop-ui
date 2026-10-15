@@ -108,6 +108,8 @@ export const LOOM_TEXT = {
   "checkout.cityError": "The town or city.",
   "checkout.postcodeError": "The postcode.",
   "checkout.phoneError": "A number the courier can ring.",
+  "checkout.notes": "Order notes",
+  "checkout.notesHint": "Gift messages or special instructions (optional)",
   "checkout.standard": "Standard",
   "checkout.standardNote": "Three to five working days",
   "checkout.express": "Express",

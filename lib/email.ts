@@ -328,3 +328,44 @@ export async function sendHelpTeamAlertEmail(
     text: `${r.fromName} <${r.fromEmail}>\n\n${r.body}\n\nOpen it in the console:\n${link}`,
   });
 }
+
+// ------------------------------------------------- the new admin's emails
+//
+// 15 October. Plain text, from the shop's name, each through deliver() so a
+// refused send is an error the caller reports rather than a silent nothing.
+
+/** "You left something at checkout": a reminder the merchant chose to send. */
+export async function sendCheckoutReminderEmail(
+  to: string,
+  r: { shopName: string; name: string; items: string[]; storeUrl: string; replyTo?: string }
+) {
+  const hello = r.name ? `Hi ${r.name.split(" ")[0]},` : "Hi,";
+  const text =
+    `${hello}\n\nYou were checking out at ${r.shopName} and stopped before placing the order:\n\n` +
+    r.items.map((i) => `  ${i}`).join("\n") +
+    `\n\nIt is all still there if you want it:\n${r.storeUrl}\n\n` +
+    `If something stopped you, just reply to this email.\n\n${r.shopName}`;
+  if (!resend) {
+    console.log(`[email] Resend not configured, checkout reminder for ${to}:\n${text}`);
+    return;
+  }
+  await deliver({ from: FROM, to, replyTo: r.replyTo, subject: `You left something at ${r.shopName}`, text });
+}
+
+/** A merchant's price for an enquiry: so much a piece, for so many. */
+export async function sendEnquiryQuoteEmail(
+  to: string,
+  q: { shopName: string; name: string; product: string; quantity: number | null; pricePerPiece: string; total: string | null; replyTo?: string }
+) {
+  const hello = q.name ? `Hi ${q.name.split(" ")[0]},` : "Hi,";
+  const text =
+    `${hello}\n\nThank you for asking about ${q.product}.\n\n` +
+    `Our price is ${q.pricePerPiece} a piece` +
+    (q.quantity && q.total ? `, so ${q.quantity} pieces come to ${q.total}.` : ".") +
+    `\n\nReply to this email to go ahead, or with any questions.\n\n${q.shopName}`;
+  if (!resend) {
+    console.log(`[email] Resend not configured, enquiry quote for ${to}:\n${text}`);
+    return;
+  }
+  await deliver({ from: FROM, to, replyTo: q.replyTo, subject: `Your quote from ${q.shopName}`, text });
+}

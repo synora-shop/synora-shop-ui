@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/lib/cart-store";
+import { checkoutToken, draftSaver, draftStep, forgetCheckoutToken } from "@/lib/checkout-draft";
 import { cn } from "@/lib/utils";
 import { previewDiscount } from "@/app/(storefront)/checkout/actions";
 import { CITIES } from "@/lib/cities";
@@ -137,6 +138,8 @@ export function CheckoutForm({
   // cash on delivery off used to open its checkout with it selected anyway, and
   // the order was refused on submit for naming a method the shop does not take.
   const [paymentMethod, setPaymentMethod] = useState<string>(methods[0]?.value ?? "COD");
+  const [payTouched, setPayTouched] = useState(false);
+  const [saver] = useState(() => draftSaver());
 
   const PAYMENT_METHODS = methods;
   const selectedIsGateway = methods.some((m) => m.value === paymentMethod && m.kind === "gateway");
@@ -218,6 +221,7 @@ export function CheckoutForm({
       paymentMethod,
       notes: String(form.get("notes") || ""),
       discountCode: discount?.code,
+      checkoutToken: checkoutToken() || undefined,
       items: items.map((i) => ({
         productId: i.productId,
         variantId: i.variantId,
@@ -236,6 +240,7 @@ export function CheckoutForm({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to place order");
 
+      forgetCheckoutToken();
       clear();
 
       // A gateway order comes back with a form to submit rather than a page to
@@ -255,8 +260,24 @@ export function CheckoutForm({
     }
   }
 
+  // Saved quietly as it is filled in, so the shop can see a checkout that
+  // stopped and remind the customer (Orders > Abandoned checkouts). This form
+  // only reads its fields on submit, so it saves from the form on each input.
+  function saveDraft(e: React.FormEvent<HTMLFormElement>) {
+    const f = new FormData(e.currentTarget);
+    const get = (k: string) => String(f.get(k) ?? "");
+    saver({
+      email: get("email"),
+      phone: get("phone"),
+      name: get("name"),
+      city: get("city"),
+      step: draftStep({ email: get("email"), name: get("name"), address: get("line1"), city: get("city"), phone: get("phone"), paymentTouched: payTouched }),
+      lines: items.map((i) => ({ title: i.title, qty: i.quantity, price: i.price, productId: i.productId, variantId: i.variantId })),
+    }, storeBase);
+  }
+
   return (
-    <form onSubmit={handleSubmit} className="grid gap-10 lg:grid-cols-3">
+    <form onSubmit={handleSubmit} onInput={saveDraft} className="grid gap-10 lg:grid-cols-3">
       <div className="space-y-6 lg:col-span-2">
         <fieldset className="space-y-4">
           <legend className="mb-2 font-serif text-lg font-semibold text-ink">
@@ -349,7 +370,10 @@ export function CheckoutForm({
                   type="radio"
                   name="paymentMethod"
                   checked={paymentMethod === m.value}
-                  onChange={() => setPaymentMethod(m.value)}
+                  onChange={() => {
+                    setPaymentMethod(m.value);
+                    setPayTouched(true);
+                  }}
                 />
                 <span className="text-sm font-medium">{m.label}</span>
               </span>
