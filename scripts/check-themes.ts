@@ -420,20 +420,23 @@ check(
 // left: a component nothing renders, still held up by checks, is the worst of
 // both — it reads as covered and proves nothing about what a merchant sees.
 const gallery = read("components/admin/theme-manager.tsx");
+// Named as the new admin names them (15 October): live, the library, the store.
 check(
   "the screen separates what is live, what is owned, and what exists",
-  /"Active Theme"/.test(gallery) && /"All Themes"/.test(gallery) && /"Theme Store"/.test(gallery)
+  /"Live on your store"/.test(gallery) && /Your library/.test(gallery) && /"Theme Store"/.test(gallery)
 );
 check(
   "nothing in the store can go live in one press",
-  !/Theme Store[\s\S]{0,2000}chooseTheme/.test(gallery),
+  gallery.includes('id="theme-store"') && !/chooseTheme/.test(gallery.slice(gallery.indexOf('id="theme-store"'))),
   "a store card offers Add, and Add is not Activate"
 );
 check(
   "the live theme is not offered the button that would make it live",
-  /isLive \?[\s\S]{0,400}chooseTheme/.test(gallery) === false ||
-    /isLive \? \([\s\S]{0,200}Active/.test(gallery),
-  "Activate on the theme that is already active is a control that does nothing"
+  // The library is every copy but the live one, and Publish is only offered there.
+  /const library = copies\.filter\(\(c\) => c\.id !== liveId\)/.test(gallery) &&
+    /library\.map\([\s\S]{0,1600}chooseTheme/.test(gallery) &&
+    (gallery.match(/chooseTheme\(/g) ?? []).length === 1,
+  "Publish on the theme that is already live is a control that does nothing"
 );
 check(
   "an empty library says what to do rather than nothing",
@@ -479,24 +482,18 @@ check(
   !/absolute[^"]*top-\[calc\(12\*var\(--u\)\)\]/.test(gallery),
   "Preview already does this, and says so"
 );
-// 41.5 inside the card's own 10 puts the name and the buttons 51.5 from the
-// card's edge, which is where the drawing has them — clear of a 46 corner
-// rather than tucked into it. At 10 they were inside the curve.
+// The store is the new admin's black strip (15 October), replacing the
+// card drawn in APP themes.ai: a row per theme, on its plate, with Preview
+// and Add. What the old card's measurements protected still holds: the plate
+// says "this is a theme", and the picture on it is the theme itself.
 check(
-  "the card's band clears its corner",
-  /px-\[calc\(41\.5\*var\(--u\)\)\]/.test(gallery),
-  "the name and the buttons sat against the rounded edge"
+  "each store theme sits on its plate",
+  /linear-gradient\(135deg, \$\{theme\.plate\.from\}, \$\{theme\.plate\.to\}\)/.test(gallery),
+  "a theme row without its plate is a picture with no frame saying what it is"
 );
 check(
-  "and the band runs to the card's bottom edge",
-  /px-\[var\(--pad-container\)\] pt-\[var\(--pad-container\)\]/.test(gallery),
-  "10 + 448.6 + 75 is the card's 533.7 only if nothing is padded beneath the band"
-);
-check(
-  "and the card is the plate rather than a white box on it",
-  /linear-gradient\(180deg, \$\{theme\.plate\.from\}/.test(gallery) &&
-    /shadow-card/.test(gallery),
-  "a white card with a coloured picture in it is not what the store draws"
+  "and shows the theme itself, not a stored picture",
+  /<StorefrontStill url=\{theme\.previewUrl\}/.test(gallery)
 );
 
 // Versions. The platform's is in the registry beside the theme; the shop's is

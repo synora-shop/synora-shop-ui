@@ -94,8 +94,8 @@ export default async function ThemePage(props: PageProps<"/admin/theme">) {
   const offered = new Set(available.map((t) => t.key));
 
   return (
-    <div className="flex flex-col gap-[var(--gap-lg)]">
-      <PageHeader title="Themes" description="How your store looks: the live theme, your saved copies, and every theme you can add." />
+    <div className="space-y-5">
+      <PageHeader title="Themes" description="How your store looks. Your copies, the live one, and every theme there is." />
       {/* Sent here by the customizer when the copy it was asked to open is gone. */}
       {missing && (
         <p role="status" className="rounded-[var(--radius-control)] border border-amber bg-amber-bg px-4 py-3 text-sm text-ink">

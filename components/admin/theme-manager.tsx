@@ -1,36 +1,38 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Check, Loader2, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
-import { AddIcon } from "@/components/admin/nav-icons";
-import { ExternalLinkIcon } from "@/components/ui/synora-marks";
-import {
-  chooseTheme,
-  installTheme,
-  removeTheme,
-  updateTheme,
-} from "@/app/admin/theme/actions-theme-choice";
-import { Section } from "@/components/admin/panel";
+import { ArrowUpCircle, Eye, Loader2, MoreHorizontal, Paintbrush, Plus, Trash2 } from "lucide-react";
+import { chooseTheme, installTheme, removeTheme, updateTheme } from "@/app/admin/theme/actions-theme-choice";
 import { StorefrontStill } from "@/components/admin/storefront-still";
+import { AddIcon } from "@/components/admin/nav-icons";
 import { useToast } from "@/components/ui/toast";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { cn } from "@/lib/utils";
 
-/** One copy of a theme in this shop's library. */
+/**
+ * Themes, as the new admin draws them (15 October), and as Synora's themes
+ * work: a shop owns copies, not themes.
+ *
+ * Three parts, kept apart on purpose: what is live (the shop itself, in a
+ * black frame, with its copy's version and an update when there is one); the
+ * library of copies the shop holds, each to publish, customise, preview or
+ * remove; and the Theme Store, where Add gives another copy and never makes
+ * anything live in one press.
+ *
+ * The pictures are the shop itself, never shipped screenshots: those were
+ * taken once, of storefronts that have changed since, and showed neither this
+ * shop nor the design as it is now.
+ */
 export type ThemeCopy = {
   id: string;
   themeKey: string;
   name: string;
-  /** The version this copy is at. */
   version: string;
-  /** What the platform ships. Ahead of `version` means an update is waiting. */
   latest: string;
-  /** "Sep 5 at 10:35 pm". */
   addedAt: string;
   previewUrl: string;
 };
 
-/** A theme in the store. Offered whether or not the shop already has copies. */
 export type StoreTheme = {
   key: string;
   name: string;
@@ -41,25 +43,8 @@ export type StoreTheme = {
   plate: { from: string; to: string };
 };
 
-/**
- * Three sections: what is live, what this shop owns, and what exists.
- *
- * **A shop owns copies, not themes.** Add makes a copy every time, so the
- * library can hold KITE at v1.1.1 and KITE at v1.0.4 at once — each with its
- * own edits, each activatable, the older one offering Update. That is the point
- * of a library: a design being worked on, beside the one serving customers,
- * with neither standing in the other's way.
- *
- * Everything here is addressed by copy id. Two copies of KITE are both KITE, so
- * a theme key cannot say which design a button means — and a key that saved to
- * "the theme" would write a merchant's draft colours onto the storefront, which
- * is the failure the library exists to prevent.
- *
- * The order is the order a merchant thinks about them, and it matters more than
- * it sounds. Before the library existed this screen had one list and one
- * button, and that button changed the live storefront — so browsing six designs
- * was one press away from putting an untried one in front of customers.
- */
+const btn = "inline-flex items-center gap-1.5 rounded-[10px] font-semibold transition-colors disabled:opacity-60";
+
 export function ThemeManager({
   copies,
   store,
@@ -73,21 +58,6 @@ export function ThemeManager({
   liveId: string | null;
   liveKey: string;
   storeHost: string;
-  /**
-   * The shop's own live address.
-   *
-   * Section 1 uses this rather than the live theme's own `previewUrl`, and the
-   * distinction is the whole of what "Preview" means in three places. Section 1
-   * is the live site, so it is the address itself — no `?__theme=` override,
-   * which would render the same page while implying it was a preview. Section 2
-   * is a copy the shop owns, so it is the shop with that copy on. Section 3 is
-   * a theme nobody owns yet, so it is our demo. See docs/PANEL.md §2.
-   *
-   * It also closes a real hole: on a shop running a theme it holds no copy of,
-   * `liveTheme` falls back to the *store card*, whose previewUrl is now a demo
-   * on our servers — so "your storefront" would have linked to someone else's
-   * shop window.
-   */
   storeUrl: string;
 }) {
   const [pending, startTransition] = useTransition();
@@ -96,10 +66,9 @@ export function ThemeManager({
   const toast = useToast();
   const { confirm, dialog } = useConfirm();
 
-  // The live copy, or — for a shop running a theme it holds no copy of — the
-  // theme alone. Both are real states and the section has to render either.
   const live = copies.find((c) => c.id === liveId) ?? null;
   const liveTheme = live ?? store.find((t) => t.key === liveKey) ?? null;
+  const library = copies.filter((c) => c.id !== liveId);
 
   function run(id: string, action: () => Promise<{ ok: boolean; message?: string; error?: string }>) {
     setBusyKey(id);
@@ -111,351 +80,155 @@ export function ThemeManager({
       setBusyKey(null);
     });
   }
-
   const busy = (id: string) => pending && busyKey === id;
+  const spin = (id: string) => (busy(id) ? <Loader2 className="h-4 w-4 animate-spin" /> : null);
 
   return (
     <>
       {dialog}
 
-      {/* ----------------------------------------------------------------- */}
-      {/* 1 — what customers are looking at right now                        */}
-      {/* ----------------------------------------------------------------- */}
-      <Section title="Active Theme">
-        {liveTheme ? (
-          <div className="flex flex-col items-center">
-            <div className="w-full max-w-[calc(892.5*var(--u))] overflow-hidden rounded-[var(--radius-section)] border border-section-line bg-panel">
-              {/* The shop itself, live — never a shipped picture. Those were
-                  screenshots taken once, of a storefront that has changed
-                  since, and showed neither this shop nor the design as it is
-                  now. `?__theme=` with the live copy draws the same page and
-                  keeps the frame out of the shop's visit count. */}
-              <StorefrontStill url={liveId ? `${storeUrl}?__theme=${liveId}` : storeUrl} height={450} />
-            </div>
-
-            {/* The shop's own address on the left, the design on the right.
-                Both answer "what am I looking at" — one names the place, the
-                other names the design, down to which copy of it. */}
-            <div className="mt-[var(--gap-lg)] flex w-full max-w-[calc(892.5*var(--u))] flex-wrap items-baseline justify-between gap-3">
-              <a
-                href={storeUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="text-[length:calc(24*var(--u))] font-semibold text-control-ink transition-colors hover:text-brand-500"
-              >
-                {storeHost}
-              </a>
-              <p className="text-[length:var(--text-secondary)] text-control-ink">
-                {liveTheme.name} &ndash; v{live?.version ?? liveTheme.latest}
-                {live && (
-                  <span className="text-control-soft">{"  "}(Added: {live.addedAt})</span>
-                )}
-              </p>
-            </div>
+      {/* 1. What customers are looking at right now. */}
+      <section aria-label="Live on your store" className="overflow-hidden rounded-2xl bg-white ring-1 ring-[#0a0a0a]/[0.07] lg:grid lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+        <div className="bg-[#0a0a0a] p-3">
+          <div className="overflow-hidden rounded-xl bg-white">
+            <StorefrontStill url={liveId ? `${storeUrl}?__theme=${liveId}` : storeUrl} height={380} />
           </div>
-        ) : (
-          <p className="text-[length:var(--text-secondary)] text-control-soft">
-            No theme is active yet.
-          </p>
-        )}
-      </Section>
+        </div>
+        <div className="flex flex-col justify-center gap-3 p-6 sm:p-8">
+          {liveTheme ? (
+            <>
+              <span className="inline-flex items-center gap-1.5 self-start rounded-full bg-[#ddf5e9] px-2.5 py-0.5 text-[12.5px] font-semibold text-[#11643f]">
+                <span className="h-1.5 w-1.5 rounded-full bg-current" /> Live on {storeHost}
+              </span>
+              <h2 className="text-[26px] font-semibold tracking-[-0.02em]">{liveTheme.name}</h2>
+              <p className="text-[14px] text-[#0a0a0a]/55">
+                {liveTheme.name} · version {live?.version ?? liveTheme.latest}
+                {live && <> · added {live.addedAt}</>}
+              </p>
+              {live && live.version !== live.latest && (
+                <button type="button" disabled={busy(live.id)} onClick={() => run(live.id, () => updateTheme(live.id))} className={cn(btn, "self-start bg-[#ecebff] px-3 py-2 text-[13px] text-[#4b4bea]")}>
+                  {spin(live.id) ?? <ArrowUpCircle className="h-4 w-4" />} Update to {live.latest}, keeping your edits
+                </button>
+              )}
+              <div className="mt-2 flex flex-wrap gap-2">
+                {/* Without a copy named, the customiser opens the live theme. */}
+                <a href={live ? `/admin/customize/theme?theme=${live.id}` : "/admin/customize/theme"} className={cn(btn, "h-10 bg-[#0a0a0a] px-4 text-[13.5px] text-white")}>
+                  <Paintbrush className="h-4 w-4" /> Customise
+                </a>
+                <a href={storeUrl} target="_blank" rel="noreferrer" className={cn(btn, "h-10 px-4 text-[13.5px] ring-1 ring-[#0a0a0a]/12 hover:bg-[#f5f5f5]")}>
+                  <Eye className="h-4 w-4" /> View
+                </a>
+                <a href="/admin/look" className={cn(btn, "h-10 px-4 text-[13.5px] ring-1 ring-[#0a0a0a]/12 hover:bg-[#f5f5f5]")}>
+                  Colours and type
+                </a>
+              </div>
+            </>
+          ) : (
+            <p className="text-[14px] text-[#0a0a0a]/55">No theme is active yet. Add one from the Theme Store below.</p>
+          )}
+        </div>
+      </section>
 
-      {/* ----------------------------------------------------------------- */}
-      {/* 2 — every copy this shop holds                                     */}
-      {/* ----------------------------------------------------------------- */}
-      <Section title="All Themes">
-        {copies.length === 0 ? (
-          <p className="text-[length:var(--text-secondary)] text-control-soft">
-            You have not added a theme yet. There are some below.
-          </p>
-        ) : (
-          <ul>
-            {copies.map((copy, i) => {
-              const isLive = copy.id === liveId;
-              const outOfDate = copy.version !== copy.latest;
-              return (
-                <li
-                  key={copy.id}
-                  // 144 tall with a 108 thumbnail centred in it, which is what
-                  // puts 37 between one preview and the next. The rows had no
-                  // height of their own, so the thumbnails stacked nearly
-                  // touching and the list read as one smeared block.
-                  className="flex h-[calc(144*var(--u))] items-center gap-[var(--gap-lg)]"
-                >
-                  <div className="h-[calc(108*var(--u))] w-[calc(171*var(--u))] flex-shrink-0 overflow-hidden rounded-[var(--radius-thumb)] border border-section-line bg-panel">
-                    {/* This shop wearing this copy, its edits included, live. */}
-                    <StorefrontStill url={copy.previewUrl} height={108} />
-                  </div>
-
-                  {/* A separator above every row but the first — above the
-                      live one too, because the drawing puts the green plate
-                      between two lines rather than in place of one. There was
-                      no separator at all: the condition excluded the live row,
-                      and with two themes in a library the live one is half of
-                      them.
-                      
-                      On this column, so it starts where the content starts and
-                      never runs under the thumbnail. On the full-height
-                      wrapper, so it lands in the gap rather than on the plate.
-                      Never above the first: a line at the edge of a list reads
-                      as the edge of the container, which is already drawn.
-                      
-                      #2e2e2e at a quarter of a pixel, which no browser will
-                      draw — so the quarter is carried by the alpha, the way
-                      every other hairline in the panel is. */}
-                  <div
-                    className={cn(
-                      "flex h-full min-w-0 flex-1 items-center",
-                      i > 0 && "border-t border-section-line"
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        // 95 tall inside the 144 row, 20 of padding, as marked.
-                        // One line on a desktop; on a phone the buttons wrap under the
-                        // name rather than pushing the row past the screen.
-                        "flex min-h-[calc(95*var(--u))] w-full min-w-0 flex-wrap items-center gap-x-[var(--gap-lg)] gap-y-2 rounded-[var(--radius-plate)] px-[calc(20*var(--u))] py-3 sm:flex-nowrap sm:py-0",
-                        isLive && "bg-[#d2ffd6]"
-                      )}
-                    >
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-[length:var(--text-normal)] font-semibold text-control-ink">
-                        {copy.name}{" "}
-                        <span className="font-normal text-control-soft">(v{copy.version})</span>
-                      </p>
-                      <p className="mt-1 truncate text-[length:var(--text-secondary)] text-control-soft">
-                        Added: {copy.addedAt}
-                      </p>
-                    </div>
-
-                    <div className="flex flex-shrink-0 flex-wrap items-center gap-[calc(10*var(--u))]">
-                      {outOfDate && (
-                        <RowButton
-                          onClick={() => run(copy.id, () => updateTheme(copy.id))}
-                          busy={busy(copy.id)}
-                          className="border-transparent bg-selected text-brand-500"
-                        >
-                          Update
-                        </RowButton>
-                      )}
-
-                      {isLive ? (
-                        <span className="flex items-center gap-2 text-[length:var(--text-secondary)] font-medium text-[#037f1d]">
-                          <Check className="h-[var(--icon-box)] w-[var(--icon-box)]" />
-                          Active
-                        </span>
-                      ) : (
-                        <RowButton
-                          onClick={() => run(copy.id, () => chooseTheme(copy.id))}
-                          busy={busy(copy.id)}
-                        >
-                          Activate
-                        </RowButton>
-                      )}
-
-                      <RowButton href={`/admin/customize/theme?theme=${copy.id}`}>
-                        <Pencil className="h-[calc(16*var(--u))] w-[calc(16*var(--u))]" />
-                        Edit Theme
-                      </RowButton>
-
-                      {/* Everything that is not one of the two things a
-                          merchant does here. Removing lives behind it because
-                          it is the only one that cannot be undone. */}
-                      <div className="relative">
-                        <button
-                          type="button"
-                          aria-label={`More for ${copy.name} v${copy.version}`}
-                          aria-expanded={menuKey === copy.id}
-                          onClick={() => setMenuKey((k) => (k === copy.id ? null : copy.id))}
-                          className="flex h-[var(--row-button-h)] w-[var(--row-button-h)] items-center justify-center rounded-full text-control-soft transition-colors hover:bg-panel hover:text-control-ink"
-                        >
-                          <MoreHorizontal className="h-[var(--icon-box)] w-[var(--icon-box)]" />
-                        </button>
-                        {menuKey === copy.id && (
-                          <>
-                            <button
-                              type="button"
-                              aria-label="Close menu"
-                              onClick={() => setMenuKey(null)}
-                              className="fixed inset-0 z-40 cursor-default"
-                            />
-                            <div className="absolute right-0 top-full z-50 mt-1 w-56 overflow-hidden rounded-[var(--radius-container)] border border-control-line bg-panel shadow-lg">
-                              <a
-                                href={copy.previewUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                onClick={() => setMenuKey(null)}
-                                className="flex items-center gap-2 px-3 py-2 text-[length:var(--text-secondary)] transition-colors hover:bg-control"
-                              >
-                                <ExternalLinkIcon className="h-[var(--icon-box)] w-[var(--icon-box)] text-control-soft" />
-                                Preview on your shop
-                              </a>
-                              {!isLive && (
-                                <button
-                                  type="button"
-                                  onClick={async () => {
-                                    setMenuKey(null);
-                                    const ok = await confirm({
-                                      title: `Remove this copy of ${copy.name}?`,
-                                      description:
-                                        "Your changes to this copy go with it. Your other copies are untouched.",
-                                      confirmLabel: "Remove",
-                                      danger: true,
-                                    });
-                                    if (ok) run(copy.id, () => removeTheme(copy.id));
-                                  }}
-                                  className="flex w-full items-center gap-2 border-t border-control-line px-3 py-2 text-[length:var(--text-secondary)] transition-colors hover:bg-rose-bg hover:text-rose"
-                                >
-                                  <Trash2 className="h-[var(--icon-box)] w-[var(--icon-box)]" />
-                                  Remove this copy
-                                </button>
-                              )}
-                            </div>
-                          </>
-                        )}
-                      </div>
-                      </div>
-                    </div>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </Section>
-
-      {/* ----------------------------------------------------------------- */}
-      {/* 3 — what exists                                                    */}
-      {/* ----------------------------------------------------------------- */}
-      <Section title="Theme Store">
-        {store.length === 0 ? (
-          <p className="text-[length:var(--text-secondary)] text-control-soft">
-            No themes are made for this kind of store yet.
-          </p>
-        ) : (
-          <ul className="grid gap-[var(--gap-lg)] lg:grid-cols-2">
-            {store.map((theme) => (
-              <li
-                key={theme.key}
-                // 730.6 x 533.7, and the plate is the card. The picture sits
-                // on it inset by 10, with a 75 band beneath carrying the name
-                // and the two buttons — every number read off the artboard.
-                //
-                // The plate is a gradient from Synora's own accent palette,
-                // not from the theme's colours: the store is a Synora screen
-                // showing what is on offer. The plate says "this is a theme";
-                // the picture on it says which one.
-                className="flex aspect-[730.6/533.7] flex-col rounded-[var(--radius-card)] px-[var(--pad-container)] pt-[var(--pad-container)] shadow-card"
-                style={{
-                  backgroundImage: `linear-gradient(180deg, ${theme.plate.from} 0%, ${theme.plate.to} 100%)`,
-                }}
-              >
-                <div className="min-h-0 flex-1">
-                  {/* 10 in from a 46 corner is a 36 corner — which is what the
-                      drawing has, so the subtraction is the design's rather
-                      than a rule imposed on it.
-                      
-                      Nothing sits on the picture. There was a disc in this
-                      corner opening the theme full size, and Preview below
-                      already does exactly that — two controls for one job, one
-                      of them unlabelled. */}
-                  <div className="h-full overflow-hidden rounded-[var(--radius-card-inner)] bg-panel">
-                    {/* The theme's own demo, live — what it looks like today. */}
-                    <StorefrontStill url={theme.previewUrl} height={448} />
-                  </div>
+      {/* 2. Every other copy this shop holds. */}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-[16px] font-semibold">
+          Your library <span className="text-[#0a0a0a]/40">{library.length}</span>
+        </h2>
+        <span className="text-[13px] text-[#0a0a0a]/50">Try changes on a copy. Customers only ever see the live one.</span>
+      </div>
+      {copies.length === 0 && <p className="text-[14px] text-[#0a0a0a]/55">You have not added a theme yet. There are some below.</p>}
+      <div className="grid gap-3 sm:grid-cols-2">
+        {library.map((copy) => {
+          const outOfDate = copy.version !== copy.latest;
+          return (
+            <article key={copy.id} className="relative flex gap-4 rounded-2xl bg-white p-3.5 ring-1 ring-[#0a0a0a]/[0.07]">
+              <div className="h-24 w-36 shrink-0 overflow-hidden rounded-lg bg-[#f0f0f0] ring-1 ring-[#0a0a0a]/[0.06]">
+                {/* This shop wearing this copy, its edits included, live. */}
+                <StorefrontStill url={copy.previewUrl} height={96} />
+              </div>
+              <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
+                <p className="truncate text-[15px] font-semibold">{copy.name}</p>
+                <p className="text-[12.5px] text-[#0a0a0a]/50">
+                  {copy.name} {copy.version} · added {copy.addedAt}
+                </p>
+                {outOfDate && <span className="text-[12.5px] font-semibold text-[#4b4bea]">Update to {copy.latest} available</span>}
+                <div className="mt-1 flex flex-wrap gap-1.5">
+                  <button type="button" disabled={busy(copy.id)} onClick={() => run(copy.id, () => chooseTheme(copy.id))} className={cn(btn, "bg-[#0a0a0a] px-3 py-1.5 text-[12.5px] text-white")}>
+                    {spin(copy.id)} Publish
+                  </button>
+                  <a href={`/admin/customize/theme?theme=${copy.id}`} className={cn(btn, "px-3 py-1.5 text-[12.5px] ring-1 ring-[#0a0a0a]/12 hover:bg-[#f5f5f5]")}>
+                    Customise
+                  </a>
                 </div>
-
-                {/* 75 tall, running to the card's bottom edge — there is no
-                    padding beneath it, which is what makes 10 + 448.6 + 75
-                    come to the card's own 533.7.
-                    
-                    41.5 in from the band, on top of the card's 10, puts the
-                    name 51.5 from the card's edge: measured off the drawing,
-                    where it sits clear of the 46 corner rather than tucked
-                    into it. It was 10, which is inside the curve. */}
-                <div className="flex h-[calc(75*var(--u))] flex-shrink-0 items-center justify-between gap-3 px-[calc(41.5*var(--u))]">
-                  <p className="text-[length:var(--text-normal)] font-semibold uppercase tracking-wide text-control-ink">
-                    {theme.name}{" "}
-                    <span className="text-[length:var(--text-small)] font-normal normal-case tracking-normal text-control-ink/60">
-                      (v{theme.latest})
-                    </span>
-                  </p>
-                  <div className="flex items-center gap-[calc(10*var(--u))]">
+              </div>
+              <button type="button" aria-label={`More for ${copy.name} v${copy.version}`} aria-expanded={menuKey === copy.id} onClick={() => setMenuKey((k) => (k === copy.id ? null : copy.id))} className="grid h-8 w-8 place-items-center self-start rounded-lg hover:bg-[#f0f0f0]">
+                <MoreHorizontal className="h-4 w-4" />
+              </button>
+              {menuKey === copy.id && (
+                <>
+                  <button type="button" aria-label="Close menu" onClick={() => setMenuKey(null)} className="fixed inset-0 z-10 cursor-default" />
+                  <div className="absolute right-3 top-12 z-20 w-52 overflow-hidden rounded-xl bg-white p-1 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.35)] ring-1 ring-[#0a0a0a]/10">
+                    <a href={copy.previewUrl} target="_blank" rel="noreferrer" onClick={() => setMenuKey(null)} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[13.5px] hover:bg-[#f5f5f5]">
+                      <Eye className="h-4 w-4" /> Preview on your shop
+                    </a>
+                    {outOfDate && (
+                      <button type="button" onClick={() => run(copy.id, () => updateTheme(copy.id))} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[13.5px] hover:bg-[#f5f5f5]">
+                        <ArrowUpCircle className="h-4 w-4" /> Update to {copy.latest}
+                      </button>
+                    )}
                     <button
                       type="button"
-                      onClick={() => run(theme.key, () => installTheme(theme.key))}
-                      disabled={busy(theme.key)}
-                      className="flex h-[calc(35*var(--u))] items-center gap-1.5 rounded-[var(--radius-control)] bg-ink px-[calc(16*var(--u))] text-[length:var(--text-secondary)] font-medium text-white disabled:opacity-60"
+                      onClick={async () => {
+                        setMenuKey(null);
+                        const ok = await confirm({
+                          title: `Remove this copy of ${copy.name}?`,
+                          description: "Your changes to this copy go with it. Your other copies are untouched.",
+                          confirmLabel: "Remove",
+                          danger: true,
+                        });
+                        if (ok) run(copy.id, () => removeTheme(copy.id));
+                      }}
+                      className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[13.5px] text-[#a3330c] hover:bg-[#ffe9e2]"
                     >
-                      {busy(theme.key) ? (
-                        <Loader2 className="h-[var(--icon-box)] w-[var(--icon-box)] animate-spin" />
-                      ) : (
-                        <AddIcon className="h-[var(--icon-box)] w-[var(--icon-box)]" />
-                      )}
-                      Add
+                      <Trash2 className="h-4 w-4" /> Remove this copy
                     </button>
-                    <a
-                      href={theme.previewUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex h-[calc(35*var(--u))] items-center rounded-[var(--radius-control)] bg-panel px-[calc(16*var(--u))] text-[length:var(--text-secondary)] text-control-ink"
-                    >
-                      Preview
-                    </a>
                   </div>
+                </>
+              )}
+            </article>
+          );
+        })}
+        <a href="#theme-store" className="flex min-h-[8rem] flex-col items-center justify-center gap-1.5 rounded-2xl border-2 border-dashed border-[#0a0a0a]/12 text-center hover:border-[#0a0a0a]/30">
+          <Plus className="h-5 w-5 text-[#0a0a0a]/45" />
+          <span className="text-[14px] font-semibold">Add a theme</span>
+          <span className="text-[12.5px] text-[#0a0a0a]/50">From the Theme Store, all included</span>
+        </a>
+      </div>
+
+      {/* 3. Every theme there is. Add gives another copy; it never goes live from here. */}
+      <section id="theme-store" aria-label="Theme Store" className="scroll-mt-24 rounded-2xl bg-[#0a0a0a] p-6 text-white">
+        <p className="text-[12px] font-semibold uppercase tracking-[0.1em] text-[#b7b9ff]">Theme Store</p>
+        <p className="mt-1 text-[20px] font-semibold">Every theme is included.</p>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          {store.map((theme) => (
+            <div key={theme.key} className="flex items-center gap-4 rounded-xl bg-white/[0.06] p-3">
+              <div className="h-16 w-24 shrink-0 overflow-hidden rounded-lg p-1" style={{ background: `linear-gradient(135deg, ${theme.plate.from}, ${theme.plate.to})` }}>
+                <div className="h-full overflow-hidden rounded-md bg-white">
+                  <StorefrontStill url={theme.previewUrl} height={56} />
                 </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Section>
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold">{theme.name}</p>
+                <p className="truncate text-[12.5px] text-white/55">{theme.description}</p>
+                <a href={theme.previewUrl} target="_blank" rel="noreferrer" className="text-[12.5px] font-semibold text-white/70 hover:text-white">Preview</a>
+              </div>
+              <button type="button" disabled={busy(theme.key)} onClick={() => run(theme.key, () => installTheme(theme.key))} className={cn(btn, "bg-white px-3 py-1.5 text-[12.5px] text-[#0a0a0a]")}>
+                {spin(theme.key) ?? <AddIcon className="h-3.5 w-3.5" />} Add
+              </button>
+            </div>
+          ))}
+        </div>
+      </section>
     </>
-  );
-}
-
-/**
- * One action on a row or a card: 35px, outlined, its own container.
- *
- * The action bar has no container and neither does a row — each button carries
- * its own, which is what the global design document specifies and why they are
- * all the same shape whatever they sit on.
- */
-function RowButton({
-  children,
-  onClick,
-  href,
-  external,
-  busy,
-  className,
-}: {
-  children: React.ReactNode;
-  onClick?: () => void;
-  href?: string;
-  external?: boolean;
-  busy?: boolean;
-  className?: string;
-}) {
-  const shape = cn(
-    "flex h-[var(--row-button-h)] items-center gap-1.5 rounded-[var(--radius-row-button)] border border-control-line bg-panel px-[calc(18*var(--u))] text-[length:var(--text-secondary)] text-control-ink transition-colors hover:border-brand-500 hover:text-brand-500 disabled:opacity-60",
-    className
-  );
-
-  if (href) {
-    return (
-      <a
-        href={href}
-        {...(external ? { target: "_blank", rel: "noreferrer" } : {})}
-        className={shape}
-      >
-        {children}
-      </a>
-    );
-  }
-
-  return (
-    <button type="button" onClick={onClick} disabled={busy} className={shape}>
-      {busy ? <Loader2 className="h-[var(--icon-box)] w-[var(--icon-box)] animate-spin" /> : null}
-      {children}
-    </button>
   );
 }
