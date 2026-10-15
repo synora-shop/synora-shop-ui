@@ -11,7 +11,10 @@ import { applyProductImport, planProductImport } from "@/app/admin/products/impo
 import { ListSearch } from "@/components/admin/list-search";
 import { PerPageSelect } from "@/components/admin/per-page-select";
 import { PaginationBar } from "@/components/admin/pagination-bar";
-import { ButtonLink, buttonClass } from "@/components/ui/primitives";
+import Link from "next/link";
+import { PageHeader } from "@/components/ui/primitives";
+import { PlainHeading, SortHeading } from "@/components/admin/sort-heading";
+import { HEAD_PAD, PRODUCT_GRID } from "@/components/admin/kit";
 import { activeCount, keepKnown, readFilter, whereIn } from "@/lib/filters";
 import { readPaging } from "@/lib/paging";
 import { PRODUCT_SORTS, readSort, sortHref } from "@/lib/sorting";
@@ -99,53 +102,62 @@ export default async function AdminProductsPage(props: PageProps<"/admin/product
     },
   ];
 
+  const heading = (label: string, asc: string, desc: string, align?: "right") => (
+    <SortHeading label={label} asc={asc} desc={desc} current={sort.value} basePath="/admin/products" searchParams={sp} options={PRODUCT_SORTS} align={align} />
+  );
+
   return (
     <div className="space-y-5">
-      {/* Everything you can do to this list, in the one place every list keeps
-          it: search, filters, how many rows, and the buttons that make or take
-          away rows. */}
+      <PageHeader
+        title="Products"
+        description="Everything you sell: prices, pictures, sizes and stock."
+        actions={
+          <>
+            {/* A file goes out and a file comes back. The panel could do the
+                first and not the second, which meant a merchant could leave
+                with their catalogue and not arrive with it. */}
+            <ImportDialog
+              noun="product"
+              plural="products"
+              blurb="A Shopify product CSV, or one exported from here. Products are matched by their URL handle: a handle you already have is updated, one you do not is added."
+              matchedBy="URL handle"
+              overwriteWarning="Overwriting replaces a product's variants with the ones in the file."
+              plan={planProductImport}
+              apply={applyProductImport}
+            />
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- a download, not a page: <Link> would prefetch the CSV and hand the browser a file it never asked for */}
+            <a href="/admin/products/export" className="inline-flex h-9 items-center gap-1.5 rounded-[10px] bg-white px-3.5 text-[13.5px] font-semibold text-[#0a0a0a] ring-1 ring-[#0a0a0a]/12 hover:bg-[#f5f5f5]">
+              <Download className="h-4 w-4" />
+              Export CSV
+            </a>
+            <Link href="/admin/products/new" className="inline-flex h-9 items-center gap-1.5 rounded-[10px] bg-[#0a0a0a] px-3.5 text-[13.5px] font-semibold text-white hover:bg-[#262626]">
+              <Plus className="h-4 w-4" />
+              Add product
+            </Link>
+          </>
+        }
+      />
+
+      {/* Search, filters, the view, and how many rows. The column names sort
+          the list view; tiles have no columns, so they keep the sort menu. */}
       <ActionBar>
-        <ListSearch placeholder="Search products" />
+        <ListSearch placeholder="Search products or SKUs" />
         <FilterDisclosure activeCount={activeCount(filters)}>
           <FilterBar basePath="/admin/products" groups={groups} filters={filters} />
         </FilterDisclosure>
-        <SortMenu
-          current={sort.value}
-          options={PRODUCT_SORTS.map((o) => ({
-            value: o.value,
-            label: o.label,
-            href: sortHref("/admin/products", sp, o.value, PRODUCT_SORTS),
-          }))}
-        />
+        {view === "grid" && (
+          <SortMenu
+            current={sort.value}
+            options={PRODUCT_SORTS.map((o) => ({
+              value: o.value,
+              label: o.label,
+              href: sortHref("/admin/products", sp, o.value, PRODUCT_SORTS),
+            }))}
+          />
+        )}
         <ViewToggle basePath="/admin/products" searchParams={sp} current={view} />
         <div className="ml-auto flex flex-wrap items-center gap-2">
           <PerPageSelect basePath="/admin/products" searchParams={sp} total={total} />
-          {/* A plain link, not a form: the answer is a file, and the browser
-              already knows how to receive one. */}
-          {/* A file goes out and a file comes back. The panel could do the
-              first and not the second, which meant a merchant could leave with
-              their catalogue and not arrive with it. */}
-          <ImportDialog
-            noun="product"
-            plural="products"
-            blurb="A Shopify product CSV, or one exported from here. Products are matched by their URL handle: a handle you already have is updated, one you do not is added."
-            matchedBy="URL handle"
-            overwriteWarning="Overwriting replaces a product's variants with the ones in the file."
-            plan={planProductImport}
-            apply={applyProductImport}
-          />
-          {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- a download, not a page: <Link> would prefetch the CSV and hand the browser a file it never asked for */}
-          <a
-            href="/admin/products/export"
-            className={buttonClass("secondary", "sm")}
-          >
-            <Download className="h-[var(--icon-box)] w-[var(--icon-box)]" />
-            Export CSV
-          </a>
-          <ButtonLink href="/admin/products/new" variant="primary" size="sm">
-            <Plus className="h-[var(--icon-box)] w-[var(--icon-box)]" />
-            Add product
-          </ButtonLink>
         </div>
       </ActionBar>
 
@@ -153,9 +165,19 @@ export default async function AdminProductsPage(props: PageProps<"/admin/product
         products={products}
         view={view}
         // Whether the list is empty because there is nothing, or because the
-        // merchant is looking at a slice of it — two different answers.
+        // merchant is looking at a slice of it: two different answers.
         filtered={q.length > 0 || activeCount(filters) > 0}
         lowStock={globals.lowStockThreshold}
+        head={
+          <div role="row" className={`hidden items-center gap-4 bg-[#0a0a0a] py-1.5 lg:grid ${HEAD_PAD} ${PRODUCT_GRID}`}>
+            <span />
+            <span />
+            {heading("Product", "title", "title-desc")}
+            <PlainHeading>Stock</PlainHeading>
+            {heading("Price", "price", "price-desc", "right")}
+            <div className="flex justify-end">{heading("Status", "status", "status-desc")}</div>
+          </div>
+        }
       />
 
       <PaginationBar basePath="/admin/products" searchParams={sp} total={total} />

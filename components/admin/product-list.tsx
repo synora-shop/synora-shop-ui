@@ -1,13 +1,14 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useState, useTransition, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Check, Eye, EyeOff, Package, Trash2 } from "lucide-react";
-import { Button, ButtonLink } from "@/components/ui/primitives";
-import { BulkBar } from "@/components/admin/bulk-bar";
+import { ButtonLink } from "@/components/ui/primitives";
+import { BarButton, BulkBar } from "@/components/admin/bulk-bar";
 import { ListEmpty } from "@/components/admin/list-empty";
 import { StatusMark, StockMark, Thumb } from "@/components/admin/product-elements";
+import { PRODUCT_GRID, PRODUCT_GRID_NO_STATUS } from "@/components/admin/kit";
 import { cn } from "@/lib/utils";
 import { useServerRows } from "@/components/ui/use-server-rows";
 import { effectivePrice, unitProfit, profitMargin } from "@/lib/product-pricing";
@@ -30,7 +31,6 @@ type ProductRow = {
   variants: { stock: number }[];
 };
 
-
 /**
  * The catalogue, as rows or as tiles.
  *
@@ -38,6 +38,11 @@ type ProductRow = {
  * of pictures, a shelf of spare parts is a table of names and numbers — so the
  * merchant picks and the choice is in the URL. Deleting, the confirm dialog and
  * the optimistic row removal are shared between both; only the markup differs.
+ *
+ * New admin (15 October): the rows sit under a black head whose column names
+ * sort the list on the server (the page hands it in as `head`), ticked rows
+ * bring up the black bar of what can be done to them, and tiles are portrait,
+ * the shape clothes are photographed in. What each action does is unchanged.
  */
 export function ProductList({
   products,
@@ -45,6 +50,7 @@ export function ProductList({
   filtered = false,
   lowStock,
   showStatus = true,
+  head,
 }: {
   products: ProductRow[];
   view?: "list" | "grid";
@@ -53,13 +59,13 @@ export function ProductList({
   /** The store's own low-stock threshold, so "3 left" means what Settings says. */
   lowStock: number;
   /**
-   * Whether to draw the Draft/Published mark.
-   *
-   * Off on a screen where every row is the same state. A column whose every
-   * cell reads "Draft", on a screen called Drafts, is a column that says
-   * nothing and takes the width of one that could.
+   * Whether to draw the Draft/Published mark. Off on a screen where every row
+   * is the same state: a column reading "Draft" on a screen called Drafts says
+   * nothing.
    */
   showStatus?: boolean;
+  /** The sorting head of the list view, drawn by the server page. */
+  head?: ReactNode;
 }) {
   const router = useRouter();
   const money = useMoney();
@@ -72,10 +78,7 @@ export function ProductList({
   // A tick on a row that has since been filtered away, or binned, would be
   // acted on invisibly. The selection is always intersected with what is on
   // screen, so what the bar counts is what the merchant can see.
-  const selected = useMemo(
-    () => rows.filter((p) => picked.has(p.id)).map((p) => p.id),
-    [rows, picked]
-  );
+  const selected = useMemo(() => rows.filter((p) => picked.has(p.id)).map((p) => p.id), [rows, picked]);
 
   function toggle(id: string) {
     setPicked((prev) => {
@@ -91,8 +94,7 @@ export function ProductList({
     if (action === "bin") {
       const ok = await confirm({
         title: `Move ${selected.length} product${selected.length === 1 ? "" : "s"} to the Bin?`,
-        description:
-          "They disappear from the store immediately. Restore them anytime from Admin \u2192 Bin.",
+        description: "They disappear from the store immediately. Restore them anytime from Admin → Bin.",
         confirmLabel: "Move to Bin",
         danger: true,
       });
@@ -106,18 +108,13 @@ export function ProductList({
         return;
       }
       setPicked(new Set());
-      // The count is what the database actually changed, not what was asked
-      // for \u2014 a product already published is not published again.
       toast.success(
-        result.changed === 0
-          ? "Nothing needed changing."
-          : `${result.changed} product${result.changed === 1 ? "" : "s"} ${verb}.`
+        result.changed === 0 ? "Nothing needed changing." : `${result.changed} product${result.changed === 1 ? "" : "s"} ${verb}.`
       );
       router.refresh();
     });
   }
 
-  /** The tick, in the one shape both the row and the tile use. */
   function Tick({ id, title }: { id: string; title: string }) {
     const on = picked.has(id);
     return (
@@ -127,42 +124,31 @@ export function ProductList({
         aria-checked={on}
         aria-label={`Select ${title}`}
         onClick={(e) => {
-          // The row is a link. Ticking is not following it.
           e.preventDefault();
           e.stopPropagation();
           toggle(id);
         }}
         className={cn(
-          // An explicit radius, not rounded-md: this design system sets
-          // --radius-md to 14px, which on a 20px box is a circle, and a circle
-          // means "pick one of these" to everybody who has used a form.
           "flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-[5px] border transition-colors",
-          on
-            ? "border-brand-500 bg-brand-500 text-white"
-            // A shadow only when empty: on a tile the tick sits on a
-            // photograph, and a white square on a pale sky is invisible.
-            : "border-border bg-control text-transparent shadow-sm hover:border-ink-faint"
+          on ? "border-[#0a0a0a] bg-[#0a0a0a] text-white" : "border-[#0a0a0a]/25 bg-white text-transparent hover:border-[#0a0a0a]/50"
         )}
       >
-        <Check className="h-[var(--icon-box)] w-[var(--icon-box)].5" strokeWidth={3} />
+        <Check className="h-3 w-3" strokeWidth={3} />
       </button>
     );
   }
 
   const bulkBar = selected.length > 0 && (
     <BulkBar count={selected.length} noun="product" onClear={() => setPicked(new Set())}>
-      <Button size="sm" variant="secondary" disabled={running} onClick={() => runBulk("publish", "published")}>
-        <Eye className="h-[var(--icon-box)] w-[var(--icon-box)].5" />
-        Publish
-      </Button>
-      <Button size="sm" variant="secondary" disabled={running} onClick={() => runBulk("unpublish", "moved to drafts")}>
-        <EyeOff className="h-[var(--icon-box)] w-[var(--icon-box)].5" />
-        Unpublish
-      </Button>
-      <Button size="sm" variant="danger" disabled={running} onClick={() => runBulk("bin", "moved to the Bin")}>
-        <Trash2 className="h-[var(--icon-box)] w-[var(--icon-box)].5" />
-        Bin
-      </Button>
+      <BarButton disabled={running} onClick={() => runBulk("publish", "published")}>
+        <Eye /> Publish
+      </BarButton>
+      <BarButton disabled={running} onClick={() => runBulk("unpublish", "moved to drafts")}>
+        <EyeOff /> Unpublish
+      </BarButton>
+      <BarButton danger disabled={running} onClick={() => runBulk("bin", "moved to the Bin")}>
+        <Trash2 /> Bin
+      </BarButton>
     </BulkBar>
   );
 
@@ -174,7 +160,6 @@ export function ProductList({
       danger: true,
     });
     if (!ok) return;
-
     const previous = rows;
     setRows((r) => r.filter((p) => p.id !== id));
     const formData = new FormData();
@@ -183,8 +168,6 @@ export function ProductList({
       await moveProductToBin(formData);
       router.refresh();
     } catch {
-      // Rolling the row back without a word reads as the action having
-      // worked and then quietly undone itself.
       setRows(previous);
       toast.error("Couldn't remove that product. Try again.", { blocking: true });
     }
@@ -219,53 +202,48 @@ export function ProductList({
             return (
               <li
                 key={p.id}
-                // A column so every tile's Bin bar lands on the same line,
-                // whatever the text above it happens to be.
-                className="group/tile flex h-full flex-col overflow-hidden rounded-[var(--radius-container)] border border-border bg-surface transition-shadow hover:shadow-sm"
+                className={cn(
+                  "group/tile flex h-full flex-col overflow-hidden rounded-2xl bg-white ring-1 transition-shadow hover:shadow-[0_12px_30px_-18px_rgba(0,0,0,0.45)]",
+                  picked.has(p.id) ? "ring-2 ring-[#0a0a0a]" : "ring-[#0a0a0a]/[0.07]"
+                )}
               >
                 <Link href={`/admin/products/${p.id}`} className="flex flex-1 flex-col">
                   <div className="relative">
                     <Thumb src={p.images[0]} size="tile" />
-                    <span className="absolute left-2 top-2 z-10">
+                    <span className="absolute left-2.5 top-2.5 z-10">
                       <Tick id={p.id} title={p.title} />
                     </span>
-                    {/* On a picture, the state goes on the picture — a merchant
+                    {/* On a picture, the state goes on the picture: a merchant
                         scanning a wall of tiles never reaches the text. */}
                     {showStatus && (
-                      <span className="absolute bottom-2 left-2">
+                      <span className="absolute bottom-2.5 left-2.5">
                         <StatusMark status={p.status} />
                       </span>
                     )}
                     {!p.isActive && (
-                      <span className="absolute right-2 top-2 rounded-full bg-ink/75 px-2 py-0.5 text-[11px] font-medium text-white">
-                        Hidden
-                      </span>
+                      <span className="absolute right-2.5 top-2.5 rounded-full bg-[#0a0a0a]/75 px-2 py-0.5 text-[11px] font-semibold text-white">Hidden</span>
                     )}
                   </div>
-                  <div className="flex flex-1 flex-col gap-1 p-2.5">
-                    <p className="line-clamp-2 text-xs font-medium text-ink">{p.title}</p>
+                  <div className="flex flex-1 flex-col gap-1 p-3">
+                    <p className="line-clamp-2 text-[13.5px] font-semibold text-[#0a0a0a]">{p.title}</p>
                     <div className="flex items-baseline justify-between gap-2">
-                      <span className="text-xs font-medium tabular-nums text-ink">
-                        {money(effectivePrice(p))}
-                      </span>
+                      <span className="text-[13px] font-semibold tabular-nums text-[#0a0a0a]">{money(effectivePrice(p))}</span>
                       {p.salePrice != null && p.salePrice < p.basePrice && (
-                        <span className="text-[11px] tabular-nums text-ink-faint line-through">
-                          {money(p.basePrice)}
-                        </span>
+                        <span className="text-[11.5px] tabular-nums text-[#0a0a0a]/40 line-through">{money(p.basePrice)}</span>
                       )}
                     </div>
                     <StockMark stock={stock} low={lowStock} className="block" />
                   </div>
                 </Link>
-                {/* No swipe in the grid — a tile has no long edge to swipe
+                {/* No swipe in the grid: a tile has no long edge to swipe
                     along, so the action has to be a button you can see. */}
                 <button
                   type="button"
                   onClick={() => handleDelete(p.id, p.title)}
                   aria-label={`Move ${p.title} to the Bin`}
-                  className="flex w-full items-center justify-center gap-1.5 border-t border-border py-1.5 text-[11px] text-ink-soft transition-colors hover:bg-rose-bg hover:text-rose"
+                  className="flex w-full items-center justify-center gap-1.5 border-t border-[#0a0a0a]/[0.06] py-2 text-[12px] font-semibold text-[#0a0a0a]/45 transition-colors hover:bg-[#ffe9e2] hover:text-[#a3330c]"
                 >
-                  <Trash2 className="h-[var(--icon-box)] w-[var(--icon-box)]" />
+                  <Trash2 className="h-3.5 w-3.5" />
                   Bin
                 </button>
               </li>
@@ -280,77 +258,68 @@ export function ProductList({
   return (
     <>
       {dialog}
-      <div className="divide-y divide-border rounded-[var(--radius-control)] border border-border bg-surface">
-        {rows.map((p) => {
-          const stock = p.variants.reduce((sum, v) => sum + v.stock, 0);
-          return (
-            <SwipeRow
-              key={p.id}
-              actions={[{ key: "delete", label: "Delete", icon: Trash2, tone: "danger", onClick: () => handleDelete(p.id, p.title) }]}
-            >
-              <Link
-                href={`/admin/products/${p.id}`}
-                className={cn(
-                  "no-tap-scale grid grid-cols-[1.25rem_2.75rem_minmax(0,1fr)] items-center gap-3 px-4 py-2.5 transition-colors hover:bg-subtle active:bg-subtle lg:gap-4",
-                  showStatus
-                    ? "lg:grid-cols-[1.25rem_2.75rem_minmax(0,1fr)_7.5rem_9rem_7rem]"
-                    : "lg:grid-cols-[1.25rem_2.75rem_minmax(0,1fr)_7.5rem_9rem]",
-                  picked.has(p.id) && "bg-brand-50"
-                )}
+      <section className="overflow-hidden rounded-2xl bg-white ring-1 ring-[#0a0a0a]/[0.07]">
+        {head}
+        <div className="divide-y divide-[#0a0a0a]/[0.06]">
+          {rows.map((p) => {
+            const stock = p.variants.reduce((sum, v) => sum + v.stock, 0);
+            return (
+              <SwipeRow
+                key={p.id}
+                actions={[{ key: "delete", label: "Delete", icon: Trash2, tone: "danger", onClick: () => handleDelete(p.id, p.title) }]}
               >
-                <Tick id={p.id} title={p.title} />
-                <Thumb src={p.images[0]} size="row" />
-
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-ink">{p.title}</p>
-                  <p className="truncate text-xs text-ink-faint">
-                    {p.categories.map((c) => c.name).join(", ") || "Uncategorised"}
-                    {!p.isActive && " · Hidden"}
-                  </p>
-                  {/* Narrow screens have no columns to put these in, so they
-                      fold under the name rather than disappearing. */}
-                  <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 lg:hidden">
-                    <span className="text-xs font-medium tabular-nums text-ink">
-                      {money(effectivePrice(p))}
-                    </span>
+                <Link
+                  href={`/admin/products/${p.id}`}
+                  className={cn(
+                    "no-tap-scale grid grid-cols-[1.25rem_2.75rem_minmax(0,1fr)] items-center gap-3 px-4 py-3 transition-colors hover:bg-[#fafafa] lg:gap-4",
+                    showStatus ? PRODUCT_GRID : PRODUCT_GRID_NO_STATUS,
+                    picked.has(p.id) && "bg-[#f5f5ff] hover:bg-[#f0f0ff]"
+                  )}
+                >
+                  <Tick id={p.id} title={p.title} />
+                  <Thumb src={p.images[0]} size="row" />
+                  <div className="min-w-0">
+                    <p className="truncate text-[14.5px] font-medium text-[#0a0a0a]">{p.title}</p>
+                    <p className="truncate text-[12.5px] text-[#0a0a0a]/50">
+                      {p.categories.map((c) => c.name).join(", ") || "Uncategorised"}
+                      {!p.isActive && " · Hidden"}
+                    </p>
+                    {/* Narrow screens have no columns to put these in, so they
+                        fold under the name rather than disappearing. */}
+                    <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 lg:hidden">
+                      <span className="text-[13px] font-semibold tabular-nums text-[#0a0a0a]">{money(effectivePrice(p))}</span>
+                      <StockMark stock={stock} low={lowStock} />
+                      {showStatus && <StatusMark status={p.status} />}
+                    </div>
+                  </div>
+                  <div className="hidden lg:block">
                     <StockMark stock={stock} low={lowStock} />
-                    {showStatus && <StatusMark status={p.status} />}
                   </div>
-                </div>
-
-                <div className="hidden lg:block">
-                  <StockMark stock={stock} low={lowStock} />
-                </div>
-
-                {/* Figures right-aligned and tabular, so the column reads down
-                    as a column of money instead of ragged sentences. */}
-                <div className="hidden text-right lg:block">
-                  <p className="text-sm font-medium tabular-nums text-ink">
-                    {money(effectivePrice(p))}
-                    {p.salePrice != null && p.salePrice < p.basePrice && (
-                      <span className="ml-1.5 text-[11px] font-normal tabular-nums text-ink-faint line-through">
-                        {money(p.basePrice)}
-                      </span>
-                    )}
-                  </p>
-                  <p className="text-[11px] tabular-nums text-ink-faint">
-                    <span className={unitProfit(p) < 0 ? "font-medium text-rose" : undefined}>
-                      {money(unitProfit(p))}
-                    </span>{" "}
-                    profit · {profitMargin(p)?.toFixed(0) ?? 0}%
-                  </p>
-                </div>
-
-                {showStatus && (
-                  <div className="hidden justify-end lg:flex">
-                    <StatusMark status={p.status} />
+                  {/* Figures right-aligned and tabular, so the column reads down
+                      as a column of money instead of ragged sentences. */}
+                  <div className="hidden text-right lg:block">
+                    <p className="text-[14px] font-semibold tabular-nums text-[#0a0a0a]">
+                      {money(effectivePrice(p))}
+                      {p.salePrice != null && p.salePrice < p.basePrice && (
+                        <span className="ml-1.5 text-[11.5px] font-normal tabular-nums text-[#0a0a0a]/40 line-through">{money(p.basePrice)}</span>
+                      )}
+                    </p>
+                    <p className="text-[11.5px] tabular-nums text-[#0a0a0a]/45">
+                      <span className={unitProfit(p) < 0 ? "font-semibold text-[#a3330c]" : undefined}>{money(unitProfit(p))}</span> profit ·{" "}
+                      {profitMargin(p)?.toFixed(0) ?? 0}%
+                    </p>
                   </div>
-                )}
-              </Link>
-            </SwipeRow>
-          );
-        })}
-      </div>
+                  {showStatus && (
+                    <div className="hidden justify-end lg:flex">
+                      <StatusMark status={p.status} />
+                    </div>
+                  )}
+                </Link>
+              </SwipeRow>
+            );
+          })}
+        </div>
+      </section>
       {bulkBar}
     </>
   );

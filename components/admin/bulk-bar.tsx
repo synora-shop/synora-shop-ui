@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/primitives";
 import { cn } from "@/lib/utils";
 
 /**
@@ -25,30 +24,45 @@ export function BulkBar({
   onClear: () => void;
   children: React.ReactNode;
 }) {
+  // New admin (15 October): a black bar floating over the list, the way the
+  // design draws it, clear of the rail on a desktop. The actions inside it
+  // are the screen's own; they read as light buttons on the dark ground.
   return (
     <div
       role="region"
       aria-label={`${count} ${noun}${count === 1 ? "" : "s"} selected`}
       className={cn(
-        "pointer-events-none fixed inset-x-0 bottom-4 z-30 flex justify-center px-4",
-        // Comes up from below rather than appearing: the movement is what says
-        // "this is new", so it is not mistaken for part of the page. The class
-        // is in globals.css, where reduced motion turns it off.
+        "pointer-events-none fixed inset-x-0 bottom-5 z-30 flex justify-center px-4 lg:left-[15.5rem]",
         "bulk-rise"
       )}
     >
-      <div className="pointer-events-auto flex max-w-full flex-wrap items-center gap-2 rounded-pill border border-border bg-panel/95 px-2 py-2 shadow-lg backdrop-blur sm:gap-3 sm:px-3">
-        <span className="pl-1.5 text-sm font-medium tabular-nums text-ink sm:pl-2">
+      <div className="bulk-bar-dark pointer-events-auto flex max-w-full flex-wrap items-center gap-2 rounded-2xl bg-[#0a0a0a] p-2 pl-4 text-white shadow-[0_24px_60px_-20px_rgba(0,0,0,0.7)] sm:gap-3">
+        <span className="text-[13.5px] font-semibold tabular-nums">
           {count} {noun}
-          {count === 1 ? "" : "s"}
+          {count === 1 ? "" : "s"} selected
         </span>
-        <span className="h-5 w-px flex-shrink-0 bg-border" aria-hidden />
         <div className="flex flex-wrap items-center gap-1.5">{children}</div>
-        <span className="h-5 w-px flex-shrink-0 bg-border" aria-hidden />
-        <Button variant="ghost" size="sm" onClick={onClear}>
+        <button type="button" onClick={onClear} className="rounded-xl px-3 py-2 text-[13px] font-semibold text-white/70 hover:bg-white/10 hover:text-white">
           Clear
-        </Button>
+        </button>
       </div>
     </div>
+  );
+}
+
+/** An action on the black bar: light on dark, red for the one that removes. */
+export function BarButton({ onClick, disabled, danger = false, children }: { onClick: () => void; disabled?: boolean; danger?: boolean; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-[13px] font-semibold transition-colors hover:bg-white/10 disabled:opacity-50 [&_svg]:h-4 [&_svg]:w-4",
+        danger ? "text-[#ffb4a1]" : "text-white"
+      )}
+    >
+      {children}
+    </button>
   );
 }

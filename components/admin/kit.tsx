@@ -163,7 +163,7 @@ export function changeText(now: number, before: number, unit = "on the 30 days b
  * server page that imports a plain value from a client file gets a reference
  * to it, not the string.
  */
-export const ORDER_GRID = "lg:grid lg:grid-cols-[6.5rem_minmax(0,1.4fr)_8rem_minmax(0,1fr)_7.5rem_7.5rem_2.5rem] lg:items-center";
+export const ORDER_GRID = "lg:grid lg:grid-cols-[6.5rem_minmax(0,1.4fr)_8rem_minmax(0,1fr)_7.5rem_7.5rem] lg:items-center";
 
 /** Each order stage's colour, and how its money stands, in a merchant's words. */
 export const STAGE_TONE: Record<string, PillTone> = {
@@ -178,3 +178,14 @@ export function paymentState(method: string, status: string): { tone: PillTone; 
   return method === "COD" ? { tone: "wait", label: "Collect on delivery" } : { tone: "wait", label: "Awaiting payment" };
 }
 
+
+/**
+ * The rows of a list sit in a SwipeRow, which on a desktop keeps 48px at the
+ * end of each row for its hover actions. A list's head pads its right by the
+ * same, so the column names stand over their columns.
+ */
+export const HEAD_PAD = "pl-4 pr-16";
+
+/** The products list's columns: tick, picture, name, stock, price, status. */
+export const PRODUCT_GRID = "lg:grid-cols-[1.25rem_2.75rem_minmax(0,1fr)_7.5rem_9rem_7rem]";
+export const PRODUCT_GRID_NO_STATUS = "lg:grid-cols-[1.25rem_2.75rem_minmax(0,1fr)_7.5rem_9rem]";

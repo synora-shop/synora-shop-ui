@@ -78,6 +78,9 @@ export const PRODUCT_SORTS: readonly SortOption[] = [
   { value: "title-desc", label: "Name Z–A", orderBy: { title: "desc" } },
   { value: "price", label: "Price, low to high", orderBy: { basePrice: "asc" } },
   { value: "price-desc", label: "Price, high to low", orderBy: { basePrice: "desc" } },
+  // So the Status column sorts both ways too (new admin, 15 October).
+  { value: "status", label: "Drafts first", orderBy: [{ status: "asc" }, { createdAt: "desc" }] },
+  { value: "status-desc", label: "Published first", orderBy: [{ status: "desc" }, { createdAt: "desc" }] },
 ];
 
 export const ORDER_SORTS: readonly SortOption[] = [

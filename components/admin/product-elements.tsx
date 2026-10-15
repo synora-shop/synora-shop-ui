@@ -21,14 +21,14 @@ import { cn } from "@/lib/utils";
  * here yet" rather than "something went wrong".
  */
 export function Thumb({ src, size }: { src?: string; size: "row" | "tile" }) {
-  const box = size === "row" ? "h-11 w-11 rounded-[var(--radius-control)]" : "aspect-square w-full rounded-none";
+  const box = size === "row" ? "h-11 w-11 rounded-lg" : "aspect-[4/5] w-full rounded-none";
   return (
-    <div className={cn("relative flex-shrink-0 overflow-hidden bg-brand-50", box)}>
+    <div className={cn("relative flex-shrink-0 overflow-hidden bg-[#f0f0f0]", box)}>
       {src ? (
         <Image src={src} alt="" fill sizes={size === "row" ? "44px" : "(max-width:640px) 50vw, 20vw"} className="object-cover" />
       ) : (
         <span className="flex h-full w-full items-center justify-center">
-          <Package className={cn("text-brand-500/40", size === "row" ? "h-4 w-4" : "h-7 w-7")} />
+          <Package className={cn("text-[#0a0a0a]/25", size === "row" ? "h-4 w-4" : "h-7 w-7")} />
         </span>
       )}
     </div>
@@ -45,20 +45,20 @@ export function Thumb({ src, size }: { src?: string; size: "row" | "tile" }) {
 export function StockMark({ stock, low, className }: { stock: number; low: number; className?: string }) {
   if (stock <= 0)
     return (
-      <span className={cn("inline-flex items-center gap-1 text-xs font-medium text-rose", className)}>
+      <span className={cn("inline-flex items-center gap-1 text-[13px] font-semibold text-rose", className)}>
         <AlertTriangle className="h-[var(--icon-box)] w-[var(--icon-box)].5 flex-shrink-0" />
         Out of stock
       </span>
     );
   if (stock <= low)
     return (
-      <span className={cn("inline-flex items-center gap-1 text-xs font-medium text-amber", className)}>
+      <span className={cn("inline-flex items-center gap-1 text-[13px] font-semibold text-amber", className)}>
         <AlertTriangle className="h-[var(--icon-box)] w-[var(--icon-box)].5 flex-shrink-0" />
         {stock} left
       </span>
     );
   return (
-    <span className={cn("text-xs tabular-nums text-ink-soft", className)}>{stock} in stock</span>
+    <span className={cn("text-[13px] tabular-nums text-[#0a0a0a]/60", className)}>{stock} in stock</span>
   );
 }
 
@@ -67,11 +67,11 @@ export function StatusMark({ status }: { status: "DRAFT" | "PUBLISHED" }) {
   return (
     <span
       className={cn(
-        "inline-flex flex-shrink-0 items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium",
-        status === "DRAFT" ? "bg-amber-bg text-amber" : "bg-green-bg text-green"
+        "inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-0.5 text-[12px] font-semibold",
+        status === "DRAFT" ? "bg-[#efeff4] text-[#0a0a0a]/60" : "bg-[#ddf5e9] text-[#11643f]"
       )}
     >
-      <span className={cn("h-1.5 w-1.5 rounded-full", status === "DRAFT" ? "bg-amber" : "bg-green")} aria-hidden />
+      <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" aria-hidden />
       {status === "DRAFT" ? "Draft" : "Published"}
     </span>
   );

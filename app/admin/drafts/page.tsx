@@ -9,12 +9,15 @@ import { ActionBar } from "@/components/admin/action-bar";
 import { ListSearch } from "@/components/admin/list-search";
 import { PerPageSelect } from "@/components/admin/per-page-select";
 import { PaginationBar } from "@/components/admin/pagination-bar";
-import { ButtonLink, EmptyState } from "@/components/ui/primitives";
+import { PageHeader, ButtonLink, EmptyState } from "@/components/ui/primitives";
 import { activeCount, keepKnown, readFilter } from "@/lib/filters";
 import { readPaging } from "@/lib/paging";
 import { PRODUCT_SORTS, readSort, sortHref } from "@/lib/sorting";
 import { SortMenu } from "@/components/admin/sort-menu";
 import { ViewToggle, readView } from "@/components/admin/view-toggle";
+import Link from "next/link";
+import { PlainHeading, SortHeading } from "@/components/admin/sort-heading";
+import { HEAD_PAD, PRODUCT_GRID_NO_STATUS } from "@/components/admin/kit";
 
 export const dynamic = "force-dynamic";
 
@@ -106,31 +109,35 @@ export default async function AdminDraftsPage(props: PageProps<"/admin/drafts">)
 
   return (
     <div className="space-y-5">
-      <p className="text-sm text-ink-soft">
-        {total === 1 ? "One product is" : `${total} products are`} started and not yet published.
-        Tick any of them and press Publish to put them out together.
-      </p>
+      <PageHeader
+        title="Drafts"
+        description={`${total === 1 ? "One product is" : `${total} products are`} started and not yet published. Tick any of them and press Publish to put them out together.`}
+        actions={
+          <Link href="/admin/products/new" className="inline-flex h-9 items-center gap-1.5 rounded-[10px] bg-[#0a0a0a] px-3.5 text-[13.5px] font-semibold text-white hover:bg-[#262626]">
+            <Plus className="h-4 w-4" />
+            Add product
+          </Link>
+        }
+      />
 
       <ActionBar>
         <ListSearch placeholder="Search drafts" />
         <FilterDisclosure activeCount={activeCount(filters)}>
           <FilterBar basePath="/admin/drafts" groups={groups} filters={filters} />
         </FilterDisclosure>
-        <SortMenu
-          current={sort.value}
-          options={PRODUCT_SORTS.map((o) => ({
-            value: o.value,
-            label: o.label,
-            href: sortHref("/admin/drafts", sp, o.value, PRODUCT_SORTS),
-          }))}
-        />
+        {view === "grid" && (
+          <SortMenu
+            current={sort.value}
+            options={PRODUCT_SORTS.map((o) => ({
+              value: o.value,
+              label: o.label,
+              href: sortHref("/admin/drafts", sp, o.value, PRODUCT_SORTS),
+            }))}
+          />
+        )}
         <ViewToggle basePath="/admin/drafts" searchParams={sp} current={view} />
         <div className="ml-auto flex flex-wrap items-center gap-2">
           <PerPageSelect basePath="/admin/drafts" searchParams={sp} total={total} />
-          <ButtonLink href="/admin/products/new" variant="primary" size="sm">
-            <Plus className="h-[var(--icon-box)] w-[var(--icon-box)]" />
-            Add product
-          </ButtonLink>
         </div>
       </ActionBar>
 
@@ -142,6 +149,15 @@ export default async function AdminDraftsPage(props: PageProps<"/admin/drafts">)
         // Every row here is a draft. A column repeating that is a column
         // saying nothing, in the width of one that could say something.
         showStatus={false}
+        head={
+          <div role="row" className={`hidden items-center gap-4 bg-[#0a0a0a] py-1.5 lg:grid ${HEAD_PAD} ${PRODUCT_GRID_NO_STATUS}`}>
+            <span />
+            <span />
+            <SortHeading label="Product" asc="title" desc="title-desc" current={sort.value} basePath="/admin/drafts" searchParams={sp} options={PRODUCT_SORTS} />
+            <PlainHeading>Stock</PlainHeading>
+            <SortHeading label="Price" asc="price" desc="price-desc" current={sort.value} basePath="/admin/drafts" searchParams={sp} options={PRODUCT_SORTS} align="right" />
+          </div>
+        }
       />
 
       <PaginationBar basePath="/admin/drafts" searchParams={sp} total={total} />

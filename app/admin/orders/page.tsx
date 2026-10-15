@@ -6,7 +6,7 @@ import { db } from "@/lib/data/shop";
 import { getStoreSettings } from "@/lib/data/settings";
 import { formatRelativeTime } from "@/lib/format-relative-time";
 import { OrderList } from "@/components/admin/order-list";
-import { ORDER_GRID } from "@/components/admin/kit";
+import { HEAD_PAD, ORDER_GRID } from "@/components/admin/kit";
 import { PlainHeading, SortHeading } from "@/components/admin/sort-heading";
 import { FilterBar, type FilterGroup } from "@/components/admin/filter-bar";
 import { activeCount, keepKnown, readFilter, whereIn } from "@/lib/filters";
@@ -125,7 +125,7 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
             {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- a download, not a page: <Link> would prefetch the CSV and hand the browser a file it never asked for */}
             <a href="/admin/orders/export" className="inline-flex h-9 items-center gap-1.5 rounded-[10px] bg-white px-3.5 text-[13.5px] font-semibold text-[#0a0a0a] ring-1 ring-[#0a0a0a]/12 hover:bg-[#f5f5f5]">
               <Download className="h-4 w-4" />
-              Export
+              Export CSV
             </a>
           </>
         }
@@ -168,14 +168,13 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
       <OrderList
         filtered={q.length > 0 || activeCount({ status }) > 0}
         head={
-          <div role="row" className={`hidden gap-x-4 bg-[#0a0a0a] px-4 py-1.5 lg:grid ${ORDER_GRID}`}>
+          <div role="row" className={`hidden gap-x-4 bg-[#0a0a0a] py-1.5 lg:grid ${HEAD_PAD} ${ORDER_GRID}`}>
             {heading("Order", "id", "id-desc")}
             {heading("Customer", "customer", "customer-desc")}
             {heading("Placed", "oldest", "newest")}
             <PlainHeading>Payment</PlainHeading>
             {heading("Total", "total", "total-desc", "right")}
             {heading("Stage", "status", "status-desc")}
-            <span />
           </div>
         }
         orders={orders.map((o) => ({

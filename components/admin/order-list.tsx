@@ -110,15 +110,6 @@ export function OrderList({ orders, filtered = false, head }: { orders: OrderRow
                     <span className="block text-[11.5px] tabular-nums text-[#0a0a0a]/45">{money(profit)} profit</span>
                   </span>
                   <span><StatePill tone={STAGE_TONE[o.orderStatus] ?? "off"}>{statusLabel(o.orderStatus)}</StatePill></span>
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(o.id)}
-                    aria-label={`Move order ${o.id} to the Bin`}
-                    title="Move to the Bin"
-                    className="relative z-10 hidden h-8 w-8 place-items-center rounded-lg text-[#0a0a0a]/35 opacity-0 transition-opacity hover:bg-[#ffe9e2] hover:text-[#a3330c] focus-visible:opacity-100 group-hover:opacity-100 lg:grid"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
                 </div>
               </SwipeRow>
             );
