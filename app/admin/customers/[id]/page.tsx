@@ -8,6 +8,7 @@ import { formatRelativeTime } from "@/lib/format-relative-time";
 import { statusLabel } from "@/lib/order-status-style";
 import { Panel, STAGE_TONE, StatePill } from "@/components/admin/kit";
 import { PageCrumb } from "@/components/admin/page-crumb";
+import { CustomerNote, CustomerOffers, CustomerTags } from "@/components/admin/customer-extras";
 import { formatMoney } from "@/lib/money";
 import { getCurrency } from "@/lib/data/settings";
 
@@ -62,9 +63,10 @@ export default async function CustomerPage(props: PageProps<"/admin/customers/[i
       </section>
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="space-y-5">
         <Panel title={`Orders · ${customer.orders.length}`} pad={false}>
           {customer.orders.length === 0 ? (
-            <p className="px-5 py-10 text-center text-[14px] text-[#0a0a0a]/55">They have an account but haven&rsquo;t ordered yet.</p>
+            <p className="px-5 py-10 text-center text-[14px] text-[#0a0a0a]/55">{customer.hasAccount ? "They have an account but haven\u2019t ordered yet." : "No orders yet."}</p>
           ) : (
             <ul className="mt-2 divide-y divide-[#0a0a0a]/[0.06]">
               {customer.orders.map((order) => (
@@ -83,6 +85,10 @@ export default async function CustomerPage(props: PageProps<"/admin/customers/[i
             </ul>
           )}
         </Panel>
+        <Panel>
+          <CustomerNote id={customer.id} initial={customer.note} />
+        </Panel>
+        </div>
 
         <div className="space-y-5">
           <Panel title="Reach them">
@@ -98,6 +104,12 @@ export default async function CustomerPage(props: PageProps<"/admin/customers/[i
                 <a href={`https://wa.me/${digits}`} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-1.5 rounded-[10px] bg-[#0a0a0a] py-2 text-[13px] font-semibold text-white hover:bg-[#262626]"><MessageCircle className="h-4 w-4" /> WhatsApp</a>
               </div>
             )}
+          </Panel>
+          <Panel title="Offers">
+            <CustomerOffers id={customer.id} initial={customer.acceptsMarketing} />
+          </Panel>
+          <Panel title="Tags">
+            <CustomerTags id={customer.id} initial={customer.tags} />
           </Panel>
           {customer.addresses.length > 0 && (
             <Panel title="Saved addresses">

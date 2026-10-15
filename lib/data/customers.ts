@@ -23,6 +23,8 @@ export type CustomerSummary = {
   totalSpent: number;
   lastOrderAt: Date | null;
   createdAt: Date;
+  /** Where they are: their latest order's city, else their first saved address's. */
+  city: string;
 };
 
 export async function listCustomers(search?: string): Promise<CustomerSummary[]> {
@@ -48,8 +50,9 @@ export async function listCustomers(search?: string): Promise<CustomerSummary[]>
       createdAt: true,
       orders: {
         where: { deletedAt: null, orderStatus: { not: "CANCELLED" } },
-        select: { total: true, createdAt: true },
+        select: { total: true, createdAt: true, shippingCity: true },
       },
+      addresses: { select: { city: true }, take: 1 },
     },
   });
 
@@ -68,6 +71,10 @@ export async function listCustomers(search?: string): Promise<CustomerSummary[]>
         null
       ),
       createdAt: c.createdAt,
+      city:
+        [...c.orders].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0]?.shippingCity ??
+        c.addresses[0]?.city ??
+        "",
     }))
     // Best customers first — the order a merchant actually wants them in. A
     // customer with no orders yet (registered but never bought) sorts last
@@ -96,6 +103,9 @@ export async function getCustomer(id: string) {
       phone: true,
       signedUpAt: true,
       createdAt: true,
+      note: true,
+      tags: true,
+      acceptsMarketing: true,
       addresses: true,
       orders: {
         where: { deletedAt: null },

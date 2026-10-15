@@ -131,6 +131,7 @@ export const MEDIA_SORTS: readonly SortOption[] = [
 export type CustomerSummaryish = {
   name: string;
   email?: string;
+  city?: string;
   orderCount: number;
   totalSpent: number;
   lastOrderAt: Date | null;
@@ -151,6 +152,8 @@ export const CUSTOMER_SORTS: readonly { value: string; label: string }[] = [
   { value: "name-desc", label: "Name Z–A" },
   { value: "email", label: "Email A–Z" },
   { value: "email-desc", label: "Email Z–A" },
+  { value: "city", label: "City A–Z" },
+  { value: "city-desc", label: "City Z–A" },
 ];
 
 const time = (d: Date | null) => (d ? d.getTime() : 0);
@@ -182,6 +185,11 @@ export function compareCustomers(
       return (a, b) => (a.email ?? "").localeCompare(b.email ?? "");
     case "email-desc":
       return (a, b) => (b.email ?? "").localeCompare(a.email ?? "");
+    case "city":
+      // Nowhere known sorts last either way: it is not a city.
+      return (a, b) => (a.city ? 0 : 1) - (b.city ? 0 : 1) || (a.city ?? "").localeCompare(b.city ?? "");
+    case "city-desc":
+      return (a, b) => (a.city ? 0 : 1) - (b.city ? 0 : 1) || (b.city ?? "").localeCompare(a.city ?? "");
     default:
       return (a, b) => b.totalSpent - a.totalSpent || b.orderCount - a.orderCount;
   }
