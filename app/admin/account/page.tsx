@@ -70,7 +70,7 @@ export default async function AccountPage() {
     <SettingsFrame>
     <div className="space-y-5">
       <PageHeader
-        title="Account"
+        title="Users and your account"
         description={`Signed in as ${user.email}. These settings follow you across every store you work on.`}
       />
       <AccountSecurity email={user.email} emailVerified={user.emailVerifiedAt !== null} />

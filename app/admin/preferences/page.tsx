@@ -19,7 +19,7 @@ export default async function PreferencesPage() {
   return (
     <div className="space-y-5">
       <PageHeader
-        title="Visibility"
+        title="Preferences"
         description="Who can see your store, who can find it, and who can write to you."
       />
       <VisibilityForm initial={toVisibility(settings)} />

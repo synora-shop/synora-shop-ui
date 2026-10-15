@@ -1,7 +1,7 @@
 import { db } from "@/lib/data/shop";
 import { SITE_TEXT_DEFAULTS, siteTextLabel } from "@/lib/site-text";
 import { SiteTextRow } from "@/components/admin/site-text-row";
-import { SectionDivider } from "@/components/ui/primitives";
+import { SectionDivider, PageHeader } from "@/components/ui/primitives";
 
 export const dynamic = "force-dynamic";
 
@@ -20,10 +20,10 @@ export default async function AdminSiteTextPage() {
 
   return (
     <div>
-      <p className="text-sm text-ink-soft">
-        Button labels and small pieces of copy used across the site. Editing more of these
-        rolls out over time, this is the first batch.
-      </p>
+      <PageHeader
+        title="Store wording"
+        description="Button labels and small pieces of copy used across the site. Editing more of these rolls out over time, this is the first batch."
+      />
 
       <div className="mt-6 space-y-8">
         {Array.from(groups.entries()).map(([group, keys]) => (

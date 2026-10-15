@@ -8,7 +8,7 @@ import { createPage } from "@/app/admin/pages/actions";
 import { PageList } from "@/components/admin/page-list";
 import { PolicyPages } from "@/components/admin/policy-pages";
 import { POLICY_PAGES } from "@/lib/policy-pages";
-import { Fieldset, SectionDivider, buttonClass } from "@/components/ui/primitives";
+import { Fieldset, SectionDivider, buttonClass, PageHeader } from "@/components/ui/primitives";
 import { Field } from "@/components/merchant/form-shell";
 
 export const dynamic = "force-dynamic";
@@ -26,12 +26,10 @@ export default async function AdminPagesPage() {
 
   return (
     <div className="space-y-5">
-      <p className="text-sm text-ink-soft">
-        Every page on your storefront, and the blocks each one is built from. Three come with
-        the store — your homepage, your story and your FAQs — and cannot be deleted, though
-        they can be renamed, moved to a different address, or hidden. Collection pages are
-        managed from Categories.
-      </p>
+      <PageHeader
+        title="Pages"
+        description="Every page on your storefront, and the blocks each one is built from. Three come with the store — your homepage, your story and your FAQs — and cannot be deleted, though they can be renamed, moved to a different address, or hidden. Collection pages are managed from Collections."
+      />
 
       <PageList pages={pages.map((p) => ({ ...p, sections: p._count.sections }))} />
 

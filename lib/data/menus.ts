@@ -1,5 +1,6 @@
 import type { Prisma } from "@/lib/generated/prisma/client";
 import { db, currentShop, currentShopId } from "@/lib/data/shop";
+import { after } from "next/server";
 import { cachedForShop, invalidateShop } from "@/lib/data/cached";
 
 // Reproduces the previously-hardcoded header nav (site-header.tsx's old
@@ -104,10 +105,15 @@ export async function getMenus() {
   } catch {
     // Lost a create race against a concurrent first request — rows exist now.
   }
-  // The cache still holds the empty list that led here, so it has to go before
-  // the fresh read — otherwise the first visitor to a new shop seeds the menus
-  // and then keeps being served the emptiness for the life of the entry.
-  invalidateShop(shop.id, "menus");
+  // The cache still holds the empty list that led here, so it has to go —
+  // otherwise the first visitor to a new shop seeds the menus and then keeps
+  // being served the emptiness for the life of the entry. Not here, though:
+  // this runs while a page renders, and Next refuses revalidateTag during a
+  // render (the Menus screen failed with "This page didn't load" on every
+  // shop whose menus had just been seeded). So it runs straight after the
+  // response, and this request reads the fresh rows directly.
+  const shopId = shop.id;
+  after(() => invalidateShop(shopId, "menus"));
   return load();
 }
 

@@ -1,7 +1,7 @@
 import { FilePen } from "lucide-react";
 import { getAllPages } from "@/lib/data/pages";
 import { PageList } from "@/components/admin/page-list";
-import { ButtonLink, EmptyState } from "@/components/ui/primitives";
+import { ButtonLink, EmptyState, PageHeader } from "@/components/ui/primitives";
 
 export const dynamic = "force-dynamic";
 
@@ -37,10 +37,10 @@ export default async function PageDraftsPage() {
 
   return (
     <div className="space-y-5">
-      <p className="text-sm text-ink-soft">
-        {drafts.length === 1 ? "One page is" : `${drafts.length} pages are`} written and not yet
-        published. Tick any of them and press Publish to put them out together.
-      </p>
+      <PageHeader
+        title="Page drafts"
+        description={`${drafts.length === 1 ? "One page is" : `${drafts.length} pages are`} written and not yet published. Tick any of them and press Publish to put them out together.`}
+      />
 
       <PageList
         selectable

@@ -1,4 +1,5 @@
 import { db } from "@/lib/data/shop";
+import { PageHeader } from "@/components/ui/primitives";
 import { CategoryList } from "@/components/admin/category-list";
 import { AddCategoryForm } from "@/components/admin/add-category-form";
 
@@ -12,12 +13,10 @@ export default async function AdminCategoriesPage() {
 
   return (
     <div>
-      <p className="text-sm text-ink-soft">
-        Click a name to rename it, or a picture to edit the collection, products stay
-        linked and every menu link updates automatically, only the label changes. Creating a
-        category also creates a matching page you can add to the header/footer from Menus. A
-        category can only be deleted once no products are assigned to it.
-      </p>
+      <PageHeader
+        title="Collections"
+        description="Click a name to rename it, or a picture to edit the collection, products stay linked and every menu link updates automatically, only the label changes. Creating a category also creates a matching page you can add to the header/footer from Menus. A category can only be deleted once no products are assigned to it."
+      />
 
       <div className="mt-6 grid gap-8 lg:grid-cols-2">
         <CategoryList

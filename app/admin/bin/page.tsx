@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PageHeader } from "@/components/ui/primitives";
 import { db } from "@/lib/data/shop";
 import { BinProductList } from "@/components/admin/bin-product-list";
 import { BinOrderList } from "@/components/admin/bin-order-list";
@@ -27,10 +28,10 @@ export default async function AdminBinPage(props: PageProps<"/admin/bin">) {
 
   return (
     <div>
-      <p className="text-sm text-ink-soft">
-        Deleted products and orders land here first. Restore anytime, or permanently delete
-        to free the data for good.
-      </p>
+      <PageHeader
+        title="Bin"
+        description="Deleted products and orders land here first. Restore anytime, or permanently delete to free the data for good."
+      />
 
       <div className="mt-4 flex gap-2">
         <Link

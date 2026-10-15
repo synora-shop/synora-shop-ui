@@ -1,4 +1,5 @@
 import { getMenus, MENU_SLOTS } from "@/lib/data/menus";
+import { PageHeader } from "@/components/ui/primitives";
 import { getStoreSettings } from "@/lib/data/settings";
 import { getAllPages } from "@/lib/data/pages";
 import { MenuManager, type SlotRow } from "@/components/admin/menu-manager";
@@ -35,11 +36,10 @@ export default async function AdminMenusPage() {
   return (
     <div className="space-y-5">
       <div>
-        <p className="text-sm text-ink-soft">
-          Build as many menus as you like, then choose which one shows in the header and the
-          footer. Drag to reorder. Pick from the pages and collections that already exist,
-          renaming one updates every menu that links to it automatically.
-        </p>
+        <PageHeader
+          title="Menus"
+          description="Build as many menus as you like, then choose which one shows in the header and the footer. Drag to reorder. Pick from the pages and collections that already exist, renaming one updates every menu that links to it automatically."
+        />
       </div>
 
       <MenuManager menus={menus} slots={slots} pages={pageOptions} />
