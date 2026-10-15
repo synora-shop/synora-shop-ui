@@ -30,6 +30,17 @@ const nextConfig: NextConfig = {
   // Nothing is served by a header that names the framework.
   poweredByHeader: false,
 
+  // The new admin's design preview (/new-admin) is sample data, kept on this
+  // machine as the reference the real panel was built from. It is never
+  // served by a production build: there it leads to the real admin.
+  async redirects() {
+    if (process.env.NODE_ENV !== "production") return [];
+    return [
+      { source: "/new-admin", destination: "/admin", permanent: false },
+      { source: "/new-admin/:path*", destination: "/admin", permanent: false },
+    ];
+  },
+
   // No `optimizePackageImports` here, and that is a finding rather than an
   // omission. `import { Bell } from "lucide-react"` reaches a barrel
   // re-exporting some fifteen hundred icons, in a hundred files — worth
