@@ -11,6 +11,35 @@ and anything derived rather than drawn is marked as derived. Where the design
 and the code disagree, the disagreement is written down rather than silently
 resolved.
 
+## 0. The new admin (15 October 2026)
+
+The panel was rewired to a new design: approved from the local preview at
+`/new-admin` (kept unchanged as the reference), and built into `/admin` on the
+branch `admin-redesign`. Where the sections below describe the indigo header,
+the white sidebar bands and the row of tabs, they describe the old design,
+kept in `APP extra/Synora app old Design kit` and in git as `old-admin-design`.
+
+**The frame.** A black rail (`components/admin/admin-sidebar.tsx`) names the
+sections in three groups (running the shop, the storefront, and Settings with
+Bin) from `lib/admin-nav.ts`. Only the section you are in opens to show its
+screens; the rail folds to icons and remembers that. Beside it, one sheet
+scrolls under a white top bar (`admin-topbar.tsx`: breadcrumb, Create, the
+alerts, shortcuts, the account menu) and the save bar (`editor-bar.tsx`,
+black while there is unsaved work). ⌘K opens the command bar over the
+settings index. The window itself never scrolls.
+
+**Colour.** Black and white carry the panel; each section wears one brand
+colour (iris, lavender, sky, mint) as its dot and edge mark; state alone
+wears green, amber and red. See `docs/DESIGN.md` §1.
+
+**Screens moved, addresses kept.** Home is a dashboard on real figures; the
+store's name, logos and address moved to Settings, Store details
+(`/admin/store`), still the one place a logo is set. The store-wide edits
+moved to Online Store, Store-wide look (`/admin/look`). Settings screens share
+one fixed list with a search (`components/admin/settings-frame.tsx`). Lists
+sort by their column names, both ways, through the address, so paging keeps
+the order.
+
 ## Where this comes from
 
 | File | What it is |

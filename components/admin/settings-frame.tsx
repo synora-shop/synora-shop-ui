@@ -48,7 +48,7 @@ export function SettingsFrame({ children }: { children: ReactNode }) {
   const shown = tabs.filter((t) => words.every((w) => `${t.label} ${WORDS[t.href] ?? ""}`.toLowerCase().includes(w)));
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-8">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-8">
       <nav aria-label="Settings" className="flex flex-col gap-3 lg:sticky lg:top-20 lg:self-start">
         <label className="flex h-10 items-center gap-2 rounded-[10px] bg-white px-3 ring-1 ring-[#0a0a0a]/12 focus-within:ring-2 focus-within:ring-[#0a0a0a]">
           <Search className="h-4 w-4 text-[#0a0a0a]/40" />

@@ -212,7 +212,9 @@ export function ThemeManager({
                     <div
                       className={cn(
                         // 95 tall inside the 144 row, 20 of padding, as marked.
-                        "flex h-[calc(95*var(--u))] w-full min-w-0 items-center gap-x-[var(--gap-lg)] rounded-[var(--radius-plate)] px-[calc(20*var(--u))]",
+                        // One line on a desktop; on a phone the buttons wrap under the
+                        // name rather than pushing the row past the screen.
+                        "flex min-h-[calc(95*var(--u))] w-full min-w-0 flex-wrap items-center gap-x-[var(--gap-lg)] gap-y-2 rounded-[var(--radius-plate)] px-[calc(20*var(--u))] py-3 sm:flex-nowrap sm:py-0",
                         isLive && "bg-[#d2ffd6]"
                       )}
                     >
@@ -226,7 +228,7 @@ export function ThemeManager({
                       </p>
                     </div>
 
-                    <div className="flex flex-shrink-0 items-center gap-[calc(10*var(--u))]">
+                    <div className="flex flex-shrink-0 flex-wrap items-center gap-[calc(10*var(--u))]">
                       {outOfDate && (
                         <RowButton
                           onClick={() => run(copy.id, () => updateTheme(copy.id))}

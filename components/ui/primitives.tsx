@@ -155,7 +155,7 @@ export function PageHeader({
         <h2 className="text-[22px] font-semibold tracking-[-0.02em] text-[#0a0a0a]">{title}</h2>
         {description && <p className="mt-0.5 text-[14px] leading-snug text-[#0a0a0a]/55">{description}</p>}
       </div>
-      {actions && <div className="ml-auto flex flex-shrink-0 flex-wrap items-center gap-2">{actions}</div>}
+      {actions && <div className="flex max-w-full flex-wrap items-center gap-2 sm:ml-auto">{actions}</div>}
     </div>
   );
 }
