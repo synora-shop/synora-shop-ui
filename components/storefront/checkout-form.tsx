@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/lib/cart-store";
 import { checkoutToken, draftSaver, draftStep, forgetCheckoutToken } from "@/lib/checkout-draft";
+import { checkoutOptions } from "@/lib/checkout-options";
 import { cn } from "@/lib/utils";
 import { previewDiscount } from "@/app/(storefront)/checkout/actions";
 import { CITIES } from "@/lib/cities";
@@ -21,6 +22,11 @@ type Settings = {
   bankAccountDetails: string | null;
   jazzcashAccountDetails: string | null;
   easypaisaAccountDetails: string | null;
+  checkoutNotes: boolean;
+  marketingOptIn: boolean;
+  marketingOptInText: string;
+  deliveryDaysMin: number | null;
+  deliveryDaysMax: number | null;
 };
 
 // Pre-fills the form for a signed-in customer, from their account and most
@@ -168,6 +174,7 @@ export function CheckoutForm({
   const saving = discount?.saving ?? 0;
   // Never below zero on screen, matching what the server will charge.
   const total = Math.max(0, subtotal + shippingFee - saving);
+  const options = checkoutOptions(settings);
 
   async function applyCode() {
     const code = codeInput.trim();
@@ -222,6 +229,7 @@ export function CheckoutForm({
       notes: String(form.get("notes") || ""),
       discountCode: discount?.code,
       checkoutToken: checkoutToken() || undefined,
+      acceptsMarketing: form.get("acceptsMarketing") === "on" || undefined,
       items: items.map((i) => ({
         productId: i.productId,
         variantId: i.variantId,
@@ -391,12 +399,21 @@ export function CheckoutForm({
           ))}
         </fieldset>
 
-        <textarea
-          name="notes"
-          placeholder="Order notes (optional)"
-          rows={3}
-          className="input"
-        />
+        {options.notes && (
+          <textarea
+            name="notes"
+            placeholder="Order notes: gift messages or special instructions (optional)"
+            rows={3}
+            maxLength={1000}
+            className="input"
+          />
+        )}
+        {options.marketing && (
+          <label className="flex items-center gap-2 text-sm text-ink-soft">
+            <input type="checkbox" name="acceptsMarketing" />
+            {options.marketing}
+          </label>
+        )}
       </div>
 
       <div className="h-fit rounded-lg border border-border bg-white p-6">
@@ -424,7 +441,10 @@ export function CheckoutForm({
             </div>
           )}
           <div className="flex justify-between text-ink-soft">
-            <span>{shippingLabel}</span>
+            <span>
+              {shippingLabel}
+              {options.arrives && <span className="block text-xs">{options.arrives}</span>}
+            </span>
             <span>{shippingFee === 0 ? freeShipping : money(shippingFee)}</span>
           </div>
           <div className="flex justify-between border-t border-border pt-2 font-medium text-ink">

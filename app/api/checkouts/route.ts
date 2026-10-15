@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+import { remindDueCheckoutsSoon } from "@/lib/abandoned-reminders";
+import { NextResponse, after } from "next/server";
 import { db, requireShop } from "@/lib/data/shop";
 import { isDemoShop } from "@/lib/theme-store";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
@@ -79,6 +80,10 @@ export async function POST(request: Request) {
     if (existing?.recoveredOrderId) return done; // already became an order
     if (existing) await scoped.checkoutDraft.update({ where: { id: existing.id }, data });
     else await scoped.checkoutDraft.create({ data: { ...data, token, shopId: shop.id } });
+
+    // Someone is at this shop's checkout: a good moment to send the reminders
+    // that have come due, after the answer has gone so nobody waits for it.
+    after(() => remindDueCheckoutsSoon(shop.id).catch((err) => console.error("[checkouts] reminder sweep failed", err)));
   } catch (error) {
     console.error("[checkouts] saving a started checkout failed", error);
   }

@@ -1,3 +1,4 @@
+import { checkoutOptions } from "@/lib/checkout-options";
 import { cache } from "react";
 import type { KitContext, KitMenu, KitProduct, KitProductPage } from "@/lib/themes/kit";
 import { getMenus, headerLinks, type MenuWithItems } from "@/lib/data/menus";
@@ -184,6 +185,7 @@ export async function kitCheckoutTerms(): Promise<KitCheckout> {
     methods: methods.map((m) => ({ value: m.value, label: m.label, hint: m.hint, instructions: m.instructions, redirects: m.redirects })),
     shippingFee: settings.shippingFee,
     freeShippingFrom: settings.freeShippingThreshold ?? null,
+    ...checkoutOptions(settings),
     cities: CITIES.map((c) => c.name),
     initial: customer
       ? {

@@ -67,6 +67,7 @@ export function LoomCheckout({ data, ctx }: { data: Record<string, unknown>; ctx
   const [serverError, setServerError] = useState<string | null>(null);
   // Gift messages and special instructions, carried on the order.
   const [notes, setNotes] = useState("");
+  const [offers, setOffers] = useState(false);
   const [payTouched, setPayTouched] = useState(false);
 
   // Saved quietly as it is filled in, so the shop can see a checkout that
@@ -163,6 +164,7 @@ export function LoomCheckout({ data, ctx }: { data: Record<string, unknown>; ctx
       notes: notes.trim() || undefined,
       discountCode: discount?.code,
       checkoutToken: checkoutToken() || undefined,
+      acceptsMarketing: offers || undefined,
       items: cart.orderItems(),
     }, ctx.base ?? "").then((result) => {
       if (!result.ok) {
@@ -316,7 +318,7 @@ export function LoomCheckout({ data, ctx }: { data: Record<string, unknown>; ctx
               <div className="flex items-center gap-[calc(16*var(--u))] rounded-[calc(24*var(--u))] border border-[#e3e3e3] px-[calc(20*var(--u))] py-[calc(16*var(--u))]">
                 <span className="flex min-w-0 flex-1 flex-col">
                   <span className={cn(T.body3, "text-[#121212]")}>{tx(ctx, "checkout.delivery")}</span>
-                  <span className={cn(T.body6, "text-[#121212]/80")}>{tx(ctx, "checkout.deliveryNote")}</span>
+                  <span className={cn(T.body6, "text-[#121212]/80")}>{terms?.arrives ?? tx(ctx, "checkout.deliveryNote")}</span>
                 </span>
                 <span data-m="checkout-delivery" className={cn(T.body5, "shrink-0 text-[#121212]")}>
                   {delivery === 0 ? tx(ctx, "checkout.freeShipping") : money(delivery, ctx.currency)}
@@ -360,13 +362,22 @@ export function LoomCheckout({ data, ctx }: { data: Record<string, unknown>; ctx
             )}
           </Step>
 
-          <LoomField
-            label={tx(ctx, "checkout.notes")}
-            placeholder={tx(ctx, "checkout.notesHint")}
-            maxLength={1000}
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-          />
+          {terms?.notes !== false && (
+            <LoomField
+              label={tx(ctx, "checkout.notes")}
+              placeholder={tx(ctx, "checkout.notesHint")}
+              maxLength={1000}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
+          )}
+
+          {terms?.marketing && (
+            <label data-m="checkout-offers" className={cn(T.body6, "flex cursor-pointer items-center gap-[calc(12*var(--u))] text-[#121212]/80")}>
+              <input type="checkbox" checked={offers} onChange={(e) => setOffers(e.target.checked)} className="h-[calc(18*var(--u))] w-[calc(18*var(--u))] accent-[#121212]" />
+              {terms.marketing}
+            </label>
+          )}
 
           <div className="flex flex-col gap-[calc(16*var(--u))]">
             {serverError && (

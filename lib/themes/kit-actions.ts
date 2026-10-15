@@ -113,6 +113,8 @@ export async function kitPlaceOrder(payload: {
   discountCode?: string;
   /** This tab's started-checkout token, so the draft is marked recovered. */
   checkoutToken?: string;
+  /** The customer ticked "send me offers". */
+  acceptsMarketing?: boolean;
   items: { productId: string; variantId: string; quantity: number }[];
 }, base = ""): Promise<{ ok: true; orderId: string; accessKey: string; leaving: boolean } | { ok: false; error: string }> {
   try {

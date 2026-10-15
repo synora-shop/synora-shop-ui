@@ -215,6 +215,12 @@ export type KitCheckout = {
   cities: string[];
   /** A signed-in customer's details, to start the form from. */
   initial?: { firstName: string; lastName: string; email: string; phone: string; line1: string; city: string; postcode: string };
+  /** Whether to offer the order notes box. Absent means yes. */
+  notes?: boolean;
+  /** The words of the "send me offers" tick box, or null when the shop does not ask. */
+  marketing?: string | null;
+  /** "Arrives in 2 to 4 days", or null when the shop has not said. */
+  arrives?: string | null;
 };
 
 /** The shop's data every section may read. Handed in, never fetched by a section. */

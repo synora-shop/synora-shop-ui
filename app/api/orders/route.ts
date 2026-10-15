@@ -45,6 +45,8 @@ type CheckoutPayload = {
   discountCode?: string;
   /** The browser's started-checkout token (lib/checkout-draft.ts). */
   checkoutToken?: string;
+  /** Ticked "send me offers" at checkout. Only ever turns it on: an unticked box is not a withdrawal. */
+  acceptsMarketing?: boolean;
   items: CheckoutItem[];
 };
 
@@ -258,12 +260,13 @@ export async function POST(request: Request) {
        */
       const buyer = await tx.customer.upsert({
         where: { shopId_email: { shopId: sid, email: body.customerEmail.toLowerCase() } },
-        update: { name: body.customerName, phone: body.customerPhone },
+        update: { name: body.customerName, phone: body.customerPhone, ...(body.acceptsMarketing === true ? { acceptsMarketing: true } : {}) },
         create: {
           shopId: sid,
           email: body.customerEmail.toLowerCase(),
           name: body.customerName,
           phone: body.customerPhone,
+          acceptsMarketing: body.acceptsMarketing === true,
         },
       });
       const customerId = buyer.id;

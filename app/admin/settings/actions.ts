@@ -25,11 +25,28 @@ export async function updateSettings(formData: FormData) {
   // a shipping fee. The same trap the maintenance toggle and the store name
   // both had: a form that writes every field it knows about, after one of them
   // stopped being its to write.
+  // The delivery estimate: whole days, 0 to 60, the smaller first. One
+  // given alone is both ends; neither means nothing is said at checkout.
+  const day = (key: string) => {
+    const raw = String(formData.get(key) ?? "").trim();
+    const n = Number(raw);
+    return raw && Number.isInteger(n) && n >= 0 && n <= 60 ? n : null;
+  };
+  const a = day("deliveryDaysMin");
+  const b = day("deliveryDaysMax");
+  const [deliveryDaysMin, deliveryDaysMax] = a === null && b === null ? [null, null] : [Math.min(a ?? b!, b ?? a!), Math.max(a ?? b!, b ?? a!)];
+
   const fields = {
     whatsappNumber: String(formData.get("whatsappNumber") || ""),
     contactEmail: String(formData.get("contactEmail") || "") || null,
     shippingFee,
     freeShippingThreshold: freeShippingThresholdRaw ? Number(freeShippingThresholdRaw) : null,
+    checkoutNotes: formData.get("checkoutNotes") === "on",
+    marketingOptIn: formData.get("marketingOptIn") === "on",
+    marketingOptInText: String(formData.get("marketingOptInText") ?? "").trim().slice(0, 160),
+    checkoutReminder: formData.get("checkoutReminder") === "on",
+    deliveryDaysMin,
+    deliveryDaysMax,
   };
 
   await prisma.storeSettings.upsert({

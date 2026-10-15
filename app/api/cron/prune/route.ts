@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { pruneExpiredRows } from "@/lib/retention";
 import { releaseExpiredEverywhere } from "@/lib/payments/reservations";
+import { remindDueCheckouts } from "@/lib/abandoned-reminders";
 
 // Scheduled housekeeping. Wired to a daily cron in vercel.json.
 //
@@ -45,6 +46,16 @@ export async function GET() {
   } catch (err) {
     console.error("[cron/prune] releasing payment reservations failed", err);
     report.paymentReservation = -1;
+  }
+
+  // Checkout reminders a shop's own traffic did not get round to sending
+  // (lib/abandoned-reminders.ts). A shop with no visitors since still has
+  // people waiting to be reminded.
+  try {
+    report.checkoutReminders = await remindDueCheckouts();
+  } catch (err) {
+    console.error("[cron/prune] checkout reminders failed", err);
+    report.checkoutReminders = -1;
   }
 
   const ms = Date.now() - started;

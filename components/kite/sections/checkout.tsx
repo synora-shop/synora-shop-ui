@@ -86,6 +86,7 @@ export function KiteCheckout({ ctx }: { data: Record<string, unknown>; ctx: Kite
   const [serverError, setServerError] = useState<string | null>(null);
   // Gift messages and special instructions, carried on the order.
   const [notes, setNotes] = useState("");
+  const [offers, setOffers] = useState(false);
   const [payTouched, setPayTouched] = useState(false);
 
   // Saved quietly as it is filled in, so the shop can see a checkout that
@@ -157,6 +158,7 @@ export function KiteCheckout({ ctx }: { data: Record<string, unknown>; ctx: Kite
       notes: notes.trim() || undefined,
       discountCode: discount?.code,
       checkoutToken: checkoutToken() || undefined,
+      acceptsMarketing: offers || undefined,
       items: cart.orderItems(),
     }, ctx.base ?? "").then((result) => {
       if (!result.ok) {
@@ -229,7 +231,7 @@ export function KiteCheckout({ ctx }: { data: Record<string, unknown>; ctx: Kite
             <div className={cn("flex items-center justify-between gap-[calc(16*var(--u))] py-[calc(16*var(--u))]", KITE_RULE_TOP, KITE_RULE)}>
               <span className="flex flex-col">
                 <span {...v} className={cn(v.className, "uppercase")}>{ktx(ctx, "checkout.delivery")}</span>
-                <span {...t} className={cn(t.className, "opacity-80")}>{ktx(ctx, "checkout.deliveryNote")}</span>
+                <span {...t} className={cn(t.className, "opacity-80")}>{terms?.arrives ?? ktx(ctx, "checkout.deliveryNote")}</span>
               </span>
               <span {...v} className={cn(v.className, "uppercase")}>{delivery === 0 ? ktx(ctx, "checkout.freeShipping") : kiteMoney(delivery, ctx.currency)}</span>
             </div>
@@ -255,13 +257,22 @@ export function KiteCheckout({ ctx }: { data: Record<string, unknown>; ctx: Kite
             {terms && method?.instructions ? <p {...t} className={cn(t.className, "whitespace-pre-line opacity-80")}>{method.instructions}</p> : null}
           </Step>
 
-          <KiteField
-            label={ktx(ctx, "checkout.notes")}
-            placeholder={ktx(ctx, "checkout.notesHint")}
-            maxLength={1000}
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-          />
+          {terms?.notes !== false && (
+            <KiteField
+              label={ktx(ctx, "checkout.notes")}
+              placeholder={ktx(ctx, "checkout.notesHint")}
+              maxLength={1000}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
+          )}
+
+          {terms?.marketing ? (
+            <label {...t} className={cn(t.className, "flex cursor-pointer items-center gap-[calc(12*var(--u))] opacity-80")}>
+              <input type="checkbox" checked={offers} onChange={(e) => setOffers(e.target.checked)} className="h-[calc(18*var(--u))] w-[calc(18*var(--u))]" />
+              {terms.marketing}
+            </label>
+          ) : null}
 
           <div className="flex flex-col gap-[calc(16*var(--u))]">
             {serverError ? <p role="alert" {...t} className={cn(t.className, "text-[#e2735f]")}>{serverError}</p> : null}

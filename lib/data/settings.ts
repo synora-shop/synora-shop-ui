@@ -19,6 +19,13 @@ const DEFAULTS = {
   easypaisaAccountDetails: null as string | null,
   shippingFee: 250,
   freeShippingThreshold: null as number | null,
+  // Checkout, from the new admin (15 October). Mirrors the columns.
+  checkoutNotes: true,
+  marketingOptIn: false,
+  marketingOptInText: "",
+  checkoutReminder: false,
+  deliveryDaysMin: null as number | null,
+  deliveryDaysMax: null as number | null,
   // Cash on delivery, which every shop can always take. Mirrors the column
   // default; a shop that has never saved settings still has a checkout.
   enabledPaymentMethods: ["COD"] as string[],

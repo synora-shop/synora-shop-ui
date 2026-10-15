@@ -1339,6 +1339,23 @@ model StoreSettings {
   /// IANA zone. Orders and analytics are recorded against this, so changing it
   /// changes which day a sale belongs to.
   timeZone      String  @default("Asia/Karachi")
+  // --- Checkout, from the new admin (15 October) -----------------------
+  /// The order notes box at checkout ("gift messages and special
+  /// instructions"). On by default: every checkout had it already.
+  checkoutNotes      Boolean @default(true)
+  /// Ask customers if they want offers: a tick box at checkout, unticked to
+  /// start. Off by default; a shop turns it on. What it ticks is
+  /// Customer.acceptsMarketing.
+  marketingOptIn     Boolean @default(false)
+  /// The words beside that box. Empty means ours: "Send me new arrivals and
+  /// sale news".
+  marketingOptInText String  @default("")
+  /// Email someone who left at checkout, once, an hour after they stopped.
+  checkoutReminder   Boolean @default(false)
+  /// "Arrives in 2 to 4 days" at checkout. Both empty means nothing is said.
+  deliveryDaysMin    Int?
+  deliveryDaysMax    Int?
+
   shopFilterBar Boolean @default(true)
 
   @@unique([shopId])
