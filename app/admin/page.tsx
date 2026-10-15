@@ -60,7 +60,7 @@ export default async function AdminHomePage() {
     { n: pending, text: pending === 1 ? "order to fulfil" : "orders to fulfil", href: "/admin/orders", icon: PackageCheck, cls: "bg-[#6666ff] text-white", sub: "text-white/75" },
     { n: enquiries, text: enquiries === 1 ? "enquiry to answer" : "enquiries to answer", href: "/admin/enquiries", icon: MessageSquare, cls: "bg-[#b7b9ff] text-[#0a0a0a]", sub: "text-[#0a0a0a]/60" },
     { n: drafts, text: drafts === 1 ? "product still a draft" : "products still drafts", href: "/admin/drafts", icon: FilePen, cls: "bg-[#c8e7ff] text-[#0a0a0a]", sub: "text-[#0a0a0a]/60" },
-    { n: lowStock, text: "sizes low or sold out", href: "/admin/products", icon: AlertTriangle, cls: "bg-[#b8efd6] text-[#0a0a0a]", sub: "text-[#0a0a0a]/60" },
+    { n: lowStock, text: "sizes low or sold out", href: "/admin/products/inventory?sort=left", icon: AlertTriangle, cls: "bg-[#b8efd6] text-[#0a0a0a]", sub: "text-[#0a0a0a]/60" },
   ];
 
   const revenue = changeText(current.revenue, previous.revenue);

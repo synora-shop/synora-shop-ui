@@ -160,6 +160,7 @@ export const NAV_SECTIONS: readonly NavSection[] = [
     group: 1,
     tabs: [
       { href: "/admin/products", label: "Products" },
+      { href: "/admin/products/inventory", label: "Inventory" },
       { href: "/admin/drafts", label: "Drafts" },
       { href: "/admin/categories", label: "Collections" },
     ],

@@ -133,8 +133,8 @@ export default async function AnalyticsPage(props: PageProps<"/admin/analytics">
         items={[
           { label: "Profit", value: money(current.profit), ...delta(current.profit, previous.profit) },
           { label: "New customers", value: String(current.customers), ...delta(current.customers, previous.customers), href: "/admin/customers" },
-          { label: "Out of stock", value: String(data.stock.out), href: "/admin/products" },
-          { label: `Low stock (under ${settings.lowStockThreshold})`, value: String(data.stock.low), href: "/admin/products" },
+          { label: "Out of stock", value: String(data.stock.out), href: "/admin/products/inventory?view=out" },
+          { label: `Low stock (under ${settings.lowStockThreshold})`, value: String(data.stock.low), href: "/admin/products/inventory?view=low" },
         ]}
       />
       <div className="grid gap-5 lg:grid-cols-3">

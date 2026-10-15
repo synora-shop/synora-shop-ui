@@ -324,3 +324,22 @@ export async function permanentlyDeleteProduct(formData: FormData) {
 
 // Image upload moved to lib/actions/media.ts (uploadImage) — shared across
 // every admin image field, not just products.
+
+/**
+ * One size's stock, set from the Inventory screen (new admin, 15 October).
+ * A whole number from 0 to 999,999; the shop's catalogue cache is dropped so
+ * the storefront's "sold out" follows at once.
+ */
+export async function setVariantStock(id: string, stock: number): Promise<{ ok: true } | { ok: false; error: string }> {
+  await requireRole("STAFF");
+  if (!Number.isInteger(stock) || stock < 0 || stock > 999_999) return { ok: false, error: "Stock has to be a whole number, 0 or more." };
+  const scoped = await db();
+  const variant = await scoped.productVariant.findFirst({ where: { id }, select: { id: true, productId: true } });
+  if (!variant) return { ok: false, error: "That size no longer exists." };
+  await scoped.productVariant.update({ where: { id }, data: { stock } });
+  await dropCatalog();
+  revalidatePath("/admin/products/inventory");
+  revalidatePath(`/admin/products/${variant.productId}`);
+  revalidatePath("/admin/products");
+  return { ok: true };
+}
