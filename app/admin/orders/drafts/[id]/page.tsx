@@ -13,7 +13,17 @@ export default async function DraftOrderPage(props: { params: Promise<{ id: stri
   const draft = await (await db()).draftOrder.findFirst({ where: { id } });
   if (!draft) notFound();
   // Once it is an order, the order is the page.
-  if (draft.status === "COMPLETED" && draft.orderId) redirect(`/admin/orders/${draft.orderId}`);
+  if (draft.status === "COMPLETED") {
+    const order = draft.orderId ? await (await db()).order.findFirst({ where: { id: draft.orderId }, select: { id: true } }) : null;
+    if (order) redirect(`/admin/orders/${order.id}`);
+    // Its order was deleted for good: nothing to edit or send any more.
+    return (
+      <div className="space-y-3 rounded-2xl bg-white p-8 text-center ring-1 ring-[#0a0a0a]/[0.07]">
+        <p className="text-[16px] font-semibold">Draft D{draft.number} became order #{draft.orderId}, which was later deleted for good.</p>
+        <p className="text-[14px] text-[#0a0a0a]/55">To sell the same again, create a new draft.</p>
+      </div>
+    );
+  }
 
   return (
     <DraftOrderEditor

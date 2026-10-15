@@ -20,6 +20,11 @@ export default async function DraftOrdersPage() {
     getCurrency(),
   ]);
   const money = (n: number) => formatMoney(n, currency);
+  // An order made from a draft can later be deleted for good from the Bin;
+  // its draft then says so instead of linking to nothing.
+  const made = new Set(
+    (await (await db()).order.findMany({ where: { id: { in: drafts.flatMap((d) => (d.orderId ? [d.orderId] : [])) } }, select: { id: true } })).map((o) => o.id)
+  );
 
   return (
     <div className="space-y-5">
@@ -49,7 +54,7 @@ export default async function DraftOrdersPage() {
               return (
                 <Link
                   key={d.id}
-                  href={d.status === "COMPLETED" && d.orderId ? `/admin/orders/${d.orderId}` : `/admin/orders/drafts/${d.id}`}
+                  href={d.status === "COMPLETED" && d.orderId && made.has(d.orderId) ? `/admin/orders/${d.orderId}` : `/admin/orders/drafts/${d.id}`}
                   className={`flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 transition-colors hover:bg-[#fafafa] ${GRID}`}
                 >
                   <b className="font-semibold">#{draftLabel(d.number)}</b>
@@ -59,7 +64,7 @@ export default async function DraftOrdersPage() {
                   <b className="font-semibold tabular-nums lg:text-right">{money(total)}</b>
                   <span>
                     {d.status === "COMPLETED" ? (
-                      <StatePill tone="good">Order #{d.orderId}</StatePill>
+                      d.orderId && made.has(d.orderId) ? <StatePill tone="good">Order #{d.orderId}</StatePill> : <StatePill tone="off">Order deleted</StatePill>
                     ) : d.status === "SENT" ? (
                       <StatePill tone="info">Sent to confirm</StatePill>
                     ) : (

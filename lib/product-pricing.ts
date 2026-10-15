@@ -1,6 +1,6 @@
 // Pure pricing helpers with zero server-only dependencies (no Prisma import) — safe to import
 // from Client Components. lib/data/products.ts re-exports these for existing server-side
-// callers; client components (product-list.tsx, bin-product-list.tsx, etc.) should import
+// callers; client components (product-list.tsx, bin-list.tsx, etc.) should import
 // straight from here so their bundle never drags in `pg`/Prisma.
 
 /** Effective price is salePrice if set, otherwise basePrice. */

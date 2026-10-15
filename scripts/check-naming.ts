@@ -575,7 +575,7 @@ check(
 
 // An empty list is a sentence in a box on some screens and a proper empty
 // state on others; the Bin was the last one telling the story in a grey line.
-for (const f of ["components/admin/bin-product-list.tsx", "components/admin/bin-order-list.tsx"]) {
+for (const f of ["components/admin/bin-list.tsx"]) {
   check(`${f.split("/").pop()} has a real empty state`, /<EmptyState/.test(readFileSync(join(ROOT, f), "utf8")));
 }
 
