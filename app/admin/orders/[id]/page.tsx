@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Check, ChevronLeft, ChevronRight, Mail, MessageCircle, NotebookText, Phone, User } from "lucide-react";
+import { ArrowLeft, Check, ChevronLeft, ChevronRight, Mail, MessageCircle, NotebookText, Phone, Printer, Truck, User } from "lucide-react";
 import { PageCrumb } from "@/components/admin/page-crumb";
 import { Thumb } from "@/components/admin/product-elements";
 import { DeleteOrderButton } from "@/components/admin/delete-order-button";
@@ -9,7 +9,7 @@ import { db } from "@/lib/data/shop";
 import { getCurrency, getStoreSettings } from "@/lib/data/settings";
 import { paymentLabel, statusLabel } from "@/lib/order-status-style";
 import { formatMoney } from "@/lib/money";
-import { updateOrderStatus, updatePaymentStatus } from "../actions";
+import { addOrderNote, updateOrderStatus, updatePaymentStatus } from "../actions";
 
 export const dynamic = "force-dynamic";
 
@@ -45,7 +45,10 @@ export default async function AdminOrderDetailPage(props: PageProps<"/admin/orde
   const [order, settings] = await Promise.all([
     scoped.order.findUnique({
       where: { id },
-      include: { items: { include: { product: { select: { id: true, images: true } } } } },
+      include: {
+        items: { include: { product: { select: { id: true, images: true } } } },
+        events: { orderBy: { createdAt: "desc" }, take: 50 },
+      },
     }),
     getStoreSettings(),
   ]);
@@ -70,7 +73,7 @@ export default async function AdminOrderDetailPage(props: PageProps<"/admin/orde
   const store = settings.storeName || "our store";
   const messages = [
     ["Confirm", `Assalam o Alaikum ${first}, this is ${store}. Can you confirm your order #${order.id} of ${money(order.total)}? Reply YES and we will send it today.`],
-    ["On its way", `${first}, your order #${order.id} from ${store} is on its way.`],
+    ["On its way", `${first}, your order #${order.id} from ${store} is on its way${order.courier ? ` with ${order.courier}` : ""}${order.trackingNumber ? `. Tracking number: ${order.trackingNumber}` : ""}.`],
     ["Thank you", `Thank you for shopping with ${store}, ${first}. We hope you love it.`],
   ] as const;
 
@@ -90,6 +93,9 @@ export default async function AdminOrderDetailPage(props: PageProps<"/admin/orde
           <p className="mt-0.5 text-[13.5px] text-[#0a0a0a]/55">Placed {placed} · {itemCount} item{itemCount === 1 ? "" : "s"}</p>
         </div>
         <div className="flex flex-shrink-0 items-center gap-2">
+          <a href={`/admin/slips?ids=${order.id}`} target="_blank" rel="noreferrer" className="inline-flex h-9 items-center gap-1.5 rounded-[10px] bg-white px-3.5 text-[13.5px] font-semibold ring-1 ring-[#0a0a0a]/12 hover:bg-[#f5f5f5]">
+            <Printer className="h-4 w-4" /> Print slip
+          </a>
           <DeleteOrderButton id={order.id} />
           <span className="flex">
             <Link aria-disabled={!newer} href={newer ? `/admin/orders/${newer.id}` : "#"} title="Newer order" aria-label="Newer order" className={`grid h-9 w-9 place-items-center rounded-l-[10px] bg-white ring-1 ring-[#0a0a0a]/12 ${newer ? "hover:bg-[#f5f5f5]" : "pointer-events-none opacity-35"}`}>
@@ -123,7 +129,17 @@ export default async function AdminOrderDetailPage(props: PageProps<"/admin/orde
               <form action={updateOrderStatus} className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[#0a0a0a]/[0.07] pt-4">
                 <input type="hidden" name="id" value={order.id} />
                 <input type="hidden" name="orderStatus" value={next.to} />
-                <p className="text-[13.5px] text-[#0a0a0a]/60">{next.hint}</p>
+                {next.to === "SHIPPED" ? (
+                  <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+                    <input name="courier" defaultValue={order.courier ?? ""} placeholder="Courier, e.g. TCS" aria-label="Courier" maxLength={60} className="h-10 w-40 rounded-[10px] bg-[#f5f5f5] px-3 text-[14px] outline-none ring-1 ring-[#0a0a0a]/10 focus:ring-2 focus:ring-[#0a0a0a]" />
+                    <input name="trackingNumber" defaultValue={order.trackingNumber ?? ""} placeholder="Tracking number" aria-label="Tracking number" maxLength={80} className="h-10 min-w-0 flex-1 rounded-[10px] bg-[#f5f5f5] px-3 text-[14px] outline-none ring-1 ring-[#0a0a0a]/10 focus:ring-2 focus:ring-[#0a0a0a]" />
+                    <label className="flex items-center gap-2 text-[13px] text-[#0a0a0a]/70">
+                      <input type="checkbox" name="notify" defaultChecked className="h-4 w-4 accent-[#0a0a0a]" /> Email the customer
+                    </label>
+                  </div>
+                ) : (
+                  <p className="text-[13.5px] text-[#0a0a0a]/60">{next.hint}</p>
+                )}
                 <button type="submit" className="inline-flex h-10 items-center gap-1.5 rounded-[10px] bg-[#0a0a0a] px-4 text-[13.5px] font-semibold text-white hover:bg-[#262626]">
                   {next.label} <ChevronRight className="h-4 w-4" />
                 </button>
@@ -132,6 +148,13 @@ export default async function AdminOrderDetailPage(props: PageProps<"/admin/orde
           </>
         )}
       </section>
+
+      {(order.courier || order.trackingNumber) && (
+        <p className="-mt-2 flex items-center gap-2 text-[13.5px] text-[#0a0a0a]/65">
+          <Truck className="h-4 w-4" /> With {order.courier || "the courier"}
+          {order.trackingNumber && <> · tracking <b className="font-mono font-semibold text-[#0a0a0a]">{order.trackingNumber}</b></>}
+        </p>
+      )}
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_21rem]">
         <div className="space-y-5">
@@ -171,6 +194,29 @@ export default async function AdminOrderDetailPage(props: PageProps<"/admin/orde
             </div>
             <p className="mt-1 text-[12.5px] text-white/45">From what each product cost when the order was placed, so it stays right if you change a price later.</p>
           </section>
+
+          <Panel title="Timeline">
+            <form action={addOrderNote} className="mb-4 flex gap-2">
+              <input type="hidden" name="id" value={order.id} />
+              <input name="note" placeholder="Leave a note for your team…" aria-label="Note for your team" maxLength={1000} className="h-10 min-w-0 flex-1 rounded-[10px] bg-[#f5f5f5] px-3.5 text-[14px] outline-none ring-1 ring-[#0a0a0a]/10 focus:ring-2 focus:ring-[#0a0a0a]" />
+              <button type="submit" className="rounded-[10px] bg-[#0a0a0a] px-4 text-[13px] font-semibold text-white">Add</button>
+            </form>
+            <ol className="relative ml-1.5 flex flex-col gap-4 border-l border-[#0a0a0a]/10 pl-5">
+              {[
+                ...order.events.map((e) => ({ id: e.id, kind: e.kind, text: e.text, by: e.by, at: e.createdAt })),
+                { id: "placed", kind: "placed", text: `Order placed by ${order.customerName}.`, by: "", at: order.createdAt },
+              ].map((e) => (
+                <li key={e.id} className="relative text-[14px]">
+                  <span className={`absolute -left-[25px] top-1.5 h-2 w-2 rounded-full ${e.kind === "note" ? "bg-[#6666ff]" : "bg-[#0a0a0a]"}`} />
+                  <p className={e.kind === "note" ? "rounded-lg bg-[#f5f5ff] px-3 py-2" : ""}>{e.text}</p>
+                  <p className="mt-0.5 text-[12.5px] text-[#0a0a0a]/45">
+                    {new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: settings.timeZone }).format(e.at)}
+                    {e.by ? ` · ${e.by}` : ""}
+                  </p>
+                </li>
+              ))}
+            </ol>
+          </Panel>
         </div>
 
         <div className="space-y-5">

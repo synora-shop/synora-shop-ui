@@ -10,12 +10,20 @@ import { exportOrdersCsv, type ExportableOrder } from "@/lib/csv/orders";
  * the panel, and a file that quietly includes them would not add up against
  * the screen it came from.
  */
-export async function GET() {
+export async function GET(request: Request) {
   await requireRole("STAFF");
+
+  // ?ids=A1B2C,D3E4F exports just those orders: the orders list's bulk bar
+  // (new admin, 15 October). Without it, every order, as before.
+  const ids = (new URL(request.url).searchParams.get("ids") ?? "")
+    .split(",")
+    .map((x) => x.trim())
+    .filter((x) => /^[\w-]{1,40}$/.test(x))
+    .slice(0, 500);
 
   const [rows, currency] = await Promise.all([
     (await db()).order.findMany({
-      where: { deletedAt: null },
+      where: { deletedAt: null, ...(ids.length ? { id: { in: ids } } : {}) },
       orderBy: { createdAt: "desc" },
       include: { items: true },
     }),

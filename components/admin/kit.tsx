@@ -163,7 +163,7 @@ export function changeText(now: number, before: number, unit = "on the 30 days b
  * server page that imports a plain value from a client file gets a reference
  * to it, not the string.
  */
-export const ORDER_GRID = "lg:grid lg:grid-cols-[6.5rem_minmax(0,1.4fr)_8rem_minmax(0,1fr)_7.5rem_7.5rem] lg:items-center";
+export const ORDER_GRID = "lg:grid lg:grid-cols-[1.25rem_6.5rem_minmax(0,1.4fr)_8rem_minmax(0,1fr)_7.5rem_7.5rem] lg:items-center";
 
 /** Each order stage's colour, and how its money stands, in a merchant's words. */
 export const STAGE_TONE: Record<string, PillTone> = {

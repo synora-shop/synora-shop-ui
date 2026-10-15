@@ -6,7 +6,7 @@ import { db } from "@/lib/data/shop";
 import { getStoreSettings } from "@/lib/data/settings";
 import { formatRelativeTime } from "@/lib/format-relative-time";
 import { OrderList } from "@/components/admin/order-list";
-import { HEAD_PAD, ORDER_GRID } from "@/components/admin/kit";
+
 import { PlainHeading, SortHeading } from "@/components/admin/sort-heading";
 import { FilterBar, type FilterGroup } from "@/components/admin/filter-bar";
 import { activeCount, keepKnown, readFilter, whereIn } from "@/lib/filters";
@@ -168,14 +168,14 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
       <OrderList
         filtered={q.length > 0 || activeCount({ status }) > 0}
         head={
-          <div role="row" className={`hidden gap-x-4 bg-[#0a0a0a] py-1.5 lg:grid ${HEAD_PAD} ${ORDER_GRID}`}>
+          <>
             {heading("Order", "id", "id-desc")}
             {heading("Customer", "customer", "customer-desc")}
             {heading("Placed", "oldest", "newest")}
             <PlainHeading>Payment</PlainHeading>
             {heading("Total", "total", "total-desc", "right")}
             {heading("Stage", "status", "status-desc")}
-          </div>
+          </>
         }
         orders={orders.map((o) => ({
           ...o,

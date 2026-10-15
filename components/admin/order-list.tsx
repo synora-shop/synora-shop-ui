@@ -2,13 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import type { ReactNode } from "react";
-import { NotebookText, ShoppingBag, Trash2 } from "lucide-react";
+import { useState, useTransition, type ReactNode } from "react";
+import { Download, NotebookText, PackageCheck, PhoneCall, Printer, ShoppingBag, Trash2 } from "lucide-react";
+import { BarButton, BulkBar } from "@/components/admin/bulk-bar";
 import { ListEmpty } from "@/components/admin/list-empty";
 import { ORDER_GRID, STAGE_TONE, StatePill, paymentState } from "@/components/admin/kit";
 import { useServerRows } from "@/components/ui/use-server-rows";
 import { paymentLabel, statusLabel } from "@/lib/order-status-style";
-import { moveOrderToBin } from "@/app/admin/orders/actions";
+import { bulkOrderStage, moveOrderToBin } from "@/app/admin/orders/actions";
 import { SwipeRow } from "@/components/ui/swipe-row";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast";
@@ -47,6 +48,33 @@ export function OrderList({ orders, filtered = false, head }: { orders: OrderRow
   const [rows, setRows] = useServerRows(orders);
   const { confirm, dialog } = useConfirm();
   const toast = useToast();
+  // Ticked orders, and what can be done to them together (new admin): move
+  // them on a stage, print their packing slips, or export just them.
+  const [picked, setPicked] = useState<Set<string>>(new Set());
+  const [running, startBulk] = useTransition();
+  const selected = rows.filter((o) => picked.has(o.id)).map((o) => o.id);
+  const allPicked = rows.length > 0 && selected.length === rows.length;
+  const toggle = (id: string) =>
+    setPicked((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
+  function moveAll(to: string, verb: string) {
+    const ids = selected;
+    startBulk(async () => {
+      const result = await bulkOrderStage(ids, to);
+      if (!result.ok) {
+        toast.error(result.error, { blocking: true });
+        return;
+      }
+      setPicked(new Set());
+      toast.success(result.changed === 0 ? "Those were already there." : `${result.changed} order${result.changed === 1 ? "" : "s"} ${verb}.`);
+      router.refresh();
+    });
+  }
 
   async function handleDelete(id: string) {
     const ok = await confirm({
@@ -83,7 +111,18 @@ export function OrderList({ orders, filtered = false, head }: { orders: OrderRow
     <>
       {dialog}
       <section className="overflow-hidden rounded-2xl bg-white ring-1 ring-[#0a0a0a]/[0.07]">
-        {head}
+        {head && (
+          <div role="row" className={`hidden gap-x-4 bg-[#0a0a0a] py-1.5 pl-4 pr-16 lg:grid ${ORDER_GRID}`}>
+            <input
+              type="checkbox"
+              aria-label="Select every order on this page"
+              checked={allPicked}
+              onChange={() => setPicked(allPicked ? new Set() : new Set(rows.map((o) => o.id)))}
+              className="h-4 w-4 accent-white"
+            />
+            {head}
+          </div>
+        )}
         <div className="divide-y divide-[#0a0a0a]/[0.06]">
           {rows.map((o) => {
             const units = o.items.reduce((n, i) => n + i.quantity, 0);
@@ -91,7 +130,14 @@ export function OrderList({ orders, filtered = false, head }: { orders: OrderRow
             const pay = paymentState(o.paymentMethod, o.paymentStatus);
             return (
               <SwipeRow key={o.id} actions={[{ key: "delete", label: "Delete", icon: Trash2, tone: "danger", onClick: () => handleDelete(o.id) }]}>
-                <div className={`group relative flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 transition-colors hover:bg-[#fafafa] ${ORDER_GRID}`}>
+                <div className={`group relative flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 transition-colors ${picked.has(o.id) ? "bg-[#f5f5ff]" : "hover:bg-[#fafafa]"} ${ORDER_GRID}`}>
+                  <input
+                    type="checkbox"
+                    aria-label={`Select order ${o.id}`}
+                    checked={picked.has(o.id)}
+                    onChange={() => toggle(o.id)}
+                    className="relative z-10 h-4 w-4 accent-[#0a0a0a]"
+                  />
                   <Link href={`/admin/orders/${o.id}`} className="flex items-center gap-1.5 font-mono text-[13.5px] font-semibold text-[#0a0a0a] underline-offset-4 after:absolute after:inset-0 hover:underline">
                     #{o.id}
                     {o.notes && <NotebookText aria-label="Has a note" className="h-3.5 w-3.5 text-[#b45309]" />}
@@ -116,6 +162,32 @@ export function OrderList({ orders, filtered = false, head }: { orders: OrderRow
           })}
         </div>
       </section>
+      {selected.length > 0 && (
+        <BulkBar count={selected.length} noun="order" onClear={() => setPicked(new Set())}>
+          <BarButton disabled={running} onClick={() => moveAll("CONFIRMED", "confirmed")}>
+            <PhoneCall /> Confirm
+          </BarButton>
+          <BarButton disabled={running} onClick={() => moveAll("PACKED", "marked packed")}>
+            <PackageCheck /> Mark packed
+          </BarButton>
+          <BarButton onClick={() => window.open(`/admin/slips?ids=${selected.join(",")}`, "_blank", "noopener")}>
+            <Printer /> Packing slips
+          </BarButton>
+          <BarButton onClick={() => download(`/admin/orders/export?ids=${selected.join(",")}`)}>
+            <Download /> Export CSV
+          </BarButton>
+        </BulkBar>
+      )}
     </>
   );
+}
+
+/** A file, not a page: a link the browser follows to save it. */
+function download(url: string) {
+  const a = document.createElement("a");
+  a.href = url;
+  a.rel = "noopener";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
 }

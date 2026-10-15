@@ -369,3 +369,22 @@ export async function sendEnquiryQuoteEmail(
   }
   await deliver({ from: FROM, to, replyTo: q.replyTo, subject: `Your quote from ${q.shopName}`, text });
 }
+
+/** "On its way", with the courier and its tracking number. Sent only when the merchant asks. */
+export async function sendOrderShippedEmail(
+  to: string,
+  o: { shopName: string; name: string; orderId: string; courier: string; tracking: string; link: string; replyTo?: string }
+) {
+  const hello = o.name ? `Hi ${o.name.split(" ")[0]},` : "Hi,";
+  const text =
+    `${hello}\n\nYour order ${o.orderId} from ${o.shopName} is on its way` +
+    (o.courier ? ` with ${o.courier}` : "") +
+    "." +
+    (o.tracking ? `\n\nTracking number: ${o.tracking}` : "") +
+    `\n\nSee your order:\n${o.link}\n\n${o.shopName}`;
+  if (!resend) {
+    console.log(`[email] Resend not configured, shipped email for ${to}:\n${text}`);
+    return;
+  }
+  await deliver({ from: FROM, to, replyTo: o.replyTo, subject: `Your order ${o.orderId} is on its way`, text });
+}
