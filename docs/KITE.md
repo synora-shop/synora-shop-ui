@@ -71,6 +71,14 @@ two stand-in fonts; every box, photo, crop and rule is within a pixel):
 
 The sweep is clear at all twenty widths, 320 to 2560.
 
+## The demo photographs (replaced 16 October)
+
+The file's photographs are no longer served. Black leather shoots from
+Unsplash sit at the same `/kite/<hash>.png` addresses, cropped to each slot's
+shape; `docs/KITE-PHOTOS.md` lists every one with its photographer and
+licence. A pixel diff against the Figma file now differs inside the photos
+by design; the layout, crops and type are unchanged.
+
 ## A shop's own photographs (decided 9 October)
 
 The file shows a slice of many photographs (the Paris strip, 525x200, shows
