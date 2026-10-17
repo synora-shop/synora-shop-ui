@@ -44,7 +44,7 @@ export function ViewToggle({
   }
 
   return (
-    <div className="flex flex-shrink-0 items-center gap-0.5 rounded-pill border border-control-line bg-control p-1">
+    <div className="flex h-9 flex-shrink-0 items-center gap-0.5 rounded-[10px] bg-white px-1 ring-1 ring-inset ring-[#0a0a0a]/[0.09]">
       {([
         ["list", Rows3, "List view"],
         ["grid", LayoutGrid, "Grid view"],
@@ -56,10 +56,10 @@ export function ViewToggle({
           title={label}
           aria-current={current === kind ? "true" : undefined}
           className={cn(
-            "flex h-8 w-8 items-center justify-center rounded-pill transition-colors",
+            "flex h-7 w-7 items-center justify-center rounded-[7px] transition-colors",
             current === kind
-              ? "bg-brand-500 text-white"
-              : "text-control-ink hover:bg-panel hover:text-ink"
+              ? "bg-[#0a0a0a] text-white"
+              : "text-[#0a0a0a]/55 hover:text-[#0a0a0a]"
           )}
         >
           <Icon className="h-[var(--icon-box)] w-[var(--icon-box)]" />

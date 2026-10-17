@@ -27,7 +27,7 @@ export default async function DraftOrdersPage() {
   );
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <PageHeader
         title="Draft orders"
         description="Orders you build yourself, for a customer who messaged or called."

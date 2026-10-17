@@ -35,7 +35,7 @@ export default async function CustomerPage(props: PageProps<"/admin/customers/[i
   const initials = customer.name.trim().split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <PageCrumb label={customer.name} />
       <Link href="/admin/customers" className="-mb-2 inline-flex items-center gap-1.5 self-start text-[13.5px] font-semibold text-[#0a0a0a]/55 hover:text-[#0a0a0a]">
         <ArrowLeft className="h-4 w-4" /> Customers
@@ -63,7 +63,7 @@ export default async function CustomerPage(props: PageProps<"/admin/customers/[i
       </section>
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]">
-        <div className="space-y-5">
+        <div className="space-y-4">
         <Panel
           title={`Orders · ${customer.orders.length}`}
           pad={false}
@@ -94,7 +94,7 @@ export default async function CustomerPage(props: PageProps<"/admin/customers/[i
         </Panel>
         </div>
 
-        <div className="space-y-5">
+        <div className="space-y-4">
           <Panel title="Reach them">
             <div className="flex flex-col gap-2 text-[13.5px]">
               {/* Mailing a customer is the most common next action after

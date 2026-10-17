@@ -4,7 +4,6 @@ import { shopSession } from "@/lib/auth-guard";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { AdminTopbar, type Alert } from "@/components/admin/admin-topbar";
 import { EditorBar } from "@/components/admin/editor-bar";
-import { RefreshButton } from "@/components/admin/refresh-button";
 import { getStoreSettings } from "@/lib/data/settings";
 import { canonicalUrl, currentShop, db } from "@/lib/data/shop";
 import { registryBusinessType } from "@/lib/themes/business-type";
@@ -67,24 +66,18 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
           isLive={isLive && me.shop.status !== "PAUSED" && me.shop.status !== "CLOSED"}
           badges={badges}
           hasOtherStores={(session.user.shops?.length ?? 0) > 1}
+          userEmail={me.email}
+          storeUrl={storeUrl}
+          registryType={type}
+          storeStatus={me.shop.status}
         />
         <div className="min-w-0 flex-1 lg:py-2 lg:pr-2">
           <div className="relative h-full overflow-y-auto overscroll-contain bg-canvas lg:rounded-[1.25rem]">
-            <AdminTopbar
-              storeName={me.shop.name}
-              isLive={isLive}
-              userEmail={me.email}
-              storeUrl={storeUrl}
-              registryType={type}
-              storeStatus={me.shop.status}
-              hasOtherStores={(session.user.shops?.length ?? 0) > 1}
-              alerts={alerts.map(({ label, href }) => ({ label, href }))}
-            />
+            <AdminTopbar alerts={alerts.map(({ label, href }) => ({ label, href }))} />
             <EditorBar />
-            <main className="mx-auto flex max-w-[76rem] flex-col gap-5 p-4 sm:p-6 lg:p-8">{children}</main>
+            <main className="mx-auto flex max-w-[80rem] flex-col gap-4 px-4 pb-10 pt-4 sm:px-6 lg:px-8 lg:pt-5">{children}</main>
           </div>
         </div>
-        <RefreshButton />
       </div>
     </CurrencyProvider>
   );

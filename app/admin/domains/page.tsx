@@ -28,7 +28,7 @@ export default async function DomainsPage() {
 
   return (
     <SettingsFrame>
-    <div className="space-y-5">
+    <div className="space-y-4">
       <PageHeader
         title="Domains"
         description="Your free address always works. Add your own to use it instead."

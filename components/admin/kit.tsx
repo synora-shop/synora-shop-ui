@@ -77,7 +77,7 @@ export function Figures({ items }: { items: Figure[] }) {
           <>
             <div className="min-w-0">
               <p className={cn("text-[12.5px] font-medium", lead ? "text-white/55" : "text-[#0a0a0a]/55")}>{f.label}</p>
-              <p className="mt-1 truncate text-[20px] font-semibold tracking-[-0.02em]">{f.value}</p>
+              <p className="mt-0.5 truncate text-[20px] font-semibold leading-tight tracking-[-0.02em]">{f.value}</p>
               {f.delta && (
                 <p className={cn("mt-0.5 text-[12px] font-semibold", f.down ? (lead ? "text-[#ffb4a1]" : "text-[#c2410c]") : lead ? "text-[#b8efd6]" : "text-[#1d7a52]")}>{f.delta}</p>
               )}
@@ -85,7 +85,7 @@ export function Figures({ items }: { items: Figure[] }) {
             {f.spark && f.spark.length > 1 && <Spark points={f.spark} down={f.down} light={lead} />}
           </>
         );
-        const cls = cn("flex items-end justify-between gap-3 rounded-2xl px-5 py-4", lead ? "bg-[#0a0a0a] text-white" : "bg-white text-[#0a0a0a] ring-1 ring-[#0a0a0a]/[0.07]", f.href && "transition-shadow hover:shadow-[0_12px_30px_-18px_rgba(0,0,0,0.45)]");
+        const cls = cn("flex items-end justify-between gap-3 rounded-2xl px-4 py-3", lead ? "bg-[#0a0a0a] text-white" : "bg-white text-[#0a0a0a] ring-1 ring-[#0a0a0a]/[0.07]", f.href && "transition-shadow hover:shadow-[0_12px_30px_-18px_rgba(0,0,0,0.45)]");
         return f.href ? (
           <Link key={f.label} href={f.href} className={cls}>{body}</Link>
         ) : (

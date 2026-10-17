@@ -108,7 +108,7 @@ export default async function AdminDraftsPage(props: PageProps<"/admin/drafts">)
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <PageHeader
         title="Drafts"
         description={`${total === 1 ? "One product is" : `${total} products are`} started and not yet published. Tick any of them and press Publish to put them out together.`}

@@ -99,7 +99,7 @@ export default async function InventoryPage(props: PageProps<"/admin/products/in
   );
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <PageHeader title="Inventory" description="Every size of every product, and how many are left." />
 
       {counts.all > 0 && (

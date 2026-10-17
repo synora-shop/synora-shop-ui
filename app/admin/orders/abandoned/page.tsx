@@ -44,7 +44,7 @@ export default async function AbandonedCheckoutsPage() {
   const top = Object.entries(steps).sort((a, b) => b[1] - a[1])[0]?.[0];
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <PageHeader title="Abandoned checkouts" description="People who reached checkout and stopped. A friendly reminder brings many back." />
       <Figures
         items={[

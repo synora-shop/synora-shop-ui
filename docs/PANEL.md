@@ -69,6 +69,16 @@ Saving a product updates its variants in place (by id) and keeps a
 size-only variant. It used to delete and recreate them all, which reset
 every per-variant setting the form does not show; `check:csv` guards it.
 
+### Tightened (17 October 2026)
+
+- **Rail:** a section's first screen is the section itself, so it is not listed again beneath it (Orders opens the orders list; Draft orders, Abandoned checkouts and Enquiries hang below). Rows are 32px with 1px between them, and the group gaps are half what they were.
+- **You live in the rail:** the signed-in person sits at its foot, and their menu (store state, preview, account, business type, switch store, sign out) opens from there. The top bar has no avatar any more.
+- **Top bar:** 48px, three things only: Create, alerts, shortcuts. The floating refresh button is gone.
+- **One button:** `buttonClass` is the new admin's 10px-radius button, black for the action and white with a hairline otherwise. Import is the arrow coming in, Export the arrow going out, and on phones they read just "Import" and "Export".
+- **Page heading:** 20px title, one short line under it, actions level with them. List tools (search, filters, how many, view) sit straight on the page with no card around them.
+- **Orders:** the six stages are one connected strip instead of six cards.
+- **Discounts:** Create discount sits beside the title.
+
 ## Where this comes from
 
 | File | What it is |

@@ -36,7 +36,7 @@ export default async function PageDraftsPage() {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <PageHeader
         title="Page drafts"
         description={`${drafts.length === 1 ? "One page is" : `${drafts.length} pages are`} written and not yet published. Tick any of them and press Publish to put them out together.`}

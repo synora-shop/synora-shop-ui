@@ -9,7 +9,7 @@ import {
   type DiscountInput,
 } from "@/app/admin/discounts/actions";
 import { codeProblem, describeDiscount, type DiscountType } from "@/lib/discounts";
-import { EmptyState } from "@/components/ui/primitives";
+import { EmptyState, PageHeader, buttonClass } from "@/components/ui/primitives";
 import { StatePill, type PillTone } from "@/components/admin/kit";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast";
@@ -60,7 +60,11 @@ const TYPES: { value: DiscountType; label: string; hint: string }[] = [
 type SortKey = "code" | "gives" | "used" | "state";
 const field = "h-10 w-full rounded-[10px] bg-white px-3.5 text-[14px] text-[#0a0a0a] outline-none ring-1 ring-[#0a0a0a]/15 focus:ring-2 focus:ring-[#0a0a0a]";
 
-export function DiscountManager({ discounts }: { discounts: DiscountRow[] }) {
+/**
+ * Draws the page's heading too (17 October), so Create discount sits level
+ * with the title instead of on a row of its own under it.
+ */
+export function DiscountManager({ discounts, title, description }: { discounts: DiscountRow[]; title: string; description: string }) {
   const money = useMoney();
   const currency = useCurrency();
   const symbol = useCurrencySymbol();
@@ -163,8 +167,19 @@ export function DiscountManager({ discounts }: { discounts: DiscountRow[] }) {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {dialog}
+      <PageHeader
+        title={title}
+        description={description}
+        actions={
+          !creating && (
+            <button type="button" onClick={() => setCreating(true)} className={buttonClass("primary", "md")}>
+              <Plus className="h-4 w-4" /> Create discount
+            </button>
+          )
+        }
+      />
 
       {creating ? (
         <form onSubmit={handleCreate} className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]">
@@ -273,13 +288,7 @@ export function DiscountManager({ discounts }: { discounts: DiscountRow[] }) {
             </section>
           </aside>
         </form>
-      ) : (
-        <div className="flex justify-end">
-          <button type="button" onClick={() => setCreating(true)} className="inline-flex h-9 items-center gap-1.5 rounded-[10px] bg-[#0a0a0a] px-3.5 text-[13.5px] font-semibold text-white hover:bg-[#262626]">
-            <Plus className="h-4 w-4" /> Create discount
-          </button>
-        </div>
-      )}
+      ) : null}
 
       {discounts.length === 0 ? (
         <EmptyState icon={Tag} title="No discount codes yet" description="Create one and customers can enter it at checkout." />

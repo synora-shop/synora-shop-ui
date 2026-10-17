@@ -49,7 +49,7 @@ export default async function MaintenancePage() {
   ]);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <PageHeader
         title="Holding page and status"
         description="Close your store to customers, and write what they see while it is shut."

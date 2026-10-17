@@ -48,7 +48,7 @@ export default async function AnalyticsPage(props: PageProps<"/admin/analytics">
   const topCity = Math.max(1, ...data.cities.map((c) => c.value));
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <PageHeader title="Analytics" description="Only the figures you would act on." />
       <AnalyticsBar searchParams={sp} range={range.value} comparing={comparing} />
 

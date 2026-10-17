@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState, useTransition, type ReactNode } from "react";
-import { Download, NotebookText, PackageCheck, PhoneCall, Printer, ShoppingBag, Trash2 } from "lucide-react";
+import { NotebookText, PackageCheck, PhoneCall, Printer, ShoppingBag, Trash2, Upload } from "lucide-react";
 import { BarButton, BulkBar } from "@/components/admin/bulk-bar";
 import { ListEmpty } from "@/components/admin/list-empty";
 import { ORDER_GRID, STAGE_TONE, StatePill, paymentState } from "@/components/admin/kit";
@@ -130,7 +130,7 @@ export function OrderList({ orders, filtered = false, head }: { orders: OrderRow
             const pay = paymentState(o.paymentMethod, o.paymentStatus);
             return (
               <SwipeRow key={o.id} actions={[{ key: "delete", label: "Delete", icon: Trash2, tone: "danger", onClick: () => handleDelete(o.id) }]}>
-                <div className={`group relative flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 transition-colors ${picked.has(o.id) ? "bg-[#f5f5ff]" : "hover:bg-[#fafafa]"} ${ORDER_GRID}`}>
+                <div className={`group relative flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2.5 transition-colors ${picked.has(o.id) ? "bg-[#f5f5ff]" : "hover:bg-[#fafafa]"} ${ORDER_GRID}`}>
                   <input
                     type="checkbox"
                     aria-label={`Select order ${o.id}`}
@@ -147,7 +147,7 @@ export function OrderList({ orders, filtered = false, head }: { orders: OrderRow
                     <span className="block truncate text-[12.5px] text-[#0a0a0a]/50">{o.shippingCity} · {units} item{units === 1 ? "" : "s"}</span>
                   </span>
                   <span className="text-[13px] text-[#0a0a0a]/60" title={o.placedExact}>{o.placed}</span>
-                  <span className="flex flex-col items-start gap-1">
+                  <span className="flex flex-col items-start gap-0.5">
                     <StatePill tone={pay.tone}>{pay.label}</StatePill>
                     <span className="text-[12px] text-[#0a0a0a]/50">{paymentLabel(o.paymentMethod)}</span>
                   </span>
@@ -174,7 +174,7 @@ export function OrderList({ orders, filtered = false, head }: { orders: OrderRow
             <Printer /> Packing slips
           </BarButton>
           <BarButton onClick={() => download(`/admin/orders/export?ids=${selected.join(",")}`)}>
-            <Download /> Export CSV
+            <Upload /> Export CSV
           </BarButton>
         </BulkBar>
       )}

@@ -25,7 +25,7 @@ export default async function AdminPagesPage() {
   const pages = (await getAllPages()).filter((p) => !p.categoryId);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <PageHeader
         title="Pages"
         description="Every page on your storefront, and the blocks each one is built from. Three come with the store — your homepage, your story and your FAQs — and cannot be deleted, though they can be renamed, moved to a different address, or hidden. Collection pages are managed from Collections."

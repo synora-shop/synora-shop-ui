@@ -2,7 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, Check, FileUp, Upload } from "lucide-react";
+import { AlertTriangle, Check, Download, FileUp } from "lucide-react";
 import type { ImportPlan, ImportResult } from "@/lib/csv/plan";
 import { Button, buttonClass } from "@/components/ui/primitives";
 import { useToast } from "@/components/ui/toast";
@@ -117,9 +117,10 @@ export function ImportDialog({
 
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} className={buttonClass("secondary", "sm")}>
-        <Upload className="h-[var(--icon-box)] w-[var(--icon-box)]" />
-        Import CSV
+      <button type="button" onClick={() => setOpen(true)} className={buttonClass("secondary", "md")}>
+        {/* In: the arrow comes down into the shop. Export is the arrow going out. */}
+        <Download className="h-4 w-4" />
+        <span>Import<span className="max-sm:hidden"> CSV</span></span>
       </button>
 
       {open && (

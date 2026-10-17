@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Download, Users } from "lucide-react";
+import { Upload, Users } from "lucide-react";
 import { shopSession } from "@/lib/auth-guard";
 import { listCustomers } from "@/lib/data/customers";
 
 import { formatRelativeTime } from "@/lib/format-relative-time";
-import { EmptyState, PageHeader } from "@/components/ui/primitives";
+import { EmptyState, PageHeader, buttonClass } from "@/components/ui/primitives";
 import { Figures, StatePill } from "@/components/admin/kit";
 import { SortHeading } from "@/components/admin/sort-heading";
 import { AddCustomer } from "@/components/admin/add-customer";
@@ -94,7 +94,7 @@ export default async function CustomersPage(props: PageProps<"/admin/customers">
   );
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <PageHeader
         title="Customers"
         description="Everyone who has bought from you or created an account, and what they're worth."
@@ -112,9 +112,9 @@ export default async function CustomersPage(props: PageProps<"/admin/customers">
               apply={applyCustomerImport}
             />
             {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- a download, not a page: <Link> would prefetch the CSV and hand the browser a file it never asked for */}
-            <a href="/admin/customers/export" className="inline-flex h-9 items-center gap-1.5 rounded-[10px] bg-white px-3.5 text-[13.5px] font-semibold text-[#0a0a0a] ring-1 ring-[#0a0a0a]/12 hover:bg-[#f5f5f5]">
-              <Download className="h-4 w-4" />
-              Export CSV
+            <a href="/admin/customers/export" className={buttonClass("secondary", "md")}>
+              <Upload className="h-4 w-4" />
+              <span>Export<span className="max-sm:hidden"> CSV</span></span>
             </a>
             <AddCustomer />
           </>

@@ -78,7 +78,7 @@ export default async function AdminOrderDetailPage(props: PageProps<"/admin/orde
   ] as const;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <PageCrumb label={`Order ${order.id}`} />
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
@@ -157,7 +157,7 @@ export default async function AdminOrderDetailPage(props: PageProps<"/admin/orde
       )}
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_21rem]">
-        <div className="space-y-5">
+        <div className="space-y-4">
           <Panel title="What was ordered" action={<span className="text-[12.5px] text-[#0a0a0a]/50">{itemCount} item{itemCount === 1 ? "" : "s"}</span>}>
             <ul className="divide-y divide-[#0a0a0a]/[0.06]">
               {order.items.map((item) => (
@@ -219,7 +219,7 @@ export default async function AdminOrderDetailPage(props: PageProps<"/admin/orde
           </Panel>
         </div>
 
-        <div className="space-y-5">
+        <div className="space-y-4">
           {order.notes && (
             <section className="rounded-2xl bg-[#fff6dc] p-5 ring-1 ring-[#e8c46a]/50">
               <p className="flex items-center gap-2 text-[12.5px] font-semibold uppercase tracking-[0.06em] text-[#7a4b00]"><NotebookText className="h-4 w-4" /> Note from the customer</p>

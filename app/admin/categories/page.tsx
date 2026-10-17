@@ -17,7 +17,7 @@ export default async function AdminCategoriesPage() {
   });
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <PageHeader
         title="Collections"
         description="Groups of products your customers browse by. A name is changed in place and every menu link follows."

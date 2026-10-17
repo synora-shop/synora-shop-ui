@@ -46,7 +46,7 @@ export default async function AdminBinPage() {
   ].sort((a, b) => b.deletedAt.getTime() - a.deletedAt.getTime());
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <PageHeader title="Bin" description="Products and orders you deleted. They stay here until you delete them for good, so you can change your mind." />
       <BinList rows={rows} canEmpty={me?.role === "OWNER" || me?.role === "ADMIN"} />
     </div>

@@ -1,4 +1,4 @@
-import { Download, Plus } from "lucide-react";
+import { Upload, Plus } from "lucide-react";
 import { db } from "@/lib/data/shop";
 import { getStoreSettings } from "@/lib/data/settings";
 import { toGlobalEdits } from "@/lib/global-edits";
@@ -12,7 +12,7 @@ import { ListSearch } from "@/components/admin/list-search";
 import { PerPageSelect } from "@/components/admin/per-page-select";
 import { PaginationBar } from "@/components/admin/pagination-bar";
 import Link from "next/link";
-import { PageHeader } from "@/components/ui/primitives";
+import { PageHeader, buttonClass } from "@/components/ui/primitives";
 import { PlainHeading, SortHeading } from "@/components/admin/sort-heading";
 import { HEAD_PAD, PRODUCT_GRID } from "@/components/admin/kit";
 import { activeCount, keepKnown, readFilter, whereIn } from "@/lib/filters";
@@ -107,7 +107,7 @@ export default async function AdminProductsPage(props: PageProps<"/admin/product
   );
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <PageHeader
         title="Products"
         description="Everything you sell: prices, pictures, sizes and stock."
@@ -126,9 +126,9 @@ export default async function AdminProductsPage(props: PageProps<"/admin/product
               apply={applyProductImport}
             />
             {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- a download, not a page: <Link> would prefetch the CSV and hand the browser a file it never asked for */}
-            <a href="/admin/products/export" className="inline-flex h-9 items-center gap-1.5 rounded-[10px] bg-white px-3.5 text-[13.5px] font-semibold text-[#0a0a0a] ring-1 ring-[#0a0a0a]/12 hover:bg-[#f5f5f5]">
-              <Download className="h-4 w-4" />
-              Export CSV
+            <a href="/admin/products/export" className={buttonClass("secondary", "md")}>
+              <Upload className="h-4 w-4" />
+              <span>Export<span className="max-sm:hidden"> CSV</span></span>
             </a>
             <Link href="/admin/products/new" className="inline-flex h-9 items-center gap-1.5 rounded-[10px] bg-[#0a0a0a] px-3.5 text-[13.5px] font-semibold text-white hover:bg-[#262626]">
               <Plus className="h-4 w-4" />

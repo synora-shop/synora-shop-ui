@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Download } from "lucide-react";
+import { Upload } from "lucide-react";
+import { buttonClass } from "@/components/ui/primitives";
 import { RANGES, type SearchParams } from "@/lib/analytics";
 import { LiveToggle } from "@/components/admin/live-toggle";
 import { cn } from "@/lib/utils";
@@ -63,9 +64,9 @@ export function AnalyticsBar({ searchParams, range, comparing }: { searchParams:
           already knows how to receive one. */}
       <a
         href={href("/admin/analytics/export", searchParams, {})}
-        className="ml-auto inline-flex items-center gap-1.5 rounded-[10px] bg-white px-3 py-2 text-[13px] font-semibold ring-1 ring-[#0a0a0a]/10 hover:bg-[#f5f5f5]"
+        className={buttonClass("secondary", "md", "ml-auto")}
       >
-        <Download className="h-4 w-4" />
+        <Upload className="h-4 w-4" />
         Export CSV
       </a>
     </div>

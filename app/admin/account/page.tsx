@@ -68,7 +68,7 @@ export default async function AccountPage() {
 
   return (
     <SettingsFrame>
-    <div className="space-y-5">
+    <div className="space-y-4">
       <PageHeader
         title="Users and your account"
         description={`Signed in as ${user.email}. These settings follow you across every store you work on.`}

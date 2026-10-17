@@ -47,8 +47,13 @@ type ButtonSize = "sm" | "md";
 // border width would have crawled to its new size. The list is explicit now.
 // `will-change-transform` went too: it forced a compositor layer onto every
 // button on every screen, to accelerate a transform that no longer exists.
+// 17 October: the new admin's one button. A soft square (10px), semibold,
+// black for the action and white with a hairline for everything else, so a
+// row of buttons reads as one set however it was built. The pill went with
+// it: Import (a pill) beside Export (a square) was the first thing a
+// merchant saw on Orders.
 const BUTTON_BASE =
-  "inline-flex items-center justify-center gap-1.5 rounded-pill font-medium " +
+  "inline-flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-[10px] font-semibold " +
   "transition-[background-color,border-color,color,box-shadow] duration-150 ease-out " +
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 " +
   "disabled:cursor-not-allowed disabled:opacity-55";
@@ -57,18 +62,15 @@ const BUTTON_VARIANTS: Record<ButtonVariant, string> = {
   // brand-600 rather than 500: it clears AAA against white, so button labels
   // are comfortable rather than merely legal. The tinted shadow makes a
   // primary action sit above the page rather than on it.
-  primary:
-    "bg-brand-600 text-white shadow-brand hover:bg-brand-700 active:bg-brand-900 active:shadow-sm",
-  secondary:
-    "border border-border bg-surface text-ink shadow-sm hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 active:bg-brand-100",
-  ghost: "text-ink-soft hover:bg-subtle hover:text-ink active:bg-brand-100",
-  danger:
-    "border border-rose/30 bg-rose-bg text-rose hover:border-rose hover:bg-rose hover:text-white active:bg-rose",
+  primary: "bg-[#0a0a0a] text-white hover:bg-[#262626] active:bg-black",
+  secondary: "bg-white text-[#0a0a0a] ring-1 ring-inset ring-[#0a0a0a]/12 hover:bg-[#f5f5f5] active:bg-[#ececec]",
+  ghost: "text-[#0a0a0a]/70 hover:bg-[#0a0a0a]/[0.05] hover:text-[#0a0a0a] active:bg-[#0a0a0a]/[0.08]",
+  danger: "bg-white text-rose ring-1 ring-inset ring-rose/30 hover:bg-rose hover:text-white hover:ring-rose active:bg-rose",
 };
 
 const BUTTON_SIZES: Record<ButtonSize, string> = {
-  sm: "px-3.5 py-1.5 text-xs",
-  md: "px-4.5 py-2 text-sm",
+  sm: "h-8 px-3 text-[13px]",
+  md: "h-9 px-3.5 text-[13.5px]",
 };
 
 export function buttonClass(
@@ -150,10 +152,12 @@ export function PageHeader({
   className?: string;
 }) {
   return (
-    <div className={cn("flex flex-wrap items-start justify-between gap-3 pb-1", className)}>
+    // One line where it fits: the name, a short line under it, and the
+    // actions level with them, so a screen starts working in its first 60px.
+    <div className={cn("flex flex-wrap items-center justify-between gap-x-4 gap-y-2", className)}>
       <div className="min-w-0 max-w-2xl">
-        <h2 className="text-[22px] font-semibold tracking-[-0.02em] text-[#0a0a0a]">{title}</h2>
-        {description && <p className="mt-0.5 text-[14px] leading-snug text-[#0a0a0a]/55">{description}</p>}
+        <h2 className="text-[20px] font-semibold leading-tight tracking-[-0.02em] text-[#0a0a0a]">{title}</h2>
+        {description && <p className="mt-0.5 text-[13px] leading-snug text-[#0a0a0a]/50">{description}</p>}
       </div>
       {actions && <div className="flex max-w-full flex-wrap items-center gap-2 sm:ml-auto">{actions}</div>}
     </div>

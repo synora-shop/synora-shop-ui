@@ -48,7 +48,7 @@ export function ListSearch({ placeholder = "Search" }: { placeholder?: string })
   }, [value, pathname, router, searchParams]);
 
   return (
-    <div className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-pill border border-control-line bg-control px-4 sm:max-w-sm">
+    <div className="flex h-9 min-w-0 flex-1 items-center gap-2 rounded-[10px] bg-white px-3 ring-1 ring-inset ring-[#0a0a0a]/[0.09] transition-shadow focus-within:ring-[#0a0a0a]/35 sm:max-w-sm">
       <Search className="h-[var(--icon-box)] w-[var(--icon-box)] flex-shrink-0 text-control-soft" aria-hidden />
       <input
         type="search"
@@ -59,7 +59,7 @@ export function ListSearch({ placeholder = "Search" }: { placeholder?: string })
         }}
         placeholder={placeholder}
         aria-label={placeholder}
-        className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-control-soft [&::-webkit-search-cancel-button]:hidden"
+        className="min-w-0 flex-1 !bg-transparent text-[13.5px] outline-none placeholder:text-control-soft [&::-webkit-search-cancel-button]:hidden"
       />
       {value && (
         <button

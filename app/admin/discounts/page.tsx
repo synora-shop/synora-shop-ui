@@ -3,7 +3,6 @@ import { roleAtLeast } from "@/lib/roles";
 import { shopSession } from "@/lib/auth-guard";
 import { listDiscounts } from "@/lib/data/discounts";
 import { discountState } from "@/lib/discounts";
-import { PageHeader } from "@/components/ui/primitives";
 import { AccessDenied } from "@/components/admin/access-denied";
 import { DiscountManager } from "@/components/admin/discount-manager";
 
@@ -23,12 +22,10 @@ export default async function DiscountsPage() {
   const now = new Date();
 
   return (
-    <div className="space-y-5">
-      <PageHeader
-        title="Discounts"
-        description="Codes customers can enter at checkout. Every one is priced on the server, so a code can't be talked into giving away more than it should."
-      />
+    <div className="space-y-4">
       <DiscountManager
+        title="Discounts"
+        description="Codes customers enter at checkout, priced on the server so none can give away more than it should."
         discounts={discounts.map((d) => ({
           id: d.id,
           code: d.code,

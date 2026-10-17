@@ -34,10 +34,10 @@ export function FilterDisclosure({
         aria-label={activeCount ? `Filters — ${activeCount} applied` : "Filters"}
         title="Filters"
         className={cn(
-          "relative flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-pill border transition-colors",
+          "relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-[10px] transition-colors",
           open || activeCount > 0
-            ? "border-transparent bg-brand-500 text-white"
-            : "border-control-line bg-control text-control-ink hover:text-ink"
+            ? "bg-[#0a0a0a] text-white"
+            : "bg-white text-[#0a0a0a]/65 ring-1 ring-inset ring-[#0a0a0a]/[0.09] hover:text-[#0a0a0a] hover:ring-[#0a0a0a]/25"
         )}
       >
         <SlidersHorizontal className="h-[var(--icon-box)] w-[var(--icon-box)]" />
@@ -50,7 +50,7 @@ export function FilterDisclosure({
       {open && (
         // Full width of the action bar, below the row it belongs to — the bar
         // wraps, so this simply becomes the next line of it.
-        <div className="w-full border-t border-control-line px-1 pt-2">{children}</div>
+        <div className="w-full rounded-2xl bg-white p-2 ring-1 ring-[#0a0a0a]/[0.07]">{children}</div>
       )}
     </>
   );

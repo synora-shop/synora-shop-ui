@@ -118,7 +118,7 @@ export default async function EnquiriesPage(props: PageProps<"/admin/enquiries">
   }));
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <PageHeader
         title="Enquiries"
         description="Bulk and made-to-order requests. Answer, quote, and turn them into orders."

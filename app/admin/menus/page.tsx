@@ -34,7 +34,7 @@ export default async function AdminMenusPage() {
     .map((p) => ({ id: p.id, title: p.title, category: p.category ? { name: p.category.name } : null }));
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <div>
         <PageHeader
           title="Menus"

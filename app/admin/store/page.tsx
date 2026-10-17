@@ -43,7 +43,7 @@ export default async function StoreDetailsPage() {
 
   return (
     <SettingsFrame>
-    <div className="space-y-5">
+    <div className="space-y-4">
       <PageHeader
         title="Store details"
         description="Your store's name, its logos and where to find you. Logos are set here and nowhere else; every theme reads them from this screen."

@@ -94,7 +94,7 @@ export default async function ThemePage(props: PageProps<"/admin/theme">) {
   const offered = new Set(available.map((t) => t.key));
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <PageHeader title="Themes" description="How your store looks. Your copies, the live one, and every theme there is." />
       {/* Sent here by the customizer when the copy it was asked to open is gone. */}
       {missing && (

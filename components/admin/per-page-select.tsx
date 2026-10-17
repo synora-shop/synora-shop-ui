@@ -30,8 +30,8 @@ export function PerPageSelect({
   if (total <= DEFAULT_PER_PAGE) return null;
 
   return (
-    <div className="flex items-center gap-1 rounded-pill border border-control-line bg-control px-1 py-1">
-      <span className="px-2 text-xs text-control-soft">Show</span>
+    <div className="flex h-9 items-center gap-0.5 rounded-[10px] bg-white px-1 ring-1 ring-inset ring-[#0a0a0a]/[0.09]">
+      <span className="px-2 text-[12px] text-[#0a0a0a]/45">Show</span>
       {PER_PAGE_OPTIONS.map((option) => {
         const active = option === current;
         return (
@@ -40,8 +40,8 @@ export function PerPageSelect({
             href={perPageHref(basePath, searchParams, option)}
             aria-current={active ? "true" : undefined}
             className={cn(
-              "rounded-pill px-2.5 py-1 text-xs transition-colors",
-              active ? "bg-brand-500 font-medium text-white" : "text-control-ink hover:bg-panel"
+              "rounded-[7px] px-2.5 py-1 text-[12.5px] tabular-nums transition-colors",
+              active ? "bg-[#0a0a0a] font-semibold text-white" : "text-[#0a0a0a]/55 hover:text-[#0a0a0a]"
             )}
           >
             {option ?? "All"}

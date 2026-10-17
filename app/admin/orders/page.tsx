@@ -1,6 +1,6 @@
-import { Download, Plus } from "lucide-react";
+import { Upload, Plus } from "lucide-react";
 import Link from "next/link";
-import { PageHeader } from "@/components/ui/primitives";
+import { PageHeader, buttonClass } from "@/components/ui/primitives";
 import { cn } from "@/lib/utils";
 import { db } from "@/lib/data/shop";
 import { getStoreSettings } from "@/lib/data/settings";
@@ -115,7 +115,7 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
   );
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <PageHeader
         title="Orders"
         description="Every order, where it is on its way, and what it needs from you next."
@@ -131,11 +131,11 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
               apply={applyOrderImport}
             />
             {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- a download, not a page: <Link> would prefetch the CSV and hand the browser a file it never asked for */}
-            <a href="/admin/orders/export" className="inline-flex h-9 items-center gap-1.5 rounded-[10px] bg-white px-3.5 text-[13.5px] font-semibold text-[#0a0a0a] ring-1 ring-[#0a0a0a]/12 hover:bg-[#f5f5f5]">
-              <Download className="h-4 w-4" />
-              Export CSV
+            <a href="/admin/orders/export" className={buttonClass("secondary", "md")}>
+              <Upload className="h-4 w-4" />
+              <span>Export<span className="max-sm:hidden"> CSV</span></span>
             </a>
-            <Link href="/admin/orders/drafts/new" className="inline-flex h-9 items-center gap-1.5 rounded-[10px] bg-[#0a0a0a] px-3.5 text-[13.5px] font-semibold text-white">
+            <Link href="/admin/orders/drafts/new" className={buttonClass("primary", "md")}>
               <Plus className="h-4 w-4" />
               Create order
             </Link>
@@ -143,9 +143,11 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
         }
       />
 
-      {/* The pipeline: every stage, counted, and each one a filter. */}
-      <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
-        {STATUSES.map((st, i) => {
+      {/* The pipeline: every stage, counted, and each one a filter. One
+          strip rather than six cards (17 October): the same figures in half
+          the height, read left to right the way an order travels. */}
+      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-[#0a0a0a]/[0.07] ring-1 ring-[#0a0a0a]/[0.07] sm:grid-cols-3 xl:grid-cols-6">
+        {STATUSES.map((st) => {
           const on = status.length === 1 && status[0] === st;
           const n = stageCount[st] ?? 0;
           return (
@@ -154,14 +156,17 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
               href={stageHref(st)}
               aria-current={on ? "true" : undefined}
               className={cn(
-                "relative overflow-hidden rounded-2xl px-4 py-3 transition-shadow",
-                on ? "bg-[#0a0a0a] text-white" : "bg-white text-[#0a0a0a] ring-1 ring-[#0a0a0a]/[0.07] hover:ring-[#0a0a0a]/20"
+                "relative flex items-center justify-between gap-2 px-4 py-2.5 transition-colors",
+                on ? "bg-[#0a0a0a] text-white" : "bg-white text-[#0a0a0a] hover:bg-[#fafafa]"
               )}
             >
-              <span className={cn("block text-[12px] font-medium", on ? "text-white/60" : "text-[#0a0a0a]/50")}>{i < 5 ? `${i + 1}. ` : ""}{statusLabel(st)}</span>
-              <span className="mt-0.5 block text-[22px] font-semibold tabular-nums">{n}</span>
-              {st === "PENDING" && n > 0 && !on && <span className="absolute right-3 top-3 h-2 w-2 rounded-full bg-[#f2a33a]" />}
-              <span aria-hidden className={cn("absolute inset-x-4 bottom-0 h-[3px] rounded-t-full", STAGE_BAR[st])} />
+              <span className={cn("flex min-w-0 items-center gap-2 truncate text-[12.5px] font-medium", on ? "text-white/70" : "text-[#0a0a0a]/55")}>
+                <span aria-hidden className={cn("h-2 w-2 shrink-0 rounded-full", STAGE_BAR[st])} />
+                {statusLabel(st)}
+              </span>
+              <span className={cn("text-[18px] font-semibold tabular-nums leading-none", st === "PENDING" && n > 0 && !on && "text-[#c2410c]")} title={st === "PENDING" && n > 0 ? "Waiting for you" : undefined}>
+                {n}
+              </span>
             </Link>
           );
         })}

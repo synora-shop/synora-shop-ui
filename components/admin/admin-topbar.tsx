@@ -3,16 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { signOut } from "next-auth/react";
 import {
-  ChevronRight, ExternalLink, FileText, HelpCircle, Info, Keyboard, LogOut, Menu, Package, Plus,
-  Search, Store, Tag, Users, X,
+  ChevronRight, FileText, HelpCircle, Keyboard, Menu, Package, Plus, Search, Tag, Users, X,
 } from "lucide-react";
 import { AdminSearch } from "@/components/admin/admin-search";
-import { BusinessTypeDialog } from "@/components/admin/business-type-dialog";
-import { AccountIcon, NotificationIcon } from "@/components/admin/nav-icons";
-import { SynoraAppMark } from "@/components/ui/synora-marks";
-import type { ShopStatusName } from "@/lib/store-type-switch";
+import { NotificationIcon } from "@/components/admin/nav-icons";
 import { resolveNav } from "@/lib/admin-nav";
 import { useAdminNav } from "@/lib/admin-nav-store";
 import { cn } from "@/lib/utils";
@@ -22,10 +17,9 @@ import { cn } from "@/lib/utils";
  *
  * White, sticky over the page, and short: where you are on the left (from the
  * navigation model, plus the one crumb only a page knows, like an order's
- * number), and on the right the four things wanted from anywhere: Create, the
- * alerts, the shortcuts, and you. Everything the old header's account menu
- * held is still in that menu: the store's state, previewing it, your
- * account, the business type, switching store, signing out.
+ * number), and on the right the three things wanted from anywhere: Create,
+ * the alerts and the shortcuts. You are not here: since 17 October the
+ * signed-in person and their menu live at the foot of the rail, once.
  *
  * It also owns the keyboard, because it is mounted on every screen:
  *   ⌘K or /   the command bar
@@ -49,35 +43,16 @@ const CREATE: [string, string, typeof Package][] = [
   ["Team member", "/admin/account", Users],
 ];
 
-export function AdminTopbar({
-  storeName,
-  isLive,
-  userEmail,
-  storeUrl,
-  registryType,
-  storeStatus,
-  hasOtherStores = false,
-  alerts = [],
-}: {
-  storeName: string;
-  isLive: boolean;
-  userEmail: string;
-  storeUrl: string;
-  registryType: string;
-  storeStatus: ShopStatusName;
-  hasOtherStores?: boolean;
-  alerts?: Alert[];
-}) {
+export function AdminTopbar({ alerts = [] }: { alerts?: Alert[] }) {
   const pathname = usePathname();
   const router = useRouter();
   // Each menu remembers the page it was opened on, so moving to another page
   // closes it without an effect: it simply stops matching.
-  const [menuAt, setMenuAt] = useState<{ which: "account" | "bell" | "create"; at: string } | null>(null);
+  const [menuAt, setMenuAt] = useState<{ which: "bell" | "create"; at: string } | null>(null);
   const [keysAt, setKeysAt] = useState<string | null>(null);
-  const [dialog, setDialog] = useState<"info" | "switch" | null>(null);
   const menu = menuAt?.at === pathname ? menuAt.which : null;
   const keys = keysAt === pathname;
-  const setMenu = (which: "account" | "bell" | "create" | null) => setMenuAt(which ? { which, at: pathname } : null);
+  const setMenu = (which: "bell" | "create" | null) => setMenuAt(which ? { which, at: pathname } : null);
   const navOpen = useAdminNav((s) => s.open);
   const toggleNav = useAdminNav((s) => s.toggle);
   const trailing = useAdminNav((s) => s.crumb);
@@ -125,7 +100,7 @@ export function AdminTopbar({
   }, [router, setSearching]);
 
   return (
-    <header className="sticky top-0 z-30 flex items-center gap-2 border-b border-[#0a0a0a]/[0.06] bg-white px-4 py-2.5 sm:px-6">
+    <header className="sticky top-0 z-30 flex h-12 items-center gap-1.5 border-b border-[#0a0a0a]/[0.06] bg-white/90 px-4 backdrop-blur-md sm:px-6">
       <button
         type="button"
         aria-label={navOpen ? "Close menu" : "Open menu"}
@@ -155,7 +130,7 @@ export function AdminTopbar({
           setMenuAt(null);
           setSearching(true);
         }}
-        className="grid h-9 w-9 place-items-center rounded-[10px] hover:bg-[#f0f0f0] lg:hidden"
+        className="grid h-8 w-8 place-items-center rounded-[9px] hover:bg-[#f0f0f0] lg:hidden"
       >
         <Search className="h-[18px] w-[18px]" />
       </button>
@@ -165,12 +140,12 @@ export function AdminTopbar({
           type="button"
           aria-expanded={menu === "create"}
           onClick={() => setMenu(menu === "create" ? null : "create")}
-          className="inline-flex h-9 items-center gap-1.5 rounded-[10px] bg-[#0a0a0a] px-3 text-[13px] font-semibold text-white hover:bg-[#262626]"
+          className="inline-flex h-8 items-center gap-1.5 rounded-[9px] bg-[#0a0a0a] px-3 text-[13px] font-semibold text-white hover:bg-[#262626]"
         >
           <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Create</span>
         </button>
         {menu === "create" && (
-          <div className="absolute right-0 top-11 z-50 w-60 rounded-2xl bg-white p-1.5 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.35)] ring-1 ring-[#0a0a0a]/10">
+          <div className="absolute right-0 top-10 z-50 w-60 rounded-2xl bg-white p-1.5 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.35)] ring-1 ring-[#0a0a0a]/10">
             {CREATE.map(([label, href, Icon]) => (
               <Link key={label} href={href} onClick={() => setMenu(null)} className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] hover:bg-[#f5f5f5]">
                 <Icon className="h-4 w-4 text-[#0a0a0a]/55" /> {label}
@@ -188,12 +163,12 @@ export function AdminTopbar({
           title={alerts.length ? `${alerts.length} things need attention` : "Notifications"}
           aria-expanded={menu === "bell"}
           onClick={() => setMenu(menu === "bell" ? null : "bell")}
-          className="relative grid h-9 w-9 place-items-center rounded-[10px] hover:bg-[#f0f0f0]"
+          className="relative grid h-8 w-8 place-items-center rounded-[9px] hover:bg-[#f0f0f0]"
         >
           <NotificationIcon unread={alerts.length > 0} className="h-[18px] w-[18px]" />
         </button>
         {menu === "bell" && (
-          <div className="absolute right-0 top-11 z-50 w-[min(22rem,calc(100vw-2rem))] rounded-2xl bg-white shadow-[0_24px_60px_-20px_rgba(0,0,0,0.35)] ring-1 ring-[#0a0a0a]/10">
+          <div className="absolute right-0 top-10 z-50 w-[min(22rem,calc(100vw-2rem))] rounded-2xl bg-white shadow-[0_24px_60px_-20px_rgba(0,0,0,0.35)] ring-1 ring-[#0a0a0a]/10">
             <p className="border-b border-[#0a0a0a]/[0.06] px-4 py-3 text-[14px] font-semibold">Needs you</p>
             {alerts.length === 0 ? (
               <p className="px-4 py-6 text-center text-[13.5px] text-[#0a0a0a]/55">Nothing needs your attention.</p>
@@ -219,66 +194,16 @@ export function AdminTopbar({
         aria-label="Keyboard shortcuts"
         title="Shortcuts (?)"
         onClick={() => setKeysAt(pathname)}
-        className="hidden h-9 w-9 place-items-center rounded-[10px] hover:bg-[#f0f0f0] sm:grid"
+        className="hidden h-8 w-8 place-items-center rounded-[9px] hover:bg-[#f0f0f0] sm:grid"
       >
         <HelpCircle className="h-[18px] w-[18px]" />
       </button>
-
-      <div className="relative">
-        <button
-          type="button"
-          aria-label="Store and account menu"
-          aria-expanded={menu === "account"}
-          onClick={() => setMenu(menu === "account" ? null : "account")}
-          className="grid h-9 w-9 place-items-center rounded-full bg-[#0a0a0a] text-[12px] font-semibold text-white"
-        >
-          {initials(userEmail.split("@")[0])}
-        </button>
-        {menu === "account" && (
-          <div className="absolute right-0 top-11 z-50 w-72 rounded-2xl bg-white p-1.5 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.35)] ring-1 ring-[#0a0a0a]/10">
-            <div className="px-3 py-2.5">
-              <p className="truncate text-[14px] font-semibold">{storeName}</p>
-              <p className="mt-0.5 truncate text-[12.5px] text-[#0a0a0a]/55">{userEmail}</p>
-              <p className={cn("mt-2 flex items-center gap-1.5 text-[12px] font-semibold", isLive ? "text-[#11643f]" : "text-[#7a4b00]")}>
-                <span className={cn("h-1.5 w-1.5 rounded-full", isLive ? "bg-[#2fb37c]" : "bg-[#f2a33a]")} aria-hidden />
-                {isLive ? "Live: customers can see your store" : "Hidden while in maintenance"}
-              </p>
-            </div>
-            <div className="border-t border-[#0a0a0a]/[0.06] py-1">
-              <a href={storeUrl} target="_blank" rel="noreferrer" onClick={() => setMenu(null)} className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-[13.5px] hover:bg-[#f5f5f5]">
-                <Store className="h-4 w-4 text-[#0a0a0a]/50" /> Preview store <ExternalLink className="ml-auto h-3.5 w-3.5 opacity-50" />
-              </a>
-              <Link href="/admin/account" onClick={() => setMenu(null)} className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-[13.5px] hover:bg-[#f5f5f5]">
-                <AccountIcon className="h-4 w-4 text-[#0a0a0a]/50" /> Your account
-              </Link>
-              <button type="button" onClick={() => { setMenu(null); setDialog("switch"); }} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-[13.5px] hover:bg-[#f5f5f5]">
-                <ChevronRight className="h-4 w-4 text-[#0a0a0a]/50" /> Change APP type
-              </button>
-              <button type="button" onClick={() => { setMenu(null); setDialog("info"); }} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-[13.5px] hover:bg-[#f5f5f5]">
-                <Info className="h-4 w-4 text-[#0a0a0a]/50" /> Which type fits your business?
-              </button>
-              {hasOtherStores && (
-                <Link href="/merchant/stores" onClick={() => setMenu(null)} className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-[13.5px] hover:bg-[#f5f5f5]">
-                  <Store className="h-4 w-4 text-[#0a0a0a]/50" /> Switch store
-                </Link>
-              )}
-            </div>
-            <div className="border-t border-[#0a0a0a]/[0.06] pt-1">
-              <button type="button" onClick={() => signOut({ redirectTo: "/" })} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-[13.5px] text-[#a3330c] hover:bg-[#fff1ec]">
-                <LogOut className="h-4 w-4" /> Sign out
-              </button>
-              <p className="flex items-center justify-center py-2"><SynoraAppMark className="h-4 w-auto text-[#0a0a0a]/35" /></p>
-            </div>
-          </div>
-        )}
-      </div>
 
       {/* A click anywhere else closes an open menu. */}
       {menu && <button type="button" aria-label="Close menu" onClick={() => setMenu(null)} className="fixed inset-0 z-40 cursor-default" />}
 
       {searching && <AdminSearch onClose={() => setSearching(false)} />}
       {keys && <Shortcuts onClose={() => setKeysAt(null)} />}
-      {dialog && <BusinessTypeDialog current={registryType} mode={dialog} status={storeStatus} onClose={() => setDialog(null)} />}
     </header>
   );
 }
@@ -315,9 +240,3 @@ function Shortcuts({ onClose }: { onClose: () => void }) {
   );
 }
 
-function initials(name: string): string {
-  const parts = name.trim().split(/[\s._-]+/).filter(Boolean);
-  if (parts.length === 0) return "?";
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
