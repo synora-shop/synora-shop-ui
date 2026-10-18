@@ -33,9 +33,9 @@ export default function InventoryPage() {
           cells: {
             product: <span className="flex items-center gap-2.5"><Thumb src={p.image} size={24} /><span className="truncate">{p.name}</span></span>,
             size,
-            sku: <span className="font-mono text-[12px] text-[#71717a]">{sku}</span>,
+            sku: <span className="font-mono text-[12px] text-[#737373]">{sku}</span>,
             state: left === 0 ? <Status tone="bad">Sold out</Status> : left < 4 ? <Status tone="wait">Low</Status> : null,
-            left: <input defaultValue={left} aria-label={`Available, ${p.name} ${size}`} inputMode="numeric" className={`h-7 w-16 rounded-[6px] px-2 text-right text-[13px] font-semibold tabular-nums outline-none ring-1 ring-inset focus:ring-[#5b5bf0] ${left === 0 ? "text-[#b91c1c] ring-[#fecaca]" : left < 4 ? "text-[#b45309] ring-[#fde68a]" : "ring-[#e4e4e7]"}`} />,
+            left: <input defaultValue={left} aria-label={`Available, ${p.name} ${size}`} inputMode="numeric" className={`h-7 w-16 rounded-[10px] px-2 text-right text-[13px] font-semibold tabular-nums outline-none ring-1 ring-inset focus:ring-[#6666ff] ${left === 0 ? "text-[#b91c1c] ring-[#fecaca]" : left < 4 ? "text-[#b45309] ring-[#fde68a]" : "ring-[#ebebeb]"}`} />,
           },
         }))}
         minWidth={620}

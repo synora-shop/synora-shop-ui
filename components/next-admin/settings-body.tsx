@@ -24,15 +24,15 @@ const edit = <button type="button" className={link}>Edit</button>;
 export const BODY: Record<string, ReactNode> = {
   general: (
     <>
-      <Panel title="Your logo" action={<span className="text-[#71717a]">We make the other three from one, if you like</span>}>
+      <Panel title="Your logo" action={<span className="text-[#737373]">We make the other three from one, if you like</span>}>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-          {[["On light", "bg-white", "text-[#18181b]"], ["On dark", "bg-[#18181b]", "text-white"], ["Small", "bg-white", "text-[#18181b]"], ["Browser tab", "bg-[#f4f4f5]", "text-[#18181b]"]].map(([l, bg, fg], i) => (
+          {[["On light", "bg-white", "text-[#0a0a0a]"], ["On dark", "bg-[#0a0a0a]", "text-white"], ["Small", "bg-white", "text-[#0a0a0a]"], ["Browser tab", "bg-[#f3f3f3]", "text-[#0a0a0a]"]].map(([l, bg, fg], i) => (
             <div key={l}>
-              <div className={`grid h-14 place-items-center rounded-[6px] ring-1 ring-inset ring-[#e4e4e7] ${bg}`}><span className={`font-bold tracking-[0.12em] ${fg} ${i > 1 ? "text-[13px]" : "text-[11.5px]"}`}>{i > 1 ? "ZL" : "ZOHRA LAWN"}</span></div>
-              <p className="mt-1 text-[11.5px] text-[#71717a]">{l}</p>
+              <div className={`grid h-14 place-items-center rounded-[10px] ring-1 ring-inset ring-[#ebebeb] ${bg}`}><span className={`font-bold tracking-[0.12em] ${fg} ${i > 1 ? "text-[13px]" : "text-[11.5px]"}`}>{i > 1 ? "ZL" : "ZOHRA LAWN"}</span></div>
+              <p className="mt-1 text-[11.5px] text-[#737373]">{l}</p>
             </div>
           ))}
-          <button type="button" className="grid h-14 place-items-center rounded-[6px] border border-dashed border-[#d4d4d8] text-[12px] text-[#71717a] hover:border-[#5b5bf0] hover:text-[#4f46e5]"><span className="inline-flex items-center gap-1"><Upload className="h-3.5 w-3.5" /> Upload</span></button>
+          <button type="button" className="grid h-14 place-items-center rounded-[10px] border border-dashed border-[#dddddd] text-[12px] text-[#737373] hover:border-[#6666ff] hover:text-[#4b4bea]"><span className="inline-flex items-center gap-1"><Upload className="h-3.5 w-3.5" /> Upload</span></button>
         </div>
       </Panel>
       <Panel title="Store details">
@@ -59,7 +59,7 @@ export const BODY: Record<string, ReactNode> = {
     <>
       <Panel>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div><p className="text-[15px] font-semibold">Free trial <Status tone="good">23 days left</Status></p><p className="text-[12.5px] text-[#71717a]">Everything is included while you try it.</p></div>
+          <div><p className="text-[15px] font-semibold">Free trial <Status tone="good">23 days left</Status></p><p className="text-[12.5px] text-[#737373]">Everything is included while you try it.</p></div>
           <Act kind="primary" msg="Plans would open here">Choose a plan</Act>
         </div>
       </Panel>
@@ -68,7 +68,7 @@ export const BODY: Record<string, ReactNode> = {
         <Row label="Billing address" value="Zohra Lawn, 12-B Main Boulevard, Gulberg III, Lahore" right={edit} />
         <Row label="Tax number (NTN)" value="Printed on your Synora invoices, if you add it" right={<button type="button" className={link}>Add</button>} />
       </Rows>
-      <Panel title="Past bills"><p className="py-3 text-center text-[12.5px] text-[#71717a]"><b className="font-medium text-[#18181b]">No bills yet.</b> Each month&apos;s bill appears here with its number, date and a PDF.</p></Panel>
+      <Panel title="Past bills"><p className="py-3 text-center text-[12.5px] text-[#737373]"><b className="font-medium text-[#0a0a0a]">No bills yet.</b> Each month&apos;s bill appears here with its number, date and a PDF.</p></Panel>
     </>
   ),
   users: <Panel title="People who work on this store" flush><TeamList owner={SHOP.owner} ownerEmail={SHOP.email} /></Panel>,
@@ -189,7 +189,7 @@ export const ACCOUNT: ReactNode = (
   <>
     <Panel title="Profile">
       <div className="flex flex-wrap items-end gap-3">
-        <span className="grid h-10 w-10 place-items-center rounded-full bg-[#eef0ff] text-[13px] font-semibold text-[#3730a3]">AK</span>
+        <span className="grid h-10 w-10 place-items-center rounded-full bg-[#ecebff] text-[13px] font-semibold text-[#3d3dc4]">AK</span>
         <div className="grid min-w-0 flex-1 gap-3 sm:grid-cols-2">
           <Field label="Name" value={SHOP.owner} />
           <Field label="Email" value={SHOP.email} hint="Confirmed. Changing it sends a code to the new address." />
@@ -201,8 +201,8 @@ export const ACCOUNT: ReactNode = (
       <Row label="Two-step sign-in" value="A code from an app as well as your password" right={<Toggle label="Two-step sign-in" />} />
     </Rows>
     <Rows title="Signed in on" action={<button type="button" className="text-[12.5px] text-[#b91c1c] hover:underline">Sign out everywhere else</button>}>
-      <Row label={<span className="inline-flex items-center gap-2"><Monitor className="h-3.5 w-3.5 text-[#71717a]" /> MacBook · Safari</span>} value="Lahore · this device" right={<Status tone="good">Now</Status>} />
-      <Row label={<span className="inline-flex items-center gap-2"><Smartphone className="h-3.5 w-3.5 text-[#71717a]" /> iPhone · Safari</span>} value="Lahore · 2 hours ago" right={<button type="button" className="text-[12.5px] text-[#71717a] hover:text-[#b91c1c]">Sign out</button>} />
+      <Row label={<span className="inline-flex items-center gap-2"><Monitor className="h-3.5 w-3.5 text-[#737373]" /> MacBook · Safari</span>} value="Lahore · this device" right={<Status tone="good">Now</Status>} />
+      <Row label={<span className="inline-flex items-center gap-2"><Smartphone className="h-3.5 w-3.5 text-[#737373]" /> iPhone · Safari</span>} value="Lahore · 2 hours ago" right={<button type="button" className="text-[12.5px] text-[#737373] hover:text-[#b91c1c]">Sign out</button>} />
     </Rows>
     <Rows title="Your stores">
       <Row label={SHOP.name} value={`${SHOP.address} · owner`} right={<Status tone="good">This one</Status>} />

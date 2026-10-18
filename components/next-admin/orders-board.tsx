@@ -48,14 +48,14 @@ export function OrdersBoard({ orders: start }: { orders: Order[] }) {
   };
 
   return (
-    <section className="overflow-hidden rounded-[8px] border border-[#e4e4e7] bg-white">
-      <div className="flex flex-wrap items-center gap-x-3 border-b border-[#e4e4e7] px-3">
+    <section className="overflow-hidden rounded-[16px] border border-[#ebebeb] bg-white">
+      <div className="flex flex-wrap items-center gap-x-3 border-b border-[#ebebeb] px-3">
         <Tabs items={["All", ...STAGES]} value={tab} onChange={setTab} counts={counts} />
         <div className="ml-auto flex flex-wrap items-center gap-1.5 py-1.5">
           {QUICK.map((f) => {
             const on = quick.includes(f);
             return (
-              <button key={f} type="button" aria-pressed={on} onClick={() => setQuick(on ? quick.filter((x) => x !== f) : [...quick, f])} className={`h-7 rounded-[6px] px-2.5 text-[12.5px] font-medium ${on ? SEL : "text-[#52525b] ring-1 ring-inset ring-[#e4e4e7] hover:text-[#18181b]"}`}>
+              <button key={f} type="button" aria-pressed={on} onClick={() => setQuick(on ? quick.filter((x) => x !== f) : [...quick, f])} className={`h-7 rounded-[10px] px-2.5 text-[12.5px] font-medium ${on ? SEL : "text-[#555555] ring-1 ring-inset ring-[#ebebeb] hover:text-[#0a0a0a]"}`}>
                 {f}
               </button>
             );
@@ -64,14 +64,14 @@ export function OrdersBoard({ orders: start }: { orders: Order[] }) {
         </div>
       </div>
       {/* Phones: one order, two short lines. */}
-      <ul className="divide-y divide-[#f0f0f2] sm:hidden">
+      <ul className="divide-y divide-[#f1f1f1] sm:hidden">
         {sorted.map((o) => {
           const pay = payState(o);
           return (
             <li key={o.id}>
               <Link href={`${A}/orders/${o.id}`} className="block px-3 py-2.5 active:bg-[#fafafa]">
                 <span className="flex items-center gap-2 text-[13px]"><b className="font-semibold">#{o.id}</b><span className="min-w-0 flex-1 truncate">{o.customer} <span className={T.muted}>· {o.city}</span></span><b className="font-semibold tabular-nums">{pkr(o.total)}</b></span>
-                <span className="mt-1 flex items-center gap-3"><Status tone={STAGE_TONE[o.stage]}>{o.stage}</Status><Status tone={pay.tone}>{pay.label}</Status><span className="ml-auto text-[12px] text-[#a1a1aa]">{o.when}</span></span>
+                <span className="mt-1 flex items-center gap-3"><Status tone={STAGE_TONE[o.stage]}>{o.stage}</Status><Status tone={pay.tone}>{pay.label}</Status><span className="ml-auto text-[12px] text-[#a3a3a3]">{o.when}</span></span>
               </Link>
             </li>
           );
@@ -95,7 +95,7 @@ export function OrdersBoard({ orders: start }: { orders: Order[] }) {
               const on = picked.includes(o.id);
               const pay = payState(o);
               return (
-                <tr key={o.id} className={on ? "bg-[#f7f7ff]" : T.tr}>
+                <tr key={o.id} className={on ? "bg-[#f5f5ff]" : T.tr}>
                   <td className={T.td}><input type="checkbox" aria-label={`Select #${o.id}`} checked={on} onChange={() => setPicked(on ? picked.filter((x) => x !== o.id) : [...picked, o.id])} className={check} /></td>
                   <td className={T.td}>
                     <Link href={`${A}/orders/${o.id}`} className="inline-flex items-center gap-1.5 font-semibold hover:underline">
@@ -105,21 +105,21 @@ export function OrdersBoard({ orders: start }: { orders: Order[] }) {
                   </td>
                   <td className={`${T.td} ${T.muted}`}>{o.when}</td>
                   <td className={T.td}>{o.customer} <span className={T.muted}>· {o.city} · {o.items} item{o.items > 1 ? "s" : ""}</span></td>
-                  <td className={T.td}><Status tone={pay.tone}>{pay.label}</Status> <span className="text-[12px] text-[#a1a1aa]">{o.payment}</span></td>
+                  <td className={T.td}><Status tone={pay.tone}>{pay.label}</Status> <span className="text-[12px] text-[#a3a3a3]">{o.payment}</span></td>
                   <td className={T.td}><Status tone={STAGE_TONE[o.stage]}>{o.stage}</Status></td>
                   <td className={`${T.td} text-right font-semibold tabular-nums`}>{pkr(o.total)}</td>
                 </tr>
               );
             })}
             {shown.length === 0 && (
-              <tr><td colSpan={7} className="px-4 py-10 text-center text-[13px] text-[#71717a]">No orders here.</td></tr>
+              <tr><td colSpan={7} className="px-4 py-10 text-center text-[13px] text-[#737373]">No orders here.</td></tr>
             )}
           </tbody>
         </table>
       </div>
-      <p className="flex h-9 items-center justify-between px-3 text-[12px] text-[#71717a]">
+      <p className="flex h-9 items-center justify-between px-3 text-[12px] text-[#737373]">
         <span>{shown.length} of {orders.length} orders</span>
-        <span>Delivered and paid orders are tidied away. <button type="button" className="font-medium text-[#4f46e5] hover:underline">Show them</button></span>
+        <span>Delivered and paid orders are tidied away. <button type="button" className="font-medium text-[#4b4bea] hover:underline">Show them</button></span>
       </p>
       <BulkBar count={picked.length} noun="order" onClear={() => setPicked([])}>
         <button type="button" onClick={() => move("Confirmed", "confirmed")} className={barBtn}><PhoneCall /> Confirm</button>

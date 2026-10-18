@@ -28,13 +28,13 @@ export default function DiscountsPage() {
           views: [d.status],
           by: { code: d.code, kind: d.kind, who: d.who, used: d.used, status: d.status },
           cells: {
-            code: <Link href={`${A}/discounts/new?code=${d.code}`} className="rounded-[4px] bg-[#f4f4f5] px-1.5 py-0.5 font-mono text-[12.5px] font-semibold hover:bg-[#e4e4e7]">{d.code}</Link>,
+            code: <Link href={`${A}/discounts/new?code=${d.code}`} className="rounded-[6px] bg-[#f3f3f3] px-1.5 py-0.5 font-mono text-[12.5px] font-semibold hover:bg-[#ebebeb]">{d.code}</Link>,
             kind: <>{d.kind} <span className={T.muted}>· {d.ends}</span></>,
             who: <span className={T.muted}>{d.who}</span>,
             used: (
               <span className="inline-flex items-center gap-2 tabular-nums">
                 {d.used}{d.limit ? ` of ${d.limit}` : ""}
-                {d.limit && <span className="h-1 w-14 overflow-hidden rounded-full bg-[#f0f0f2]"><span className="block h-full bg-[#5b5bf0]" style={{ width: `${(d.used / d.limit) * 100}%` }} /></span>}
+                {d.limit && <span className="h-1 w-14 overflow-hidden rounded-full bg-[#f1f1f1]"><span className="block h-full bg-[#6666ff]" style={{ width: `${(d.used / d.limit) * 100}%` }} /></span>}
               </span>
             ),
             status: <Status tone={d.status === "Active" ? "good" : d.status === "Scheduled" ? "info" : "off"}>{d.status}</Status>,

@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { ChevronDown, Plus } from "lucide-react";
 import { useToast } from "@/components/next-admin/bits";
-import { ICONS } from "@/components/new-admin/ui";
+import { ICONS, TONE } from "@/components/new-admin/ui";
 import { SEL, Status, btn, link } from "@/components/next-admin/ui";
 import { A, STORE_SETTINGS } from "@/components/next-admin/nav";
 import { WORDS } from "@/components/new-admin/settings-words";
@@ -18,23 +18,23 @@ export function SettingsNav() {
   const hits = STORE_SETTINGS.filter((s) => words.every((w) => `${s.label} ${s.blurb} ${WORDS[s.slug] ?? ""}`.toLowerCase().includes(w)));
   return (
     <nav aria-label="Settings" className="lg:sticky lg:top-[64px] lg:self-start">
-      <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Find a setting" aria-label="Find a setting" className="mb-2 h-8 w-full rounded-[6px] bg-white px-2.5 text-[13px] outline-none ring-1 ring-inset ring-[#d4d4d8] focus:ring-[#5b5bf0]" />
+      <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Find a setting" aria-label="Find a setting" className="mb-2 h-8 w-full rounded-[10px] bg-white px-2.5 text-[13px] outline-none ring-1 ring-inset ring-[#dddddd] focus:ring-[#6666ff]" />
       <ul className="flex gap-1 overflow-x-auto lg:flex-col lg:gap-px">
         {hits.map((s, i) => {
           const on = path === `${A}/settings/${s.slug}`;
           const Icon = ICONS[s.icon];
           return (
             <li key={s.slug}>
-              {(i === 0 || hits[i - 1].group !== s.group) && <p className="hidden px-2.5 pb-1 pt-2.5 text-[11.5px] font-medium text-[#a1a1aa] first:pt-0 lg:block">{s.group}</p>}
-              <Link href={`${A}/settings/${s.slug}`} aria-current={on ? "page" : undefined} className={`flex h-8 items-center gap-2 whitespace-nowrap rounded-[6px] px-2.5 text-[13px] ${on ? `${SEL} font-medium` : "text-[#3f3f46] hover:bg-white hover:text-[#18181b]"}`}>
-                <Icon className="h-3.5 w-3.5 shrink-0 opacity-70" /> {s.label}
+              {(i === 0 || hits[i - 1].group !== s.group) && <p className="hidden px-2.5 pb-1 pt-2.5 text-[11.5px] font-medium text-[#a3a3a3] first:pt-0 lg:block">{s.group}</p>}
+              <Link href={`${A}/settings/${s.slug}`} aria-current={on ? "page" : undefined} className={`flex h-9 items-center gap-2.5 whitespace-nowrap rounded-[10px] px-2.5 text-[13px] ${on ? `${SEL} font-medium` : "text-[#3a3a3a] hover:bg-white hover:text-[#0a0a0a]"}`}>
+                <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-[7px] ${s.tone === "ink" ? "bg-[#0a0a0a]/[0.07] text-[#0a0a0a]" : TONE[s.tone].chip}`}><Icon className="h-3.5 w-3.5" /></span> {s.label}
               </Link>
             </li>
           );
         })}
-        {hits.length === 0 && <li className="px-2.5 py-2 text-[12.5px] text-[#71717a]">Nothing matches.</li>}
+        {hits.length === 0 && <li className="px-2.5 py-2 text-[12.5px] text-[#737373]">Nothing matches.</li>}
       </ul>
-      <p className="mt-3 hidden border-t border-[#e4e4e7] px-2.5 pt-3 text-[12px] leading-relaxed text-[#71717a] lg:block">
+      <p className="mt-3 hidden border-t border-[#ebebeb] px-2.5 pt-3 text-[12px] leading-relaxed text-[#737373] lg:block">
         Your own profile, password and devices are under <Link href={`${A}/account`} className={link}>Your account</Link>, in the store menu at the foot of the rail.
       </p>
     </nav>
@@ -45,13 +45,13 @@ export function SettingsNav() {
 export function OrderNumber() {
   const [pre, setPre] = useState("#ZL-");
   const [suf, setSuf] = useState("");
-  const f = "h-8 w-full rounded-[6px] border border-[#d4d4d8] px-2.5 text-[13px] outline-none focus:border-[#5b5bf0]";
+  const f = "h-8 w-full rounded-[10px] border border-[#dddddd] px-2.5 text-[13px] outline-none focus:border-[#6666ff]";
   return (
     <div className="grid gap-3 p-4 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
-      <label className="block"><span className="mb-1 block text-[12.5px] font-medium text-[#3f3f46]">Before the number</span><input value={pre} onChange={(e) => setPre(e.target.value)} maxLength={8} className={f} /></label>
-      <label className="block"><span className="mb-1 block text-[12.5px] font-medium text-[#3f3f46]">After the number</span><input value={suf} onChange={(e) => setSuf(e.target.value)} maxLength={8} placeholder="Nothing" className={f} /></label>
-      <p className="flex h-8 items-center gap-1 text-[12.5px] text-[#71717a]">
-        Customers see {[1049, 1050].map((n) => <b key={n} className="rounded-[4px] bg-[#f4f4f5] px-1.5 py-0.5 font-mono text-[12px] font-semibold text-[#18181b]">{pre}{n}{suf}</b>)}…
+      <label className="block"><span className="mb-1 block text-[12.5px] font-medium text-[#3a3a3a]">Before the number</span><input value={pre} onChange={(e) => setPre(e.target.value)} maxLength={8} className={f} /></label>
+      <label className="block"><span className="mb-1 block text-[12.5px] font-medium text-[#3a3a3a]">After the number</span><input value={suf} onChange={(e) => setSuf(e.target.value)} maxLength={8} placeholder="Nothing" className={f} /></label>
+      <p className="flex h-8 items-center gap-1 text-[12.5px] text-[#737373]">
+        Customers see {[1049, 1050].map((n) => <b key={n} className="rounded-[6px] bg-[#f3f3f3] px-1.5 py-0.5 font-mono text-[12px] font-semibold text-[#0a0a0a]">{pre}{n}{suf}</b>)}…
       </p>
     </div>
   );
@@ -67,38 +67,38 @@ export function TeamList({ owner, ownerEmail }: { owner: string; ownerEmail: str
   const [invite, setInvite] = useState(true);
   const av = (t: string, cls: string) => <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-[11px] font-semibold ${cls}`}>{t}</span>;
   return (
-    <div className="divide-y divide-[#f0f0f2]">
+    <div className="divide-y divide-[#f1f1f1]">
       <div className="flex h-12 items-center gap-3 px-4">
-        {av("AK", "bg-[#eef0ff] text-[#3730a3]")}
-        <div className="min-w-0 flex-1"><p className="text-[13px] font-medium">{owner} <span className="font-normal text-[#71717a]">· {ownerEmail}</span></p><p className="truncate text-[12px] text-[#71717a]">Everything, including billing and closing the store</p></div>
+        {av("AK", "bg-[#ecebff] text-[#3d3dc4]")}
+        <div className="min-w-0 flex-1"><p className="text-[13px] font-medium">{owner} <span className="font-normal text-[#737373]">· {ownerEmail}</span></p><p className="truncate text-[12px] text-[#737373]">Everything, including billing and closing the store</p></div>
         <Status tone="off">Owner</Status>
       </div>
       {people.map((p, i) => (
         <div key={p.name} className="flex h-12 items-center gap-3 px-4">
           {av(p.name.split(" ").map((w) => w[0]).join(""), "bg-[#e0f2fe] text-[#075985]")}
-          <div className="min-w-0 flex-1"><p className="text-[13px] font-medium">{p.name}</p><p className="truncate text-[12px] text-[#71717a]">{p.what}</p></div>
+          <div className="min-w-0 flex-1"><p className="text-[13px] font-medium">{p.name}</p><p className="truncate text-[12px] text-[#737373]">{p.what}</p></div>
           <label className="relative">
             <span className="sr-only">Role for {p.name}</span>
-            <select value={p.role} onChange={(e) => { const before = people; setPeople(people.map((x, j) => (j === i ? { ...x, role: e.target.value } : x))); toast(`${p.name} is now ${e.target.value}`, () => setPeople(before)); }} className="h-7 appearance-none rounded-[6px] bg-white pl-2.5 pr-7 text-[12.5px] font-medium outline-none ring-1 ring-inset ring-[#d4d4d8]">
+            <select value={p.role} onChange={(e) => { const before = people; setPeople(people.map((x, j) => (j === i ? { ...x, role: e.target.value } : x))); toast(`${p.name} is now ${e.target.value}`, () => setPeople(before)); }} className="h-7 appearance-none rounded-[10px] bg-white pl-2.5 pr-7 text-[12.5px] font-medium outline-none ring-1 ring-inset ring-[#dddddd]">
               {ROLES.map((r) => <option key={r}>{r}</option>)}
             </select>
-            <ChevronDown className="pointer-events-none absolute right-2 top-1.5 h-3.5 w-3.5 text-[#a1a1aa]" />
+            <ChevronDown className="pointer-events-none absolute right-2 top-1.5 h-3.5 w-3.5 text-[#a3a3a3]" />
           </label>
-          <button type="button" onClick={() => { const before = people; setPeople(people.filter((_, j) => j !== i)); toast(`${p.name} removed`, () => setPeople(before)); }} className="text-[12.5px] text-[#71717a] hover:text-[#b91c1c]">Remove</button>
+          <button type="button" onClick={() => { const before = people; setPeople(people.filter((_, j) => j !== i)); toast(`${p.name} removed`, () => setPeople(before)); }} className="text-[12.5px] text-[#737373] hover:text-[#b91c1c]">Remove</button>
         </div>
       ))}
       {invite && (
         <div className="flex h-12 items-center gap-3 px-4">
-          {av("?", "border border-dashed border-[#d4d4d8] text-[#a1a1aa]")}
-          <div className="min-w-0 flex-1"><p className="text-[13px] font-medium">sana@zohralawn.pk</p><p className="truncate text-[12px] text-[#71717a]">Invited as Staff 2 days ago · link good for 5 more days</p></div>
+          {av("?", "border border-dashed border-[#dddddd] text-[#a3a3a3]")}
+          <div className="min-w-0 flex-1"><p className="text-[13px] font-medium">sana@zohralawn.pk</p><p className="truncate text-[12px] text-[#737373]">Invited as Staff 2 days ago · link good for 5 more days</p></div>
           <button type="button" onClick={() => toast("Invite sent again")} className={link}>Resend</button>
-          <button type="button" onClick={() => { setInvite(false); toast("Invite cancelled", () => setInvite(true)); }} className="text-[12.5px] text-[#71717a] hover:text-[#18181b]">Cancel</button>
+          <button type="button" onClick={() => { setInvite(false); toast("Invite cancelled", () => setInvite(true)); }} className="text-[12.5px] text-[#737373] hover:text-[#0a0a0a]">Cancel</button>
         </div>
       )}
       <div className="flex flex-wrap items-center gap-3 px-4 py-2.5">
         <button type="button" onClick={() => toast("Invite box opened")} className={btn()}><Plus /> Invite someone</button>
-        <span className="text-[12px] text-[#71717a]">Admin, Staff, or Viewer (can look, cannot change)</span>
-        <button type="button" onClick={() => toast("Choose who becomes owner; we ask for your password")} className="ml-auto text-[12.5px] text-[#71717a] hover:text-[#18181b]">Hand over ownership</button>
+        <span className="text-[12px] text-[#737373]">Admin, Staff, or Viewer (can look, cannot change)</span>
+        <button type="button" onClick={() => toast("Choose who becomes owner; we ask for your password")} className="ml-auto text-[12.5px] text-[#737373] hover:text-[#0a0a0a]">Hand over ownership</button>
       </div>
     </div>
   );
@@ -117,19 +117,19 @@ export function PolicyList() {
   const [open, setOpen] = useState<string | null>(null);
   const [rows, setRows] = useState(POLICIES);
   return (
-    <div className="divide-y divide-[#f0f0f2]">
+    <div className="divide-y divide-[#f1f1f1]">
       {rows.map((p, i) => (
         <div key={p.t}>
           <button type="button" onClick={() => setOpen(open === p.t ? null : p.t)} aria-expanded={open === p.t} className="flex h-11 w-full items-center gap-3 px-4 text-left hover:bg-[#fafafa]">
-            <span className="min-w-0 flex-1 truncate text-[13px] font-medium">{p.t} <span className="font-normal text-[#71717a]">· {p.done ? "linked from checkout and your footer" : p.body ? "a draft is ready to read" : "not written yet"}</span></span>
+            <span className="min-w-0 flex-1 truncate text-[13px] font-medium">{p.t} <span className="font-normal text-[#737373]">· {p.done ? "linked from checkout and your footer" : p.body ? "a draft is ready to read" : "not written yet"}</span></span>
             <Status tone={p.done ? "good" : p.body ? "wait" : "off"}>{p.done ? "Published" : p.body ? "Draft" : "Empty"}</Status>
-            <ChevronDown className={`h-3.5 w-3.5 text-[#a1a1aa] transition-transform ${open === p.t ? "rotate-180" : ""}`} />
+            <ChevronDown className={`h-3.5 w-3.5 text-[#a3a3a3] transition-transform ${open === p.t ? "rotate-180" : ""}`} />
           </button>
           {open === p.t && (
             <div className="bg-[#fafafa] px-4 pb-3 pt-1">
-              <textarea defaultValue={p.body} rows={5} placeholder="Write it here, or start from our wording for Pakistan." className="block w-full resize-y rounded-[6px] border border-[#d4d4d8] bg-white px-3 py-2 text-[13px] leading-relaxed outline-none focus:border-[#5b5bf0]" />
+              <textarea defaultValue={p.body} rows={5} placeholder="Write it here, or start from our wording for Pakistan." className="block w-full resize-y rounded-[10px] border border-[#dddddd] bg-white px-3 py-2 text-[13px] leading-relaxed outline-none focus:border-[#6666ff]" />
               <div className="mt-2 flex flex-wrap items-center justify-end gap-1.5">
-                <span className="mr-auto text-[12px] text-[#71717a]">Not legal advice; you are responsible for what it says.</span>
+                <span className="mr-auto text-[12px] text-[#737373]">Not legal advice; you are responsible for what it says.</span>
                 <button type="button" onClick={() => setOpen(null)} className={btn()}>Cancel</button>
                 <button type="button" onClick={() => { const before = rows; setRows(rows.map((x, j) => (j === i ? { ...x, done: true, body: x.body || "Written." } : x))); setOpen(null); toast(`${p.t} published`, () => setRows(before)); }} className={btn("primary")}>{p.done ? "Save" : "Publish"}</button>
               </div>

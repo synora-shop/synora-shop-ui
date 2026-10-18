@@ -27,26 +27,26 @@ export function OrderFlow({ start, id }: { start: Stage; id: number }) {
   const steps = STAGES.filter((s) => s !== "Cancelled");
   const at = steps.indexOf(stage as (typeof steps)[number]);
   const next = NEXT[stage];
-  if (stage === "Cancelled") return <p className="rounded-[8px] border border-[#fecaca] bg-[#fef2f2] px-4 py-2.5 text-[13px] font-medium text-[#b91c1c]">This order was cancelled.</p>;
+  if (stage === "Cancelled") return <p className="rounded-[16px] border border-[#fecaca] bg-[#fef2f2] px-4 py-2.5 text-[13px] font-medium text-[#b91c1c]">This order was cancelled.</p>;
   return (
-    <section className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-[8px] border border-[#e4e4e7] bg-white px-3 py-2">
+    <section className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-[16px] border border-[#ebebeb] bg-white px-3 py-2">
       <ol className="flex min-w-0 flex-1 items-center gap-1.5">
         {steps.map((s, i) => (
           <li key={s} className="flex min-w-0 items-center gap-1.5">
-            <span className={`grid h-5 w-5 shrink-0 place-items-center rounded-full text-[10.5px] font-semibold ${i < at ? "bg-[#dcfce7] text-[#15803d]" : i === at ? "bg-[#5b5bf0] text-white" : "bg-[#f4f4f5] text-[#a1a1aa]"}`}>
+            <span className={`grid h-5 w-5 shrink-0 place-items-center rounded-full text-[10.5px] font-semibold ${i < at ? "bg-[#dcfce7] text-[#15803d]" : i === at ? "bg-[#6666ff] text-white" : "bg-[#f3f3f3] text-[#a3a3a3]"}`}>
               {i < at ? <Check className="h-3 w-3" /> : i + 1}
             </span>
-            <span className={`hidden truncate text-[12.5px] sm:block ${i === at ? "font-semibold text-[#18181b]" : "text-[#71717a]"}`}>{s}</span>
-            {i < steps.length - 1 && <span className={`mx-1 h-px w-4 shrink-0 lg:w-8 ${i < at ? "bg-[#86efac]" : "bg-[#e4e4e7]"}`} />}
+            <span className={`hidden truncate text-[12.5px] sm:block ${i === at ? "font-semibold text-[#0a0a0a]" : "text-[#737373]"}`}>{s}</span>
+            {i < steps.length - 1 && <span className={`mx-1 h-px w-4 shrink-0 lg:w-8 ${i < at ? "bg-[#86efac]" : "bg-[#ebebeb]"}`} />}
           </li>
         ))}
       </ol>
       {next && (
         <div className="flex flex-wrap items-center gap-2">
-          {stage === "Pending" && <span className="hidden text-[12.5px] text-[#71717a] xl:block">Call or WhatsApp to confirm a cash order before packing.</span>}
+          {stage === "Pending" && <span className="hidden text-[12.5px] text-[#737373] xl:block">Call or WhatsApp to confirm a cash order before packing.</span>}
           {stage === "Packed" && (
-            <label className="flex h-8 items-center gap-1.5 rounded-[6px] px-2 ring-1 ring-inset ring-[#d4d4d8]">
-              <Truck className="h-3.5 w-3.5 text-[#a1a1aa]" />
+            <label className="flex h-8 items-center gap-1.5 rounded-[10px] px-2 ring-1 ring-inset ring-[#dddddd]">
+              <Truck className="h-3.5 w-3.5 text-[#a3a3a3]" />
               <input value={tracking} onChange={(e) => setTracking(e.target.value)} placeholder="Leopards or TCS tracking number" className="w-52 bg-transparent text-[13px] outline-none" />
             </label>
           )}
@@ -71,10 +71,10 @@ export function WhatsAppTemplates({ name, id, phone }: { name: string; id: numbe
   return (
     <div className="flex flex-col gap-1">
       {msgs.map(([label, text]) => (
-        <button key={label} type="button" onClick={() => toast(`WhatsApp opened for ${phone}`)} title={text} className="flex h-8 items-center gap-2 rounded-[6px] px-2 text-left text-[12.5px] ring-1 ring-inset ring-[#e4e4e7] hover:bg-[#f0fdf4]">
+        <button key={label} type="button" onClick={() => toast(`WhatsApp opened for ${phone}`)} title={text} className="flex h-8 items-center gap-2 rounded-[10px] px-2 text-left text-[12.5px] ring-1 ring-inset ring-[#ebebeb] hover:bg-[#f0fdf4]">
           <MessageCircle className="h-3.5 w-3.5 shrink-0 text-[#16a34a]" />
           <b className="font-medium">{label}</b>
-          <span className="min-w-0 flex-1 truncate text-[#a1a1aa]">{text}</span>
+          <span className="min-w-0 flex-1 truncate text-[#a3a3a3]">{text}</span>
         </button>
       ))}
     </div>

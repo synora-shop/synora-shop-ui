@@ -14,7 +14,7 @@ export function Act({ children, msg, kind = "secondary", small = false, title }:
 export function Copy({ text, label }: { text: string; label?: string }) {
   const toast = useToast();
   return (
-    <button type="button" onClick={() => { navigator.clipboard?.writeText(text).catch(() => {}); toast("Copied"); }} className="inline-flex max-w-full items-center gap-1.5 rounded-[4px] bg-[#f4f4f5] px-1.5 py-0.5 font-mono text-[12px] text-[#3f3f46] hover:bg-[#e4e4e7]">
+    <button type="button" onClick={() => { navigator.clipboard?.writeText(text).catch(() => {}); toast("Copied"); }} className="inline-flex max-w-full items-center gap-1.5 rounded-[6px] bg-[#f3f3f3] px-1.5 py-0.5 font-mono text-[12px] text-[#3a3a3a] hover:bg-[#ebebeb]">
       <span className="truncate">{label ?? text}</span>
     </button>
   );

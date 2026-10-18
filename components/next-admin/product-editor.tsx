@@ -18,19 +18,19 @@ type Kind = "Normal" | "Bulk" | "Made to order";
 const CUR = pkr(0).replace(/[\d.,\s]/g, "");
 
 function In({ label, value, onChange, hint, area = false, prefix }: { label: string; value: string; onChange: (v: string) => void; hint?: ReactNode; area?: boolean; prefix?: string }) {
-  const cls = "w-full rounded-[6px] border border-[#d4d4d8] bg-white px-2.5 text-[13px] outline-none focus:border-[#5b5bf0] focus:ring-2 focus:ring-[#5b5bf0]/20";
+  const cls = "w-full rounded-[10px] border border-[#dddddd] bg-white px-2.5 text-[13px] outline-none focus:border-[#6666ff] focus:ring-2 focus:ring-[#6666ff]/20";
   return (
     <label className="block">
-      <span className="mb-1 block text-[12.5px] font-medium text-[#3f3f46]">{label}</span>
+      <span className="mb-1 block text-[12.5px] font-medium text-[#3a3a3a]">{label}</span>
       {area ? (
         <textarea value={value} onChange={(e) => onChange(e.target.value)} rows={4} className={`${cls} py-2 leading-relaxed`} />
       ) : (
         <span className="relative block">
-          {prefix && <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[12.5px] text-[#a1a1aa]">{prefix}</span>}
+          {prefix && <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[12.5px] text-[#a3a3a3]">{prefix}</span>}
           <input value={value} onChange={(e) => onChange(e.target.value)} className={`${cls} h-8 ${prefix ? "pl-9" : ""}`} />
         </span>
       )}
-      {hint && <span className="mt-1 block text-[12px] text-[#71717a]">{hint}</span>}
+      {hint && <span className="mt-1 block text-[12px] text-[#737373]">{hint}</span>}
     </label>
   );
 }
@@ -52,7 +52,7 @@ export function ProductEditor({ p, photos }: { p: Product; photos: string[] }) {
     <Page
       title={f.title || "Untitled product"}
       crumbs={[{ label: "Products", href: `${A}/products` }]}
-      meta={<>{f.active ? <Status tone="good">Active</Status> : <Status tone="off">Draft</Status>}<span className="text-[12px] text-[#71717a]">{f.kind}</span></>}
+      meta={<>{f.active ? <Status tone="good">Active</Status> : <Status tone="off">Draft</Status>}<span className="text-[12px] text-[#737373]">{f.kind}</span></>}
       actions={
         dirty ? (
           <>
@@ -77,15 +77,15 @@ export function ProductEditor({ p, photos }: { p: Product; photos: string[] }) {
             </div>
           </Panel>
 
-          <Panel title="Photos" action={<span className="text-[#71717a]">{photos.length} of 10 · drag to reorder</span>}>
+          <Panel title="Photos" action={<span className="text-[#737373]">{photos.length} of 10 · drag to reorder</span>}>
             <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
               {photos.map((src, i) => (
                 <div key={src} className={`relative ${i === 0 ? "col-span-2 row-span-2" : ""}`}>
-                  <Image src={src} alt="" width={240} height={300} className="aspect-square w-full rounded-[6px] bg-[#f4f4f5] object-cover" />
-                  {i === 0 && <span className="absolute left-1.5 top-1.5 rounded-[4px] bg-white/95 px-1.5 py-0.5 text-[11px] font-medium">Main</span>}
+                  <Image src={src} alt="" width={240} height={300} className="aspect-square w-full rounded-[10px] bg-[#f3f3f3] object-cover" />
+                  {i === 0 && <span className="absolute left-1.5 top-1.5 rounded-[6px] bg-white/95 px-1.5 py-0.5 text-[11px] font-medium">Main</span>}
                 </div>
               ))}
-              <button type="button" aria-label="Add photos" className="grid aspect-square place-items-center rounded-[6px] border border-dashed border-[#d4d4d8] text-[#a1a1aa] hover:border-[#5b5bf0] hover:text-[#5b5bf0]"><ImagePlus className="h-4 w-4" /></button>
+              <button type="button" aria-label="Add photos" className="grid aspect-square place-items-center rounded-[10px] border border-dashed border-[#dddddd] text-[#a3a3a3] hover:border-[#6666ff] hover:text-[#6666ff]"><ImagePlus className="h-4 w-4" /></button>
             </div>
           </Panel>
 
@@ -111,17 +111,17 @@ export function ProductEditor({ p, photos }: { p: Product; photos: string[] }) {
               <div className="mt-3 flex flex-col gap-3">
                 <Seg label="How the price shows" items={["Price on request", "A price range", "Quantity breaks"]} value={shown} onChange={setShown} />
                 {shown === "Quantity breaks" && (
-                  <table className={`${T.table} overflow-hidden rounded-[6px] ring-1 ring-[#e4e4e7]`}>
+                  <table className={`${T.table} overflow-hidden rounded-[10px] ring-1 ring-[#ebebeb]`}>
                     <thead><tr><th className={T.th}>From</th><th className={T.th}>Price each</th><th className={`${T.th} w-10`} /></tr></thead>
                     <tbody>
                       {[[10, 7900], [50, 7200], [100, 6400]].map(([q, pr]) => (
-                        <tr key={q}><td className={T.td}>{q} pieces</td><td className={`${T.td} font-semibold tabular-nums`}>{pkr(pr)}</td><td className={T.td}><Trash2 className="h-3.5 w-3.5 text-[#a1a1aa]" /></td></tr>
+                        <tr key={q}><td className={T.td}>{q} pieces</td><td className={`${T.td} font-semibold tabular-nums`}>{pkr(pr)}</td><td className={T.td}><Trash2 className="h-3.5 w-3.5 text-[#a3a3a3]" /></td></tr>
                       ))}
                     </tbody>
                   </table>
                 )}
-                {shown === "A price range" && <p className="rounded-[6px] bg-[#fafafa] px-3 py-2 text-[13px]">Shown as <b>{pkr(6400)} to {pkr(7900)}</b> each</p>}
-                {shown === "Price on request" && <p className="rounded-[6px] bg-[#fafafa] px-3 py-2 text-[13px]">Shown as <b>Price on request</b>, with an enquiry form</p>}
+                {shown === "A price range" && <p className="rounded-[10px] bg-[#fafafa] px-3 py-2 text-[13px]">Shown as <b>{pkr(6400)} to {pkr(7900)}</b> each</p>}
+                {shown === "Price on request" && <p className="rounded-[10px] bg-[#fafafa] px-3 py-2 text-[13px]">Shown as <b>Price on request</b>, with an enquiry form</p>}
                 <div className="grid gap-3 sm:grid-cols-2">
                   <In label="Minimum order" value="10 pieces" onChange={() => {}} />
                   <In label="Enquiries go to" value="Enquiries inbox and orders@zohralawn.pk" onChange={() => {}} />
@@ -130,10 +130,10 @@ export function ProductEditor({ p, photos }: { p: Product; photos: string[] }) {
             )}
             {f.kind === "Made to order" && (
               <div className="mt-3">
-                <p className="mb-1.5 text-[12.5px] font-medium text-[#3f3f46]">What you need from the customer</p>
-                <ul className="divide-y divide-[#f0f0f2] rounded-[6px] ring-1 ring-[#e4e4e7]">
+                <p className="mb-1.5 text-[12.5px] font-medium text-[#3a3a3a]">What you need from the customer</p>
+                <ul className="divide-y divide-[#f1f1f1] rounded-[10px] ring-1 ring-[#ebebeb]">
                   {[["Chest (inches)", "Number"], ["Length (inches)", "Number"], ["Colour", "Choice: maroon, emerald, ivory"], ["Anything else", "Text"]].map(([l, t]) => (
-                    <li key={l} className="flex h-9 items-center justify-between px-3 text-[13px]"><span className="font-medium">{l}</span><span className="text-[12px] text-[#71717a]">{t}</span></li>
+                    <li key={l} className="flex h-9 items-center justify-between px-3 text-[13px]"><span className="font-medium">{l}</span><span className="text-[12px] text-[#737373]">{t}</span></li>
                   ))}
                 </ul>
                 <button type="button" className={`${btn("ghost", true)} mt-1.5`}><Plus /> Add a question</button>
@@ -142,7 +142,7 @@ export function ProductEditor({ p, photos }: { p: Product; photos: string[] }) {
           </Panel>
 
           {f.kind === "Normal" && (
-            <Panel title="Sizes and stock" flush action={<label className="flex items-center gap-2 text-[#52525b]"><Sparkles className="h-3.5 w-3.5 text-[#5b5bf0]" /> Make SKUs for me <Toggle on={autoSku} label="Generate SKUs" onChange={setAutoSku} /></label>}>
+            <Panel title="Sizes and stock" flush action={<label className="flex items-center gap-2 text-[#555555]"><Sparkles className="h-3.5 w-3.5 text-[#6666ff]" /> Make SKUs for me <Toggle on={autoSku} label="Generate SKUs" onChange={setAutoSku} /></label>}>
               <table className={T.table}>
                 <thead><tr><th className={T.th}>Size</th><th className={T.th}>SKU</th><th className={`${T.th} text-right`}>In stock</th></tr></thead>
                 <tbody>
@@ -151,9 +151,9 @@ export function ProductEditor({ p, photos }: { p: Product; photos: string[] }) {
                     return (
                       <tr key={s}>
                         <td className={`${T.td} font-medium`}>{s}</td>
-                        <td className={`${T.td} font-mono text-[12px] text-[#71717a]`}>{autoSku ? `${skuBase}-${s}` : <input defaultValue={`${skuBase}-${s}`} className="h-7 rounded-[6px] px-2 font-mono text-[12px] ring-1 ring-inset ring-[#d4d4d8]" />}</td>
+                        <td className={`${T.td} font-mono text-[12px] text-[#737373]`}>{autoSku ? `${skuBase}-${s}` : <input defaultValue={`${skuBase}-${s}`} className="h-7 rounded-[10px] px-2 font-mono text-[12px] ring-1 ring-inset ring-[#dddddd]" />}</td>
                         <td className={`${T.td} text-right`}>
-                          <input defaultValue={left ?? "∞"} aria-label={`In stock, size ${s}`} className={`h-7 w-16 rounded-[6px] px-2 text-right text-[13px] font-semibold tabular-nums outline-none ring-1 ring-inset focus:ring-[#5b5bf0] ${left === 0 ? "text-[#b91c1c] ring-[#fecaca]" : left !== null && left < 4 ? "text-[#b45309] ring-[#fde68a]" : "ring-[#e4e4e7]"}`} />
+                          <input defaultValue={left ?? "∞"} aria-label={`In stock, size ${s}`} className={`h-7 w-16 rounded-[10px] px-2 text-right text-[13px] font-semibold tabular-nums outline-none ring-1 ring-inset focus:ring-[#6666ff] ${left === 0 ? "text-[#b91c1c] ring-[#fecaca]" : left !== null && left < 4 ? "text-[#b45309] ring-[#fde68a]" : "ring-[#ebebeb]"}`} />
                         </td>
                       </tr>
                     );
@@ -164,17 +164,17 @@ export function ProductEditor({ p, photos }: { p: Product; photos: string[] }) {
           )}
 
           <Panel title="How search shows it">
-            <p className="text-[12px] text-[#71717a]">zohralawn.pk › products › {p.slug}</p>
+            <p className="text-[12px] text-[#737373]">zohralawn.pk › products › {p.slug}</p>
             <p className="mt-0.5 text-[15px] text-[#1a0dab]">{f.title} · Zohra Lawn</p>
-            <p className="mt-0.5 text-[12.5px] text-[#52525b]">{f.desc.slice(0, 150)}</p>
+            <p className="mt-0.5 text-[12.5px] text-[#555555]">{f.desc.slice(0, 150)}</p>
           </Panel>
         </div>
 
         <div className="flex flex-col gap-3">
           <Panel title="Status">
             <div className="flex items-center justify-between gap-3">
-              <span><span className="block text-[13px] font-medium">{f.active ? "Active" : "Draft"}</span><span className="block text-[12px] text-[#71717a]">{f.active ? "Customers can buy it" : "Only you can see it"}</span></span>
-              <button type="button" role="switch" aria-checked={f.active} aria-label="Active" onClick={() => set("active", !f.active)} className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${f.active ? "bg-[#5b5bf0]" : "bg-[#d4d4d8]"}`}>
+              <span><span className="block text-[13px] font-medium">{f.active ? "Active" : "Draft"}</span><span className="block text-[12px] text-[#737373]">{f.active ? "Customers can buy it" : "Only you can see it"}</span></span>
+              <button type="button" role="switch" aria-checked={f.active} aria-label="Active" onClick={() => set("active", !f.active)} className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${f.active ? "bg-[#6666ff]" : "bg-[#dddddd]"}`}>
                 <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-[left] ${f.active ? "left-[18px]" : "left-0.5"}`} />
               </button>
             </div>

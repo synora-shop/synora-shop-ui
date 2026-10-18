@@ -24,10 +24,10 @@ export function Words() {
   const rows = WORDS.filter(([g, d]) => !q || `${g} ${d} ${vals[d]}`.toLowerCase().includes(q.toLowerCase()));
   const changed = WORDS.filter(([, d]) => vals[d] !== d).length;
   return (
-    <section className="overflow-hidden rounded-[8px] border border-[#e4e4e7] bg-white">
-      <div className="flex items-center gap-3 border-b border-[#e4e4e7] px-3 py-1.5">
+    <section className="overflow-hidden rounded-[16px] border border-[#ebebeb] bg-white">
+      <div className="flex items-center gap-3 border-b border-[#ebebeb] px-3 py-1.5">
         <SearchBox value={q} onChange={setQ} placeholder="Search wording, e.g. cart" />
-        <span className="ml-auto text-[12px] text-[#71717a]">{changed} of {WORDS.length} changed</span>
+        <span className="ml-auto text-[12px] text-[#737373]">{changed} of {WORDS.length} changed</span>
       </div>
       <ul>
         {rows.map(([g, d], i) => {
@@ -35,12 +35,12 @@ export function Words() {
           const on = vals[d] !== d;
           return (
             <li key={d}>
-              {head && <p className="border-b border-[#f0f0f2] bg-[#fafafa] px-4 py-1.5 text-[11.5px] font-medium text-[#71717a]">{head}</p>}
-              <div className="grid h-11 items-center gap-3 border-b border-[#f0f0f2] px-4 sm:grid-cols-[13rem_minmax(0,1fr)_1.75rem]">
-                <span className="truncate text-[13px] text-[#71717a]">{d}</span>
-                <input value={vals[d]} onChange={(e) => setVals({ ...vals, [d]: e.target.value })} aria-label={`Wording for ${d}`} className={`h-8 rounded-[6px] px-2.5 text-[13px] outline-none ring-1 ring-inset focus:ring-[#5b5bf0] ${on ? "bg-[#f7f7ff] ring-[#c9ccff]" : "ring-[#e4e4e7]"}`} />
+              {head && <p className="border-b border-[#f1f1f1] bg-[#fafafa] px-4 py-1.5 text-[11.5px] font-medium text-[#737373]">{head}</p>}
+              <div className="grid h-11 items-center gap-3 border-b border-[#f1f1f1] px-4 sm:grid-cols-[13rem_minmax(0,1fr)_1.75rem]">
+                <span className="truncate text-[13px] text-[#737373]">{d}</span>
+                <input value={vals[d]} onChange={(e) => setVals({ ...vals, [d]: e.target.value })} aria-label={`Wording for ${d}`} className={`h-8 rounded-[10px] px-2.5 text-[13px] outline-none ring-1 ring-inset focus:ring-[#6666ff] ${on ? "bg-[#f5f5ff] ring-[#d6d5ff]" : "ring-[#ebebeb]"}`} />
                 {on ? (
-                  <button type="button" aria-label="Back to the original" title="Back to the original" onClick={() => { setVals({ ...vals, [d]: d }); toast(`“${d}” back to the original`); }} className="grid h-7 w-7 place-items-center rounded-[6px] text-[#a1a1aa] hover:bg-[#f4f4f5] hover:text-[#18181b]"><RotateCcw className="h-3.5 w-3.5" /></button>
+                  <button type="button" aria-label="Back to the original" title="Back to the original" onClick={() => { setVals({ ...vals, [d]: d }); toast(`“${d}” back to the original`); }} className="grid h-7 w-7 place-items-center rounded-[10px] text-[#a3a3a3] hover:bg-[#f3f3f3] hover:text-[#0a0a0a]"><RotateCcw className="h-3.5 w-3.5" /></button>
                 ) : <span />}
               </div>
             </li>

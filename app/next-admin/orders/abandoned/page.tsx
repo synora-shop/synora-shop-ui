@@ -29,7 +29,7 @@ export default function AbandonedPage() {
           by: { who: l.who, cart: l.cart, when: l.at, total: l.total },
           cells: {
             who: <>{l.who} <span className={T.muted}>· {l.contact}</span></>,
-            cart: <span className="text-[#3f3f46]">{l.cart}</span>,
+            cart: <span className="text-[#3a3a3a]">{l.cart}</span>,
             when: <span className={T.muted}>{l.when}</span>,
             total: <b className="font-semibold tabular-nums">{pkr(l.total)}</b>,
             go: <Act small msg={`Reminder sent to ${l.contact}`}><Send /> Remind</Act>,

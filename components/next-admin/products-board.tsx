@@ -40,14 +40,14 @@ export function ProductsBoard({ products }: { products: Product[] }) {
 
   return (
     <>
-      <section className="overflow-hidden rounded-[8px] border border-[#e4e4e7] bg-white">
-        <div className="flex flex-wrap items-center gap-x-3 border-b border-[#e4e4e7] px-3">
+      <section className="overflow-hidden rounded-[16px] border border-[#ebebeb] bg-white">
+        <div className="flex flex-wrap items-center gap-x-3 border-b border-[#ebebeb] px-3">
           <Tabs items={VIEWS} value={view} onChange={setView} counts={Object.fromEntries(VIEWS.map((v) => [v, rows.filter((p) => inView(v, p)).length]))} />
           <div className="ml-auto flex min-w-0 flex-1 items-center justify-end gap-1.5 py-1.5">
             <SearchBox value={q} onChange={setQ} placeholder="Search products" />
-            <div role="radiogroup" aria-label="Show as" className="flex h-8 items-center gap-0.5 rounded-[6px] p-0.5 ring-1 ring-inset ring-[#d4d4d8]">
-              <button type="button" role="radio" aria-checked={!tiles} aria-label="Rows" onClick={() => setTiles(false)} className={`grid h-7 w-7 place-items-center rounded-[5px] ${!tiles ? SEL : "text-[#71717a]"}`}><List className="h-4 w-4" /></button>
-              <button type="button" role="radio" aria-checked={tiles} aria-label="Tiles" onClick={() => setTiles(true)} className={`grid h-7 w-7 place-items-center rounded-[5px] ${tiles ? SEL : "text-[#71717a]"}`}><LayoutGrid className="h-4 w-4" /></button>
+            <div role="radiogroup" aria-label="Show as" className="flex h-8 items-center gap-0.5 rounded-[10px] p-0.5 ring-1 ring-inset ring-[#dddddd]">
+              <button type="button" role="radio" aria-checked={!tiles} aria-label="Rows" onClick={() => setTiles(false)} className={`grid h-7 w-7 place-items-center rounded-[8px] ${!tiles ? SEL : "text-[#737373]"}`}><List className="h-4 w-4" /></button>
+              <button type="button" role="radio" aria-checked={tiles} aria-label="Tiles" onClick={() => setTiles(true)} className={`grid h-7 w-7 place-items-center rounded-[8px] ${tiles ? SEL : "text-[#737373]"}`}><LayoutGrid className="h-4 w-4" /></button>
             </div>
           </div>
         </div>
@@ -57,23 +57,23 @@ export function ProductsBoard({ products }: { products: Product[] }) {
             {sorted.map((p) => {
               const on = picked.includes(p.slug);
               return (
-                <article key={p.slug} className={`group relative overflow-hidden rounded-[6px] ${on ? "ring-2 ring-[#5b5bf0]" : "ring-1 ring-[#e4e4e7]"}`}>
+                <article key={p.slug} className={`group relative overflow-hidden rounded-[10px] ${on ? "ring-2 ring-[#6666ff]" : "ring-1 ring-[#ebebeb]"}`}>
                   <input type="checkbox" aria-label={`Select ${p.name}`} checked={on} onChange={() => toggle(p.slug)} className={`${check} absolute left-2 top-2 z-10`} />
                   <Link href={`${A}/products/${p.slug}`}>
-                    <Image src={p.image} alt="" width={240} height={300} className="aspect-[4/5] w-full bg-[#f4f4f5] object-cover" />
+                    <Image src={p.image} alt="" width={240} height={300} className="aspect-[4/5] w-full bg-[#f3f3f3] object-cover" />
                     <div className="px-2.5 py-2">
                       <p className="truncate text-[12.5px] font-medium">{p.name}</p>
-                      <p className="mt-0.5 flex items-center justify-between text-[12px] tabular-nums text-[#71717a]">{pkr(p.price)} {stock(p)}</p>
+                      <p className="mt-0.5 flex items-center justify-between text-[12px] tabular-nums text-[#737373]">{pkr(p.price)} {stock(p)}</p>
                     </div>
                   </Link>
-                  {p.status === "Draft" && <span className="absolute right-2 top-2 rounded-[4px] bg-white/95 px-1.5 py-0.5 text-[11px] font-medium text-[#52525b]">Draft</span>}
+                  {p.status === "Draft" && <span className="absolute right-2 top-2 rounded-[6px] bg-white/95 px-1.5 py-0.5 text-[11px] font-medium text-[#555555]">Draft</span>}
                 </article>
               );
             })}
           </div>
         ) : (
           <>
-          <ul className="divide-y divide-[#f0f0f2] sm:hidden">
+          <ul className="divide-y divide-[#f1f1f1] sm:hidden">
             {sorted.map((p) => (
               <li key={p.slug}>
                 <Link href={`${A}/products/${p.slug}`} className="flex items-center gap-2.5 px-3 py-2 active:bg-[#fafafa]">
@@ -103,7 +103,7 @@ export function ProductsBoard({ products }: { products: Product[] }) {
                 {sorted.map((p) => {
                   const on = picked.includes(p.slug);
                   return (
-                    <tr key={p.slug} className={on ? "bg-[#f7f7ff]" : T.tr}>
+                    <tr key={p.slug} className={on ? "bg-[#f5f5ff]" : T.tr}>
                       <td className={T.td}><input type="checkbox" aria-label={`Select ${p.name}`} checked={on} onChange={() => toggle(p.slug)} className={check} /></td>
                       <td className={`${T.td} max-w-[22rem]`}>
                         <Link href={`${A}/products/${p.slug}`} className="flex items-center gap-2.5 hover:underline">
@@ -112,7 +112,7 @@ export function ProductsBoard({ products }: { products: Product[] }) {
                         </Link>
                       </td>
                       <td className={T.td}>{p.status === "Active" ? <Status tone="good">Active</Status> : <Status tone="off">Draft</Status>}</td>
-                      <td className={T.td}>{stock(p)} <span className="text-[12px] text-[#a1a1aa]">· {p.variants} size{p.variants > 1 ? "s" : ""}</span></td>
+                      <td className={T.td}>{stock(p)} <span className="text-[12px] text-[#a3a3a3]">· {p.variants} size{p.variants > 1 ? "s" : ""}</span></td>
                       <td className={`${T.td} ${T.muted}`}>{p.collection}</td>
                       <td className={`${T.td} text-right font-semibold tabular-nums`}>{pkr(p.price)}</td>
                     </tr>
@@ -123,7 +123,7 @@ export function ProductsBoard({ products }: { products: Product[] }) {
           </div>
           </>
         )}
-        {shown.length === 0 && <p className="px-4 py-10 text-center text-[13px] text-[#71717a]">Nothing here.</p>}
+        {shown.length === 0 && <p className="px-4 py-10 text-center text-[13px] text-[#737373]">Nothing here.</p>}
       </section>
 
       <BulkBar count={picked.length} noun="product" onClear={() => setPicked([])}>
@@ -147,14 +147,14 @@ export function ProductActions() {
       <Link href={`${A}/products/zohra`} className={btn("primary")}><Plus /> Add product</Link>
       {importing && (
         <div className="fixed inset-0 z-[100] grid place-items-center bg-black/25 px-3" onMouseDown={() => setImporting(false)}>
-          <div role="dialog" aria-label="Import products" onMouseDown={(e) => e.stopPropagation()} className="w-full max-w-md overflow-hidden rounded-[8px] bg-white shadow-[0_30px_80px_-24px_rgba(0,0,0,0.55)]">
-            <p className="flex h-11 items-center justify-between border-b border-[#f0f0f2] px-4 text-[13px] font-semibold">Import products <button type="button" aria-label="Close" onClick={() => setImporting(false)}><X className="h-4 w-4 text-[#a1a1aa]" /></button></p>
+          <div role="dialog" aria-label="Import products" onMouseDown={(e) => e.stopPropagation()} className="w-full max-w-md overflow-hidden rounded-[16px] bg-white shadow-[0_30px_80px_-24px_rgba(0,0,0,0.55)]">
+            <p className="flex h-11 items-center justify-between border-b border-[#f1f1f1] px-4 text-[13px] font-semibold">Import products <button type="button" aria-label="Close" onClick={() => setImporting(false)}><X className="h-4 w-4 text-[#a3a3a3]" /></button></p>
             <div className="p-4">
-              <div className="flex items-center gap-3 rounded-[6px] bg-[#fafafa] p-3 ring-1 ring-inset ring-[#e4e4e7]">
+              <div className="flex items-center gap-3 rounded-[10px] bg-[#fafafa] p-3 ring-1 ring-inset ring-[#ebebeb]">
                 <FileSpreadsheet className="h-6 w-6 text-[#16a34a]" />
-                <span className="min-w-0 flex-1"><span className="block text-[13px] font-medium">products_export.csv</span><span className="text-[12px] text-[#71717a]">From Shopify · 12 products, 41 sizes</span></span>
+                <span className="min-w-0 flex-1"><span className="block text-[13px] font-medium">products_export.csv</span><span className="text-[12px] text-[#737373]">From Shopify · 12 products, 41 sizes</span></span>
               </div>
-              <ul className="mt-3 flex flex-col gap-1 text-[12.5px] text-[#3f3f46]">
+              <ul className="mt-3 flex flex-col gap-1 text-[12.5px] text-[#3a3a3a]">
                 <li>10 new products will be added</li>
                 <li>2 match products you have, by their address, and will be updated</li>
                 <li>Pictures are copied from Shopify as they import</li>

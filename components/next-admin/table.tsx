@@ -18,19 +18,19 @@ export function Table({ cols, rows, views, search, minWidth = 640, foot }: { col
   const { sorted, sort, click } = useSort(shown, Object.fromEntries(cols.map((c) => [c.key, (r: TRow) => r.by[c.key] ?? ""])));
   const counts = views ? Object.fromEntries(views.map((v, i) => [v, i === 0 ? rows.length : rows.filter((r) => r.views?.includes(v)).length])) : undefined;
   return (
-    <section className="overflow-hidden rounded-[8px] border border-[#e4e4e7] bg-white">
+    <section className="overflow-hidden rounded-[16px] border border-[#ebebeb] bg-white">
       {(views || search) && (
-        <div className={`flex flex-wrap items-center gap-x-3 border-b border-[#e4e4e7] px-3 ${views ? "" : "py-1.5"}`}>
+        <div className={`flex flex-wrap items-center gap-x-3 border-b border-[#ebebeb] px-3 ${views ? "" : "py-1.5"}`}>
           {views && <Tabs items={views} value={view} onChange={setView} counts={counts} />}
           {search && <div className="ml-auto flex min-w-0 flex-1 justify-end py-1.5"><SearchBox value={q} onChange={setQ} placeholder={search} /></div>}
         </div>
       )}
       {/* Phones: each row as a short stack, the first column leading. */}
-      <ul className="divide-y divide-[#f0f0f2] sm:hidden">
+      <ul className="divide-y divide-[#f1f1f1] sm:hidden">
         {sorted.map((r) => (
           <li key={r.id} className="px-3 py-2.5 text-[13px]">
             <div className="flex items-center justify-between gap-3 font-medium">{r.cells[cols[0].key]}<span>{r.cells[cols[cols.length - 1].key]}</span></div>
-            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px] text-[#71717a]">{cols.slice(1, -1).map((c) => <span key={c.key}>{r.cells[c.key]}</span>)}</div>
+            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px] text-[#737373]">{cols.slice(1, -1).map((c) => <span key={c.key}>{r.cells[c.key]}</span>)}</div>
           </li>
         ))}
       </ul>
@@ -53,11 +53,11 @@ export function Table({ cols, rows, views, search, minWidth = 640, foot }: { col
                 {cols.map((c) => <td key={c.key} className={`${T.td} ${c.right ? "text-right" : ""}`}>{r.cells[c.key]}</td>)}
               </tr>
             ))}
-            {sorted.length === 0 && <tr><td colSpan={cols.length} className="px-4 py-10 text-center text-[13px] text-[#71717a]">Nothing here.</td></tr>}
+            {sorted.length === 0 && <tr><td colSpan={cols.length} className="px-4 py-10 text-center text-[13px] text-[#737373]">Nothing here.</td></tr>}
           </tbody>
         </table>
       </div>
-      {foot && <div className="flex h-9 items-center px-3 text-[12px] text-[#71717a]">{foot}</div>}
+      {foot && <div className="flex h-9 items-center px-3 text-[12px] text-[#737373]">{foot}</div>}
     </section>
   );
 }

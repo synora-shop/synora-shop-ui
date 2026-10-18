@@ -30,8 +30,8 @@ export default async function SettingsSection({ params }: { params: Promise<{ sl
         <div className="flex min-w-0 max-w-3xl flex-col gap-2.5">
           {BODY[s.slug]}
           <nav aria-label="Other settings" className="mt-1 flex justify-between gap-3 text-[12.5px]">
-            {prev ? <Link href={`${A}/settings/${prev.slug}`} className="inline-flex items-center gap-1.5 text-[#71717a] hover:text-[#18181b]"><ArrowLeft className="h-3.5 w-3.5" /> {prev.label}</Link> : <span />}
-            {next && <Link href={`${A}/settings/${next.slug}`} className="inline-flex items-center gap-1.5 text-[#71717a] hover:text-[#18181b]">{next.label} <ArrowRight className="h-3.5 w-3.5" /></Link>}
+            {prev ? <Link href={`${A}/settings/${prev.slug}`} className="inline-flex items-center gap-1.5 text-[#737373] hover:text-[#0a0a0a]"><ArrowLeft className="h-3.5 w-3.5" /> {prev.label}</Link> : <span />}
+            {next && <Link href={`${A}/settings/${next.slug}`} className="inline-flex items-center gap-1.5 text-[#737373] hover:text-[#0a0a0a]">{next.label} <ArrowRight className="h-3.5 w-3.5" /></Link>}
           </nav>
         </div>
       </div>

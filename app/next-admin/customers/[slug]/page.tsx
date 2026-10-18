@@ -34,12 +34,12 @@ export default async function CustomerPage({ params }: { params: Promise<{ slug:
       <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_18rem]">
         <div className="flex min-w-0 flex-col gap-3">
           <Panel title="Orders" flush>
-            <ul className="divide-y divide-[#f0f0f2]">
+            <ul className="divide-y divide-[#f1f1f1]">
               {orders.map((o) => (
                 <li key={o.id}>
                   <Link href={`${A}/orders/${o.id}`} className="flex h-10 items-center gap-3 px-4 text-[13px] hover:bg-[#fafafa]">
                     <span className="w-14 font-semibold">#{o.id}</span>
-                    <span className="min-w-0 flex-1 truncate text-[#71717a]">{o.when} · {o.items} item{o.items > 1 ? "s" : ""} · {o.payment}</span>
+                    <span className="min-w-0 flex-1 truncate text-[#737373]">{o.when} · {o.items} item{o.items > 1 ? "s" : ""} · {o.payment}</span>
                     <Status tone={STAGE_TONE[o.stage]}>{o.stage}</Status>
                     <span className="w-20 text-right font-semibold tabular-nums">{pkr(o.total)}</span>
                   </Link>
@@ -47,22 +47,22 @@ export default async function CustomerPage({ params }: { params: Promise<{ slug:
               ))}
             </ul>
           </Panel>
-          <Panel title="Team note" action={<span className="text-[#71717a]">Only your team sees this</span>}>
-            <textarea defaultValue="Prefers delivery after 5 pm. Always orders size M." rows={2} className="w-full rounded-[6px] px-2.5 py-2 text-[13px] outline-none ring-1 ring-inset ring-[#d4d4d8] focus:ring-[#5b5bf0]" />
+          <Panel title="Team note" action={<span className="text-[#737373]">Only your team sees this</span>}>
+            <textarea defaultValue="Prefers delivery after 5 pm. Always orders size M." rows={2} className="w-full rounded-[10px] px-2.5 py-2 text-[13px] outline-none ring-1 ring-inset ring-[#dddddd] focus:ring-[#6666ff]" />
           </Panel>
         </div>
         <div className="flex flex-col gap-3">
           <Panel title="Reach them">
-            <p className="flex items-center gap-2 text-[13px]"><Mail className="h-3.5 w-3.5 text-[#a1a1aa]" /> {c.email}</p>
-            <p className="mt-1 flex items-center gap-2 text-[13px]"><Phone className="h-3.5 w-3.5 text-[#a1a1aa]" /> 0300 1234567</p>
-            <p className="mt-3 text-[12px] font-medium text-[#71717a]">Address</p>
+            <p className="flex items-center gap-2 text-[13px]"><Mail className="h-3.5 w-3.5 text-[#a3a3a3]" /> {c.email}</p>
+            <p className="mt-1 flex items-center gap-2 text-[13px]"><Phone className="h-3.5 w-3.5 text-[#a3a3a3]" /> 0300 1234567</p>
+            <p className="mt-3 text-[12px] font-medium text-[#737373]">Address</p>
             <p className="text-[13px] leading-relaxed">House 14, Street 3, {c.city}, Pakistan</p>
           </Panel>
           <Panel>
             <div className="flex items-center justify-between gap-3 text-[13px]"><span>Agreed to news by email</span><Toggle on={c.account} label="Email offers" /></div>
           </Panel>
           <Panel title="Tags">
-            <div className="flex flex-wrap gap-1">{(c.orders > 2 ? ["Regular", c.city] : [c.city]).map((t) => <Tag key={t}>{t}</Tag>)}<button type="button" className="rounded-[4px] border border-dashed border-[#d4d4d8] px-1.5 py-0.5 text-[12px] text-[#71717a]">Add tag</button></div>
+            <div className="flex flex-wrap gap-1">{(c.orders > 2 ? ["Regular", c.city] : [c.city]).map((t) => <Tag key={t}>{t}</Tag>)}<button type="button" className="rounded-[6px] border border-dashed border-[#dddddd] px-1.5 py-0.5 text-[12px] text-[#737373]">Add tag</button></div>
           </Panel>
         </div>
       </div>

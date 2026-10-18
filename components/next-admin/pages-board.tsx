@@ -19,8 +19,8 @@ export function PagesBoard() {
   const shown = rows.filter((p) => inTab(tab, p));
   const { sorted, sort, click } = useSort(shown, { title: (p) => p.title, path: (p) => p.path, sections: (p) => p.sections, status: (p) => p.status, edited: (p) => p.edited });
   return (
-    <section className="overflow-hidden rounded-[8px] border border-[#e4e4e7] bg-white">
-      <div className="border-b border-[#e4e4e7] px-3"><Tabs items={TABS} value={tab} onChange={setTab} counts={Object.fromEntries(TABS.map((t) => [t, rows.filter((p) => inTab(t, p)).length]))} /></div>
+    <section className="overflow-hidden rounded-[16px] border border-[#ebebeb] bg-white">
+      <div className="border-b border-[#ebebeb] px-3"><Tabs items={TABS} value={tab} onChange={setTab} counts={Object.fromEntries(TABS.map((t) => [t, rows.filter((p) => inTab(t, p)).length]))} /></div>
       <div className={T.wrap}>
         <table className={`${T.table} min-w-[640px]`}>
           <thead><tr><th className={`${T.th} w-9`} /><SortTh k="title" label="Page" sort={sort} onSort={click} /><SortTh k="path" label="Address" sort={sort} onSort={click} /><SortTh k="sections" label="Sections" sort={sort} onSort={click} /><SortTh k="edited" label="Edited" sort={sort} onSort={click} /><SortTh k="status" label="Status" sort={sort} onSort={click} /><th className={`${T.th} w-20`} /></tr></thead>
@@ -28,10 +28,10 @@ export function PagesBoard() {
             {sorted.map((p) => {
               const on = picked.includes(p.path);
               return (
-                <tr key={p.path} className={on ? "bg-[#f7f7ff]" : T.tr}>
+                <tr key={p.path} className={on ? "bg-[#f5f5ff]" : T.tr}>
                   <td className={T.td}><input type="checkbox" aria-label={`Select ${p.title}`} checked={on} onChange={() => setPicked(on ? picked.filter((x) => x !== p.path) : [...picked, p.path])} className={check} /></td>
                   <td className={`${T.td} font-medium`}>{p.title}</td>
-                  <td className={`${T.td} font-mono text-[12px] text-[#71717a]`}>{p.path}</td>
+                  <td className={`${T.td} font-mono text-[12px] text-[#737373]`}>{p.path}</td>
                   <td className={`${T.td} tabular-nums ${T.muted}`}>{p.sections}</td>
                   <td className={`${T.td} ${T.muted}`}>{p.edited}</td>
                   <td className={T.td}><Status tone={p.status === "Published" ? "good" : "off"}>{p.status}</Status></td>
