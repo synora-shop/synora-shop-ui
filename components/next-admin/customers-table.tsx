@@ -27,9 +27,8 @@ export function CustomersTable({ accountsOnly = false }: { accountsOnly?: boolea
         by: { name: c.name, email: c.email, city: c.city, account: c.account ? "Signed up" : "Guest", since: c.since, orders: c.orders, spent: c.spent },
         cells: {
           name: (
-            <Link href={`${A}/customers/${slugOf(c.name)}`} className="inline-flex items-center gap-2 font-medium hover:underline">
-              <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#e0f2fe] text-[10.5px] font-semibold text-[#075985]">{c.name.split(" ").map((w) => w[0]).join("")}</span>
-              {c.name}
+            <Link href={`${A}/customers/${slugOf(c.name)}`} className="font-medium hover:underline">
+              {c.name}{c.orders > 2 && <span className="ml-1.5 text-[11.5px] font-semibold text-[#4b4bea]">Regular</span>}
             </Link>
           ),
           email: <span className={T.muted}>{c.email}</span>,

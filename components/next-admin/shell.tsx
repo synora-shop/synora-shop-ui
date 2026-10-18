@@ -277,8 +277,10 @@ export function Shell({ children }: { children: ReactNode }) {
         {open === "drawer" && <div className="fixed inset-x-0 bottom-0 top-12 z-40 bg-[#0a0a0a] lg:hidden">{rail(false)}</div>}
 
         {/* The sheet: the preview's rounded canvas, set into the black. */}
-        <div className="min-w-0 lg:py-2 lg:pr-2">
-          <main className="min-h-[calc(100dvh-3rem)] overflow-clip bg-[#f4f4f4] lg:min-h-[calc(100dvh-1rem)] lg:rounded-[20px]">{children}</main>
+        {/* On a computer the sheet holds still, corners and all, and only what
+            is inside it scrolls (18 October). */}
+        <div className="min-w-0">
+          <main id="na3-sheet" className={`min-h-[calc(100dvh-3rem)] bg-[#f4f4f4] lg:fixed lg:bottom-2 lg:right-2 lg:top-2 lg:min-h-0 lg:overflow-y-auto lg:overscroll-contain lg:rounded-[20px] [scrollbar-width:thin] ${folded ? "lg:left-16" : "lg:left-[13.5rem]"}`}>{children}</main>
         </div>
 
         {(open === "create" || open === "bell" || open === "me") && <div aria-hidden className="fixed inset-0 z-30" onMouseDown={() => show(null)} />}

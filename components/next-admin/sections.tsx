@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
-import { SEL } from "@/components/next-admin/ui";
+import { SIDE } from "@/components/next-admin/ui";
 
 /**
  * A long page of settings as open sections (third design), with a slim index
@@ -30,19 +30,19 @@ export function Sections({ sections }: { sections: Section[] }) {
   }, [q, sections]);
   return (
     <div className="grid gap-4 lg:grid-cols-[12.5rem_minmax(0,1fr)]">
-      <nav aria-label="On this page" className="lg:sticky lg:top-[64px] lg:self-start">
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Find a setting" aria-label="Find a setting" className="mb-2 h-8 w-full rounded-[10px] bg-white px-2.5 text-[13px] outline-none ring-1 ring-inset ring-[#dddddd] focus:ring-[#6666ff]" />
+      <nav aria-label="On this page" className={`${SIDE.wrap} lg:sticky lg:top-[72px] lg:self-start`}>
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Find a setting" aria-label="Find a setting" className={SIDE.find} />
         <ul className="flex gap-1 overflow-x-auto lg:flex-col lg:gap-px">
           {sections.map((s) => (
             <li key={s.id}>
-              <a href={`#${s.id}`} onClick={() => setAt(s.id)} className={`block whitespace-nowrap rounded-[10px] px-2.5 py-1.5 text-[13px] ${at === s.id ? `${SEL} font-medium` : "text-[#555555] hover:bg-white hover:text-[#0a0a0a]"}`}>{s.label}</a>
+              <a href={`#${s.id}`} onClick={() => setAt(s.id)} className={`${SIDE.item} ${at === s.id ? SIDE.on : SIDE.off}`}>{s.label}</a>
             </li>
           ))}
         </ul>
       </nav>
       <div className="flex min-w-0 flex-col gap-5">
         {sections.map((s) => (
-          <section key={s.id} id={s.id} className="scroll-mt-[64px]">
+          <section key={s.id} id={s.id} className="scroll-mt-[72px]">
             <div className="mb-2 flex items-baseline gap-2">
               <h2 className="text-[14px] font-semibold">{s.label}</h2>
               <p className="text-[12.5px] text-[#737373]">{s.blurb}</p>

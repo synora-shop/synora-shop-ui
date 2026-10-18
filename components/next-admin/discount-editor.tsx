@@ -72,7 +72,7 @@ export function DiscountEditor({ start = "" }: { start?: string }) {
             </div>
           </Panel>
         </div>
-        <aside className="lg:sticky lg:top-[64px] lg:self-start">
+        <aside className="lg:sticky lg:top-[72px] lg:self-start">
           <Panel title="What customers get">
             <p className="inline-block rounded-[10px] bg-[#ecebff] px-2.5 py-1 font-mono text-[15px] font-bold tracking-[0.08em] text-[#3d3dc4] ring-1 ring-inset ring-[#d6d5ff]">{code || "CODE"}</p>
             <ul className="mt-3 flex flex-col gap-1.5 text-[13px] text-[#3a3a3a]">

@@ -5,8 +5,8 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { ChevronDown, Plus } from "lucide-react";
 import { useToast } from "@/components/next-admin/bits";
-import { ICONS, TONE } from "@/components/new-admin/ui";
-import { SEL, Status, btn, link } from "@/components/next-admin/ui";
+import { ICONS } from "@/components/new-admin/ui";
+import { SIDE, Status, btn, link } from "@/components/next-admin/ui";
 import { A, STORE_SETTINGS } from "@/components/next-admin/nav";
 import { WORDS } from "@/components/new-admin/settings-words";
 
@@ -17,25 +17,25 @@ export function SettingsNav() {
   const words = q.toLowerCase().split(/\s+/).filter(Boolean);
   const hits = STORE_SETTINGS.filter((s) => words.every((w) => `${s.label} ${s.blurb} ${WORDS[s.slug] ?? ""}`.toLowerCase().includes(w)));
   return (
-    <nav aria-label="Settings" className="lg:sticky lg:top-[64px] lg:self-start">
-      <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Find a setting" aria-label="Find a setting" className="mb-2 h-8 w-full rounded-[10px] bg-white px-2.5 text-[13px] outline-none ring-1 ring-inset ring-[#dddddd] focus:ring-[#6666ff]" />
+    <nav aria-label="Settings" className={`${SIDE.wrap} lg:sticky lg:top-[72px] lg:self-start`}>
+      <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Find a setting" aria-label="Find a setting" className={SIDE.find} />
       <ul className="flex gap-1 overflow-x-auto lg:flex-col lg:gap-px">
         {hits.map((s, i) => {
           const on = path === `${A}/settings/${s.slug}`;
           const Icon = ICONS[s.icon];
           return (
             <li key={s.slug}>
-              {(i === 0 || hits[i - 1].group !== s.group) && <p className="hidden px-2.5 pb-1 pt-2.5 text-[11.5px] font-medium text-[#a3a3a3] first:pt-0 lg:block">{s.group}</p>}
-              <Link href={`${A}/settings/${s.slug}`} aria-current={on ? "page" : undefined} className={`flex h-9 items-center gap-2.5 whitespace-nowrap rounded-[10px] px-2.5 text-[13px] ${on ? `${SEL} font-medium` : "text-[#3a3a3a] hover:bg-white hover:text-[#0a0a0a]"}`}>
-                <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-[7px] ${s.tone === "ink" ? "bg-[#0a0a0a]/[0.07] text-[#0a0a0a]" : TONE[s.tone].chip}`}><Icon className="h-3.5 w-3.5" /></span> {s.label}
+              {(i === 0 || hits[i - 1].group !== s.group) && <p className={`hidden lg:block ${SIDE.group}`}>{s.group}</p>}
+              <Link href={`${A}/settings/${s.slug}`} aria-current={on ? "page" : undefined} className={`${SIDE.item} ${on ? SIDE.on : SIDE.off}`}>
+                <Icon className={`h-4 w-4 shrink-0 ${on ? "text-[#b7b9ff]" : "text-white/45"}`} /> {s.label}
               </Link>
             </li>
           );
         })}
-        {hits.length === 0 && <li className="px-2.5 py-2 text-[12.5px] text-[#737373]">Nothing matches.</li>}
+        {hits.length === 0 && <li className="px-2.5 py-2 text-[12.5px] text-white/45">Nothing matches.</li>}
       </ul>
-      <p className="mt-3 hidden border-t border-[#ebebeb] px-2.5 pt-3 text-[12px] leading-relaxed text-[#737373] lg:block">
-        Your own profile, password and devices are under <Link href={`${A}/account`} className={link}>Your account</Link>, in the store menu at the foot of the rail.
+      <p className="mt-1.5 hidden border-t border-white/[0.07] px-2.5 pb-1 pt-2.5 text-[12px] leading-relaxed text-white/40 lg:block">
+        Your own profile, password and devices are under <Link href={`${A}/account`} className="font-medium text-[#b7b9ff] hover:underline">Your account</Link>, in the store menu.
       </p>
     </nav>
   );

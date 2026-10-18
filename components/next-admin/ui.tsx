@@ -25,6 +25,20 @@ import { SectionMark } from "@/components/next-admin/section-mark";
 
 export const pkr = (n: number) => formatMoney(n, "PKR");
 
+/**
+ * The second sidebar (settings, and the index of a long page): a charcoal
+ * panel, a step lighter than the rail, one colour throughout. The open item
+ * is lit white with an iris mark, the rest are quiet.
+ */
+export const SIDE = {
+  wrap: "rounded-[16px] bg-[#1a1a1a] p-1.5 text-white shadow-[0_10px_30px_-18px_rgba(0,0,0,0.6)]",
+  find: "mb-1 h-8 w-full rounded-[10px] bg-white/[0.07] px-2.5 text-[13px] text-white outline-none placeholder:text-white/35 focus:bg-white/[0.11]",
+  group: "px-2.5 pb-1 pt-2.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-white/30",
+  item: "relative flex h-8 items-center gap-2.5 whitespace-nowrap rounded-[9px] px-2.5 text-[13px] transition-colors",
+  on: "bg-white/[0.1] font-semibold text-white before:absolute before:-left-1.5 before:top-1.5 before:h-5 before:w-[3px] before:rounded-r-full before:bg-[#8f8fff]",
+  off: "text-white/60 hover:bg-white/[0.05] hover:text-white",
+};
+
 /** Selected: a tint, never solid. */
 export const SEL = "bg-[#ecebff] text-[#3d3dc4] ring-1 ring-inset ring-[#d6d5ff]";
 
