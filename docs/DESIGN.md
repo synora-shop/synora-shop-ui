@@ -18,14 +18,25 @@ design document — `docs/PANEL.md` §1, which is where these come from.
 
 | | |
 | --- | --- |
-| `#0a0a0a` | ink: the rail, the main button, the active state, and text |
+| `#0a0a0a` | ink: the rail, the main button of a screen, and text |
 | `#f4f4f4` | the page, the sheet the screens sit on |
-| `#ffffff` | containers, cards and the top bar |
+| `#ffffff` | containers and cards |
+| `#6666ff` | `--color-brand-500`: chosen (a switch that is on, the current page, a focus ring) |
+| `#ecebff` | the tint behind anything chosen: a tab, a filter, a view, an option |
+| `#1a1a1a` | the second sidebar (Settings), a step lighter than the rail |
+| `#16163a` | the Theme Store, the one dark block on a screen |
 | `#f5f5f5` | controls (anything you type into or press) and a section inside a container |
 | `#f0f0f0` | the plate behind whatever is selected on a white ground |
 | `#6666ff` `#b7b9ff` `#c8e7ff` `#b8efd6` | iris, lavender, sky, mint: the brand colours, one per section (its dot in the rail and the chip on its screens) |
 | `#86868b` | the outline of a control at rest, and secondary text |
 | `#2e2e2e` | the outline of a section, at 0.25px |
+
+**18 October: black is for doing, iris is for chosen.** On 15 October
+active became ink, so a selected tab and the main button were the same
+black and could not be told apart. Since 18 October black is only the one
+action a screen exists for. Anything chosen is iris, as a pale tint with
+iris words or as `--color-brand-500`, which is `#6666ff` again. No block is
+black to be important. The paragraph below is the 15 October step.
 
 **The new admin (15 October): black and white carry the panel.** The indigo
 `#5050ea` that meant "active" until then is gone, and active is ink: a black
@@ -305,9 +316,9 @@ plus five headings written as `<p>`, which name nothing as far as the page
 outline or a screen reader is concerned. *Check: `check:design`, "does not
 hand-write a card title".*
 
-**One gap between sections: `space-y-5`** (it was `space-y-2.5` until the new
-admin of 15 October, which gave the screens the same distance the frame puts
-between its own blocks). Every screen's outermost container
+**One gap between sections: `space-y-4`** (it was `space-y-2.5` until the new
+admin of 15 October, `space-y-5` from then, and 4 since 18 October, the same
+distance the frame puts between its own blocks, `gap-4`). Every screen's outermost container
 used a different value — 2.5, 3, 4, 5, 6 and 8 across thirty-three screens,
 depending on when each was built. Most of it was invisible, because most
 screens have one section; the cost was that the next section added to any of
@@ -397,8 +408,9 @@ of tiles is the wrong shape and the page jumps when the real thing lands.
 
 **Sticky means sticky.** `overflow-x: clip`, never `hidden`, on `html` and
 `body`: `hidden` makes them a scroll container, which silently disables
-`position: sticky` for everything inside. The top bar was declared sticky,
-computed sticky, and scrolled away for months. *Check: `check:naming`, "the
+`position: sticky` for everything inside. The old top bar was declared sticky,
+computed sticky, and scrolled away for months. Each screen's heading is the
+sticky bar now, inside the sheet, which is the one thing that scrolls. *Check: `check:naming`, "the
 page clips sideways without becoming a scrollport".*
 
 ---

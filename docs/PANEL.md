@@ -11,26 +11,67 @@ and anything derived rather than drawn is marked as derived. Where the design
 and the code disagree, the disagreement is written down rather than silently
 resolved.
 
-## 0. The new admin (15 October 2026)
+## 0. The admin as it is (live since 18 October 2026)
 
-The panel was rewired to a new design: approved from the local preview at
-`/new-admin` (kept unchanged as the reference), and built into `/admin` on the
-branch `admin-redesign`. Where the sections below describe the indigo header,
-the white sidebar bands and the row of tabs, they describe the old design,
-kept in `APP extra/Synora app old Design kit` and in git as `old-admin-design`.
+**Where things stand.** `/admin` wears the third design, first drawn at the
+local preview `/next-admin` and live in production since 18 October (commits
+c6039c1 and b6cea1d on `main`). Two local references sit beside it, sample
+data only, and production redirects both to `/admin` (`next.config.ts`):
 
-**The frame.** A black rail (`components/admin/admin-sidebar.tsx`) names the
-sections in three groups (running the shop, the storefront, and Settings with
-Bin) from `lib/admin-nav.ts`. Only the section you are in opens to show its
-screens; the rail folds to icons and remembers that. Beside it, one sheet
-scrolls under a white top bar (`admin-topbar.tsx`: breadcrumb, Create, the
-alerts, shortcuts, the account menu) and the save bar (`editor-bar.tsx`,
-black while there is unsaved work). ⌘K opens the command bar over the
-settings index. The window itself never scrolls.
+- `/new-admin`, the first preview (15 October), kept as the reference for
+  pages and options, with the 17 October tightening on it.
+- `/next-admin`, the third design (`app/next-admin`, `components/next-admin`).
+  It is also the list of features `/admin` does not have yet (Plan and
+  billing, Notifications, Customer accounts and privacy settings, the Synora
+  assistant, a separate Your account page). Compare the two to find them.
 
-**Colour.** Black and white carry the panel; each section wears one brand
-colour (iris, lavender, sky, mint) as its dot and edge mark; state alone
-wears green, amber and red. See `docs/DESIGN.md` §1.
+Where the numbered sections below describe the indigo header, the white
+sidebar bands and the row of tabs, they describe the old design, kept in
+`APP extra/Synora app old Design kit` and in git as `old-admin-design`. The
+dated subsections after this one are history, newest last.
+
+**The frame.** One component, `components/admin/admin-sidebar.tsx`:
+
+- **The rail:** black, 216px, folding to 64px and remembering that in the
+  browser. Top to bottom:
+  - the Synora mark, the drawn bell (alerts) and the fold;
+  - search (⌘K) and Create side by side;
+  - the sections from `lib/admin-nav.ts`. Only the section you are in opens,
+    and a section's first screen is the section itself, so it is not listed
+    again beneath it;
+  - Settings, Bin and Help;
+  - the one profile in the admin: the store's initials, name and the email
+    signed in. Its menu holds Your account, Preview store, Change APP type,
+    Which type fits, Switch store and Sign out.
+- **On a phone:** `AdminPhoneBar` and a drawer.
+- **The sheet:** `AdminSheet`, the rounded canvas. It holds still, corners
+  and all, and only its content scrolls.
+- **No top bar.** Each screen's `PageHeader` (`components/ui/primitives.tsx`)
+  is its one bar, sticky at the top of the sheet. In one line it holds:
+  - the section's coloured mark and the crumb (`components/admin/heading-trail.tsx`);
+  - the title, then `meta` (state, such as an order's payment and stage);
+  - a short description, and the actions.
+- **Keyboard:** `admin-topbar.tsx` draws nothing now. It exports `AdminKeys`
+  (⌘K or /, G then a letter, C for Create, ? for the list) and mounts the
+  command bar.
+- **Saving:** `EditorBar` appears only while something is unsaved, floating
+  black at the foot of the sheet with Discard and Save.
+- **Settings:** `SettingsFrame` takes the heading as `header` and draws its
+  list as a charcoal second sidebar (`#1a1a1a`).
+
+**Colour.** Black is for doing: the main button of a screen. Anything chosen
+(a tab, a filter, a view, an option, a switch that is on) is iris, as a tint
+(`#ecebff` with iris words) or as `--color-brand-500` (`#6666ff`). State is a
+soft pill: green, amber, red, blue, grey. Each section wears one brand colour
+(iris, lavender, sky, mint) as its dot, its edge mark and its heading's mark.
+Nothing is black to be important; the one dark block left is the Theme Store,
+in deep iris ink (`#16163a`). See `docs/DESIGN.md` §1.
+
+**Density.** Controls are 34 to 36px. Order, product and customer rows are one
+line of about 44px, with the second fact muted on the same line. A screen's
+figures are one strip (`Figures` in `components/admin/kit.tsx`). Orders'
+stages are the list's tabs, beside search. Sections are `space-y-4` apart,
+and the content's reading width is 96rem.
 
 **Screens moved, addresses kept.** Home is a dashboard on real figures; the
 store's name, logos and address moved to Settings, Store details
@@ -69,7 +110,7 @@ Saving a product updates its variants in place (by id) and keeps a
 size-only variant. It used to delete and recreate them all, which reset
 every per-variant setting the form does not show; `check:csv` guards it.
 
-### Tightened (17 October 2026)
+### Tightened (17 October 2026, history: the top bar it describes is gone since 18 October)
 
 - **Rail:** a section's first screen is the section itself, so it is not listed again beneath it (Orders opens the orders list; Draft orders, Abandoned checkouts and Enquiries hang below). Rows are 32px with 1px between them, and the group gaps are half what they were.
 - **You live in the rail:** the signed-in person sits at its foot, and their menu (store state, preview, account, business type, switch store, sign out) opens from there. The top bar has no avatar any more.

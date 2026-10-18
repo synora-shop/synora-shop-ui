@@ -7,6 +7,21 @@ purpose — this is the list Abdul works from, not a ticket tracker.
 
 ## Next up
 
+> **Build the features the third design draws (18 October).** `/next-admin`
+> draws screens `/admin` does not have yet. The first step is an audit:
+> each feature marked as working fully, partly or not built, with a size.
+> Then they are built one at a time, each tested before it goes live. Named
+> so far:
+>
+> - custom fields that are defined, filled in, counted, printed by themes
+>   and carried in CSV files (Shopify's metafields);
+> - Plan and billing;
+> - Notifications;
+> - Customer accounts and Customer privacy settings;
+> - order-number prefixes;
+> - a separate Your account page;
+> - the Synora assistant, which needs an AI service and a cost decision.
+
 > **Header and footer as Abdul set them out (14 October, night).** Header:
 > Documentation · Support · Release notes, and Log in / Sign up free, or
 > Dashboard + avatar (menu: Dashboard, Log out). Footer: The product (Home,

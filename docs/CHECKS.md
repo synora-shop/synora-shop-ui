@@ -18,6 +18,21 @@ find — including 101-117, which lie to a payment callback in every shape the
 popular integrations accept, and 116-140, which check who is offered a gateway
 and that going live is refused until a test payment has really been through.
 
+**18 October 2026: five scripts were updated to the third design.** These were
+`check:nav`, `check:editor`, `check:responsive`, `check:design` and
+`check:naming`. They pattern-match the code, and the frame changed under them:
+no top bar, the rail in `admin-sidebar.tsx`, the sheet as `AdminSheet`, each
+screen's sticky `PageHeader`, and the save bar only while something is unsaved.
+The rules they hold are the same:
+
+- one bar pinned at a time;
+- a drawer on phones, and the fold remembered;
+- Discard and Save only when there is something to save;
+- the drawn glyphs from Assestz (the bell and the account icon too);
+- the one product mark;
+- a reading width, and a standard gap between sections, `space-y-4` since
+  18 October.
+
 ---
 
 ## What each one holds up

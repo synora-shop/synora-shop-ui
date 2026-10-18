@@ -37,44 +37,46 @@ servers, under Synora's bar (`components/storefront/theme-demo-bar.tsx`). See
 `docs/THEMES.md` §5b.
 
 **Admin panel** — `app/admin`
-Two levels of navigation and no more, both in the same column. Ten sidebar
-sections that never change order, and beneath whichever one you are standing in,
-the list of its screens. It all comes from `lib/admin-nav.ts`, the single source
-of truth for every address in the panel.
+The third design, live since 18 October 2026. A black rail on the left and a
+rounded sheet beside it that holds still while only its content scrolls. There
+is no top bar: each screen's own heading is the bar. All of the frame is in
+`components/admin/admin-sidebar.tsx`; every address and label comes from
+`lib/admin-nav.ts`, the single source of truth for the panel's navigation.
+`docs/PANEL.md` §0 describes it in full.
 
-There is no navigation bar. The second level used to be a row of tabs across the
-top of the page, so reading "where am I" meant looking left for the section and
-up for the screen. The screens are listed under their own section now, and a
-line leaves the section's glyph and turns into the one you are on.
+The rail, top to bottom:
 
-The sidebar is drawn in three containers — running the shop, how it looks, and
-the account underneath. Nothing collapses and nothing is hidden: every section
-is visible at all times, and only the section you are in shows its screens.
+- the Synora mark, the alerts bell, and the fold (to icons, remembered in the
+  browser);
+- search (⌘K) and Create;
+- the sections, of which only the one you are in opens its screens;
+- Settings, Bin and Help;
+- one profile: the store's name and the email signed in, with your account,
+  previewing the store, the business type, switching store and signing out.
 
-A section with one screen lists nothing, and a screen named after its own
-section is not listed twice — Products' first tab was called "Products", and
-the section already goes there.
+A section's first screen is the section itself, so it is not listed again
+beneath it.
 
 | | Section | Screens listed under it |
 | --- | --- | --- |
-| **Running the shop** | Home | Store defaults |
-| | Products | Drafts · Categories · Orders · Enquiries · Bin |
-| | Data | *(one screen)* |
-| | Discounts | *(one screen)* |
+| **Running the shop** | Home | *(one screen)* |
+| | Orders | Draft orders · Abandoned checkouts · Enquiries |
+| | Products | Inventory · Drafts · Collections |
 | | Customers | *(one screen)* |
+| | Discounts | *(one screen)* |
+| | Content | Files · Menus · Custom fields · Store wording |
 | | Analytics | *(one screen)* |
-| **How it looks** | Your App | Themes · Pages · Menus · Drafts · Site text |
-| | Preferences | Visibility · Maintenance · Fonts · Sticky buttons · Links & redirects · Custom fields |
-| **The account** | Settings | General · Payments · Domains |
-| | Account | *(one screen)* |
+| **The storefront** | Online Store | Themes · Pages · Store-wide look · Preferences · Holding page and status · Fonts · Chat buttons · Links and redirects |
+| **Underneath** | Settings | Store details · Store defaults · Checkout and delivery · Payments · Domains · Users and your account (listed beside every settings screen, not in the rail) |
+| | Bin | *(one screen)* |
 
-Data, Discounts and Account were tabs until the bands were drawn. Data and
-Discounts sat under Your App, filed with the storefront's appearance, which
-neither is — a CSV import is not a look and a discount code is not either, and
-both were already drawn as sidebar glyphs in the design file. Account was the
-fourth tab under Settings, where everything else is about the *shop* and this
-one is about the person signed in, so "delete my account" read as a setting of
-the store.
+Two design previews run beside it locally, on sample data:
+
+- `/new-admin`, the first, kept as the reference;
+- `/next-admin`, the third design, which also shows features `/admin` does
+  not have yet.
+
+A production build redirects both to `/admin` (`next.config.ts`).
 
 **Live customizer** — `app/(fullscreen)/admin/customize`
 Split-screen visual editor with a postMessage protocol
@@ -221,16 +223,19 @@ moves, and each keeps the date it happened.
 
 ## The panel's palette
 
-Five colours, defined once in `.admin-shell` in `app/globals.css` and used for
-everything:
+Defined once in `.admin-shell` in `app/globals.css`. The rule since 18
+October: black is for doing, iris is for chosen, and state is a soft pill.
 
 | | |
 | --- | --- |
-| `#f5f5f5` | the page — and anything recessed into a container |
-| `#ffffff` | containers — nav bar, action bar, content, sidebar items |
-| `#f5f5f5` | controls — anything you type into or press |
-| `#86868b` | the outline of anything at rest |
-| `#6666ff` | the active state, and only the active state |
+| `#0a0a0a` | ink: the rail, the one main button of a screen, and text |
+| `#f4f4f4` | the sheet the screens sit on |
+| `#ffffff` | containers and cards |
+| `#6666ff` | chosen: a switch that is on, the current page, focus (`--color-brand-500`) |
+| `#ecebff` | the tint behind a chosen tab, filter, view or option |
+| `#6666ff` `#b7b9ff` `#c8e7ff` `#b8efd6` | iris, lavender, sky, mint: one per section, as its dot in the rail and the mark on its heading |
+| `#1a1a1a` | the second sidebar (Settings) |
+| `#16163a` | the Theme Store, the one dark block on a screen |
 
 **Depth is carried by light, not by tone.** It used to be the other way: the
 page was `#d2d2d2`, containers `#e0e0e0`, controls `#fafafa` — each step
@@ -243,8 +248,8 @@ Two greys that close cannot separate themselves, so a container is lifted by
 `--shadow-panel` — two very soft layers, one tight for contact and one wide for
 height. A single hard shadow at this lightness reads as a badly drawn border.
 
-The last two colours are a pair: at rest an element is outlined `#86868b`,
-focused or active it is outlined `#6666ff`, and nothing else outlines anything.
+A control at rest is outlined `#86868b`; focused, it takes the iris focus
+ring.
 That is what lets the edge of a control tell you its state. The outline is a
 hairline rather than a drawn border — depth is the shadow's job, and an
 element carrying both reads as neither.
