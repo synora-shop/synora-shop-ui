@@ -79,6 +79,17 @@ every per-variant setting the form does not show; `check:csv` guards it.
 - **Orders:** the six stages are one connected strip instead of six cards.
 - **Discounts:** Create discount sits beside the title.
 
+### The third design: /next-admin (18 October 2026)
+
+A fresh design on the preview's sample data, beside /new-admin (which is unchanged). Same pages and options; production sends it to /admin. Code: `app/next-admin`, `components/next-admin`.
+
+- **Rail, 208px:** the Synora mark at the top, search and Create side by side, the sections (only the open one shows its screens), Settings, Bin, Help, and at the foot the one profile in the admin: the store's name with the signed-in email. It opens Your account, Plan and billing, Preview store, Switch store and Sign out.
+- **Your account is not a store setting:** it has its own page, `/next-admin/account`. Settings lists only the store's sections.
+- **No top bar:** each screen's sticky 52px heading holds its crumbs, name, a short line and its actions.
+- **Colour rules:** black only for the one action a view exists for; anything chosen (tab, filter, option, row) is an iris tint, never solid; state is a coloured dot and a word, not a filled pill.
+- **Density:** 32px controls, 40px one-line table rows, numbers as one 56px strip, 6 to 8px corners (written in pixels, because the project's own `rounded-md`/`lg` tokens are 14/20px). Phones get stacked lists instead of sideways-scrolling tables.
+- `.na3` in globals.css lifts the 40px minimum height on inputs inside this design only.
+
 ## Where this comes from
 
 | File | What it is |

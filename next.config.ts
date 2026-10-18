@@ -30,7 +30,7 @@ const nextConfig: NextConfig = {
   // Nothing is served by a header that names the framework.
   poweredByHeader: false,
 
-  // The new admin's design preview (/new-admin) is sample data, kept on this
+  // The design previews (/new-admin, and /next-admin since 18 October) are sample data, kept on this
   // machine as the reference the real panel was built from. It is never
   // served by a production build: there it leads to the real admin.
   async redirects() {
@@ -38,6 +38,8 @@ const nextConfig: NextConfig = {
     return [
       { source: "/new-admin", destination: "/admin", permanent: false },
       { source: "/new-admin/:path*", destination: "/admin", permanent: false },
+      { source: "/next-admin", destination: "/admin", permanent: false },
+      { source: "/next-admin/:path*", destination: "/admin", permanent: false },
     ];
   },
 

@@ -909,6 +909,12 @@ body {
     field-sizing: content;
     min-height: 4.5rem;
   }
+  /* The third admin design (/next-admin, 18 October) sizes its own controls
+     at 32px, so the floor above is lifted inside it. */
+  .na3 input:not([type="checkbox"]):not([type="radio"]),
+  .na3 select {
+    min-height: 0;
+  }
   /* Placeholders are guidance, not content — they should read as quieter than
      a real value without dropping below the contrast floor. */
   ::placeholder {
