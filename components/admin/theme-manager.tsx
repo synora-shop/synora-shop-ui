@@ -206,11 +206,15 @@ export function ThemeManager({
       </div>
 
       {/* 3. Every theme there is. Add gives another copy; it never goes live from here. */}
-      <section id="theme-store" aria-label="Theme Store" className="scroll-mt-24 rounded-[16px] bg-white p-4 ring-1 ring-[#0a0a0a]/[0.07]">
-        <p className="text-[13.5px] font-semibold">Theme Store <span className="font-normal text-[#0a0a0a]/50">· every theme is included</span></p>
+      {/* The one dark block on the screen (18 October, from the preview): a
+          deep iris ink rather than the rail's black, so the store of themes
+          reads as a place of its own, apart from your library above it. */}
+      <section id="theme-store" aria-label="Theme Store" className="scroll-mt-24 rounded-[16px] bg-[#16163a] p-5 text-white sm:p-6">
+        <p className="text-[12px] font-semibold uppercase tracking-[0.1em] text-[#b7b9ff]">Theme Store</p>
+        <p className="mt-1 text-[20px] font-semibold tracking-[-0.01em]">Every theme is included.</p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           {store.map((theme) => (
-            <div key={theme.key} className="flex items-center gap-4 rounded-[12px] bg-[#fafafa] p-3 ring-1 ring-[#0a0a0a]/[0.05]">
+            <div key={theme.key} className="flex items-center gap-4 rounded-[14px] bg-white/[0.07] p-3">
               <div className="h-16 w-24 shrink-0 overflow-hidden rounded-lg p-1" style={{ background: `linear-gradient(135deg, ${theme.plate.from}, ${theme.plate.to})` }}>
                 <div className="h-full overflow-hidden rounded-md bg-white">
                   <StorefrontStill url={theme.previewUrl} height={56} />
@@ -218,10 +222,10 @@ export function ThemeManager({
               </div>
               <div className="min-w-0 flex-1">
                 <p className="font-semibold">{theme.name}</p>
-                <p className="truncate text-[12.5px] text-[#0a0a0a]/55">{theme.description}</p>
-                <a href={theme.previewUrl} target="_blank" rel="noreferrer" className="text-[12.5px] font-semibold text-[#4b4bea] hover:underline">Preview</a>
+                <p className="truncate text-[12.5px] text-white/60">{theme.description}</p>
+                <a href={theme.previewUrl} target="_blank" rel="noreferrer" className="text-[12.5px] font-semibold text-[#b7b9ff] hover:text-white">Preview</a>
               </div>
-              <button type="button" disabled={busy(theme.key)} onClick={() => run(theme.key, () => installTheme(theme.key))} className={cn(btn, "bg-white px-3 py-1.5 text-[12.5px] text-[#0a0a0a] ring-1 ring-[#0a0a0a]/12 hover:bg-[#f5f5f5]")}>
+              <button type="button" disabled={busy(theme.key)} onClick={() => run(theme.key, () => installTheme(theme.key))} className={cn(btn, "bg-white px-3 py-1.5 text-[12.5px] text-[#0a0a0a] hover:bg-white/90")}>
                 {spin(theme.key) ?? <AddIcon className="h-3.5 w-3.5" />} Add
               </button>
             </div>
