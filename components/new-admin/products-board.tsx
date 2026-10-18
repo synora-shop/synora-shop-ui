@@ -62,8 +62,8 @@ export function ProductsBoard({ products: start, actions = true }: { products: P
     <>
       {actions && (
         <div className="-mt-2 flex flex-wrap justify-end gap-2">
-          <button type="button" onClick={() => setImporting(true)} className="inline-flex h-9 items-center gap-1.5 rounded-[10px] bg-white px-3.5 text-[13.5px] font-semibold ring-1 ring-[#0a0a0a]/12 hover:bg-[#f5f5f5]"><Upload className="h-4 w-4" /> Import</button>
-          <button type="button" onClick={() => toast("12 products exported as a Shopify file")} className="inline-flex h-9 items-center gap-1.5 rounded-[10px] bg-white px-3.5 text-[13.5px] font-semibold ring-1 ring-[#0a0a0a]/12 hover:bg-[#f5f5f5]"><Download className="h-4 w-4" /> Export</button>
+          <button type="button" onClick={() => setImporting(true)} className="inline-flex h-9 items-center gap-1.5 rounded-[10px] bg-white px-3.5 text-[13.5px] font-semibold ring-1 ring-[#0a0a0a]/12 hover:bg-[#f5f5f5]"><Download className="h-4 w-4" /> <span>Import<span className="max-sm:hidden"> CSV</span></span></button>
+          <button type="button" onClick={() => toast("12 products exported as a Shopify file")} className="inline-flex h-9 items-center gap-1.5 rounded-[10px] bg-white px-3.5 text-[13.5px] font-semibold ring-1 ring-[#0a0a0a]/12 hover:bg-[#f5f5f5]"><Upload className="h-4 w-4" /> <span>Export<span className="max-sm:hidden"> CSV</span></span></button>
           <Link href="/new-admin/products/zohra" className="inline-flex h-9 items-center gap-1.5 rounded-[10px] bg-[#0a0a0a] px-3.5 text-[13.5px] font-semibold text-white"><Plus className="h-4 w-4" /> Add product</Link>
         </div>
       )}

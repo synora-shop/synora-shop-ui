@@ -37,16 +37,17 @@ export const pkr = (n: number) => formatMoney(n, "PKR");
 export function PageHeader({ icon, title, sub, actions, tone = "ink" }: { icon?: string; title: string; sub?: string; actions?: ReactNode; tone?: Tone }) {
   const Icon = icon ? ICONS[icon] : null;
   return (
-    <header className="flex flex-wrap items-start justify-between gap-4">
+    // One line where it fits (17 October): name, a short line, actions level with them.
+    <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
       <div className="flex min-w-0 items-center gap-3">
         {Icon && (
-          <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${TONE[tone].chip}`}>
-            <Icon className="h-[18px] w-[18px]" />
+          <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-[10px] ${TONE[tone].chip}`}>
+            <Icon className="h-[17px] w-[17px]" />
           </span>
         )}
         <div className="min-w-0">
-          <h1 className="text-[22px] font-semibold tracking-[-0.02em] text-[#0a0a0a]">{title}</h1>
-          {sub && <p className="text-[14px] text-[#0a0a0a]/55">{sub}</p>}
+          <h1 className="text-[20px] font-semibold leading-tight tracking-[-0.02em] text-[#0a0a0a]">{title}</h1>
+          {sub && <p className="mt-0.5 text-[13px] leading-snug text-[#0a0a0a]/50">{sub}</p>}
         </div>
       </div>
       {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
@@ -58,8 +59,8 @@ export function Button({ children, primary = false, href = "#" }: { children: Re
   return (
     <a
       href={href}
-      className={`inline-flex h-9 items-center gap-1.5 whitespace-nowrap rounded-[10px] px-3.5 text-[13.5px] font-semibold transition-colors ${
-        primary ? "bg-[#0a0a0a] text-white hover:bg-[#262626]" : "bg-white text-[#0a0a0a] ring-1 ring-[#0a0a0a]/12 hover:bg-[#f5f5f5]"
+      className={`inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-[10px] px-3.5 text-[13.5px] font-semibold transition-colors ${
+        primary ? "bg-[#0a0a0a] text-white hover:bg-[#262626]" : "bg-white text-[#0a0a0a] ring-1 ring-inset ring-[#0a0a0a]/12 hover:bg-[#f5f5f5]"
       }`}
     >
       {children}
@@ -72,12 +73,12 @@ export function Card({ title, action, children, pad = true, className = "" }: { 
   return (
     <section className={`rounded-2xl bg-white ring-1 ring-[#0a0a0a]/[0.07] ${className}`}>
       {title && (
-        <div className="flex items-center justify-between gap-3 px-5 pb-1 pt-4">
+        <div className="flex items-center justify-between gap-3 px-4 pb-0.5 pt-3.5">
           <h2 className="text-[14.5px] font-semibold text-[#0a0a0a]">{title}</h2>
           {action}
         </div>
       )}
-      <div className={pad ? "p-5" : ""}>{children}</div>
+      <div className={pad ? "p-4" : ""}>{children}</div>
     </section>
   );
 }
@@ -92,10 +93,10 @@ export function StatStrip({ stats }: { stats: { label: string; value: string; de
       {stats.map((s, i) => {
         const lead = i === 0;
         return (
-          <div key={s.label} className={`flex items-end justify-between gap-3 rounded-2xl px-5 py-4 ${lead ? "bg-[#0a0a0a] text-white" : "bg-white ring-1 ring-[#0a0a0a]/[0.07]"}`}>
+          <div key={s.label} className={`flex items-end justify-between gap-3 rounded-2xl px-4 py-3 ${lead ? "bg-[#0a0a0a] text-white" : "bg-white ring-1 ring-[#0a0a0a]/[0.07]"}`}>
             <div className="min-w-0">
               <p className={`text-[12.5px] font-medium ${lead ? "text-white/55" : "text-[#0a0a0a]/55"}`}>{s.label}</p>
-              <p className="mt-1 truncate text-[20px] font-semibold tracking-[-0.02em]">{s.value}</p>
+              <p className="mt-0.5 truncate text-[20px] font-semibold leading-tight tracking-[-0.02em]">{s.value}</p>
               {s.delta && <p className={`mt-0.5 text-[12px] font-semibold ${s.down ? (lead ? "text-[#ffb4a1]" : "text-[#c2410c]") : lead ? "text-[#b8efd6]" : "text-[#1d7a52]"}`}>{s.delta}</p>}
             </div>
             {s.spark && <Spark points={s.spark} down={s.down} light={lead} />}

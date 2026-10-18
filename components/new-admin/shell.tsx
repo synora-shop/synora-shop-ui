@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import {
-  Bell, ChevronsUpDown, PanelLeftClose, PanelLeftOpen, CornerDownLeft, ExternalLink, HelpCircle, Keyboard, LifeBuoy, Menu, MessageSquare,
+  Bell, ChevronRight, ChevronsUpDown, LogOut, Repeat, Store, User, PanelLeftClose, PanelLeftOpen, CornerDownLeft, ExternalLink, HelpCircle, Keyboard, LifeBuoy, Menu, MessageSquare,
   Package, Plus, Search, ShoppingBag, Sparkles, Trash2, TriangleAlert, X,
 } from "lucide-react";
 import { ALERTS, NAV, SETTINGS, SHOP } from "@/lib/new-admin/sample";
@@ -26,6 +26,8 @@ import { COMMANDS, GOTO, type Command } from "@/components/new-admin/commands";
  *   ?         this list
  *   toasts    every action says what it did, with Undo
  */
+
+const MENU_ROW = "flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-[13.5px] hover:bg-[#f5f5f5]";
 
 type Toast = { id: number; text: string; undo?: () => void };
 
@@ -68,6 +70,9 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const setCreate = (v: boolean | ((x: boolean) => boolean)) => setCreateAt((typeof v === "function" ? v(create) : v) ? path : null);
   const setBell = (v: boolean) => setBellAt(v ? path : null);
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [meAt, setMeAt] = useState<string | null>(null);
+  const me = meAt === path;
+  const setMe = (v: boolean) => setMeAt(v ? path : null);
 
   const fold = () => {
     try {
@@ -135,7 +140,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const unread = ALERTS.filter((a) => a.unread).length;
 
   const rail = (narrow: boolean) => (
-    <nav aria-label="Admin" onClick={(e) => (e.target as HTMLElement).closest("a") && closeAll()} className="flex h-full flex-col gap-3 px-3 py-4 text-white">
+    <nav aria-label="Admin" onClick={(e) => (e.target as HTMLElement).closest("a") && closeAll()} className="flex h-full flex-col gap-2.5 px-3 py-3 text-white">
       <div className={`flex items-center gap-2 rounded-xl ${narrow ? "flex-col" : "py-1.5 pl-2"}`}>
         <button type="button" title="Switch store" className={`flex min-w-0 items-center gap-3 rounded-lg text-left ${narrow ? "" : "flex-1 hover:bg-white/[0.04]"}`}>
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[#b8efd6] text-[13px] font-bold text-[#0a0a0a]">{SHOP.initials}</span>
@@ -144,7 +149,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-[14px] font-semibold">{SHOP.name}</span>
                 <span className="flex items-start gap-1.5 text-[11.5px] leading-snug text-white/50">
-                  <span className="mt-[5px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#6fd6a8]" /> Open · trial, 23 days left
+                  <span className="mt-[5px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#6fd6a8]" /> Open · 23 days of trial
                 </span>
               </span>
               <ChevronsUpDown className="h-4 w-4 shrink-0 text-white/35" />
@@ -178,7 +183,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         )}
       </button>
 
-      <ul className="-mx-1 flex flex-1 flex-col gap-1 overflow-y-auto px-1 [scrollbar-width:thin]">
+      <ul className="-mx-1 flex flex-1 flex-col gap-px overflow-y-auto px-1 [scrollbar-width:thin]">
         {NAV.map((g) => {
           const Icon = ICONS[g.icon];
           const groupOn = path === g.href;
@@ -188,11 +193,11 @@ export function AdminShell({ children }: { children: ReactNode }) {
               <Link
                 href={g.href}
                 title={narrow ? g.label : undefined}
-                className={`relative flex h-9 items-center gap-3 rounded-[10px] text-[14px] font-medium transition-colors ${narrow ? "justify-center" : "px-2.5"} ${
+                className={`relative flex h-8 items-center gap-3 rounded-[9px] text-[13.5px] font-medium transition-colors ${narrow ? "justify-center" : "px-2.5"} ${
                   groupOn ? "bg-white/[0.12] text-white" : inside ? "bg-white/[0.05] text-white" : "text-white/65 hover:bg-white/[0.06] hover:text-white"
                 }`}
               >
-                {inside && !narrow && <span aria-hidden className={`absolute -left-3 top-1.5 h-6 w-[3px] rounded-r-full ${TONE[g.tone].dot}`} />}
+                {inside && !narrow && <span aria-hidden className={`absolute -left-3 top-1.5 h-5 w-[3px] rounded-r-full ${TONE[g.tone].dot}`} />}
                 <Icon className="h-[17px] w-[17px] shrink-0" />
                 {!narrow && <span className="flex-1">{g.label}</span>}
                 {g.badge ? <span className={`rounded-full bg-[#6666ff] px-1.5 text-[11px] font-bold text-white ${narrow ? "absolute -right-0.5 -top-0.5" : ""}`}>{g.badge}</span> : null}
@@ -201,12 +206,12 @@ export function AdminShell({ children }: { children: ReactNode }) {
               {/* Only the area you are in opens its pages; the rest stay shut. */}
               {!narrow && g.items && (
                 <div className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out motion-reduce:transition-none ${inside ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`} inert={!inside}>
-                <ul className="ml-[1.3rem] flex min-h-0 flex-col overflow-hidden border-l border-white/[0.08] pl-3">
+                <ul className="ml-[1.3rem] flex min-h-0 flex-col gap-px overflow-hidden border-l border-white/[0.08] py-0.5 pl-2.5">
                   {g.items.map((it) => {
                     const on = path === it.href || path.startsWith(`${it.href}/`);
                     return (
                       <li key={it.href}>
-                        <Link href={it.href} className={`flex items-center justify-between rounded-lg px-2.5 py-[5px] text-[13px] transition-colors ${on ? "bg-white/[0.12] font-semibold text-white" : "text-white/45 hover:text-white"}`}>
+                        <Link href={it.href} className={`flex h-7 items-center justify-between rounded-lg px-2.5 text-[13px] transition-colors ${on ? "bg-white/[0.12] font-semibold text-white" : "text-white/45 hover:text-white"}`}>
                           {it.label}
                           {it.label === "Enquiries" && <span className="rounded-full bg-white/15 px-1.5 text-[10.5px] font-bold text-white">2</span>}
                         </Link>
@@ -221,16 +226,62 @@ export function AdminShell({ children }: { children: ReactNode }) {
         })}
       </ul>
 
-      <div className="flex flex-col gap-0.5 border-t border-white/10 pt-3">
+      <div className="flex flex-col gap-px border-t border-white/10 pt-2">
         {[
           { href: "/new-admin/settings", label: "Settings", icon: ICONS.settings, on: path.startsWith("/new-admin/settings") },
           { href: "/new-admin/bin", label: "Bin", icon: Trash2, on: path.startsWith("/new-admin/bin") },
           { href: "/support", label: "Help and support", icon: LifeBuoy, on: false },
         ].map(({ href, label, icon: Icon, on }) => (
-          <Link key={href} href={href} title={narrow ? label : undefined} className={`flex h-9 items-center gap-3 rounded-[10px] text-[14px] font-medium ${narrow ? "justify-center" : "px-2.5"} ${on ? "bg-white/[0.12] text-white" : "text-white/65 hover:bg-white/[0.06] hover:text-white"}`}>
+          <Link key={href} href={href} title={narrow ? label : undefined} className={`flex h-8 items-center gap-3 rounded-[9px] text-[13.5px] font-medium ${narrow ? "justify-center" : "px-2.5"} ${on ? "bg-white/[0.12] text-white" : "text-white/65 hover:bg-white/[0.06] hover:text-white"}`}>
             <Icon className="h-[17px] w-[17px]" /> {!narrow && label}
           </Link>
         ))}
+
+        {/* You: the one place the signed-in person lives (17 October). */}
+        <div className="relative mt-1 border-t border-white/10 pt-2">
+          <button
+            type="button"
+            aria-label="Your account and store menu"
+            aria-expanded={me}
+            onClick={() => setMe(!me)}
+            title={narrow ? SHOP.email : undefined}
+            className={`flex w-full items-center gap-2.5 rounded-[10px] py-1.5 text-left transition-colors hover:bg-white/[0.06] ${narrow ? "justify-center" : "px-1.5"} ${me ? "bg-white/[0.08]" : ""}`}
+          >
+            <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-white text-[11px] font-bold text-[#0a0a0a]">{SHOP.owner.split(" ").map((w) => w[0]).join("")}</span>
+            {!narrow && (
+              <>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[12.5px] font-semibold text-white/85">{SHOP.owner}</span>
+                  <span className="block truncate text-[11.5px] text-white/45">{SHOP.email}</span>
+                </span>
+                <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-white/35" />
+              </>
+            )}
+          </button>
+          {me && (
+            <>
+              <button type="button" aria-label="Close menu" onClick={() => setMe(false)} className="fixed inset-0 z-40 cursor-default" />
+              <div className={`absolute bottom-0 z-50 w-72 rounded-2xl bg-white p-1.5 text-[#0a0a0a] shadow-[0_24px_60px_-20px_rgba(0,0,0,0.6)] ring-1 ring-black/10 ${narrow ? "left-full ml-3" : "left-0 mb-14"}`}>
+                <div className="px-3 py-2.5">
+                  <p className="truncate text-[14px] font-semibold">{SHOP.name}</p>
+                  <p className="mt-0.5 truncate text-[12.5px] text-[#0a0a0a]/55">{SHOP.email}</p>
+                  <p className="mt-2 flex items-center gap-1.5 text-[12px] font-semibold text-[#11643f]">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#2fb37c]" aria-hidden /> Live: customers can see your store
+                  </p>
+                </div>
+                <div className="border-t border-[#0a0a0a]/[0.06] py-1">
+                  <a href="#" onClick={() => setMe(false)} className={MENU_ROW}><Store className="h-4 w-4 text-[#0a0a0a]/50" /> Preview store <ExternalLink className="ml-auto h-3.5 w-3.5 opacity-50" /></a>
+                  <Link href="/new-admin/settings/account" className={MENU_ROW}><User className="h-4 w-4 text-[#0a0a0a]/50" /> Your account</Link>
+                  <Link href="/new-admin/settings/plan" className={MENU_ROW}><ChevronRight className="h-4 w-4 text-[#0a0a0a]/50" /> Plan and billing</Link>
+                  <button type="button" onClick={() => setMe(false)} className={MENU_ROW}><Repeat className="h-4 w-4 text-[#0a0a0a]/50" /> Switch store</button>
+                </div>
+                <div className="border-t border-[#0a0a0a]/[0.06] pt-1">
+                  <button type="button" onClick={() => setMe(false)} className={`${MENU_ROW} text-[#a3330c] hover:bg-[#fff1ec]`}><LogOut className="h-4 w-4" /> Sign out</button>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </nav>
   );
@@ -252,11 +303,11 @@ export function AdminShell({ children }: { children: ReactNode }) {
         </div>
         {mobile && <div className="fixed inset-0 z-40 overflow-y-auto bg-[#0a0a0a] pt-16 lg:hidden">{rail(false)}</div>}
 
-        <aside className="sticky top-0 hidden h-dvh lg:block">{rail(folded)}</aside>
+        <aside className="sticky top-0 z-40 hidden h-dvh lg:block">{rail(folded)}</aside>
 
         <div className="min-w-0 lg:py-2 lg:pr-2">
           <main className="min-h-[calc(100dvh-4rem)] overflow-clip bg-[#f4f4f4] lg:min-h-[calc(100dvh-1rem)] lg:rounded-[1.25rem]">
-            <div onClick={(e) => (e.target as HTMLElement).closest("a") && closeAll()} className="sticky top-0 z-30 flex items-center gap-2 border-b border-[#0a0a0a]/[0.06] bg-white/90 px-4 py-2.5 backdrop-blur sm:px-6">
+            <div onClick={(e) => (e.target as HTMLElement).closest("a") && closeAll()} className="sticky top-0 z-30 flex h-12 items-center gap-1.5 border-b border-[#0a0a0a]/[0.06] bg-white/90 px-4 backdrop-blur-md sm:px-6">
               <p className="flex min-w-0 flex-1 items-center gap-1.5 truncate text-[13.5px]">
                 {here.map((h, i) => (
                   <span key={h} className={i === here.length - 1 ? "font-semibold" : "text-[#0a0a0a]/45"}>
@@ -267,11 +318,11 @@ export function AdminShell({ children }: { children: ReactNode }) {
                 <span className="ml-2 hidden rounded-full bg-[#ecebff] px-2 py-0.5 text-[11px] font-semibold text-[#4b4bea] sm:inline">Preview · sample data</span>
               </p>
               <div className="relative">
-                <button type="button" onClick={() => { setCreate(!create); setBell(false); }} className="inline-flex h-9 items-center gap-1.5 rounded-[10px] bg-[#0a0a0a] px-3 text-[13px] font-semibold text-white hover:bg-[#262626]">
+                <button type="button" onClick={() => { setCreate(!create); setBell(false); }} className="inline-flex h-8 items-center gap-1.5 rounded-[9px] bg-[#0a0a0a] px-3 text-[13px] font-semibold text-white hover:bg-[#262626]">
                   <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Create</span>
                 </button>
                 {create && (
-                  <div className="absolute right-0 top-11 w-60 overflow-hidden rounded-2xl bg-white p-1.5 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.35)] ring-1 ring-[#0a0a0a]/10">
+                  <div className="absolute right-0 top-10 w-60 overflow-hidden rounded-2xl bg-white p-1.5 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.35)] ring-1 ring-[#0a0a0a]/10">
                     {([
                       ["Product", "/new-admin/products/zohra", Package],
                       ["Order by hand", "/new-admin/orders/drafts", ShoppingBag],
@@ -290,12 +341,12 @@ export function AdminShell({ children }: { children: ReactNode }) {
                 )}
               </div>
               <div className="relative">
-                <button type="button" aria-label={`Alerts, ${unread} new`} onClick={() => { setBell(!bell); setCreate(false); }} className="relative grid h-9 w-9 place-items-center rounded-[10px] hover:bg-[#f0f0f0]">
+                <button type="button" aria-label={`Alerts, ${unread} new`} onClick={() => { setBell(!bell); setCreate(false); }} className="relative grid h-8 w-8 place-items-center rounded-[9px] hover:bg-[#f0f0f0]">
                   <Bell className="h-[18px] w-[18px]" />
                   {unread > 0 && <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-[#6666ff] ring-2 ring-white" />}
                 </button>
                 {bell && (
-                  <div className="absolute right-0 top-11 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-2xl bg-white shadow-[0_24px_60px_-20px_rgba(0,0,0,0.35)] ring-1 ring-[#0a0a0a]/10">
+                  <div className="absolute right-0 top-10 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-2xl bg-white shadow-[0_24px_60px_-20px_rgba(0,0,0,0.35)] ring-1 ring-[#0a0a0a]/10">
                     <p className="flex items-center justify-between border-b border-[#0a0a0a]/[0.06] px-4 py-3 text-[14px] font-semibold">Alerts <span className="text-[12px] font-medium text-[#4b4bea]">Mark all read</span></p>
                     <ul>
                       {ALERTS.map((a) => {
@@ -316,14 +367,14 @@ export function AdminShell({ children }: { children: ReactNode }) {
                   </div>
                 )}
               </div>
-              <button type="button" aria-label="Keyboard shortcuts" title="Shortcuts (?)" onClick={() => setKeys(true)} className="hidden h-9 w-9 place-items-center rounded-[10px] hover:bg-[#f0f0f0] sm:grid">
+              <button type="button" aria-label="Keyboard shortcuts" title="Shortcuts (?)" onClick={() => setKeys(true)} className="hidden h-8 w-8 place-items-center rounded-[9px] hover:bg-[#f0f0f0] sm:grid">
                 <HelpCircle className="h-[18px] w-[18px]" />
               </button>
-              <a href="#" title="View your store" className="hidden h-9 w-9 place-items-center rounded-[10px] hover:bg-[#f0f0f0] sm:grid">
+              <a href="#" title="View your store" className="hidden h-8 w-8 place-items-center rounded-[9px] hover:bg-[#f0f0f0] sm:grid">
                 <ExternalLink className="h-[18px] w-[18px]" />
               </a>
             </div>
-            <div className="mx-auto flex max-w-[72rem] flex-col gap-5 p-4 sm:p-6 lg:p-8">{children}</div>
+            <div className="mx-auto flex max-w-[80rem] flex-col gap-4 px-4 pb-10 pt-4 sm:px-6 lg:px-8 lg:pt-5">{children}</div>
           </main>
         </div>
 

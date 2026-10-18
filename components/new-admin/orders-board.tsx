@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Download, NotebookText, PackageCheck, PhoneCall, Printer, X } from "lucide-react";
+import { NotebookText, PackageCheck, PhoneCall, Printer, Upload, X } from "lucide-react";
 import { Pill, pkr, td } from "@/components/new-admin/ui";
 import { PlainTh, SortNote, SortTh, thead, useSort } from "@/components/new-admin/sort";
 import { useToast } from "@/components/new-admin/shell";
@@ -44,21 +44,25 @@ export function OrdersBoard({ orders: start }: { orders: Order[] }) {
 
   return (
     <>
-      {/* The pipeline. */}
-      <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
-        {STAGES.map((s, i) => {
+      {/* The pipeline: one strip, read the way an order travels (17 October). */}
+      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-[#0a0a0a]/[0.07] ring-1 ring-[#0a0a0a]/[0.07] sm:grid-cols-3 xl:grid-cols-6">
+        {STAGES.map((s) => {
           const on = stage === s;
+          const n = count(s);
+          const waiting = s === "Pending" && n > 0 && !on;
           return (
             <button
               key={s}
               type="button"
               onClick={() => setStage(on ? "All" : s)}
-              className={`relative overflow-hidden rounded-2xl px-4 py-3 text-left transition-all ${on ? "bg-[#0a0a0a] text-white" : "bg-white ring-1 ring-[#0a0a0a]/[0.07] hover:ring-[#0a0a0a]/20"}`}
+              aria-pressed={on}
+              className={`flex items-center justify-between gap-2 px-4 py-2.5 text-left transition-colors ${on ? "bg-[#0a0a0a] text-white" : "bg-white hover:bg-[#fafafa]"}`}
             >
-              <span className={`block text-[12px] font-medium ${on ? "text-white/60" : "text-[#0a0a0a]/50"}`}>{i < 5 ? `${i + 1}. ` : ""}{s}</span>
-              <span className="mt-0.5 block text-[22px] font-semibold tabular-nums">{count(s)}</span>
-              {s === "Pending" && count(s) > 0 && !on && <span className="absolute right-3 top-3 h-2 w-2 rounded-full bg-[#f2a33a]" />}
-              <span aria-hidden className={`absolute inset-x-4 bottom-0 h-[3px] rounded-t-full ${{ Pending: "bg-[#f2a33a]", Confirmed: "bg-[#6666ff]", Packed: "bg-[#b7b9ff]", Shipped: "bg-[#8cc8f5]", Delivered: "bg-[#6fd6a8]", Cancelled: "bg-[#0a0a0a]/15" }[s]}`} />
+              <span className={`flex min-w-0 items-center gap-2 truncate text-[12.5px] font-medium ${on ? "text-white/70" : "text-[#0a0a0a]/55"}`}>
+                <span aria-hidden className={`h-2 w-2 shrink-0 rounded-full ${{ Pending: "bg-[#f2a33a]", Confirmed: "bg-[#6666ff]", Packed: "bg-[#b7b9ff]", Shipped: "bg-[#8cc8f5]", Delivered: "bg-[#6fd6a8]", Cancelled: "bg-[#0a0a0a]/15" }[s]}`} />
+                {s}
+              </span>
+              <span className={`text-[18px] font-semibold leading-none tabular-nums ${waiting ? "text-[#c2410c]" : ""}`} title={waiting ? "Waiting for you" : undefined}>{n}</span>
             </button>
           );
         })}
@@ -139,7 +143,7 @@ export function OrdersBoard({ orders: start }: { orders: Order[] }) {
           <button type="button" onClick={() => move("Confirmed", "confirmed")} className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-[13px] font-semibold hover:bg-white/10"><PhoneCall className="h-4 w-4" /> Confirm</button>
           <button type="button" onClick={() => move("Packed", "marked packed")} className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-[13px] font-semibold hover:bg-white/10"><PackageCheck className="h-4 w-4" /> Mark packed</button>
           <button type="button" onClick={() => toast(`${picked.length} packing slips ready to print`)} className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-[13px] font-semibold hover:bg-white/10"><Printer className="h-4 w-4" /> Slips</button>
-          <button type="button" onClick={() => toast(`${picked.length} orders exported`)} className="inline-flex items-center gap-1.5 rounded-xl bg-white px-3 py-2 text-[13px] font-semibold text-[#0a0a0a]"><Download className="h-4 w-4" /> Export</button>
+          <button type="button" onClick={() => toast(`${picked.length} orders exported`)} className="inline-flex items-center gap-1.5 rounded-xl bg-white px-3 py-2 text-[13px] font-semibold text-[#0a0a0a]"><Upload className="h-4 w-4" /> Export CSV</button>
           <button type="button" aria-label="Clear selection" onClick={() => setPicked([])} className="grid h-9 w-9 place-items-center rounded-xl hover:bg-white/10"><X className="h-4 w-4" /></button>
         </div>
       )}
