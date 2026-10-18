@@ -190,9 +190,9 @@ check(
   // list nobody can scan.
   check(
     "the rail opens only the section you are in",
-    /inert=\{!inside\}/.test(sidebar) && /grid-rows-\[0fr\]/.test(sidebar)
+    /!narrow && inside && below\.length > 0/.test(sidebar)
   );
-  check("and a section's screens come from the navigation model", /s\.tabs\.map/.test(sidebar));
+  check("and a section's screens come from the navigation model", /s\.tabs\.filter/.test(sidebar));
 }
 
 // The old navigation bar is gone rather than left beside the rail: two places
@@ -210,23 +210,26 @@ check(
     !/rounded-2xl bg-panel[^"]*shadow-panel/.test(bar),
     "a white bar drawn to hold one Save button is a bar nobody asked for"
   );
-  check("it is 40 design pixels", /h-\[var\(--actionbar-h\)\]/.test(bar));
-  check("and slides rather than wrapping", /scrollbar-none/.test(bar) && /overflow-x-auto/.test(bar));
+  // 18 October: no bar while everything is saved; it rises at the foot of
+  // the sheet only once there is something to save.
+  check("it appears only when there is something to save", /\{dirty && \(/.test(bar));
+  check("and floats at the foot of the sheet rather than taking a row", /sticky bottom-4/.test(bar));
 }
 
 // Only the main container scrolls. Everything else is put somewhere and stays
 // there — which is the point of the bars being fixed heights.
 {
   const layout = readFileSync(join(process.cwd(), "app/admin/layout.tsx"), "utf8");
+  const shell = readFileSync(join(process.cwd(), "components/admin/admin-sidebar.tsx"), "utf8");
   check(
     "the window itself does not scroll",
-    /h-screen[^"]*overflow-hidden/.test(layout),
-    "the shell is exactly one screen tall and clips"
+    /<AdminSheet>/.test(layout) && /bg-canvas lg:fixed/.test(shell),
+    "on a computer the sheet is fixed to the screen, corners and all"
   );
   check(
     "the main container does",
-    /overflow-y-auto[^"]*bg-canvas/.test(layout),
-    "a merchant deep in a long list still needs the tabs and the actions for it"
+    /lg:overflow-y-auto/.test(shell),
+    "a merchant deep in a long list still needs the heading and its actions"
   );
 }
 check("the sidebar has more than one section", all.length > 1);

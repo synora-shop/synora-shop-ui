@@ -62,11 +62,11 @@ export function AbandonedList({ rows }: { rows: AbandonedRow[] }) {
 
   return (
     <section className="overflow-hidden rounded-2xl bg-white ring-1 ring-[#0a0a0a]/[0.07]">
-      <div role="row" className={`hidden gap-4 bg-[#0a0a0a] px-5 py-2.5 ${GRID}`}>
+      <div role="row" className={`hidden gap-4 border-b border-[#0a0a0a]/[0.06] bg-[#fafafa] px-5 py-2.5 ${GRID}`}>
         {["Who", "In the cart", "When"].map((h) => (
-          <span key={h} role="columnheader" className="text-[11.5px] font-semibold uppercase tracking-[0.06em] text-white/55">{h}</span>
+          <span key={h} role="columnheader" className="text-[11.5px] font-semibold uppercase tracking-[0.06em] text-[#0a0a0a]/45">{h}</span>
         ))}
-        <span role="columnheader" className="text-right text-[11.5px] font-semibold uppercase tracking-[0.06em] text-white/55">Total</span>
+        <span role="columnheader" className="text-right text-[11.5px] font-semibold uppercase tracking-[0.06em] text-[#0a0a0a]/45">Total</span>
         <span />
       </div>
       <ul className="divide-y divide-[#0a0a0a]/[0.06]">

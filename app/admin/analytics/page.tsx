@@ -61,36 +61,35 @@ export default async function AnalyticsPage(props: PageProps<"/admin/analytics">
         ]}
       />
 
-      {/* The one chart the page leads with, in black. */}
-      <section className="rounded-2xl bg-[#0a0a0a] p-5 text-white sm:p-6">
+      {/* The one chart the page leads with. */}
+      <section className="rounded-[16px] bg-white p-4 ring-1 ring-[#0a0a0a]/[0.07] sm:p-5">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="text-[12px] font-semibold uppercase tracking-[0.1em] text-[#b7b9ff]">Visitors over time</p>
-            <p className="mt-1 text-[26px] font-semibold tracking-[-0.02em]">
+            <p className="text-[13.5px] font-semibold text-[#0a0a0a]">Visitors over time</p>
+            <p className="mt-1 text-[20px] font-semibold tabular-nums tracking-[-0.02em] text-[#0a0a0a]">
               {data.totalPeople.toLocaleString("en-PK")}{" "}
-              {people.delta && <span className={`text-[14px] font-semibold ${people.down ? "text-[#ffb4a1]" : "text-[#b8efd6]"}`}>{people.delta}</span>}
+              {people.delta && <span className={`text-[14px] font-semibold ${people.down ? "text-[#c2410c]" : "text-[#1d7a52]"}`}>{people.delta}</span>}
             </p>
           </div>
-          <p className="flex items-center gap-4 text-[12.5px] text-white/55">
-            <span className="flex items-center gap-1.5"><span className="h-0.5 w-4 rounded bg-[#b7b9ff]" /> These {span}</span>
-            {comparing && <span className="flex items-center gap-1.5"><span className="w-4 border-t border-dashed border-white/40" /> The {span} before</span>}
+          <p className="flex items-center gap-4 text-[12.5px] text-[#0a0a0a]/55">
+            <span className="flex items-center gap-1.5"><span className="h-0.5 w-4 rounded bg-[#6666ff]" /> These {span}</span>
+            {comparing && <span className="flex items-center gap-1.5"><span className="w-4 border-t border-dashed border-[#0a0a0a]/40" /> The {span} before</span>}
           </p>
         </div>
         <div className="mt-4">
           <AreaChart
-            dark
             points={data.peopleSeries.map((p) => p.value)}
             compare={comparing ? data.previousPeopleSeries.map((p) => p.value) : undefined}
             label={`Visitors per day over the last ${span}`}
           />
         </div>
-        <div className="mt-2 flex justify-between text-[11.5px] text-white/35">
+        <div className="mt-2 flex justify-between text-[11.5px] text-[#0a0a0a]/40">
           <span>{shortDay(data.peopleSeries[0]?.day)}</span>
           <span>Today</span>
         </div>
       </section>
 
-      <div className="grid gap-5 lg:grid-cols-2">
+      <div className="grid items-start gap-3 lg:grid-cols-2">
         <Panel title="Where orders come from">
           {data.cities.length === 0 ? (
             <p className="py-6 text-center text-[13.5px] text-[#0a0a0a]/50">No orders in this period.</p>
@@ -137,7 +136,7 @@ export default async function AnalyticsPage(props: PageProps<"/admin/analytics">
           { label: `Low stock (under ${settings.lowStockThreshold})`, value: String(data.stock.low), href: "/admin/products/inventory?view=low" },
         ]}
       />
-      <div className="grid gap-5 lg:grid-cols-3">
+      <div className="grid items-start gap-3 lg:grid-cols-3">
         <Panel title="Best sellers">
           <RankedBars rows={data.topProducts} format="currency" empty="No sales in this period." />
         </Panel>

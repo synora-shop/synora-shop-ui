@@ -150,7 +150,7 @@ export default async function AdminDraftsPage(props: PageProps<"/admin/drafts">)
         // saying nothing, in the width of one that could say something.
         showStatus={false}
         head={
-          <div role="row" className={`hidden items-center gap-4 bg-[#0a0a0a] py-1.5 lg:grid ${HEAD_PAD} ${PRODUCT_GRID_NO_STATUS}`}>
+          <div role="row" className={`hidden items-center gap-4 border-b border-[#0a0a0a]/[0.06] bg-[#fafafa] py-1.5 lg:grid ${HEAD_PAD} ${PRODUCT_GRID_NO_STATUS}`}>
             <span />
             <span />
             <SortHeading label="Product" asc="title" desc="title-desc" current={sort.value} basePath="/admin/drafts" searchParams={sp} options={PRODUCT_SORTS} />

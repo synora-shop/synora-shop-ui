@@ -22,6 +22,8 @@ export default async function PageDraftsPage() {
 
   if (drafts.length === 0) {
     return (
+      <div className="space-y-4">
+      <PageHeader title="Page drafts" crumbs={[{ label: "Pages", href: "/admin/pages" }]} />
       <EmptyState
         icon={FilePen}
         title="Nothing waiting"
@@ -32,6 +34,7 @@ export default async function PageDraftsPage() {
           </ButtonLink>
         }
       />
+      </div>
     );
   }
 

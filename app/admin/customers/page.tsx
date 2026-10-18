@@ -144,7 +144,7 @@ export default async function CustomersPage(props: PageProps<"/admin/customers">
               key={v.key}
               href={viewHref(v.key)}
               aria-current={v.key === view.key ? "true" : undefined}
-              className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-[13px] font-semibold ${v.key === view.key ? "bg-[#0a0a0a] text-white" : "text-[#0a0a0a]/55 hover:bg-[#0a0a0a]/[0.05] hover:text-[#0a0a0a]"}`}
+              className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-[13px] font-semibold ${v.key === view.key ? "bg-[#ecebff] text-[#4b4bea] ring-1 ring-inset ring-[#6666ff]/25" : "text-[#0a0a0a]/55 hover:bg-[#0a0a0a]/[0.05] hover:text-[#0a0a0a]"}`}
             >
               {v.label}
             </Link>
@@ -168,11 +168,11 @@ export default async function CustomersPage(props: PageProps<"/admin/customers">
         />
       ) : (
         <section className="overflow-hidden rounded-2xl bg-white ring-1 ring-[#0a0a0a]/[0.07]">
-          <div role="row" className={`hidden items-center gap-4 bg-[#0a0a0a] px-4 py-1.5 lg:grid ${CUSTOMER_GRID}`}>
+          <div role="row" className={`hidden items-center gap-4 border-b border-[#0a0a0a]/[0.06] bg-[#fafafa] px-4 py-1.5 lg:grid ${CUSTOMER_GRID}`}>
             {heading("Customer", "name", "name-desc")}
             {heading("Email", "email", "email-desc")}
             {heading("City", "city", "city-desc")}
-            <span role="columnheader" className="text-[11.5px] font-semibold uppercase tracking-[0.06em] text-white/55">Account</span>
+            <span role="columnheader" className="text-[11.5px] font-semibold uppercase tracking-[0.06em] text-[#0a0a0a]/45">Account</span>
             {heading("Orders", "orders-low", "orders", "right")}
             {heading("Spent", "spend-low", "spend", "right")}
           </div>
@@ -181,23 +181,21 @@ export default async function CustomersPage(props: PageProps<"/admin/customers">
               <Link
                 key={customer.id}
                 href={`/admin/customers/${customer.id}`}
-                className={`flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 transition-colors hover:bg-[#fafafa] lg:grid ${CUSTOMER_GRID}`}
+                className={`flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2 transition-colors hover:bg-[#fafafa] lg:grid lg:min-h-11 ${CUSTOMER_GRID}`}
               >
-                <span className="flex min-w-0 items-center gap-3">
-                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#c8e7ff] text-[12px] font-semibold text-[#0a0a0a]">{initialsOf(customer.name)}</span>
-                  <span className="min-w-0">
-                    <span className="block truncate text-[14.5px] font-medium text-[#0a0a0a]">{customer.name}</span>
-                    {customer.orderCount > 1 && <span className="block text-[12px] font-semibold text-[#1d7a52]">Comes back</span>}
-                  </span>
+                {/* Names alone, as Shopify does; a returning customer says so. */}
+                <span className="min-w-0 truncate text-[13.5px]">
+                  <span className="font-medium text-[#0a0a0a]">{customer.name}</span>
+                  {customer.orderCount > 1 && <span className="ml-1.5 text-[11.5px] font-semibold text-[#4b4bea]">Comes back</span>}
                 </span>
                 <span className="min-w-0 basis-full truncate text-[13px] text-[#0a0a0a]/60 lg:basis-auto">
                   {customer.email}
-                  {customer.phone ? <span className="block text-[12px] text-[#0a0a0a]/45">{customer.phone}</span> : null}
+                  {customer.phone ? <span className="text-[#0a0a0a]/40"> · {customer.phone}</span> : null}
                 </span>
                 <span className="text-[13.5px] text-[#0a0a0a]/70">{customer.city || <span className="text-[#0a0a0a]/35">Not known</span>}</span>
                 <span>{customer.hasAccount ? <StatePill tone="good">Signed up</StatePill> : <StatePill tone="off">Guest</StatePill>}</span>
-                <span className="text-[14px] tabular-nums text-[#0a0a0a] lg:text-right" title={customer.lastOrderAt ? `Last ordered ${formatRelativeTime(customer.lastOrderAt)}` : "Never ordered"}>{customer.orderCount} <span className="text-[#0a0a0a]/45 lg:hidden">orders</span></span>
-                <span className="text-[14px] font-semibold tabular-nums text-[#0a0a0a] lg:text-right">{money(customer.totalSpent)}</span>
+                <span className="text-[13.5px] tabular-nums text-[#0a0a0a] lg:text-right" title={customer.lastOrderAt ? `Last ordered ${formatRelativeTime(customer.lastOrderAt)}` : "Never ordered"}>{customer.orderCount} <span className="text-[#0a0a0a]/45 lg:hidden">orders</span></span>
+                <span className="text-[13.5px] font-semibold tabular-nums text-[#0a0a0a] lg:text-right">{money(customer.totalSpent)}</span>
               </Link>
             ))}
           </div>
@@ -211,10 +209,6 @@ export default async function CustomersPage(props: PageProps<"/admin/customers">
 
 const CUSTOMER_GRID = "lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1.3fr)_7rem_7rem_4.5rem_7.5rem]";
 
-function initialsOf(name: string): string {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  return ((parts[0]?.[0] ?? "?") + (parts.length > 1 ? parts[parts.length - 1][0] : "")).toUpperCase();
-}
 
 /** A moment some days back, kept out of the render body. */
 function daysAgo(days: number): Date {

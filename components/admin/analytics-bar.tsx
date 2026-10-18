@@ -43,7 +43,7 @@ export function AnalyticsBar({ searchParams, range, comparing }: { searchParams:
             key={r.value}
             href={href(base, searchParams, { range: r.value === "30d" ? null : r.value })}
             aria-current={r.value === range ? "true" : undefined}
-            className={cn("rounded-lg px-3 py-1.5 transition-colors", r.value === range ? "bg-[#0a0a0a] text-white" : "text-[#0a0a0a]/55 hover:text-[#0a0a0a]")}
+            className={cn("rounded-lg px-3 py-1.5 transition-colors", r.value === range ? "bg-[#ecebff] text-[#4b4bea] ring-1 ring-inset ring-[#6666ff]/25" : "text-[#0a0a0a]/55 hover:text-[#0a0a0a]")}
           >
             {r.label}
           </Link>

@@ -58,7 +58,7 @@ export function ViewToggle({
           className={cn(
             "flex h-7 w-7 items-center justify-center rounded-[7px] transition-colors",
             current === kind
-              ? "bg-[#0a0a0a] text-white"
+              ? "bg-[#ecebff] text-[#4b4bea] ring-1 ring-inset ring-[#6666ff]/25"
               : "text-[#0a0a0a]/55 hover:text-[#0a0a0a]"
           )}
         >

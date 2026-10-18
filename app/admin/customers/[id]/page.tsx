@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
+import { Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { shopSession } from "@/lib/auth-guard";
 import { getCustomer } from "@/lib/data/customers";
 
 import { formatRelativeTime } from "@/lib/format-relative-time";
 import { statusLabel } from "@/lib/order-status-style";
-import { Panel, STAGE_TONE, StatePill } from "@/components/admin/kit";
+import { Figures, Panel, STAGE_TONE, StatePill } from "@/components/admin/kit";
+import { PageHeader } from "@/components/ui/primitives";
 import { PageCrumb } from "@/components/admin/page-crumb";
 import { CustomerNote, CustomerOffers, CustomerTags } from "@/components/admin/customer-extras";
 import { formatMoney } from "@/lib/money";
@@ -32,37 +33,26 @@ export default async function CustomerPage(props: PageProps<"/admin/customers/[i
   const totalSpent = counted.reduce((sum, o) => sum + o.total, 0);
 
   const digits = (customer.phone ?? "").replace(/\D/g, "").replace(/^0/, "92");
-  const initials = customer.name.trim().split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
 
   return (
     <div className="space-y-4">
       <PageCrumb label={customer.name} />
-      <Link href="/admin/customers" className="-mb-2 inline-flex items-center gap-1.5 self-start text-[13.5px] font-semibold text-[#0a0a0a]/55 hover:text-[#0a0a0a]">
-        <ArrowLeft className="h-4 w-4" /> Customers
-      </Link>
+      <PageHeader
+        title={customer.name}
+        meta={customer.hasAccount ? <StatePill tone="good">Has an account</StatePill> : <StatePill tone="off">Guest</StatePill>}
+        description={`First seen ${formatRelativeTime(customer.createdAt)}`}
+      />
 
-      {/* Who they are and what they are worth, at a glance. */}
-      <section className="flex flex-col gap-5 rounded-2xl bg-[#0a0a0a] p-5 text-white sm:flex-row sm:items-center sm:p-6">
-        <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-[#c8e7ff] text-[20px] font-semibold text-[#0a0a0a]">{initials}</span>
-        <div className="min-w-0 flex-1">
-          <h2 className="flex flex-wrap items-center gap-2 text-[22px] font-semibold tracking-[-0.02em]">
-            {customer.name}
-            {customer.hasAccount ? (
-              <span className="rounded-full bg-[#b8efd6]/15 px-2 py-0.5 text-[11.5px] font-semibold text-[#b8efd6]">Has an account</span>
-            ) : (
-              <span className="rounded-full bg-white/10 px-2 py-0.5 text-[11.5px] font-semibold text-white/60">Guest</span>
-            )}
-          </h2>
-          <p className="text-[13.5px] text-white/55">First seen {formatRelativeTime(customer.createdAt)}</p>
-        </div>
-        <dl className="grid grid-cols-3 gap-6 text-right">
-          <div><dt className="text-[12px] text-white/50">Spent</dt><dd className="text-[18px] font-semibold">{money(totalSpent)}</dd></div>
-          <div><dt className="text-[12px] text-white/50">Orders</dt><dd className="text-[18px] font-semibold">{counted.length}</dd></div>
-          <div><dt className="text-[12px] text-white/50">Average</dt><dd className="text-[18px] font-semibold">{counted.length > 0 ? money(Math.round(totalSpent / counted.length)) : "None"}</dd></div>
-        </dl>
-      </section>
+      {/* What they are worth, at a glance. */}
+      <Figures
+        items={[
+          { label: "Spent", value: money(totalSpent) },
+          { label: "Orders", value: String(counted.length) },
+          { label: "Average order", value: counted.length > 0 ? money(Math.round(totalSpent / counted.length)) : "None" },
+        ]}
+      />
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]">
+      <div className="grid items-start gap-3 lg:grid-cols-[minmax(0,1fr)_19rem]">
         <div className="space-y-4">
         <Panel
           title={`Orders · ${customer.orders.length}`}

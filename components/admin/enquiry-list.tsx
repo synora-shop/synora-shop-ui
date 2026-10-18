@@ -183,7 +183,7 @@ export function EnquiryList({ enquiries }: { enquiries: EnquiryRow[] }) {
                             onClick={() => setStatus(row.id, s)}
                             className={cn(
                               "rounded-full px-3 py-1 text-[13px] font-semibold transition-colors disabled:opacity-100",
-                              row.status === s ? "bg-[#0a0a0a] text-white" : "bg-white ring-1 ring-[#0a0a0a]/15 hover:ring-[#0a0a0a]/40"
+                              row.status === s ? "bg-[#ecebff] text-[#4b4bea] ring-1 ring-inset ring-[#6666ff]/25" : "bg-white ring-1 ring-[#0a0a0a]/15 hover:ring-[#0a0a0a]/40"
                             )}
                           >
                             {STATUS_META[s].label}

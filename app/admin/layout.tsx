@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { shopSession } from "@/lib/auth-guard";
-import { AdminSidebar } from "@/components/admin/admin-sidebar";
-import { AdminTopbar, type Alert } from "@/components/admin/admin-topbar";
+import { AdminPhoneBar, AdminSheet, AdminSidebar, type Alert } from "@/components/admin/admin-sidebar";
+import { AdminKeys } from "@/components/admin/admin-topbar";
 import { EditorBar } from "@/components/admin/editor-bar";
 import { getStoreSettings } from "@/lib/data/settings";
 import { canonicalUrl, currentShop, db } from "@/lib/data/shop";
@@ -53,13 +53,12 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
     // choose their words. Every client component that draws money reads the
     // currency from the provider rather than through six unrelated props.
     //
-    // New admin (15 October): a black rail on the left, and beside it one
-    // sheet that is the only thing that scrolls. The window itself stays one
-    // screen tall, so the rail and the top bar never leave it however long a
-    // list gets, and the top bar and the save bar stick to the top of the
-    // sheet while its content moves under them.
+    // 18 October (from /next-admin): a black rail on the left, and beside it
+    // one rounded sheet that holds still while only its content scrolls. No
+    // top bar: each screen's heading sticks to the top of the sheet, and the
+    // save bar floats at its foot when there is something to save.
     <CurrencyProvider currency={resolveStoreDefaults(settings).currency}>
-      <div data-business-type={type} className="admin-shell flex h-screen overflow-hidden bg-[#0a0a0a] font-sans text-ink">
+      <div data-business-type={type} className="admin-shell min-h-dvh bg-[#0a0a0a] font-sans text-ink">
         <AdminSidebar
           storeName={settings.storeName || me.shop.name}
           statusLabel={statusLabel(me.shop.status, isLive)}
@@ -70,14 +69,14 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
           storeUrl={storeUrl}
           registryType={type}
           storeStatus={me.shop.status}
+          alerts={alerts.map(({ label, href }) => ({ label, href }))}
         />
-        <div className="min-w-0 flex-1 lg:py-2 lg:pr-2">
-          <div className="relative h-full overflow-y-auto overscroll-contain bg-canvas lg:rounded-[1.25rem]">
-            <AdminTopbar alerts={alerts.map(({ label, href }) => ({ label, href }))} />
-            <EditorBar />
-            <main className="mx-auto flex max-w-[80rem] flex-col gap-4 px-4 pb-10 pt-4 sm:px-6 lg:px-8 lg:pt-5">{children}</main>
-          </div>
-        </div>
+        <AdminPhoneBar />
+        <AdminKeys />
+        <AdminSheet>
+          <div className="mx-auto flex w-full max-w-[96rem] flex-col gap-4 px-4 pb-14 sm:px-6">{children}</div>
+          <EditorBar />
+        </AdminSheet>
       </div>
     </CurrencyProvider>
   );

@@ -55,8 +55,9 @@ check("the bar draws nothing when no screen has registered",
 // A permanently visible Discard on an untouched form is a button whose only
 // purpose is to frighten you.
 check("Discard appears only once there is something to discard",
-  /\{dirty && \([\s\S]{0,200}Discard/.test(bar));
-check("Save is disabled when there is nothing to save", /disabled=\{!dirty \|\| saving\}/.test(bar));
+  /\{dirty && \([\s\S]{0,1200}Discard/.test(bar));
+// Since 18 October the whole bar, Save with it, exists only while something is unsaved.
+check("Save is offered only when there is something to save", /\{dirty && \([\s\S]{0,1600}onClick=\{saveAll\}/.test(bar));
 check("one press saves every changed form",
   /Promise\.all\(entries\.filter\(\(e\) => e\.dirty\)/.test(bar));
 check("the bar owns the leave dialog, since a hook cannot render one",

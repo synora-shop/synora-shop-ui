@@ -8,8 +8,8 @@ import { cn } from "@/lib/utils";
  *
  * Black and white carry the panel; the brand colours mark which section you
  * are in (the chip on a page's heading, the dot in the rail); and state, and
- * only state, wears green, amber and red. The first figure in a row of
- * figures is the black one, because it is the one to read first.
+ * only state, wears green, amber and red. Black is for the one action a
+ * screen exists for, never for emphasis (18 October).
  *
  * Server-safe: nothing here holds state, so a server page can use it directly.
  */
@@ -53,39 +53,42 @@ export function ActionLink({ href, children, primary = false, external = false }
 /** A card. Titled when it holds one thing; untitled when it is the thing. */
 export function Panel({ title, action, children, pad = true, className = "" }: { title?: string; action?: ReactNode; children: ReactNode; pad?: boolean; className?: string }) {
   return (
-    <section className={cn("rounded-2xl bg-white ring-1 ring-[#0a0a0a]/[0.07]", className)}>
+    <section className={cn("min-w-0 overflow-hidden rounded-[16px] bg-white ring-1 ring-[#0a0a0a]/[0.07]", className)}>
       {title && (
-        <div className="flex items-center justify-between gap-3 px-5 pb-1 pt-4">
-          <h3 className="text-[14.5px] font-semibold text-[#0a0a0a]">{title}</h3>
+        <div className="flex h-11 items-center justify-between gap-3 border-b border-[#0a0a0a]/[0.05] px-4">
+          <h3 className="text-[13.5px] font-semibold text-[#0a0a0a]">{title}</h3>
           {action}
         </div>
       )}
-      <div className={pad ? "p-5" : ""}>{children}</div>
+      <div className={pad ? "p-4" : ""}>{children}</div>
     </section>
   );
 }
 
 export type Figure = { label: string; value: string; delta?: string | null; down?: boolean; spark?: number[]; href?: string };
 
-/** The four figures that matter on a screen. The first is black. */
+/**
+ * The figures that matter on a screen (18 October, from /next-admin): one
+ * strip, a hairline between each, the value beside its change and a small
+ * line at the end. None is black: nothing is black to be important.
+ */
 export function Figures({ items }: { items: Figure[] }) {
   return (
-    <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
-      {items.map((f, i) => {
-        const lead = i === 0;
+    <div className="grid grid-cols-2 gap-px overflow-hidden rounded-[16px] bg-[#0a0a0a]/[0.07] p-px md:grid-flow-col md:auto-cols-fr md:grid-cols-none">
+      {items.map((f) => {
         const body = (
           <>
-            <div className="min-w-0">
-              <p className={cn("text-[12.5px] font-medium", lead ? "text-white/55" : "text-[#0a0a0a]/55")}>{f.label}</p>
-              <p className="mt-0.5 truncate text-[20px] font-semibold leading-tight tracking-[-0.02em]">{f.value}</p>
-              {f.delta && (
-                <p className={cn("mt-0.5 text-[12px] font-semibold", f.down ? (lead ? "text-[#ffb4a1]" : "text-[#c2410c]") : lead ? "text-[#b8efd6]" : "text-[#1d7a52]")}>{f.delta}</p>
-              )}
-            </div>
-            {f.spark && f.spark.length > 1 && <Spark points={f.spark} down={f.down} light={lead} />}
+            <span className="min-w-0">
+              <span className="block truncate text-[12px] text-[#0a0a0a]/55">{f.label}</span>
+              <span className="mt-0.5 flex items-baseline gap-1.5">
+                <span className="truncate text-[18px] font-semibold tabular-nums tracking-[-0.02em] text-[#0a0a0a]">{f.value}</span>
+                {f.delta && <span className={cn("truncate text-[12px] font-semibold", f.down ? "text-[#c2410c]" : "text-[#1d7a52]")}>{f.delta}</span>}
+              </span>
+            </span>
+            {f.spark && f.spark.length > 1 && <span className="hidden md:block"><Spark points={f.spark} down={f.down} w={64} h={24} /></span>}
           </>
         );
-        const cls = cn("flex items-end justify-between gap-3 rounded-2xl px-4 py-3", lead ? "bg-[#0a0a0a] text-white" : "bg-white text-[#0a0a0a] ring-1 ring-[#0a0a0a]/[0.07]", f.href && "transition-shadow hover:shadow-[0_12px_30px_-18px_rgba(0,0,0,0.45)]");
+        const cls = cn("flex min-w-0 items-end justify-between gap-2 bg-white px-4 py-3", f.href && "hover:bg-[#fafafa]");
         return f.href ? (
           <Link key={f.label} href={f.href} className={cls}>{body}</Link>
         ) : (
@@ -101,7 +104,7 @@ export function Spark({ points, down = false, light = false, w = 84, h = 32 }: {
   const d = points.map((p, i) => `${(i / (points.length - 1)) * w},${h - ((p - min) / (max - min || 1)) * (h - 4) - 2}`).join(" ");
   return (
     <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden className="shrink-0">
-      <polyline points={d} fill="none" stroke={down ? (light ? "#ffb4a1" : "#c2410c") : light ? "#b7b9ff" : "#0a0a0a"} strokeWidth="1.75" strokeLinejoin="round" strokeLinecap="round" />
+      <polyline points={d} fill="none" stroke={down ? (light ? "#ffb4a1" : "#c2410c") : light ? "#b7b9ff" : "#6666ff"} strokeWidth="1.75" strokeLinejoin="round" strokeLinecap="round" />
     </svg>
   );
 }
@@ -163,7 +166,7 @@ export function changeText(now: number, before: number, unit = "on the 30 days b
  * server page that imports a plain value from a client file gets a reference
  * to it, not the string.
  */
-export const ORDER_GRID = "lg:grid lg:grid-cols-[1.25rem_6.5rem_minmax(0,1.4fr)_8rem_minmax(0,1fr)_7.5rem_7.5rem] lg:items-center";
+export const ORDER_GRID = "lg:grid lg:grid-cols-[1.25rem_6.5rem_minmax(0,1.5fr)_7rem_minmax(0,1.2fr)_10rem_7.5rem] lg:items-center";
 
 /** Each order stage's colour, and how its money stands, in a merchant's words. */
 export const STAGE_TONE: Record<string, PillTone> = {
@@ -187,8 +190,8 @@ export function paymentState(method: string, status: string): { tone: PillTone; 
 export const HEAD_PAD = "pl-4 pr-16";
 
 /** The products list's columns: tick, picture, name, stock, price, status. */
-export const PRODUCT_GRID = "lg:grid-cols-[1.25rem_2.75rem_minmax(0,1fr)_7.5rem_9rem_7rem]";
-export const PRODUCT_GRID_NO_STATUS = "lg:grid-cols-[1.25rem_2.75rem_minmax(0,1fr)_7.5rem_9rem]";
+export const PRODUCT_GRID = "lg:grid-cols-[1.25rem_2rem_minmax(0,1fr)_7.5rem_10rem_7rem]";
+export const PRODUCT_GRID_NO_STATUS = "lg:grid-cols-[1.25rem_2rem_minmax(0,1fr)_7.5rem_10rem]";
 
 /** "2026-09-15" as a person reads it: "15 Sep". */
 export function shortDay(day: string | undefined): string {

@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { AlertTriangle, ArrowRight, Check, FilePen, Home as HomeIcon, MessageSquare, PackageCheck } from "lucide-react";
+import { AlertTriangle, ArrowRight, Check, FilePen, Home as HomeIcon, Lightbulb, MessageSquare, PackageCheck } from "lucide-react";
+import { PageHeader, buttonClass } from "@/components/ui/primitives";
 import { analytics } from "@/lib/analytics/queries";
 import { getStoreSettings } from "@/lib/data/settings";
 import { canonicalUrl, db, requireShop } from "@/lib/data/shop";
@@ -69,39 +70,36 @@ export default async function AdminHomePage() {
 
   return (
     <>
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <p className="text-[13px] font-medium text-[#0a0a0a]/50">{today}</p>
-          <h2 className="text-[26px] font-semibold tracking-[-0.025em] text-[#0a0a0a]">{greeting}</h2>
-        </div>
-        <span className="inline-flex items-center gap-2 rounded-[10px] bg-white px-3 py-2 text-[13px] font-semibold ring-1 ring-[#0a0a0a]/10">
-          <span className="relative flex h-2 w-2">
-            {data.liveVisitors > 0 && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#2fb37c] opacity-60 motion-reduce:hidden" />}
-            <span className={`relative inline-flex h-2 w-2 rounded-full ${data.liveVisitors > 0 ? "bg-[#2fb37c]" : "bg-[#0a0a0a]/25"}`} />
+      <PageHeader
+        title={greeting}
+        description={today}
+        meta={
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-2 py-0.5 text-[12px] font-medium ring-1 ring-[#0a0a0a]/10">
+            <span className="relative flex h-1.5 w-1.5">
+              {data.liveVisitors > 0 && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#2fb37c] opacity-60 motion-reduce:hidden" />}
+              <span className={`relative inline-flex h-1.5 w-1.5 rounded-full ${data.liveVisitors > 0 ? "bg-[#2fb37c]" : "bg-[#0a0a0a]/25"}`} />
+            </span>
+            {data.liveVisitors} on your store now
           </span>
-          {data.liveVisitors} on your store now
-        </span>
-      </div>
+        }
+        actions={
+          <>
+            <a href={url} target="_blank" rel="noreferrer" className={buttonClass("secondary", "md")}>View store</a>
+            <Link href="/admin/customize" className={buttonClass("primary", "md")}>Customise</Link>
+          </>
+        }
+      />
 
-      {/* The store itself. */}
-      <section className="flex flex-col gap-4 rounded-2xl bg-[#0a0a0a] p-4 text-white sm:flex-row sm:items-center sm:p-5">
-        <span className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-xl bg-[#b8efd6] text-[13px] font-bold tracking-[0.1em] text-[#0a0a0a]">
+      {/* The store itself, in one line (18 October). */}
+      <section className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-[14px] bg-white px-3.5 py-2.5 text-[13px] ring-1 ring-[#0a0a0a]/[0.07]">
+        <span className="grid h-7 w-7 shrink-0 place-items-center overflow-hidden rounded-[8px] bg-[#b8efd6] text-[10.5px] font-bold tracking-[0.06em] text-[#0a0a0a]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           {settings.logoCompactUrl ? <img src={settings.logoCompactUrl} alt="" className="h-full w-full object-contain" /> : initials(settings.storeName || shop.name)}
         </span>
-        <div className="min-w-0 flex-1">
-          <p className="flex flex-wrap items-center gap-2 text-[17px] font-semibold">
-            {settings.storeName || shop.name}
-            <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11.5px] font-semibold ${live ? "bg-[#b8efd6]/15 text-[#b8efd6]" : "bg-[#f2a33a]/15 text-[#f2c27a]"}`}>
-              <span className="h-1.5 w-1.5 rounded-full bg-current" /> {live ? "Open" : "Not open to customers"}
-            </span>
-          </p>
-          <p className="truncate text-[13.5px] text-white/55">{url.replace(/^https?:\/\//, "")}</p>
-        </div>
-        <div className="flex gap-2">
-          <a href={url} target="_blank" rel="noreferrer" className="inline-flex h-9 items-center rounded-[10px] px-3.5 text-[13.5px] font-semibold ring-1 ring-white/20 hover:bg-white/10">View store</a>
-          <Link href="/admin/customize" className="inline-flex h-9 items-center rounded-[10px] bg-white px-3.5 text-[13.5px] font-semibold text-[#0a0a0a]">Customise</Link>
-        </div>
+        <span className="font-semibold">{settings.storeName || shop.name}</span>
+        <span className={`inline-flex items-center gap-1.5 font-medium ${live ? "text-[#11643f]" : "text-[#7a4b00]"}`}><span className={`h-1.5 w-1.5 rounded-full ${live ? "bg-[#2fb37c]" : "bg-[#f2a33a]"}`} /> {live ? "Open" : "Not open to customers"}</span>
+        <span className="truncate text-[#0a0a0a]/50">{url.replace(/^https?:\/\//, "")}</span>
+        <span className="ml-auto text-[#0a0a0a]/45">Last 30 days</span>
       </section>
 
       <Figures
@@ -113,22 +111,20 @@ export default async function AdminHomePage() {
         ]}
       />
 
-      <div>
-        <p className="mb-2 text-[12px] font-semibold uppercase tracking-[0.1em] text-[#0a0a0a]/45">Needs you</p>
-        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-          {needs.map(({ n, text, href, icon: Icon, cls, sub }) => (
-            <Link key={href} href={href} className={`group flex items-center gap-3 rounded-2xl px-4 py-3.5 transition-transform hover:-translate-y-0.5 motion-reduce:transition-none ${n > 0 ? cls : "bg-white text-[#0a0a0a] ring-1 ring-[#0a0a0a]/[0.07]"}`}>
-              <span className="text-[26px] font-semibold tabular-nums leading-none">{n}</span>
-              <span className={`min-w-0 flex-1 text-[13.5px] font-semibold leading-tight ${n > 0 ? sub : "text-[#0a0a0a]/50"}`}>{text}</span>
-              <Icon className="h-4 w-4 opacity-60" />
-            </Link>
-          ))}
-        </div>
+      {/* What needs you today, in the section colours. */}
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+        {needs.map(({ n, text, href, icon: Icon, cls, sub }) => (
+          <Link key={href} href={href} className={`group flex h-12 items-center gap-3 rounded-[14px] px-4 transition-[filter] hover:brightness-[0.97] ${n > 0 ? cls : "bg-white text-[#0a0a0a] ring-1 ring-[#0a0a0a]/[0.07]"}`}>
+            <span className="text-[20px] font-semibold tabular-nums leading-none">{n}</span>
+            <span className={`min-w-0 flex-1 truncate text-[13px] font-semibold ${n > 0 ? sub : "text-[#0a0a0a]/50"}`}>{text}</span>
+            <Icon className="h-4 w-4 opacity-60" />
+          </Link>
+        ))}
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]">
+      <div className="grid items-start gap-3 lg:grid-cols-[minmax(0,1fr)_19rem]">
         <Panel title="Sales over time" action={<span className="text-[12.5px] font-medium text-[#0a0a0a]/50">Daily, last 30 days</span>}>
-          <p className="text-[24px] font-semibold tracking-[-0.02em] text-[#0a0a0a]">{money(current.revenue)}</p>
+          <p className="text-[20px] font-semibold tabular-nums tracking-[-0.02em] text-[#0a0a0a]">{money(current.revenue)}</p>
           <div className="mt-3">
             <AreaChart points={data.revenueSeries.map((p) => p.value)} label="Sales per day over the last 30 days" />
           </div>
@@ -162,16 +158,16 @@ export default async function AdminHomePage() {
       </div>
 
       {doneCount < setup.length && (
-        <div className="grid gap-5 lg:grid-cols-2">
+        <div className="grid items-start gap-3 lg:grid-cols-2">
           <Panel title="Best sellers, 30 days">
             <TopProducts rows={data.topProducts} money={money} />
           </Panel>
-          <section className="flex flex-col justify-between rounded-2xl bg-[#0a0a0a] p-5 text-white">
+          <section className="flex flex-col justify-between rounded-[16px] bg-white p-4 ring-1 ring-[#0a0a0a]/[0.07]">
             <div>
-              <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#b8efd6]">Tip</p>
-              <p className="mt-2 text-[16px] font-semibold leading-snug">Calling cash-on-delivery customers before you dispatch cuts returns.</p>
+              <p className="flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-[0.08em] text-[#b45309]"><Lightbulb className="h-3.5 w-3.5" /> Tip</p>
+              <p className="mt-1.5 text-[14px] font-semibold leading-snug text-[#0a0a0a]">Calling cash-on-delivery customers before you dispatch cuts returns.</p>
             </div>
-            <Link href="/admin/orders" className="mt-3 inline-flex items-center gap-1 text-[13.5px] font-semibold text-white/80 hover:text-white">
+            <Link href="/admin/orders" className="mt-3 inline-flex items-center gap-1 text-[13px] font-semibold text-[#4b4bea] hover:underline">
               Go to orders <ArrowRight className="h-4 w-4" />
             </Link>
           </section>

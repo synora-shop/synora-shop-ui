@@ -156,7 +156,7 @@ export function DiscountManager({ discounts, title, description }: { discounts: 
           className={cn(
             "group inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-[11.5px] font-semibold uppercase tracking-[0.06em] transition-colors",
             right ? "-mr-2 flex-row-reverse" : "-ml-2",
-            on ? "bg-white/[0.12] text-white" : "text-white/55 hover:bg-white/[0.07] hover:text-white"
+            on ? "bg-[#ecebff] text-[#4b4bea]" : "text-[#0a0a0a]/45 hover:bg-[#0a0a0a]/[0.05] hover:text-[#0a0a0a]"
           )}
         >
           {label}
@@ -194,10 +194,10 @@ export function DiscountManager({ discounts, title, description }: { discounts: 
                     role="radio"
                     aria-checked={type === t.value}
                     onClick={() => setType(t.value)}
-                    className={cn("rounded-xl px-4 py-3 text-left", type === t.value ? "bg-[#0a0a0a] text-white" : "ring-1 ring-[#0a0a0a]/12 hover:ring-[#0a0a0a]/30")}
+                    className={cn("rounded-xl px-4 py-3 text-left", type === t.value ? "bg-[#ecebff] text-[#4b4bea] ring-1 ring-inset ring-[#6666ff]/25" : "ring-1 ring-[#0a0a0a]/12 hover:ring-[#0a0a0a]/30")}
                   >
                     <span className="block text-[14px] font-semibold">{t.label}</span>
-                    <span className={cn("block text-[12.5px]", type === t.value ? "text-white/60" : "text-[#0a0a0a]/55")}>{t.hint}</span>
+                    <span className={cn("block text-[12.5px]", type === t.value ? "text-[#4b4bea]/75" : "text-[#0a0a0a]/55")}>{t.hint}</span>
                   </button>
                 ))}
               </div>
@@ -270,19 +270,19 @@ export function DiscountManager({ discounts, title, description }: { discounts: 
 
           {/* Said back in plain words, as it is filled in. */}
           <aside className="lg:sticky lg:top-24 lg:self-start">
-            <section className="rounded-2xl bg-[#0a0a0a] p-5 text-white">
-              <p className="text-[12px] font-semibold uppercase tracking-[0.1em] text-[#b7b9ff]">What customers get</p>
-              <p className="mt-3 inline-block rounded-lg bg-white px-3 py-1.5 font-mono text-[16px] font-bold tracking-[0.08em] text-[#0a0a0a]">{code || "CODE"}</p>
-              <ul className="mt-4 flex flex-col gap-2 text-[14px] text-white/80">
-                <li className="font-semibold text-white">{gives}</li>
+            <section className="rounded-[16px] bg-white p-4 ring-1 ring-[#0a0a0a]/[0.07]">
+              <p className="text-[12px] font-semibold uppercase tracking-[0.1em] text-[#0a0a0a]/45">What customers get</p>
+              <p className="mt-2.5 inline-block rounded-[10px] bg-[#ecebff] px-3 py-1.5 font-mono text-[16px] font-bold tracking-[0.08em] text-[#4b4bea] ring-1 ring-inset ring-[#6666ff]/25">{code || "CODE"}</p>
+              <ul className="mt-3 flex flex-col gap-1.5 text-[13.5px] text-[#0a0a0a]/70">
+                <li className="font-semibold text-[#0a0a0a]">{gives}</li>
                 <li>{n(minSubtotal) ? `On orders of ${money(Number(minSubtotal))} or more` : "On any order"}</li>
                 <li>{n(usageLimit) ? `Up to ${usageLimit} uses` : "No limit on uses"}{n(perCustomer) ? `, ${perCustomer} per customer` : ""}</li>
                 <li>{endsAt ? `Until ${new Date(endsAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}` : "No end date"}</li>
               </ul>
-              <button type="submit" disabled={pending || !!codeIssue} className="mt-5 w-full rounded-[10px] bg-white py-2.5 text-[14px] font-semibold text-[#0a0a0a] disabled:opacity-50">
+              <button type="submit" disabled={pending || !!codeIssue} className="mt-4 w-full rounded-[10px] bg-[#0a0a0a] py-2.5 text-[14px] font-semibold text-white hover:bg-[#262626] disabled:opacity-50">
                 {pending ? "Creating…" : "Create discount"}
               </button>
-              <button type="button" onClick={() => { reset(); setCreating(false); }} className="mt-2 inline-flex w-full items-center justify-center gap-1.5 py-1.5 text-[13px] font-semibold text-white/60 hover:text-white">
+              <button type="button" onClick={() => { reset(); setCreating(false); }} className="mt-2 inline-flex w-full items-center justify-center gap-1.5 py-1.5 text-[13px] font-semibold text-[#0a0a0a]/55 hover:text-[#0a0a0a]">
                 <X className="h-4 w-4" /> Cancel
               </button>
             </section>
@@ -294,7 +294,7 @@ export function DiscountManager({ discounts, title, description }: { discounts: 
         <EmptyState icon={Tag} title="No discount codes yet" description="Create one and customers can enter it at checkout." />
       ) : (
         <section className="overflow-hidden rounded-2xl bg-white ring-1 ring-[#0a0a0a]/[0.07]">
-          <div role="row" className={cn("hidden items-center gap-4 bg-[#0a0a0a] px-4 py-1.5 lg:grid", GRID)}>
+          <div role="row" className={cn("hidden items-center gap-4 border-b border-[#0a0a0a]/[0.06] bg-[#fafafa] px-4 py-1.5 lg:grid", GRID)}>
             {head("code", "Code")}
             {head("gives", "What it gives")}
             {head("used", "Used")}
@@ -306,7 +306,7 @@ export function DiscountManager({ discounts, title, description }: { discounts: 
               const state = STATE[discount.state];
               return (
                 <div key={discount.id} className={cn("flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 lg:grid", GRID)}>
-                  <span><span className="rounded-md bg-[#0a0a0a] px-2 py-1 font-mono text-[13px] font-semibold text-white">{discount.code}</span></span>
+                  <span><span className="rounded-md bg-[#0a0a0a]/[0.06] px-2 py-1 font-mono text-[13px] font-semibold text-[#0a0a0a]">{discount.code}</span></span>
                   <span className="min-w-0 basis-full lg:basis-auto">
                     <span className="block text-[14px] font-medium text-[#0a0a0a]">{describeDiscount(discount.type, discount.value, currency)}</span>
                     <span className="block text-[12.5px] text-[#0a0a0a]/50">

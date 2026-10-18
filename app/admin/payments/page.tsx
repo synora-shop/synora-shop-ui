@@ -57,12 +57,16 @@ export default async function PaymentsPage() {
   });
 
   return (
-    <SettingsFrame>
+    <SettingsFrame
+      header={
+        <PageHeader
+            title="Payments"
+            description="How your customers pay you. What you pay us is Billing, which is a different screen and the other direction."
+          />
+      }
+    >
     <div className="space-y-4">
-      <PageHeader
-        title="Payments"
-        description="How your customers pay you. What you pay us is Billing, which is a different screen and the other direction."
-      />
+      
 
       <Fieldset
         title="Card and wallet payments"

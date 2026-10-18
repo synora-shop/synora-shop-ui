@@ -36,7 +36,7 @@ export function FilterDisclosure({
         className={cn(
           "relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-[10px] transition-colors",
           open || activeCount > 0
-            ? "bg-[#0a0a0a] text-white"
+            ? "bg-[#ecebff] text-[#4b4bea] ring-1 ring-inset ring-[#6666ff]/25"
             : "bg-white text-[#0a0a0a]/65 ring-1 ring-inset ring-[#0a0a0a]/[0.09] hover:text-[#0a0a0a] hover:ring-[#0a0a0a]/25"
         )}
       >

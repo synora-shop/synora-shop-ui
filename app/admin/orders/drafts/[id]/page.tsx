@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/ui/primitives";
 import { notFound, redirect } from "next/navigation";
 import { db } from "@/lib/data/shop";
 import { draftCatalogue } from "@/lib/data/draft-orders";
@@ -18,9 +19,12 @@ export default async function DraftOrderPage(props: { params: Promise<{ id: stri
     if (order) redirect(`/admin/orders/${order.id}`);
     // Its order was deleted for good: nothing to edit or send any more.
     return (
-      <div className="space-y-3 rounded-2xl bg-white p-8 text-center ring-1 ring-[#0a0a0a]/[0.07]">
-        <p className="text-[16px] font-semibold">Draft D{draft.number} became order #{draft.orderId}, which was later deleted for good.</p>
-        <p className="text-[14px] text-[#0a0a0a]/55">To sell the same again, create a new draft.</p>
+      <div className="space-y-4">
+        <PageHeader title={`#D${draft.number}`} crumbs={[{ label: "Draft orders", href: "/admin/orders/drafts" }]} />
+        <div className="space-y-3 rounded-[16px] bg-white p-8 text-center ring-1 ring-[#0a0a0a]/[0.07]">
+          <p className="text-[16px] font-semibold">Draft D{draft.number} became order #{draft.orderId}, which was later deleted for good.</p>
+          <p className="text-[14px] text-[#0a0a0a]/55">To sell the same again, create a new draft.</p>
+        </div>
       </div>
     );
   }

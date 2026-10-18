@@ -159,7 +159,7 @@ export function useConfirm() {
                     "text-white",
                     pending.danger
                       ? "bg-rose hover:bg-rose/90 active:bg-rose/80"
-                      : "bg-brand-500 hover:bg-brand-600 active:bg-brand-700"
+                      : "bg-[#0a0a0a] hover:bg-[#262626] active:bg-black"
                   )
             )}
           >
@@ -173,7 +173,7 @@ export function useConfirm() {
                 "rounded-full px-4 py-2 text-sm font-medium text-white transition-colors",
                 pending.danger
                   ? "bg-rose hover:bg-rose/90 active:bg-rose/80"
-                  : "bg-brand-500 hover:bg-brand-600 active:bg-brand-700"
+                  : "bg-[#0a0a0a] hover:bg-[#262626] active:bg-black"
               )}
             >
               {pending.also.label}

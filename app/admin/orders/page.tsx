@@ -13,7 +13,6 @@ import { activeCount, keepKnown, readFilter, whereIn } from "@/lib/filters";
 import { readPaging } from "@/lib/paging";
 import { ORDER_SORTS, readSort } from "@/lib/sorting";
 import { orderStatusDotStyle, statusLabel } from "@/lib/order-status-style";
-import { ActionBar } from "@/components/admin/action-bar";
 import { ListSearch } from "@/components/admin/list-search";
 import { FilterDisclosure } from "@/components/admin/filter-disclosure";
 import { PerPageSelect } from "@/components/admin/per-page-select";
@@ -110,6 +109,13 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
     const query = qs.toString();
     return query ? `/admin/orders?${query}` : "/admin/orders";
   };
+  const allHref = () => {
+    const qs = new URLSearchParams();
+    if (q) qs.set("q", q);
+    if (typeof sp.sort === "string") qs.set("sort", sp.sort);
+    const query = qs.toString();
+    return query ? `/admin/orders?${query}` : "/admin/orders";
+  };
   const heading = (label: string, asc: string, desc: string, align?: "right") => (
     <SortHeading label={label} asc={asc} desc={desc} current={sort.value} basePath="/admin/orders" searchParams={sp} options={ORDER_SORTS} align={align} />
   );
@@ -143,44 +149,36 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
         }
       />
 
-      {/* The pipeline: every stage, counted, and each one a filter. One
-          strip rather than six cards (17 October): the same figures in half
-          the height, read left to right the way an order travels. */}
-      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-[#0a0a0a]/[0.07] ring-1 ring-[#0a0a0a]/[0.07] sm:grid-cols-3 xl:grid-cols-6">
-        {STATUSES.map((st) => {
-          const on = status.length === 1 && status[0] === st;
-          const n = stageCount[st] ?? 0;
-          return (
-            <Link
-              key={st}
-              href={stageHref(st)}
-              aria-current={on ? "true" : undefined}
-              className={cn(
-                "relative flex items-center justify-between gap-2 px-4 py-2.5 transition-colors",
-                on ? "bg-[#0a0a0a] text-white" : "bg-white text-[#0a0a0a] hover:bg-[#fafafa]"
-              )}
-            >
-              <span className={cn("flex min-w-0 items-center gap-2 truncate text-[12.5px] font-medium", on ? "text-white/70" : "text-[#0a0a0a]/55")}>
-                <span aria-hidden className={cn("h-2 w-2 shrink-0 rounded-full", STAGE_BAR[st])} />
-                {statusLabel(st)}
-              </span>
-              <span className={cn("text-[18px] font-semibold tabular-nums leading-none", st === "PENDING" && n > 0 && !on && "text-[#c2410c]")} title={st === "PENDING" && n > 0 ? "Waiting for you" : undefined}>
-                {n}
-              </span>
-            </Link>
-          );
-        })}
-      </div>
-
-      <ActionBar>
-        <ListSearch placeholder="Search by order number, name, email or phone" />
-        <FilterDisclosure activeCount={activeCount({ status })}>
-          <FilterBar basePath="/admin/orders" groups={groups} filters={{ status }} />
-        </FilterDisclosure>
-        <div className="ml-auto flex flex-wrap items-center gap-2">
+      {/* The pipeline as the list's tabs (18 October, from /next-admin):
+          every stage counted and each one a filter, with search beside them,
+          in one bar instead of a strip of cards and a toolbar. */}
+      <div className="flex flex-wrap items-center gap-x-3 rounded-[16px] bg-white px-3 ring-1 ring-[#0a0a0a]/[0.07]">
+        <nav aria-label="Stages" className="flex min-w-0 gap-4 overflow-x-auto [scrollbar-width:none]">
+          {[null, ...STATUSES].map((st) => {
+            const on = st === null ? status.length === 0 : status.length === 1 && status[0] === st;
+            const n = st === null ? Object.values(stageCount).reduce((t, c) => t + c, 0) : stageCount[st] ?? 0;
+            return (
+              <Link
+                key={st ?? "all"}
+                href={st === null ? allHref() : stageHref(st)}
+                aria-current={on ? "true" : undefined}
+                className={cn("relative h-11 shrink-0 whitespace-nowrap pt-3 text-[13.5px] font-semibold transition-colors", on ? "text-[#4b4bea]" : "text-[#0a0a0a]/50 hover:text-[#0a0a0a]")}
+              >
+                {st === null ? "All" : statusLabel(st)}
+                <span className={cn("ml-1.5 tabular-nums", on ? "text-[#4b4bea]/70" : st === "PENDING" && n > 0 ? "text-[#c2410c]" : "text-[#0a0a0a]/30")}>{n}</span>
+                {on && <span aria-hidden className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-[#6666ff]" />}
+              </Link>
+            );
+          })}
+        </nav>
+        <div className="ml-auto flex min-w-0 flex-1 flex-wrap items-center justify-end gap-1.5 py-1.5">
+          <ListSearch placeholder="Search by order number, name, email or phone" />
+          <FilterDisclosure activeCount={activeCount({ status })}>
+            <FilterBar basePath="/admin/orders" groups={groups} filters={{ status }} />
+          </FilterDisclosure>
           <PerPageSelect basePath="/admin/orders" searchParams={sp} total={total} />
         </div>
-      </ActionBar>
+      </div>
 
       <OrderList
         filtered={q.length > 0 || activeCount({ status }) > 0}
@@ -212,8 +210,3 @@ export default async function AdminOrdersPage(props: PageProps<"/admin/orders">)
     </div>
   );
 }
-
-const STAGE_BAR: Record<string, string> = {
-  PENDING: "bg-[#f2a33a]", CONFIRMED: "bg-[#6666ff]", PACKED: "bg-[#b7b9ff]",
-  SHIPPED: "bg-[#8cc8f5]", DELIVERED: "bg-[#6fd6a8]", CANCELLED: "bg-[#0a0a0a]/15",
-};

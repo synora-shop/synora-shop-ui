@@ -34,17 +34,17 @@ export function SortHeading({
         className={cn(
           "group inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-[11.5px] font-semibold uppercase tracking-[0.06em] transition-colors",
           align === "right" ? "-mr-2 flex-row-reverse" : "-ml-2",
-          dir ? "bg-white/[0.12] text-white" : "text-white/55 hover:bg-white/[0.07] hover:text-white"
+          dir ? "bg-[#ecebff] text-[#4b4bea]" : "text-[#0a0a0a]/45 hover:bg-[#0a0a0a]/[0.05] hover:text-[#0a0a0a]"
         )}
       >
         {label}
-        <Arrow className={cn("h-3.5 w-3.5", dir ? "text-[#b7b9ff]" : "opacity-0 group-hover:opacity-60")} />
+        <Arrow className={cn("h-3.5 w-3.5", dir ? "text-[#6666ff]" : "opacity-0 group-hover:opacity-60")} />
       </Link>
     </div>
   );
 }
 
-/** A heading in the same black row for a column that does not sort. */
+/** A heading in the same row for a column that does not sort. */
 export function PlainHeading({ children, className }: { children?: React.ReactNode; className?: string }) {
-  return <div role="columnheader" className={cn("text-left text-[11.5px] font-semibold uppercase tracking-[0.06em] text-white/55", className)}>{children}</div>;
+  return <div role="columnheader" className={cn("text-left text-[11.5px] font-semibold uppercase tracking-[0.06em] text-[#0a0a0a]/45", className)}>{children}</div>;
 }

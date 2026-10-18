@@ -342,10 +342,13 @@
      now, and the brand's own colours (iris, lavender, sky, mint) mark the
      sections instead: see lib/admin-nav.ts. The old values are kept in
      "APP extra/Synora app old Design kit". */
-  --color-brand-50: #f4f4f6;
-  --color-brand-100: #ececef;
+  /* 18 October: black is for doing, iris is for "chosen". brand-500 (a
+     switch that is on, the current page, a focus ring) is iris again, and
+     the main buttons name black outright. */
+  --color-brand-50: #f5f5ff;
+  --color-brand-100: #ecebff;
   --color-brand-300: #b7b9ff;
-  --color-brand-500: #0a0a0a;
+  --color-brand-500: #6666ff;
   --color-brand-600: #0a0a0a;
   --color-brand-700: #262626;
   --color-brand-900: #000000;

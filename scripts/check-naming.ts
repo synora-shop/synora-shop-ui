@@ -195,7 +195,8 @@ check(
 for (const file of [
   "app/(platform)/layout.tsx",
   "app/merchant/layout.tsx",
-  "components/admin/admin-topbar.tsx",
+  // The admin's mark moved from the top bar to the top of the rail (18 October).
+  "components/admin/admin-sidebar.tsx",
 ]) {
   check(
     `${file} uses the one product mark`,
@@ -315,15 +316,15 @@ const sideNav = side.slice(side.indexOf("<nav"), side.indexOf("</nav>"));
   );
 }
 
-// The rail of the new admin (15 October): 15.5rem open, 4.5rem folded, a
-// 36px row, and every section glyph in the same 17px box so the column of
+// The rail (18 October, from /next-admin): 13.5rem open, 4rem folded, a
+// 32px row, and every section glyph in the same 16px box so the column of
 // icons lines up whatever shape each drawing is.
-check("the rail is 15.5rem, and 4.5rem folded", /w-\[15\.5rem\]/.test(side) && /w-\[4\.5rem\]/.test(side));
-check("a row is 36px", /h-9 items-center gap-3/.test(sideNav));
-check("a section reads at 14", /text-\[14px\]/.test(sideNav));
+check("the rail is 13.5rem, and 4rem folded", /w-\[13\.5rem\]/.test(side) && /"w-16"/.test(side));
+check("a row is 32px", /h-8 items-center gap-2\.5/.test(sideNav));
+check("a section reads at 13.5", /text-\[13\.5px\]/.test(sideNav));
 check(
   "every glyph sits in the same box",
-  (sideNav.match(/<Icon className="([^"]*)"/g) ?? []).every((m) => /h-\[17px\] w-\[17px\]/.test(m)),
+  (sideNav.match(/<Icon className="([^"]*)"/g) ?? []).every((m) => /h-4 w-4/.test(m)),
   "a glyph wider than it is tall still occupies the same square, which is what keeps the column aligned"
 );
 
@@ -475,7 +476,7 @@ const orderScreen = readFileSync(join(ROOT, "app/admin/orders/[id]/page.tsx"), "
 check("the order screen names a status in words", /statusLabel\(/.test(orderScreen));
 check("and a payment method in words", /paymentLabel\(/.test(orderScreen));
 // It showed everything about an order except when it happened.
-check("and says when the order was placed", /Placed \{placed}/.test(orderScreen));
+check("and says when the order was placed", /Placed \$?\{placed}/.test(orderScreen));
 // A date formatted in the browser disagrees with the server that rendered it.
 check(
   "with the date formatted on the server",
@@ -741,7 +742,7 @@ const importDialog = readFileSync(join(ROOT, "components/admin/import-dialog.tsx
 const productsPage = readFileSync(join(ROOT, "app/admin/products/page.tsx"), "utf8");
 check(
   "importing is offered beside exporting",
-  /<ImportDialog/.test(productsPage) && /Export CSV/.test(productsPage)
+  /<ImportDialog/.test(productsPage) && /Export CSV|Export<span[^>]*> CSV/.test(productsPage)
 );
 // Reading a file and writing it are two clicks, because there is no undo for
 // "the whole catalogue, slightly wrong". One dialog serves both imports, so

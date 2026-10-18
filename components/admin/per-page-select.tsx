@@ -41,7 +41,7 @@ export function PerPageSelect({
             aria-current={active ? "true" : undefined}
             className={cn(
               "rounded-[7px] px-2.5 py-1 text-[12.5px] tabular-nums transition-colors",
-              active ? "bg-[#0a0a0a] font-semibold text-white" : "text-[#0a0a0a]/55 hover:text-[#0a0a0a]"
+              active ? "bg-[#ecebff] text-[#4b4bea] ring-1 ring-inset ring-[#6666ff]/25 font-semibold" : "text-[#0a0a0a]/55 hover:text-[#0a0a0a]"
             )}
           >
             {option ?? "All"}

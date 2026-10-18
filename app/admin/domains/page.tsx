@@ -27,12 +27,16 @@ export default async function DomainsPage() {
   const domains = canManage && me ? await domainsForShop(me.shop.id) : [];
 
   return (
-    <SettingsFrame>
+    <SettingsFrame
+      header={
+        <PageHeader
+            title="Domains"
+            description="Your free address always works. Add your own to use it instead."
+          />
+      }
+    >
     <div className="space-y-4">
-      <PageHeader
-        title="Domains"
-        description="Your free address always works. Add your own to use it instead."
-      />
+      
       {canManage ? (
         <DomainManager
           canIssueCertificates={canIssueCertificates()}

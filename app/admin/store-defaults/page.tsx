@@ -28,12 +28,16 @@ export default async function StoreDefaultsPage() {
   const [settings, shop] = await Promise.all([getStoreSettings(), requireShop()]);
 
   return (
-    <SettingsFrame>
+    <SettingsFrame
+      header={
+        <PageHeader
+            title="Store defaults"
+            description="What your store charges in, where it trades from, and what kind of business it is."
+          />
+      }
+    >
     <div className="space-y-4">
-      <PageHeader
-        title="Store defaults"
-        description="What your store charges in, where it trades from, and what kind of business it is."
-      />
+      
 
       <StoreDefaultsForm initial={resolveStoreDefaults(settings)} />
 

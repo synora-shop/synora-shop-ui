@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { FieldError, buttonClass } from "@/components/ui/primitives";
+import { FieldError, PageHeader, buttonClass } from "@/components/ui/primitives";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { ArrowLeft, Plus, RotateCcw, Trash2 } from "lucide-react";
+import { Plus, RotateCcw, Trash2 } from "lucide-react";
 import { StatePill } from "@/components/admin/kit";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { saveProduct, type ProductInput, type VariantInput } from "@/app/admin/products/actions";
@@ -171,18 +170,13 @@ export function ProductForm({
       }}
       className="space-y-5"
     >
-      {/* The product's name and where it stands, as the new admin heads it. */}
-      <Link href="/admin/products" className="inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-[#0a0a0a]/55 hover:text-[#0a0a0a]">
-        <ArrowLeft className="h-4 w-4" /> Products
-      </Link>
-      <div className="flex flex-wrap items-center gap-2.5">
-        <h1 className="text-[24px] font-semibold tracking-[-0.02em]">{product ? title || "Untitled product" : "New product"}</h1>
-        <StatePill tone={status === "DRAFT" ? "wait" : "good"}>{status === "DRAFT" ? "Draft" : "Published"}</StatePill>
-        <StatePill tone="info">{kindLabel}</StatePill>
-        {notice && <span className="text-xs text-amber">{notice}</span>}
-      </div>
+      {/* The product's name and where it stands, in the screen's one bar. */}
+      <PageHeader
+        title={product ? title || "Untitled product" : "New product"}
+        meta={<><StatePill tone={status === "DRAFT" ? "wait" : "good"}>{status === "DRAFT" ? "Draft" : "Published"}</StatePill><StatePill tone="info">{kindLabel}</StatePill>{notice && <span className="text-xs text-amber">{notice}</span>}</>}
+      />
 
-      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]">
+      <div className="grid items-start gap-3 lg:grid-cols-[minmax(0,1fr)_19rem]">
         <div className="space-y-5">
           <Card title="The product">
             <Field label="Title">
@@ -345,7 +339,7 @@ export function ProductForm({
                         checked={locked || categoryIds.includes(c.id)}
                         disabled={locked}
                         onChange={() => toggleCategory(c.id)}
-                        className="h-4 w-4 accent-[#0a0a0a]"
+                        className="h-4 w-4 accent-[#6666ff]"
                       />
                       {c.name}
                       {locked && <span className="text-xs italic">(auto, discount active)</span>}

@@ -79,6 +79,18 @@ every per-variant setting the form does not show; `check:csv` guards it.
 - **Orders:** the six stages are one connected strip instead of six cards.
 - **Discounts:** Create discount sits beside the title.
 
+### /admin wired to the /next-admin design (18 October 2026)
+
+The real admin now wears the third design. Same screens, data and features as before; nothing was added that does not work.
+
+- **Frame:** `components/admin/admin-sidebar.tsx` is the whole chrome: the 216px black rail (Synora mark, drawn bell, fold, search, Create, sections with their colours, Settings, Bin, Help, and the store profile with your account menu), `AdminPhoneBar` for phones, and `AdminSheet`, the rounded sheet that holds still while only its content scrolls. `admin-topbar.tsx` now draws nothing: it is `AdminKeys` (⌘K, G then a letter, C, ?) and the command bar.
+- **Headings:** `PageHeader` (components/ui/primitives) is each screen's one sticky bar, with the section's coloured mark and crumb from `components/admin/heading-trail.tsx`, plus `meta` and `crumbs` props. Home, order, product, customer, draft order and page editor screens use it now.
+- **Settings:** `SettingsFrame` takes the heading as a `header` prop and draws its list as the charcoal second sidebar.
+- **Save bar:** `EditorBar` shows only while something is unsaved, floating at the foot of the sheet.
+- **Colour:** inside `.admin-shell`, `--color-brand-500` is iris again (switches, current page, focus). Main buttons name black outright. Anything chosen (tabs, filters, views, options) is the iris tint. Figures are one strip and none is black. Table headings are light. The black emphasis blocks (Home's store card, the analytics chart, Theme Store, the discount summary, an order's profit) are white or tinted panels now.
+- **Density:** order, product and customer rows are one line of about 44px. Orders' stages are the list's tabs, beside search.
+- **Checks:** check-active-nav, check-editor-bar, check-responsive, check-design and check-naming were updated to the new structure. They keep the same rules: one pinned bar, the drawer on phones, the fold remembered, Discard only when dirty, the drawn glyphs, a reading width (96rem).
+
 ### The third design: /next-admin (18 October 2026)
 
 A fresh design on the preview's sample data, beside /new-admin (which is unchanged). Same pages and options; production sends it to /admin. Code: `app/next-admin`, `components/next-admin`.

@@ -25,12 +25,16 @@ export default async function AdminSettingsPage() {
   const defaults = resolveStoreDefaults(settings);
 
   return (
-    <SettingsFrame>
+    <SettingsFrame
+      header={
+        <PageHeader
+            title="Checkout and delivery"
+            description="How customers reach you, what delivery costs, and the alerts you get when an order comes in."
+          />
+      }
+    >
     <div className="space-y-4">
-      <PageHeader
-        title="Checkout and delivery"
-        description="How customers reach you, what delivery costs, and the alerts you get when an order comes in."
-      />
+      
 
       <StoreSettingsForm settings={settings} currency={defaults.currency} />
 

@@ -1,10 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, MessageCircle, PackageCheck, Search, Trash2, X } from "lucide-react";
+import { MessageCircle, PackageCheck, Search, Trash2, X } from "lucide-react";
 import { completeDraftOrder, deleteDraftOrder, saveDraftOrder, sendDraftOrder, type DraftInput } from "@/app/admin/orders/drafts/actions";
 import { useEditor } from "@/components/admin/use-editor";
 import { useConfirm } from "@/components/ui/confirm-dialog";
@@ -12,6 +11,7 @@ import { useToast } from "@/components/ui/toast";
 import { useMoney } from "@/components/ui/currency";
 import { FieldLabel } from "@/components/merchant/form-shell";
 import { StatePill } from "@/components/admin/kit";
+import { PageHeader, buttonClass } from "@/components/ui/primitives";
 import { paymentLabel } from "@/lib/order-status-style";
 import { DRAFT_CHANNELS, DRAFT_PAYMENTS, draftLabel, draftTotals, type CatalogueItem, type DraftStatus } from "@/lib/draft-orders";
 
@@ -150,26 +150,26 @@ export function DraftOrderEditor({
   useEditor({ dirty: dirty && !busy, saving: busy, onSave: save, onDiscard: () => setDraft(JSON.parse(saved) as Draft) });
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {dialog}
-      <Link href="/admin/orders/drafts" className="inline-flex items-center gap-1.5 text-[13.5px] text-[#0a0a0a]/60 hover:text-[#0a0a0a]">
-        <ArrowLeft className="h-4 w-4" /> Draft orders
-      </Link>
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-[24px] font-semibold tracking-[-0.02em]">{number ? `#${draftLabel(number)}` : "New draft order"}</h1>
-        {status === "SENT" ? <StatePill tone="info">Sent to confirm</StatePill> : <StatePill tone="off">Open</StatePill>}
-        <div className="ml-auto flex flex-wrap gap-2">
-          <button type="button" onClick={remove} disabled={busy} className="inline-flex h-9 items-center gap-1.5 rounded-[10px] px-3 text-[13.5px] font-semibold text-[#a3330c] hover:bg-[#ffe9e2]">
-            <Trash2 className="h-4 w-4" /> Delete
-          </button>
-          <button type="button" onClick={send} disabled={busy} className="inline-flex h-9 items-center gap-1.5 rounded-[10px] bg-white px-3.5 text-[13.5px] font-semibold ring-1 ring-[#0a0a0a]/12 hover:bg-[#f5f5f5]">
-            <MessageCircle className="h-4 w-4" /> {status === "SENT" ? "Send again" : "Send to customer"}
-          </button>
-          <button type="button" onClick={complete} disabled={busy} className="inline-flex h-9 items-center gap-1.5 rounded-[10px] bg-[#0a0a0a] px-3.5 text-[13.5px] font-semibold text-white disabled:opacity-60">
-            <PackageCheck className="h-4 w-4" /> Make it an order
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title={number ? `#${draftLabel(number)}` : "New draft order"}
+        crumbs={[{ label: "Draft orders", href: "/admin/orders/drafts" }]}
+        meta={status === "SENT" ? <StatePill tone="info">Sent to confirm</StatePill> : <StatePill tone="off">Open</StatePill>}
+        actions={
+          <>
+            <button type="button" onClick={remove} disabled={busy} className="inline-flex h-9 items-center gap-1.5 rounded-[10px] px-3 text-[13.5px] font-semibold text-[#a3330c] hover:bg-[#ffe9e2]">
+              <Trash2 className="h-4 w-4" /> Delete
+            </button>
+            <button type="button" onClick={send} disabled={busy} className={buttonClass("secondary", "md")}>
+              <MessageCircle className="h-4 w-4" /> {status === "SENT" ? "Send again" : "Send to customer"}
+            </button>
+            <button type="button" onClick={complete} disabled={busy} className={buttonClass("primary", "md")}>
+              <PackageCheck className="h-4 w-4" /> Make it an order
+            </button>
+          </>
+        }
+      />
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <div className="space-y-5">
@@ -312,7 +312,7 @@ export function DraftOrderEditor({
               </select>
             </div>
             <label className="flex items-center gap-2 text-[14px]">
-              <input type="checkbox" checked={draft.paid} onChange={(e) => set("paid", e.target.checked)} className="h-4 w-4 accent-[#0a0a0a]" />
+              <input type="checkbox" checked={draft.paid} onChange={(e) => set("paid", e.target.checked)} className="h-4 w-4 accent-[#6666ff]" />
               Already paid
             </label>
             <div>

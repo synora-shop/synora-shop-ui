@@ -21,11 +21,11 @@ import { cn } from "@/lib/utils";
  * here yet" rather than "something went wrong".
  */
 export function Thumb({ src, size }: { src?: string; size: "row" | "tile" }) {
-  const box = size === "row" ? "h-11 w-11 rounded-lg" : "aspect-[4/5] w-full rounded-none";
+  const box = size === "row" ? "h-8 w-8 rounded-[8px]" : "aspect-[4/5] w-full rounded-none";
   return (
     <div className={cn("relative flex-shrink-0 overflow-hidden bg-[#f0f0f0]", box)}>
       {src ? (
-        <Image src={src} alt="" fill sizes={size === "row" ? "44px" : "(max-width:640px) 50vw, 20vw"} className="object-cover" />
+        <Image src={src} alt="" fill sizes={size === "row" ? "32px" : "(max-width:640px) 50vw, 20vw"} className="object-cover" />
       ) : (
         <span className="flex h-full w-full items-center justify-center">
           <Package className={cn("text-[#0a0a0a]/25", size === "row" ? "h-4 w-4" : "h-7 w-7")} />

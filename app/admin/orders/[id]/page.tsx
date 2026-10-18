@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Check, ChevronLeft, ChevronRight, Mail, MessageCircle, NotebookText, Phone, Printer, Truck, User } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Mail, MessageCircle, NotebookText, Phone, Printer, Truck, User } from "lucide-react";
 import { PageCrumb } from "@/components/admin/page-crumb";
 import { Thumb } from "@/components/admin/product-elements";
 import { DeleteOrderButton } from "@/components/admin/delete-order-button";
 import { Panel, STAGE_TONE, StatePill, paymentState } from "@/components/admin/kit";
+import { PageHeader } from "@/components/ui/primitives";
 import { db } from "@/lib/data/shop";
 import { getCurrency, getStoreSettings } from "@/lib/data/settings";
 import { paymentLabel, statusLabel } from "@/lib/order-status-style";
@@ -80,19 +81,12 @@ export default async function AdminOrderDetailPage(props: PageProps<"/admin/orde
   return (
     <div className="space-y-4">
       <PageCrumb label={`Order ${order.id}`} />
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <Link href="/admin/orders" className="mb-1 inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-[#0a0a0a]/55 hover:text-[#0a0a0a]">
-            <ArrowLeft className="h-4 w-4" /> Orders
-          </Link>
-          <h2 className="flex flex-wrap items-center gap-2.5 text-[26px] font-semibold tracking-[-0.02em] text-[#0a0a0a]">
-            <span className="font-mono">#{order.id}</span>
-            <StatePill tone={pay.tone}>{pay.label}</StatePill>
-            <StatePill tone={STAGE_TONE[order.orderStatus] ?? "off"}>{statusLabel(order.orderStatus)}</StatePill>
-          </h2>
-          <p className="mt-0.5 text-[13.5px] text-[#0a0a0a]/55">Placed {placed} · {itemCount} item{itemCount === 1 ? "" : "s"}</p>
-        </div>
-        <div className="flex flex-shrink-0 items-center gap-2">
+      <PageHeader
+        title={<span className="font-mono">#{order.id}</span>}
+        meta={<><StatePill tone={pay.tone}>{pay.label}</StatePill><StatePill tone={STAGE_TONE[order.orderStatus] ?? "off"}>{statusLabel(order.orderStatus)}</StatePill></>}
+        description={`Placed ${placed} · ${itemCount} item${itemCount === 1 ? "" : "s"}`}
+        actions={
+          <>
           <a href={`/admin/slips?ids=${order.id}`} target="_blank" rel="noreferrer" className="inline-flex h-9 items-center gap-1.5 rounded-[10px] bg-white px-3.5 text-[13.5px] font-semibold ring-1 ring-[#0a0a0a]/12 hover:bg-[#f5f5f5]">
             <Printer className="h-4 w-4" /> Print slip
           </a>
@@ -105,8 +99,9 @@ export default async function AdminOrderDetailPage(props: PageProps<"/admin/orde
               <ChevronRight className="h-4 w-4" />
             </Link>
           </span>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       {/* Where it is, and the one thing to do next. */}
       <section className="rounded-2xl bg-white p-5 ring-1 ring-[#0a0a0a]/[0.07]">
@@ -117,11 +112,11 @@ export default async function AdminOrderDetailPage(props: PageProps<"/admin/orde
             <ol className="flex items-center">
               {STEPS.map((s, i) => (
                 <li key={s} className="flex flex-1 items-center gap-2 last:flex-none">
-                  <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-[12px] font-semibold ${i < at ? "bg-[#0a0a0a] text-white" : i === at ? "bg-[#6666ff] text-white ring-4 ring-[#6666ff]/15" : "bg-[#f0f0f0] text-[#0a0a0a]/45"}`}>
+                  <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-[12px] font-semibold ${i < at ? "bg-[#ddf5e9] text-[#11643f]" : i === at ? "bg-[#6666ff] text-white ring-4 ring-[#6666ff]/15" : "bg-[#f0f0f0] text-[#0a0a0a]/45"}`}>
                     {i < at ? <Check className="h-3.5 w-3.5" /> : i + 1}
                   </span>
                   <span className={`hidden text-[13px] sm:inline ${i === at ? "font-semibold text-[#0a0a0a]" : "text-[#0a0a0a]/50"}`}>{statusLabel(s)}</span>
-                  {i < STEPS.length - 1 && <span className={`mx-2 h-px flex-1 ${i < at ? "bg-[#0a0a0a]" : "bg-[#0a0a0a]/12"}`} />}
+                  {i < STEPS.length - 1 && <span className={`mx-2 h-px flex-1 ${i < at ? "bg-[#6fd6a8]" : "bg-[#0a0a0a]/12"}`} />}
                 </li>
               ))}
             </ol>
@@ -134,7 +129,7 @@ export default async function AdminOrderDetailPage(props: PageProps<"/admin/orde
                     <input name="courier" defaultValue={order.courier ?? ""} placeholder="Courier, e.g. TCS" aria-label="Courier" maxLength={60} className="h-10 w-40 rounded-[10px] bg-[#f5f5f5] px-3 text-[14px] outline-none ring-1 ring-[#0a0a0a]/10 focus:ring-2 focus:ring-[#0a0a0a]" />
                     <input name="trackingNumber" defaultValue={order.trackingNumber ?? ""} placeholder="Tracking number" aria-label="Tracking number" maxLength={80} className="h-10 min-w-0 flex-1 rounded-[10px] bg-[#f5f5f5] px-3 text-[14px] outline-none ring-1 ring-[#0a0a0a]/10 focus:ring-2 focus:ring-[#0a0a0a]" />
                     <label className="flex items-center gap-2 text-[13px] text-[#0a0a0a]/70">
-                      <input type="checkbox" name="notify" defaultChecked className="h-4 w-4 accent-[#0a0a0a]" /> Email the customer
+                      <input type="checkbox" name="notify" defaultChecked className="h-4 w-4 accent-[#6666ff]" /> Email the customer
                     </label>
                   </div>
                 ) : (
@@ -186,13 +181,13 @@ export default async function AdminOrderDetailPage(props: PageProps<"/admin/orde
             </dl>
           </Panel>
 
-          <section className="rounded-2xl bg-[#0a0a0a] p-5 text-white">
-            <p className="text-[12px] font-semibold uppercase tracking-[0.1em] text-[#b8efd6]">Only you see this</p>
-            <div className="mt-2 flex flex-wrap items-end justify-between gap-3">
-              <p className="text-[24px] font-semibold tracking-[-0.02em]">{money(orderProfit)} <span className="text-[14px] font-medium text-white/55">profit</span></p>
-              <p className="text-[14px] text-white/70">{order.total > 0 ? `${((orderProfit / order.total) * 100).toFixed(0)}% margin` : ""}</p>
+          <section className="rounded-[16px] bg-[#f5f5ff] p-4 ring-1 ring-[#6666ff]/20">
+            <p className="text-[11.5px] font-semibold uppercase tracking-[0.1em] text-[#4b4bea]">Only you see this</p>
+            <div className="mt-1 flex flex-wrap items-end justify-between gap-3">
+              <p className="text-[20px] font-semibold tabular-nums tracking-[-0.02em] text-[#0a0a0a]">{money(orderProfit)} <span className="text-[13px] font-medium text-[#0a0a0a]/50">profit</span></p>
+              <p className="text-[13px] font-medium text-[#0a0a0a]/60">{order.total > 0 ? `${((orderProfit / order.total) * 100).toFixed(0)}% margin` : ""}</p>
             </div>
-            <p className="mt-1 text-[12.5px] text-white/45">From what each product cost when the order was placed, so it stays right if you change a price later.</p>
+            <p className="mt-0.5 text-[12px] text-[#0a0a0a]/45">From what each product cost when the order was placed, so it stays right if you change a price later.</p>
           </section>
 
           <Panel title="Timeline">

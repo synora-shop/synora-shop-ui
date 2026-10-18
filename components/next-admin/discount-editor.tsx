@@ -12,7 +12,7 @@ import { A } from "@/components/next-admin/nav";
  * sits in the heading, so it is always in reach.
  */
 type K = "order" | "products" | "delivery";
-const field = "h-8 w-full rounded-[10px] border border-[#dddddd] bg-white px-2.5 text-[13px] outline-none focus:border-[#6666ff] focus:ring-2 focus:ring-[#6666ff]/20";
+const fieldCls = "h-8 w-full rounded-[10px] border border-[#dddddd] bg-white px-2.5 text-[13px] outline-none focus:border-[#6666ff] focus:ring-2 focus:ring-[#6666ff]/20";
 
 export function DiscountEditor({ start = "" }: { start?: string }) {
   const toast = useToast();
@@ -45,14 +45,14 @@ export function DiscountEditor({ start = "" }: { start?: string }) {
             {kind !== "delivery" && (
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 <Seg label="Percentage or amount" items={["Percentage", "Amount"]} value={unit} onChange={setUnit} />
-                <input type="number" min={1} value={value} onChange={(e) => setValue(Number(e.target.value) || 0)} aria-label="Value" className={`${field} w-28`} />
+                <input type="number" min={1} value={value} onChange={(e) => setValue(Number(e.target.value) || 0)} aria-label="Value" className={`${fieldCls} w-28`} />
                 {kind === "products" && <span className="rounded-[6px] bg-[#f3f3f3] px-2 py-1 text-[12.5px]">Summer Lawn · 4 products</span>}
               </div>
             )}
           </Panel>
           <Panel title="The code">
             <div className="flex gap-1.5">
-              <input value={code} onChange={(e) => setCode(e.target.value.toUpperCase().replace(/\s/g, ""))} className={`${field} font-mono font-semibold tracking-[0.06em]`} aria-label="Discount code" />
+              <input value={code} onChange={(e) => setCode(e.target.value.toUpperCase().replace(/\s/g, ""))} className={`${fieldCls} font-mono font-semibold tracking-[0.06em]`} aria-label="Discount code" />
               <button type="button" onClick={() => setCode(`ZL${Math.random().toString(36).slice(2, 7).toUpperCase()}`)} className={btn()}><RefreshCw /> Make one up</button>
             </div>
             <p className="mt-1.5 text-[12px] text-[#737373]">Customers type it at checkout. Letters and numbers, no spaces.</p>
@@ -60,15 +60,15 @@ export function DiscountEditor({ start = "" }: { start?: string }) {
           <Panel title="Who can use it">
             <Seg label="Who can use it" items={["Everyone", "New customers", "Customers with accounts"]} value={who} onChange={setWho} />
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              <label className="block"><span className="mb-1 block text-[12.5px] font-medium text-[#3a3a3a]">Smallest order it works on</span><input type="number" min={0} value={min} onChange={(e) => setMin(Number(e.target.value) || 0)} className={field} /></label>
-              <label className="block"><span className="mb-1 block text-[12.5px] font-medium text-[#3a3a3a]">Times it can be used in all</span><input type="number" min={0} value={limit} onChange={(e) => setLimit(Number(e.target.value) || 0)} className={field} /></label>
+              <label className="block"><span className="mb-1 block text-[12.5px] font-medium text-[#3a3a3a]">Smallest order it works on</span><input type="number" min={0} value={min} onChange={(e) => setMin(Number(e.target.value) || 0)} className={fieldCls} /></label>
+              <label className="block"><span className="mb-1 block text-[12.5px] font-medium text-[#3a3a3a]">Times it can be used in all</span><input type="number" min={0} value={limit} onChange={(e) => setLimit(Number(e.target.value) || 0)} className={fieldCls} /></label>
             </div>
             <label className="mt-3 flex items-center gap-2 text-[13px]"><input type="checkbox" checked={once} onChange={() => setOnce(!once)} className={check} /> Once per customer</label>
           </Panel>
           <Panel title="When">
             <div className="grid gap-3 sm:grid-cols-2">
-              <label className="block"><span className="mb-1 block text-[12.5px] font-medium text-[#3a3a3a]">Starts</span><input type="date" defaultValue="2026-10-15" className={field} /></label>
-              <label className="block"><span className="mb-1 block text-[12.5px] font-medium text-[#3a3a3a]">Ends</span><input type="date" defaultValue="2026-10-20" className={field} /></label>
+              <label className="block"><span className="mb-1 block text-[12.5px] font-medium text-[#3a3a3a]">Starts</span><input type="date" defaultValue="2026-10-15" className={fieldCls} /></label>
+              <label className="block"><span className="mb-1 block text-[12.5px] font-medium text-[#3a3a3a]">Ends</span><input type="date" defaultValue="2026-10-20" className={fieldCls} /></label>
             </div>
           </Panel>
         </div>

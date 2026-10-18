@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { HeadingTrail } from "@/components/admin/heading-trail";
 
 /**
  * The shared vocabulary for admin surfaces.
@@ -143,23 +144,33 @@ export function PageHeader({
   title,
   description,
   actions,
+  crumbs,
+  meta,
   className,
 }: {
-  /** The screen's name, drawn as its heading (new admin, 15 October). */
+  /** The screen's name, drawn as its heading. */
   title: React.ReactNode;
   description?: React.ReactNode;
   actions?: React.ReactNode;
+  /** Steps between the section and this screen, when there are any (an order's list). */
+  crumbs?: { label: string; href: string }[];
+  /** State that belongs with the name: an order's payment and stage. */
+  meta?: React.ReactNode;
   className?: string;
 }) {
   return (
-    // One line where it fits: the name, a short line under it, and the
-    // actions level with them, so a screen starts working in its first 60px.
-    <div className={cn("flex flex-wrap items-center justify-between gap-x-4 gap-y-2", className)}>
-      <div className="min-w-0 max-w-2xl">
-        <h2 className="text-[20px] font-semibold leading-tight tracking-[-0.02em] text-[#0a0a0a]">{title}</h2>
-        {description && <p className="mt-0.5 text-[13px] leading-snug text-[#0a0a0a]/50">{description}</p>}
+    // 18 October (from /next-admin): the screen's one bar. Sticky at the top
+    // of the sheet, full width, one line where it fits: the section's mark
+    // and crumb, the name, a short line, and the actions level with them.
+    <div className={cn("sticky top-0 z-20 -mx-4 flex min-h-[56px] flex-wrap items-center gap-x-3 gap-y-2 border-b border-[#0a0a0a]/[0.06] bg-canvas/90 px-4 py-2.5 backdrop-blur-md max-lg:top-12 sm:-mx-6 sm:px-6", className)}>
+      {/* On a phone the name takes its own line and the actions wrap under it. */}
+      <div className="flex min-w-0 flex-1 basis-full flex-wrap items-center gap-x-1.5 gap-y-1 sm:basis-0 sm:flex-nowrap">
+        <HeadingTrail crumbs={crumbs} title={typeof title === "string" ? title : undefined} />
+        <h1 className="min-w-0 truncate text-[16px] font-semibold tracking-[-0.015em] text-[#0a0a0a]">{title}</h1>
+        {meta && <span className="flex shrink-0 items-center gap-1.5 sm:pl-1">{meta}</span>}
+        {description && <p className="ml-2 hidden min-w-0 truncate text-[12.5px] text-[#0a0a0a]/50 xl:block">{description}</p>}
       </div>
-      {actions && <div className="flex max-w-full flex-wrap items-center gap-2 sm:ml-auto">{actions}</div>}
+      {actions && <div className="flex max-w-full flex-wrap items-center gap-1.5">{actions}</div>}
     </div>
   );
 }

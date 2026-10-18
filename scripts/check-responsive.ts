@@ -32,6 +32,9 @@ const check = (name: string, ok: boolean, detail = "") => {
 const sidebar = sourceOf("components", "admin", "admin-sidebar.tsx");
 const topbar = sourceOf("components", "admin", "admin-topbar.tsx");
 const layout = sourceOf("app", "admin", "layout.tsx");
+// 18 October: the screen's heading (PageHeader) is the only bar; the phone's
+// slim bar and the sheet live with the rail.
+const heading = sourceOf("components", "ui", "primitives.tsx") + sourceOf("components", "admin", "heading-trail.tsx");
 const css = sourceOf("app", "globals.css");
 const store = sourceOf("lib", "admin-nav-store.ts");
 
@@ -39,12 +42,12 @@ console.log("\nTHE RAIL IS A DRAWER ON A PHONE AND A COLUMN ON A DESKTOP");
 // New admin (15 October): the black rail. On a phone it is a full-screen
 // drawer the top bar opens; from lg it is a column that stays put while the
 // sheet beside it scrolls.
-check("a drawer below lg", /id="admin-nav" className="fixed inset-0[^"]*lg:hidden/.test(sidebar));
-check("a column from lg", /<aside[\s\S]{0,120}sticky top-0 hidden h-dvh[^"]*lg:block/.test(sidebar));
+check("a drawer below lg", /id="admin-nav" className="fixed inset-x-0 bottom-0 top-12[^"]*lg:hidden/.test(sidebar));
+check("a column from lg", /<aside[\s\S]{0,120}fixed inset-y-0 left-0[^"]*lg:block/.test(sidebar));
 check("the drawer is named so the toggle can point at it", /id="admin-nav"/.test(sidebar));
 // It folds to icons on a desktop, and remembers that in this browser rather
 // than on the server: a preference about one screen is not the shop's.
-check("the rail can fold to icons", /w-\[4\.5rem\]/.test(sidebar) && /w-\[15\.5rem\]/.test(sidebar));
+check("the rail can fold to icons", /"w-16"/.test(sidebar) && /"w-\[13\.5rem\]"/.test(sidebar));
 check("and the fold is remembered in this browser", /localStorage/.test(sidebar) && /useSyncExternalStore/.test(sidebar));
 check("and nothing else stores it", !/collapsed|folded/i.test(store));
 
@@ -54,28 +57,28 @@ check("the rail declares no bar of its own", sidebarTopBars === 0, `found ${side
 {
   const layout = readFileSync(join(process.cwd(), "app/admin/layout.tsx"), "utf8");
   check(
-    "the top bar stays over the page as it scrolls",
-    /<header className="sticky top-0 z-30/.test(topbar),
-    "a merchant deep in a long list still needs search, Create and the account"
+    "each screen's heading stays over the page as it scrolls",
+    /sticky top-0 z-20/.test(heading),
+    "a merchant deep in a long list still needs the screen's name and its actions"
   );
   check(
-    "and carries an opaque fill",
-    /<header[^>]*bg-white /.test(topbar) && !/<header[^>]*backdrop-blur/.test(topbar),
-    "a blurred bar makes a containing block, and the search overlay inside it would be trapped in the bar"
+    "and the command bar is never drawn inside it",
+    !/AdminSearch/.test(heading) && /AdminSearch/.test(topbar),
+    "a blurred bar makes a containing block, and an overlay inside it would be trapped in the bar"
   );
   check(
-    "the window is one screen tall and the sheet is what scrolls",
-    /h-screen overflow-hidden/.test(layout) && /overflow-y-auto/.test(layout)
+    "the sheet holds still and only its content scrolls",
+    /<AdminSheet>/.test(layout) && /lg:fixed[^"]*lg:overflow-y-auto/.test(sidebar)
   );
   check(
-    "the save bar sits under the top bar, not over it",
-    /sticky top-\[3\.6rem\] z-20/.test(readFileSync(join(process.cwd(), "components/admin/editor-bar.tsx"), "utf8"))
+    "the save bar floats at the foot of the sheet, not over the heading",
+    /sticky bottom-4/.test(readFileSync(join(process.cwd(), "components/admin/editor-bar.tsx"), "utf8"))
   );
 }
 
 console.log("\nTHE NAVIGATION CAN BE OPENED ON A PHONE");
-check("the topbar owns the toggle", /aria-controls="admin-nav"/.test(topbar));
-check("the toggle is hidden once the sidebar is visible", /lg:hidden/.test(topbar));
+check("the phone's bar owns the toggle", /aria-controls="admin-nav"/.test(sidebar));
+check("the toggle is hidden once the sidebar is visible", /AdminPhoneBar[\s\S]{0,600}lg:hidden/.test(sidebar));
 check("both read the same state", /useAdminNav/.test(topbar) && /useAdminNav/.test(sidebar));
 
 console.log("\nTHE RAIL HOLDS ITS ROWS");
@@ -84,7 +87,7 @@ check("and the rail can scroll if it ever outgrows the screen", /overflow-y-auto
 
 console.log("\nBOTH LEVELS COME FROM ONE PLACE");
 check("the sidebar reads the navigation model", /@\/lib\/admin-nav"/.test(sidebar));
-check("so does the heading bar", /@\/lib\/admin-nav"/.test(topbar));
+check("so does the heading bar", /@\/lib\/admin-nav"/.test(heading));
 // A hardcoded href here is how the sidebar and the bar came to disagree about
 // where a section starts.
 check("no screen hardcodes an admin address", !/href="\/admin\//.test(sidebar));
@@ -134,13 +137,13 @@ console.log("\nSPACING STEPS DOWN ON A PHONE");
 check("nothing is left using the old fluid gutter", !/gutter-fluid/.test(layout + topbar));
 check(
   "the page's padding steps down below the rail's breakpoint",
-  /p-4 sm:p-6 lg:p-8/.test(layout),
+  /px-4 pb-14 sm:px-6/.test(layout),
   "a desktop's 32px of every edge is most of a phone"
 );
-check("so does the top bar's", /px-4[^"]*sm:px-6/.test(topbar));
+check("so does the heading's", /-mx-4[^"]*px-4[^"]*sm:-mx-6 sm:px-6/.test(heading));
 check(
   "the content has a reading width",
-  /max-w-\[76rem\]/.test(layout),
+  /max-w-\[96rem\]/.test(layout),
   "a table stretched across a 2560px display is a table nobody can follow along a row"
 );
 

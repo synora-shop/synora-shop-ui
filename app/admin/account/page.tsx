@@ -67,12 +67,16 @@ export default async function AccountPage() {
     .sort((a, b) => ROLE_RANK[b.role] - ROLE_RANK[a.role] || a.email.localeCompare(b.email));
 
   return (
-    <SettingsFrame>
+    <SettingsFrame
+      header={
+        <PageHeader
+            title="Users and your account"
+            description={`Signed in as ${user.email}. These settings follow you across every store you work on.`}
+          />
+      }
+    >
     <div className="space-y-4">
-      <PageHeader
-        title="Users and your account"
-        description={`Signed in as ${user.email}. These settings follow you across every store you work on.`}
-      />
+      
       <AccountSecurity email={user.email} emailVerified={user.emailVerifiedAt !== null} />
 
       {canManagePeople && (

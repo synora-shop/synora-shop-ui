@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/ui/primitives";
 import { notFound, redirect } from "next/navigation";
 import { PageCrumb } from "@/components/admin/page-crumb";
 import { getPageById } from "@/lib/data/pages";
@@ -21,16 +22,17 @@ export default async function EditPagePage(props: PageProps<"/admin/pages/[id]">
   return (
     <div>
       <PageCrumb label={page.title} />
-      {/* A bare "/" told nobody anything. This is the page's address, and it opens it. */}
-      <a
-        href={pageAddress(page.slug, page.systemKey)}
-        target="_blank"
-        rel="noreferrer"
-        className="mb-2.5 inline-flex items-center gap-1.5 text-xs text-ink-soft underline-offset-2 hover:text-ink hover:underline"
-      >
-        <span className="font-mono">{pageAddress(page.slug, page.systemKey)}</span>
-        <ExternalLinkIcon className="h-[var(--icon-box)] w-[var(--icon-box)]" />
-      </a>
+      <PageHeader
+        title={page.title}
+        crumbs={[{ label: "Pages", href: "/admin/pages" }]}
+        meta={
+          // A bare "/" told nobody anything. This is the page's address, and it opens it.
+          <a href={pageAddress(page.slug, page.systemKey)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-[12.5px] text-[#0a0a0a]/55 underline-offset-2 hover:text-[#0a0a0a] hover:underline">
+            <span className="font-mono">{pageAddress(page.slug, page.systemKey)}</span>
+            <ExternalLinkIcon className="h-3.5 w-3.5" />
+          </a>
+        }
+      />
 
       <PageSettingsForm page={page} />
 

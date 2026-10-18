@@ -77,49 +77,24 @@ export function EditorBar() {
   return (
     <>
       {dialog}
-      {/* New admin (15 October): the bar sits under the top bar and stays put
-          while the page scrolls. Quiet while everything is saved; once there
-          is something to save it turns black, the way the design draws it, so
-          unsaved work is the one thing on the screen you cannot miss. Same
-          rules as before: Discard only when there is something to discard,
-          Save only when there is something to save, one press for every form. */}
-      <div
-        className={`scrollbar-none sticky top-[3.6rem] z-20 flex h-[var(--actionbar-h)] min-h-11 flex-shrink-0 items-center gap-2.5 overflow-x-auto px-4 transition-colors sm:px-6 ${
-          dirty ? "bg-[#0a0a0a] text-white" : "border-b border-[#0a0a0a]/[0.06] bg-white/80"
-        }`}
-      >
-        {dirty ? (
+      {/* 18 October: no bar while everything is saved. Once there is
+          something to save it rises at the foot of the sheet, black, with
+          Discard and Save, so unsaved work is the one thing you cannot miss
+          and the heading above stays the screen's own. */}
+      {dirty && (
+        <div role="region" aria-label="Unsaved changes" className="sticky bottom-4 z-30 mx-auto mb-4 flex w-[min(36rem,calc(100%-2rem))] items-center gap-2.5 rounded-[14px] bg-[#0a0a0a] py-2 pl-4 pr-2 text-white shadow-[0_18px_50px_-16px_rgba(0,0,0,0.55)]">
           <p className="flex items-center gap-1.5 text-[13.5px] font-semibold">
             <AlertTriangle className="h-4 w-4 flex-shrink-0 text-[#f2a33a]" aria-hidden />
             Unsaved changes
           </p>
-        ) : (
-          <p className="text-[12.5px] text-[#0a0a0a]/45">All changes saved</p>
-        )}
-
-        <div className="ml-auto flex items-center gap-2">
-          {dirty && (
-            <button
-              type="button"
-              onClick={discardAll}
-              disabled={saving}
-              className={DISCARD}
-            >
-              Discard
+          <div className="ml-auto flex items-center gap-1.5">
+            <button type="button" onClick={discardAll} disabled={saving} className={DISCARD}>Discard</button>
+            <button type="button" onClick={saveAll} disabled={saving} className="rounded-[10px] bg-white px-4 py-1.5 text-[13px] font-semibold text-[#0a0a0a] hover:bg-white/90 disabled:opacity-60">
+              {saving ? "Saving…" : "Save"}
             </button>
-          )}
-          <button
-            type="button"
-            onClick={saveAll}
-            disabled={!dirty || saving}
-            className={`rounded-[10px] px-4 py-1.5 text-[13px] font-semibold disabled:cursor-not-allowed ${
-              dirty ? "bg-white text-[#0a0a0a] hover:bg-white/90" : "bg-[#0a0a0a]/[0.06] text-[#0a0a0a]/35"
-            }`}
-          >
-            {saving ? "Saving…" : "Save"}
-          </button>
+          </div>
         </div>
-      </div>
+      )}
     </>
   );
 }

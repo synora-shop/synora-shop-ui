@@ -271,7 +271,7 @@ export function ProductList({
                 <Link
                   href={`/admin/products/${p.id}`}
                   className={cn(
-                    "no-tap-scale grid grid-cols-[1.25rem_2.75rem_minmax(0,1fr)] items-center gap-3 px-4 py-3 transition-colors hover:bg-[#fafafa] lg:gap-4",
+                    "no-tap-scale grid grid-cols-[1.25rem_2rem_minmax(0,1fr)] items-center gap-3 px-4 py-2 transition-colors hover:bg-[#fafafa] lg:min-h-11 lg:gap-4 lg:py-1.5",
                     showStatus ? PRODUCT_GRID : PRODUCT_GRID_NO_STATUS,
                     picked.has(p.id) && "bg-[#f5f5ff] hover:bg-[#f0f0ff]"
                   )}
@@ -279,10 +279,9 @@ export function ProductList({
                   <Tick id={p.id} title={p.title} />
                   <Thumb src={p.images[0]} size="row" />
                   <div className="min-w-0">
-                    <p className="truncate text-[14.5px] font-medium text-[#0a0a0a]">{p.title}</p>
-                    <p className="truncate text-[12.5px] text-[#0a0a0a]/50">
-                      {p.categories.map((c) => c.name).join(", ") || "Uncategorised"}
-                      {!p.isActive && " · Hidden"}
+                    <p className="truncate text-[13.5px]">
+                      <span className="font-medium text-[#0a0a0a]">{p.title}</span>
+                      <span className="text-[#0a0a0a]/45"> · {p.categories.map((c) => c.name).join(", ") || "Uncategorised"}{!p.isActive && " · Hidden"}</span>
                     </p>
                     {/* Narrow screens have no columns to put these in, so they
                         fold under the name rather than disappearing. */}
@@ -297,17 +296,12 @@ export function ProductList({
                   </div>
                   {/* Figures right-aligned and tabular, so the column reads down
                       as a column of money instead of ragged sentences. */}
-                  <div className="hidden text-right lg:block">
-                    <p className="text-[14px] font-semibold tabular-nums text-[#0a0a0a]">
-                      {money(effectivePrice(p))}
-                      {p.salePrice != null && p.salePrice < p.basePrice && (
-                        <span className="ml-1.5 text-[11.5px] font-normal tabular-nums text-[#0a0a0a]/40 line-through">{money(p.basePrice)}</span>
-                      )}
-                    </p>
-                    <p className="text-[11.5px] tabular-nums text-[#0a0a0a]/45">
-                      <span className={unitProfit(p) < 0 ? "font-semibold text-[#a3330c]" : undefined}>{money(unitProfit(p))}</span> profit ·{" "}
-                      {profitMargin(p)?.toFixed(0) ?? 0}%
-                    </p>
+                  <div className="hidden items-baseline justify-end gap-1.5 lg:flex" title={`${money(unitProfit(p))} profit · ${profitMargin(p)?.toFixed(0) ?? 0}% margin`}>
+                    <span className={cn("text-[11.5px] tabular-nums", unitProfit(p) < 0 ? "font-semibold text-[#a3330c]" : "text-[#1d7a52]/80")}>{profitMargin(p)?.toFixed(0) ?? 0}%</span>
+                    {p.salePrice != null && p.salePrice < p.basePrice && (
+                      <span className="text-[11.5px] tabular-nums text-[#0a0a0a]/40 line-through">{money(p.basePrice)}</span>
+                    )}
+                    <span className="text-[13.5px] font-semibold tabular-nums text-[#0a0a0a]">{money(effectivePrice(p))}</span>
                   </div>
                   {showStatus && (
                     <div className="hidden justify-end lg:flex">

@@ -159,7 +159,7 @@ const PANEL_COLOURS: [string, string][] = [
   ["--color-shell", "#f4f4f4"],
   ["--color-panel", "#ffffff"],
   ["--color-control", "#f5f5f5"],
-  ["--color-brand-500", "#0a0a0a"],
+  ["--color-brand-500", "#6666ff"],
   ["--color-header", "#0a0a0a"],
   ["--color-section", "#f5f5f5"],
   ["--color-selected", "#f0f0f0"],
@@ -315,9 +315,10 @@ check(
   "the brand comes from --color-brand-500 so it follows whatever scope it is in"
 );
 
-/* The frame of the new admin (15 October): a black rail, a white top bar
- * that stays over the page, the drawn glyphs from Assestz where they exist,
- * and the merchant's initials on the account button. */
+/* The frame (18 October, from /next-admin): a black rail with the alerts and
+ * the one profile in it, each screen's own heading staying over the page,
+ * the drawn glyphs from Assestz where they exist, and the store's initials
+ * on the profile button. */
 {
   const topbarSrc = stripComments(
     readFileSync(join(ROOT, "components/admin/admin-topbar.tsx"), "utf8")
@@ -327,11 +328,12 @@ check(
   );
   const declared = (css.match(/\.admin-shell\s*\{[\s\S]*?\n\}/) ?? [""])[0];
   check("the rail is black", /bg-\[#0a0a0a\]/.test(railSrc));
-  check("the top bar is white and stays over the page", /<header[^>]*sticky top-0[^>]*bg-white/.test(topbarSrc));
-  check("the account button carries initials", /initials\(/.test(topbarSrc));
+  const headingSrc = stripComments(readFileSync(join(ROOT, "components/ui/primitives.tsx"), "utf8"));
+  check("each screen's heading stays over the page", /sticky top-0 z-20/.test(headingSrc) && !/<header/.test(topbarSrc));
+  check("the profile button carries the store's initials", /initials\(storeName\)/.test(railSrc));
   check(
     "the bell is the drawn one",
-    /<NotificationIcon/.test(topbarSrc) && !/<Bell/.test(topbarSrc),
+    /<NotificationIcon/.test(railSrc) && !/<Bell/.test(railSrc),
     "there is no bell in Assestz; it is read out of the artboard, and lucide's is a different drawing"
   );
   check(
@@ -622,9 +624,9 @@ check("there is still no renaming layer", !existsSync(join(ROOT, "lib/themes/voc
     if (!root) continue; // A screen with a single block needs no rhythm.
     check(
       `${rel} uses the standard gap between sections`,
-      // 5 since the new admin (15 October): the screens breathe at the
-      // same distance the frame puts between its own blocks (gap-5).
-      root === "space-y-5",
+      // 4 since 18 October: the screens sit at the same distance the frame
+      // puts between its own blocks (gap-4), a step tighter than before.
+      root === "space-y-4",
       `it uses ${root}`
     );
   }

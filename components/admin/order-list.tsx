@@ -112,13 +112,13 @@ export function OrderList({ orders, filtered = false, head }: { orders: OrderRow
       {dialog}
       <section className="overflow-hidden rounded-2xl bg-white ring-1 ring-[#0a0a0a]/[0.07]">
         {head && (
-          <div role="row" className={`hidden gap-x-4 bg-[#0a0a0a] py-1.5 pl-4 pr-16 lg:grid ${ORDER_GRID}`}>
+          <div role="row" className={`hidden gap-x-4 border-b border-[#0a0a0a]/[0.06] bg-[#fafafa] py-1.5 pl-4 pr-16 lg:grid ${ORDER_GRID}`}>
             <input
               type="checkbox"
               aria-label="Select every order on this page"
               checked={allPicked}
               onChange={() => setPicked(allPicked ? new Set() : new Set(rows.map((o) => o.id)))}
-              className="h-4 w-4 accent-white"
+              className="h-4 w-4 accent-[#6666ff]"
             />
             {head}
           </div>
@@ -130,30 +130,30 @@ export function OrderList({ orders, filtered = false, head }: { orders: OrderRow
             const pay = paymentState(o.paymentMethod, o.paymentStatus);
             return (
               <SwipeRow key={o.id} actions={[{ key: "delete", label: "Delete", icon: Trash2, tone: "danger", onClick: () => handleDelete(o.id) }]}>
-                <div className={`group relative flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2.5 transition-colors ${picked.has(o.id) ? "bg-[#f5f5ff]" : "hover:bg-[#fafafa]"} ${ORDER_GRID}`}>
+                <div className={`group relative flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2 transition-colors lg:min-h-11 ${picked.has(o.id) ? "bg-[#f5f5ff]" : "hover:bg-[#fafafa]"} ${ORDER_GRID}`}>
                   <input
                     type="checkbox"
                     aria-label={`Select order ${o.id}`}
                     checked={picked.has(o.id)}
                     onChange={() => toggle(o.id)}
-                    className="relative z-10 h-4 w-4 accent-[#0a0a0a]"
+                    className="relative z-10 h-4 w-4 accent-[#6666ff]"
                   />
                   <Link href={`/admin/orders/${o.id}`} className="flex items-center gap-1.5 font-mono text-[13.5px] font-semibold text-[#0a0a0a] underline-offset-4 after:absolute after:inset-0 hover:underline">
                     #{o.id}
                     {o.notes && <NotebookText aria-label="Has a note" className="h-3.5 w-3.5 text-[#b45309]" />}
                   </Link>
-                  <span className="min-w-0 basis-full lg:basis-auto">
-                    <span className="block truncate text-[14px] font-medium text-[#0a0a0a]">{o.customerName}</span>
-                    <span className="block truncate text-[12.5px] text-[#0a0a0a]/50">{o.shippingCity} · {units} item{units === 1 ? "" : "s"}</span>
+                  <span className="min-w-0 basis-full truncate text-[13.5px] lg:basis-auto">
+                    <span className="font-medium text-[#0a0a0a]">{o.customerName}</span>
+                    <span className="text-[#0a0a0a]/50"> · {o.shippingCity} · {units} item{units === 1 ? "" : "s"}</span>
                   </span>
                   <span className="text-[13px] text-[#0a0a0a]/60" title={o.placedExact}>{o.placed}</span>
-                  <span className="flex flex-col items-start gap-0.5">
+                  <span className="flex min-w-0 items-center gap-1.5">
                     <StatePill tone={pay.tone}>{pay.label}</StatePill>
-                    <span className="text-[12px] text-[#0a0a0a]/50">{paymentLabel(o.paymentMethod)}</span>
+                    <span className="truncate text-[12px] text-[#0a0a0a]/45">{paymentLabel(o.paymentMethod)}</span>
                   </span>
-                  <span className="lg:text-right">
-                    <span className="block text-[14px] font-semibold tabular-nums text-[#0a0a0a]">{money(o.total)}</span>
-                    <span className="block text-[11.5px] tabular-nums text-[#0a0a0a]/45">{money(profit)} profit</span>
+                  <span className="flex items-baseline gap-1.5 lg:justify-end" title={`${money(profit)} profit`}>
+                    <span className="text-[11.5px] tabular-nums text-[#1d7a52]/80">+{money(profit)}</span>
+                    <span className="text-[13.5px] font-semibold tabular-nums text-[#0a0a0a]">{money(o.total)}</span>
                   </span>
                   <span><StatePill tone={STAGE_TONE[o.orderStatus] ?? "off"}>{statusLabel(o.orderStatus)}</StatePill></span>
                 </div>

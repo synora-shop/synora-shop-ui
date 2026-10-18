@@ -169,7 +169,7 @@ export default async function AdminProductsPage(props: PageProps<"/admin/product
         filtered={q.length > 0 || activeCount(filters) > 0}
         lowStock={globals.lowStockThreshold}
         head={
-          <div role="row" className={`hidden items-center gap-4 bg-[#0a0a0a] py-1.5 lg:grid ${HEAD_PAD} ${PRODUCT_GRID}`}>
+          <div role="row" className={`hidden items-center gap-4 border-b border-[#0a0a0a]/[0.06] bg-[#fafafa] py-1.5 lg:grid ${HEAD_PAD} ${PRODUCT_GRID}`}>
             <span />
             <span />
             {heading("Product", "title", "title-desc")}

@@ -120,7 +120,7 @@ export default async function InventoryPage(props: PageProps<"/admin/products/in
               key={v.key}
               href={viewHref(v.key)}
               aria-current={v.key === view.key ? "true" : undefined}
-              className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-[13px] font-semibold ${v.key === view.key ? "bg-[#0a0a0a] text-white" : "text-[#0a0a0a]/55 hover:bg-[#0a0a0a]/[0.05] hover:text-[#0a0a0a]"}`}
+              className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-[13px] font-semibold ${v.key === view.key ? "bg-[#ecebff] text-[#4b4bea] ring-1 ring-inset ring-[#6666ff]/25" : "text-[#0a0a0a]/55 hover:bg-[#0a0a0a]/[0.05] hover:text-[#0a0a0a]"}`}
             >
               {v.label}
               {v.key !== "all" && <span className="ml-1.5 tabular-nums opacity-60">{v.key === "low" ? counts.low : counts.out}</span>}
@@ -141,7 +141,7 @@ export default async function InventoryPage(props: PageProps<"/admin/products/in
         />
       ) : (
         <section className="overflow-hidden rounded-2xl bg-white ring-1 ring-[#0a0a0a]/[0.07]">
-          <div role="row" className={`hidden gap-4 bg-[#0a0a0a] px-4 py-1.5 lg:grid ${GRID}`}>
+          <div role="row" className={`hidden gap-4 border-b border-[#0a0a0a]/[0.06] bg-[#fafafa] px-4 py-1.5 lg:grid ${GRID}`}>
             {heading("Product", "product", "product-desc")}
             {heading("Size", "size", "size-desc")}
             {heading("SKU", "sku", "sku-desc")}
