@@ -272,13 +272,42 @@ Prisma 7 on Neon Postgres · NextAuth 5 · Zustand · Vercel Blob · Resend
 
 ## Running it
 
+> **`.env` in this folder holds the PRODUCTION database.** `prisma.config.ts`
+> loads it through `dotenv/config`, and dotenv never overrides a variable that
+> is already set. So before any Prisma command or script against a local
+> database, export the local URLs in the same shell, and check the host that
+> `npx prisma migrate status` prints before doing anything else.
+
+The usual local setup is Prisma's own local Postgres (`prisma dev`), with
+`.env.local` pointing at it (`postgres://postgres:postgres@localhost:51214/template1?sslmode=disable`
+for both `DATABASE_URL` and `DATABASE_URL_UNPOOLED`):
+
 ```bash
 npm install
-npm run dev
+npm rebuild esbuild prisma @prisma/engines   # npm 11 skips install scripts whose versions
+                                             # differ from package.json's allowScripts pins
+npx prisma dev -d -P 51214                   # local database, detached; again after a reboot
+
+export DATABASE_URL="postgres://postgres:postgres@localhost:51214/template1?sslmode=disable"
+export DATABASE_URL_UNPOOLED="$DATABASE_URL"
+npx prisma migrate status                    # must say localhost:51214
+npx prisma migrate deploy && npx prisma db seed   # first time only: schema + the default shop
+npx tsx scripts/seed-demo.ts --shop my-store      # optional: demo products, orders, customers
+
+npm run dev                                  # http://localhost:3000 (first compile takes a while)
 ```
 
-`DATABASE_URL` must point at a **Neon branch**, never at production. With the
-Neon CLI authenticated:
+Locally, `/admin` is the real panel (sign in with the seeded admin), and the
+two design previews run on sample data with no login: `/new-admin` (the first)
+and `/next-admin` (the third, the one `/admin` now follows). Production
+redirects both previews away.
+
+`prisma dev` runs on PGlite, which refuses very large single `createMany`
+calls (`08P01`, too many bind parameters); a script that hits it needs its
+inserts batched.
+
+A **Neon branch** works too, never production. With the Neon CLI
+authenticated:
 
 ```bash
 npx neon@latest branches create --project-id <project> --name dev
